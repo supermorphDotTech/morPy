@@ -38,7 +38,7 @@ def parameters(param_dict):
         modules_path - Path to the modules folder.
         main_db_path - Path to the main database of the project.
 
-    TODO
+    #TODO
     update return parameters in description
     """
 
@@ -68,11 +68,11 @@ def parameters(param_dict):
 #   Called by mpy_init.init(~)
     mpy_log_enable = True
 
-#   Store the initialized system parameters.
+#   Store the initialized system parameters relevant to a developer in a text file.
 #   Called by mpy_init.mpy_ref(~)
-    mpy_ref_create = True
+    mpy_ref_create = False
 
-#   Enable logging to a database.
+#   Enable logging to database.
 #   Called by mpy_msg.log(~)
     mpy_log_db_enable = True
 
@@ -84,7 +84,7 @@ def parameters(param_dict):
 #   Called by mpy_init.init(~)
     mpy_log_txt_header_enable = mpy_log_txt_enable
 
-#   Enable printouts of logs. This option works, even if log_enable is false.
+#   Enable printouts of logs to console. This option works, even if log_enable is false.
 #   Called throughout mpy_msg operations.
     mpy_msg_print = True
 
@@ -95,15 +95,15 @@ def parameters(param_dict):
 #   List object to exclude certain log levels from being logged to DB or text file.
 #   These log levels may still be printed to console.
 #   Called throughout mpy_msg operations.
-#   All log levels: ['INIT', 'DEBUG', 'INFO', 'WARNING', 'DENIED', 'ERROR', 'CRITICAL', 'EXIT']
-#   Default: ['DEBUG']
+#   All log levels: ["INIT", "DEBUG", "INFO", "WARNING", "DENIED", "ERROR", "CRITICAL", "EXIT", "UNDEFINED]
+#   Default: ["DEBUG"]
     mpy_log_lvl_nolog = []
 
 #   List object to exclude certain log levels from being printed to ui or console.
 #   These log levels may still be logged to DB or text file.
 #   Called by mpy_msg.mpy_msg_print(~)
-#   All log levels: ['INIT', 'DEBUG', 'INFO', 'WARNING', 'DENIED', 'ERROR', 'CRITICAL', 'EXIT']
-    mpy_log_lvl_noprint = ['DEBUG']
+#   All log levels: ["INIT", "DEBUG", "INFO", "WARNING", "DENIED", "ERROR", "CRITICAL", "EXIT", "UNDEFINED]
+    mpy_log_lvl_noprint = ["DEBUG"]
 
 #   List object to have certain log levels raise an interrupt. This will also freeze
 #   running threads and processes and eventually abort the program (depending on
@@ -111,8 +111,8 @@ def parameters(param_dict):
 #   or mpy_log_enable is true. If an item is part of this list, it will override being
 #   part of the list mpy_log_lvl_nolog.
 #   Called by mpy_msg.mpy_msg_print(~)
-#   All log levels: ['INIT', 'DEBUG', 'INFO', 'WARNING', 'DENIED', 'ERROR', 'CRITICAL', 'EXIT']
-    mpy_log_lvl_interrupts = ['DENIED','ERROR','CRITICAL']
+#   All log levels: ["INIT", "DEBUG", "INFO", "WARNING", "DENIED", "ERROR", "CRITICAL", "EXIT", "UNDEFINED]
+    mpy_log_lvl_interrupts = ["DENIED","ERROR","CRITICAL"]
 
     """
 >>> MULTITHREADING <<<
@@ -159,23 +159,23 @@ def parameters(param_dict):
     prj_path = pathlib.Path(__file__).parent.parent.resolve()
 
 #   Path to the logfile folder
-    log_path = pathlib.Path(os.path.join(str(prj_path), 'log'))
+    log_path = pathlib.Path(os.path.join(f'{prj_path}', 'log'))
 
 #   Path to the database holding all logs.
-    log_db_path = pathlib.Path(os.path.join(str(prj_path), 'log', 'log.db'))
+    log_db_path = pathlib.Path(os.path.join(f'{prj_path}', 'log', 'log.db'))
 
 #   Path to the textfile holding all logs
-    log_txt_path = os.path.join(str(log_path), str(param_dict['temp_datetime']) + '.log')
+    log_txt_path = os.path.join(f'{log_path}', f'{param_dict["temp_datetime"]}.log')
 
 #   Path to the modules folder
     prjFiles_path = pathlib.Path(__file__).parent.parent.parent.resolve()
 
 #   Path to the main database of the project
-    main_db_path = pathlib.Path(os.path.join(str(prj_path), 'db', 'main.db'))
+    main_db_path = pathlib.Path(os.path.join(f'{prj_path}', 'db', 'main.db'))
 
     return{
         'language' : language, \
-        'localization' : str('mpy_' + language), \
+        'localization' : f'mpy_{language}', \
         'mpy_priv_required' : mpy_priv_required, \
         'mpy_log_enable' : mpy_log_enable, \
         'mpy_ref_create' : mpy_ref_create, \
@@ -192,7 +192,7 @@ def parameters(param_dict):
         'mt_max_threads_cnt_abs' : mt_max_threads_cnt_abs, \
         'mt_max_threads_cnt_rel' : mt_max_threads_cnt_rel, \
         'mt_max_threads_rel_floor' : mt_max_threads_rel_floor, \
-        'path_divider' : str(path_divider), \
+        'path_divider' : f'{path_divider}', \
         'prj_path' : prj_path, \
         'log_path' : log_path, \
         'log_db_path' : log_db_path, \

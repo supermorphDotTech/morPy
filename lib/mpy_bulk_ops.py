@@ -40,24 +40,24 @@ def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, o
 
 #   Preparing parameters
     check = False
-    search_obj = str(search_obj, 'r')
+    search_obj = f'{search_obj}'
 
     try:
         
         #   Create a log
         #   Operation start.
-        log_message = prj_dict['find_replace_saveas_start']
+        log_message = prj_dict["find_replace_saveas_start"]
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
         
     #   Check if file exists
-        file_exists = mpy_fct.pathtool(mpy_trace, save_as)['file_exists']
+        file_exists = mpy_fct.pathtool(mpy_trace, save_as)["file_exists"]
     
     #   If file exists and overwrite is false, skip action.
         if file_exists and not overwrite:
             
             #   Create a log
             #   File already exists. Operation skipped.
-            log_message = prj_dict['find_replace_saveas_f_ex_skip']
+            log_message = prj_dict["find_replace_saveas_f_ex_skip"]
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'warning')
         
         else:
@@ -77,11 +77,11 @@ def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, o
                 
                 #   Create a log
                 #   Wrong type. Input must be a tuple of tuples.
-                log_message = prj_dict['find_replace_saveas_tpl_err'] + '\n' \
-                              + 'type(replace_tpl): ' + str(type(replace_tpl)) + '\n' \
-                              + 'replace_tpl: ' + str(replace_tpl) + '\n' \
-                              + 'type(replace_tpl(0)): ' + str(type(replace_tpl(0))) + '\n' \
-                              + 'replace_tpl(0): ' + str(replace_tpl(0))
+                log_message = (f'{prj_dict["find_replace_saveas_tpl_err"]}\n'
+                              f'type(replace_tpl): {type(replace_tpl)}\n'
+                              f'replace_tpl: {replace_tpl}\n'
+                              f'type(replace_tpl(0)): {type(replace_tpl(0))}\n'
+                              f'replace_tpl(0): {replace_tpl(0)}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
     
             else:
@@ -100,8 +100,8 @@ def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, o
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:

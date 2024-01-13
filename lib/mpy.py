@@ -40,11 +40,11 @@ def decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding):
         err_o = 'decode_to_plain_text(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
-def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes):
+def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title):
 
     """ This function opens a dialog for the user to select a file.
     :param
@@ -54,7 +54,7 @@ def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes):
         ftypes - This tuple of 2-tuples specifies, which filetypes will be
                 displayed by the dialog box, e.g.
                 (('type1','*.t1'),('All Files','*.*'),...)
-                ((NAME,TYPE),('All Files','*.*'),...)
+        title - Title of the open file dialog
     :return - dictionary
         check - The function ended with no errors and a file was chosen
         sel_file - Path of the selected file
@@ -62,7 +62,7 @@ def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes):
 
     try:
         import sys, mpy_common
-        return mpy_common.dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes)
+        return mpy_common.dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title)
 #   Error detection
     except Exception as e:
     #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -70,18 +70,18 @@ def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes):
         err_o = 'dialog_sel_file(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
-def dialog_sel_dir(mpy_trace, prj_dict, init_dir):
+def dialog_sel_dir(mpy_trace, prj_dict, init_dir, title):
 
     """ This function opens a dialog for the user to select a directory.
     :param
         mpy_trace - operation credentials and tracing
         prj_dict - morPy global dictionary
         init_dir - The directory in which the dialog will initially be opened
-
+        title - Title of the open directory dialog
     :return - dictionary
         check - The function ended with no errors and a file was chosen
         sel_dir - Path of the selected directory
@@ -89,7 +89,7 @@ def dialog_sel_dir(mpy_trace, prj_dict, init_dir):
 
     try:
         import sys, mpy_common
-        return mpy_common.dialog_sel_dir(mpy_trace, prj_dict, init_dir)
+        return mpy_common.dialog_sel_dir(mpy_trace, prj_dict, init_dir, title)
 #   Error detection
     except Exception as e:
     #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -97,8 +97,8 @@ def dialog_sel_dir(mpy_trace, prj_dict, init_dir):
         err_o = 'dialog_sel_dir(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm):
@@ -127,8 +127,8 @@ def fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm):
         err_o = 'fso_copy_file(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_create_dir(mpy_trace, prj_dict, mk_dir):
@@ -154,8 +154,8 @@ def fso_create_dir(mpy_trace, prj_dict, mk_dir):
         err_o = 'fso_create_dir(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_delete_dir(mpy_trace, prj_dict, del_dir):
@@ -180,8 +180,8 @@ def fso_delete_dir(mpy_trace, prj_dict, del_dir):
         err_o = 'fso_delete_dir(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_delete_file(mpy_trace, prj_dict, del_file):
@@ -207,8 +207,8 @@ def fso_delete_file(mpy_trace, prj_dict, del_file):
         err_o = 'fso_delete_file(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_walk(mpy_trace, prj_dict, path, depth):
@@ -244,8 +244,8 @@ def fso_walk(mpy_trace, prj_dict, path, depth):
         err_o = 'fso_walk(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_findall(mpy_trace, prj_dict, search_obj, pattern):
@@ -270,8 +270,8 @@ def regex_findall(mpy_trace, prj_dict, search_obj, pattern):
         err_o = 'regex_findall(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_find1st(mpy_trace, prj_dict, search_obj, pattern):
@@ -297,8 +297,8 @@ def regex_find1st(mpy_trace, prj_dict, search_obj, pattern):
         err_o = 'regex_find1st(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_split(mpy_trace, prj_dict, search_obj, delimiter):
@@ -325,8 +325,8 @@ def regex_split(mpy_trace, prj_dict, search_obj, delimiter):
         err_o = 'regex_split(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
@@ -353,8 +353,8 @@ def regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
         err_o = 'regex_replace(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
@@ -388,8 +388,8 @@ def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
         err_o = 'regex_remove_special(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def textfile_write(mpy_trace, prj_dict, filepath, content):
@@ -416,8 +416,8 @@ def textfile_write(mpy_trace, prj_dict, filepath, content):
         err_o = 'textfile_write(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def testprint(mpy_trace, input):
@@ -455,8 +455,8 @@ def wait_for_input(mpy_trace, prj_dict, msg_text):
         err_o = 'wait_for_input(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def datetime_now(mpy_trace):
@@ -582,7 +582,7 @@ def perfinfo(mpy_trace):
 
     return mpy_fct.perfinfo(mpy_trace)
 
-def print_prj_dict(prj_dict):
+def prj_dict_to_string(prj_dict):
 
     """ This function prints the entire project dictionary in Terminal.
     :param
@@ -593,7 +593,7 @@ def print_prj_dict(prj_dict):
 
     import mpy_fct
 
-    return mpy_fct.print_prj_dict(prj_dict)
+    return mpy_fct.prj_dict_to_string(prj_dict)
 
 def tracing(module, operation, mpy_trace):
 
@@ -637,8 +637,8 @@ def log(mpy_trace, prj_dict, log_message, level):
         err_o = 'log(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
 def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
@@ -674,8 +674,8 @@ def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
         err_o = 'mpy_thread_queue(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def mpy_threads_joinall(mpy_trace, prj_dict):
@@ -698,8 +698,8 @@ def mpy_threads_joinall(mpy_trace, prj_dict):
         err_o = 'mpy_threads_joinall(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def mpy_mt_abort(mpy_trace, prj_dict):
@@ -723,8 +723,8 @@ def mpy_mt_abort(mpy_trace, prj_dict):
         err_o = 'mpy_mt_abort(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
@@ -737,7 +737,7 @@ def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
         wb_sht - Name of the sheet, to copy cells from
         cells - The cell or range of cells to read from. Two datatypes
                 are accepted, either a single cell or a range, as shown:
-                ['A1'] or ['A1:ZZ1000'] (letters are not case sensitive)
+                ["A1"] or ["A1:ZZ1000"] (letters are not case sensitive)
                 Since 'cells' is a list, you may add as many items to the
                 list, as you wish.
         dat - True means cells with formulae will only be represented by
@@ -766,8 +766,8 @@ def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
         err_o = 'cl_read(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_close(mpy_trace, prj_dict, wb_path):
@@ -793,8 +793,8 @@ def wb_close(mpy_trace, prj_dict, wb_path):
         err_o = 'wb_close(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_close_all(mpy_trace, prj_dict):
@@ -819,8 +819,8 @@ def wb_close_all(mpy_trace, prj_dict):
         err_o = 'wb_close_all(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_create(mpy_trace, prj_dict, xl_path):
@@ -844,8 +844,8 @@ def wb_create(mpy_trace, prj_dict, xl_path):
         err_o = 'wb_create(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
@@ -855,7 +855,7 @@ def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
         wb_close routine is implemented for various cases (i.e. Exceptions).
         The workbook path will be connected to the object in RAM by creating
         a key in a dedicated dictionary as shown:
-        >   prj_dict['mpy_xl_loaded_wb_lst'] = {wb_path : wb_obj}
+        >   prj_dict["mpy_xl_loaded_wb_lst"] = {wb_path : wb_obj}
         This way a once opened Excel workbook may not be adressed twice.
     :param
         mpy_trace - operation credentials and tracing
@@ -887,8 +887,8 @@ def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
         err_o = 'wb_load(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl):
@@ -918,8 +918,8 @@ def wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl):
         err_o = 'wb_tbl_attributes(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_tbl_inquiry(mpy_trace, prj_dict, wb_path):
@@ -949,8 +949,8 @@ def wb_tbl_inquiry(mpy_trace, prj_dict, wb_path):
         err_o = 'wb_tbl_inquiry(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
@@ -984,8 +984,8 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
         err_o = 'tk_progbar_indeterminate(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, overwrite):
@@ -1022,8 +1022,8 @@ def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, o
         err_o = 'find_replace_saveas(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def web_request(mpy_trace, prj_dict, URL, req_dict):
@@ -1074,6 +1074,6 @@ def web_request(mpy_trace, prj_dict, URL, req_dict):
         err_o = 'dialog_sel_file(~)'
         mpy_trace = tracing(err_m, err_o, mpy_trace)
 
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')

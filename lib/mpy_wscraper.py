@@ -41,6 +41,9 @@ def web_request(mpy_trace, prj_dict, URL, req_dict):
         html_code - Holds the 3 digit identifier for the html response
         response_dict - Returns the responses requested. The response includes
                         the same keys as the (full) req_dict.
+                        
+    #TODO
+        - Debug the entire function
     """
 
     import mpy_fct, mpy_msg, mpy_common
@@ -52,7 +55,7 @@ def web_request(mpy_trace, prj_dict, URL, req_dict):
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
 #   Apply standard formats
-    URL = str(URL)
+    URL = f'{URL}'
     requests_log = ''
     html_code = 'VOID'
     response_dict = {'apparent_encoding' : 'VOID' , \
@@ -75,8 +78,8 @@ def web_request(mpy_trace, prj_dict, URL, req_dict):
                     }
 
 #   Create a log
-    log_message = 'Fetching a webpage.\n' \
-                    + 'URL: ' + URL
+    log_message = (f'Fetching a webpage.\n'
+                  f'URL: {URL}')
     mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     try:
@@ -85,7 +88,7 @@ def web_request(mpy_trace, prj_dict, URL, req_dict):
         response = requests.get(URL)
 
     #   Get and format the response code
-        html_code = str(response)
+        html_code = f'{response}'
         html_code = mpy_common.regex_findall(mpy_trace, prj_dict, html_code, '[0-9]{3}')
         html_code = html_code[0]
 
@@ -95,28 +98,28 @@ def web_request(mpy_trace, prj_dict, URL, req_dict):
         for key, value in req_dict.items():
 
         #   Select only the activated requests
-            if value == True:
-                response_dict[key] = str(exec('response.' + key))
+            if value:
+                response_dict[key] = f'response.{key}'
 
             #   Prepare log message of requested items
-                if requests_log == '':
-                    requests_log = '> ' + str(key)
+                if not requests_log:
+                    requests_log = f'> {key}'
                 else:
-                    requests_log = requests_log + '\n> ' + str(key)
+                    requests_log = f'{requests_log}\n> {key}'
 
         check = True
 
     #   Create a log
-        log_message = 'Webpage data requested successfully.\n' \
-                        + 'HTML Response Code: ' + str(html_code) + '\n' \
-                        + 'Requests:\n' + str(requests_log)
+        log_message = (f'Webpage data requested successfully.\n'
+                      f'HTML Response Code: {html_code}\n'
+                      f'Requests:\n{requests_log}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
 #   Error detection
     except Exception as e:
-        log_message = \
-            'Line: {}\nException: {}HTML Response Code:{}'. \
-              format(sys.exc_info()[-1].tb_lineno,str(e),html_code)
+        log_message = (f'Line: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'Exception: {e}\n'
+                      f'HTML Response Code:{html_code}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
         check = False

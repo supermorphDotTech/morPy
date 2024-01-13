@@ -52,37 +52,37 @@ def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
 
 #   Preparing parameters
     check = False
-    name = str(name)
-    task = str(task)
-    thr_available = prj_dict['mt_max_threads']
+    name = f'{name}'
+    task = f'{task}'
+    thr_available = prj_dict["mt_max_threads"]
 
-#   Check for multithreading / Fallback to ST mode
     try:
 
-        if prj_dict['mt_enabled'] == True:
+    #   Check for multithreading / Fallback to ST mode
+        if prj_dict["mt_enabled"]:
 
         #   Enqueue a new task
             try:
 
             #   Check for the priority and correct it, if necessary.
-                priority = prio_correction(mpy_trace, prj_dict, priority, task)['priority']
+                priority = prio_correction(mpy_trace, prj_dict, priority, task)["priority"]
 
             #   Create a log
             #   Enqueing task.
-                log_message = prj_dict['mpy_thread_queue_enqueue'] + '\n' \
-                              + prj_dict['mpy_thread_queue_task'] + ': ' + str(task) + '\n' \
-                              + prj_dict['mpy_thread_queue_priority'] + ': ' + str(priority)
+                log_message = (f'{prj_dict["mpy_thread_queue_enqueue"]}\n'
+                              f'{prj_dict["mpy_thread_queue_task"]}: {task}\n'
+                              f'{prj_dict["mpy_thread_queue_priority"]}: {priority}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-                prj_dict['mpy_PriorityQueue'].enqueue(mpy_trace, prj_dict, name, priority, task)
+                prj_dict["mpy_PriorityQueue"].enqueue(mpy_trace, prj_dict, name, priority, task)
 
         #   Error detection
             except Exception as e:
-                log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                              + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                              + prj_dict['mpy_thread_queue_enqueue_err'] + '\n' \
-                              + prj_dict['mpy_thread_queue_task'] + ': ' + str(task) + '\n' \
-                              + prj_dict['mpy_thread_queue_priority'] + ': ' + str(priority)
+                log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                              f'{prj_dict["err_excp"]}: {e}\n'
+                              f'{prj_dict["mpy_thread_queue_enqueue_err"]}\n'
+                              f'{prj_dict["mpy_thread_queue_task"]}: {task}\n'
+                              f'{prj_dict["mpy_thread_queue_priority"]}: {priority}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
         #   Start a thread, if there are threads available. If all threads are already in use, skip
@@ -91,37 +91,37 @@ def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
 
             #   Create a log
             #   Checking threads availability.
-                log_message = prj_dict['mpy_thread_queue_dbg_threads_available'] + '\n' \
-                              + prj_dict['mpy_thread_queue_dbg_threads_max'] + ': ' + str(prj_dict['mt_max_threads'])
+                log_message = (f'{prj_dict["mpy_thread_queue_dbg_threads_available"]}\n'
+                              f'{prj_dict["mpy_thread_queue_dbg_threads_max"]}: {prj_dict["mt_max_threads"]}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
             #   Check for available threads by counting the listed thread ID's and compare them
             #   to the maximum amount of threads available.
-                if prj_dict['mt_threads_id_lst']:
+                if prj_dict["mt_threads_id_lst"]:
 
-                    if len(prj_dict['mt_threads_id_lst']) < thr_available:
+                    if len(prj_dict["mt_threads_id_lst"]) < thr_available:
 
                     #   Start a thread.
                         worker = cl_thread(mpy_trace, prj_dict)
                         worker.start()
 
                     #   Append worker to a list of threads. It is mostly used to join threads later.
-                        prj_dict['mpy_workers_running'].append(worker)
+                        prj_dict["mpy_workers_running"].append(worker)
 
                     #   Create a log
                     #   Task successfully enqueued. Thread created.
-                        log_message = prj_dict['mpy_thread_queue_dbg_enqueue_done'] + '\n' \
-                                      + prj_dict['mpy_thread_queue_dbg_threads_used'] + ': ' + str(len(prj_dict['mt_threads_id_lst'])) + '\n' \
-                                      + prj_dict['mpy_thread_queue_dbg_threads_max'] + ': ' + str(prj_dict['mt_max_threads'])
+                        log_message = (f'{prj_dict["mpy_thread_queue_dbg_enqueue_done"]}\n'
+                                      f'{prj_dict["mpy_thread_queue_dbg_threads_used"]}: {len(prj_dict["mt_threads_id_lst"])}\n'
+                                      f'{prj_dict["mpy_thread_queue_dbg_threads_max"]}: {prj_dict["mt_max_threads"]}')
                         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
                     else:
 
                     #   Create a log
                     #   No free thread available. Skipping thread invoke.
-                        log_message = prj_dict['mpy_thread_queue_dbg_thread_skip'] + '\n' \
-                                      + prj_dict['mpy_thread_queue_dbg_threads_used'] + ': ' + str(len(prj_dict['mt_threads_id_lst'])) + '\n' \
-                                      + prj_dict['mpy_thread_queue_dbg_threads_max'] + ': ' + str(prj_dict['mt_max_threads'])
+                        log_message = (f'{prj_dict["mpy_thread_queue_dbg_thread_skip"]}\n'
+                                      f'{prj_dict["mpy_thread_queue_dbg_threads_used"]}: {len(prj_dict["mt_threads_id_lst"])}\n'
+                                      f'{prj_dict["mpy_thread_queue_dbg_threads_max"]}: {prj_dict["mt_max_threads"]}')
                         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
                 else:
@@ -131,39 +131,39 @@ def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
                     worker.start()
 
                 #   Append worker to a list of threads. It is mostly used to join threads later.
-                    prj_dict['mpy_workers_running'].append(worker)
+                    prj_dict["mpy_workers_running"].append(worker)
 
                 #   Create a log
                 #   New Thread ID list created. Task successfully enqueued.
-                    log_message = prj_dict['mpy_thread_queue_dbg_enq_new_done'] + '\n' \
-                                  + prj_dict['mpy_thread_queue_dbg_threads_used'] + ': ' + str(len(prj_dict['mt_threads_id_lst'])) + '\n' \
-                                  + prj_dict['mpy_thread_queue_dbg_threads_max'] + ': ' + str(prj_dict['mt_max_threads'])
+                    log_message = (f'{prj_dict["mpy_thread_queue_dbg_enq_new_done"]}\n'
+                                  f'{prj_dict["mpy_thread_queue_dbg_threads_used"]}: {len(prj_dict["mt_threads_id_lst"])}\n'
+                                  f'{prj_dict["mpy_thread_queue_dbg_threads_max"]}: {prj_dict["mt_max_threads"]}')
                     mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
                 check = True
 
         #   Error detection
             except Exception as e:
-                log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                              + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                              + prj_dict['mpy_thread_queue_thread_err'] + '\n' \
-                              + prj_dict['mpy_thread_queue_task'] + ': {}'. format(task) + '\n' \
-                              + prj_dict['mpy_thread_queue_priority'] + ': {}'. format(priority)
+                log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                              f'{prj_dict["err_excp"]}: {e}\n'
+                              f'{prj_dict["mpy_thread_queue_thread_err"]}\n'
+                              f'{prj_dict["mpy_thread_queue_task"]}: {task}\n'
+                              f'{prj_dict["mpy_thread_queue_priority"]}: {priority}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     #   Run fallback mode - single threaded
         else:
 
-            exec(thread_imports(mpy_trace, prj_dict, task)['imp_order'])
+            exec(thread_imports(mpy_trace, prj_dict, task)["imp_order"])
             exec(task)
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                      + prj_dict['mpy_thread_queue_thread_err'] + '\n' \
-                      + prj_dict['mpy_thread_queue_task'] + ': {}'. format(task) + '\n' \
-                      + prj_dict['mpy_thread_queue_priority'] + ': {}'. format(priority)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["mpy_thread_queue_thread_err"]}\n'
+                      f'{prj_dict["mpy_thread_queue_task"]}: {task}\n'
+                      f'{prj_dict["mpy_thread_queue_priority"]}: {priority}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:
@@ -201,29 +201,29 @@ def mpy_threads_joinall(mpy_trace, prj_dict):
 
     #   Create a log
     #   Waiting for all threads to finish up their work.
-        log_message = prj_dict['mpy_threads_joinall_start'] + '\n' \
-                      + prj_dict['mpy_threads_joinall_eval'] + ': ' + str(prj_dict['mpy_workers_running'])
+        log_message = (f'{prj_dict["mpy_threads_joinall_start"]}\n'
+                      f'{prj_dict["mpy_threads_joinall_eval"]}: {prj_dict["mpy_workers_running"]}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        for thread in prj_dict['mpy_workers_running']:
+        for thread in prj_dict["mpy_workers_running"]:
 
             thread.join()
 
     #   Clear the list of invoked threads
-        prj_dict['mpy_workers_running'] = []
+        prj_dict["mpy_workers_running"] = []
 
     #   Create a log
     #   All threads/tasks finished.
-        log_message = prj_dict['mpy_threads_joinall_end'] + '\n' \
-                      + prj_dict['mpy_threads_joinall_eval'] + ': ' + str(prj_dict['mpy_workers_running'])
+        log_message = (f'{prj_dict["mpy_threads_joinall_end"]}\n'
+                      f'{prj_dict["mpy_threads_joinall_eval"]}: {prj_dict["mpy_workers_running"]}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:
@@ -262,24 +262,24 @@ def mpy_mt_abort(mpy_trace, prj_dict):
 
     #   Create a log
     #   Waiting for all threads to finish up their work.
-        log_message = prj_dict['mpy_mt_abort_start']
+        log_message = prj_dict["mpy_mt_abort_start"]
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     #   Set the threads exit flag
-        prj_dict['mpy_mt_exit'] = True
+        prj_dict["mpy_mt_exit"] = True
 
     #   Wait for all threads to finish up
         mpy_threads_joinall(mpy_trace, prj_dict)
 
     #   Reset the threads exit flag
-        prj_dict['mpy_mt_exit'] = False
+        prj_dict["mpy_mt_exit"] = False
 
         check = True
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:
@@ -327,7 +327,7 @@ class cl_mtPriorityQueue(object):
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
     #   Preparing parameters
-        name = str(name)
+        name = f'{name}'
 
         try:
 
@@ -337,19 +337,19 @@ class cl_mtPriorityQueue(object):
             self.counter = count()
 
         #   Create a reference to the priority queue
-            prj_dict['mpy_PriorityQueue'] = self
+            prj_dict["mpy_PriorityQueue"] = self
 
         #   Create a log
         #   Priority queue initialized.
-            log_message = prj_dict['cl_mtPriorityQueue_init_done'] + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_name'] + ': ' + self.name
+            log_message = (f'{prj_dict["cl_mtPriorityQueue_init_done"]}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_name"]}: {self.name}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'init')
 
     #   Error detection
         except Exception as e:
-            log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                          + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_name'] + ': {}'. format(self.name)
+            log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                          f'{prj_dict["err_excp"]}: {e}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_name"]}: {self.name}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
         finally:
@@ -383,17 +383,17 @@ class cl_mtPriorityQueue(object):
 
     #   Preparing parameters
         check = False
-        name = str(name)
-        task = str(task)
+        name = f'{name}'
+        task = f'{task}'
 
         try:
 
         #   Create a log
         #   Pushing task to priority queue.
-            log_message = prj_dict['cl_mtPriorityQueue_enqueue_start'] + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_name'] + ': {}'. format(self.name) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_enqueue_priority'] + ': ' + str(priority) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_enqueue_task'] + ': ' + task
+            log_message = (f'{prj_dict["cl_mtPriorityQueue_enqueue_start"]}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_name"]}: {self.name}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_enqueue_priority"]}: {priority}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_enqueue_task"]}: {task}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         #   Define the task to be queued
@@ -406,11 +406,11 @@ class cl_mtPriorityQueue(object):
 
     #   Error detection
         except Exception as e:
-            log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                          + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_name'] + ': {}'. format(self.name) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_enqueue_priority'] + ': {}'. format(priority) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_enqueue_task'] + ': {}'. format(task)
+            log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                          f'{prj_dict["err_excp"]}: {e}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_name"]}: {self.name}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_enqueue_priority"]}: {priority}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_enqueue_task"]}: {task}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
         finally:
@@ -451,8 +451,8 @@ class cl_mtPriorityQueue(object):
 
         try:
 
-        #   FIXME Wait for an interrupt to end
-            while prj_dict['mpy_interrupt'] == True:
+        #   Wait for an interrupt to end
+            while prj_dict["mpy_interrupt"] == True:
                 pass
 
         #   Return the highest priority and oldest task from priority queue
@@ -472,21 +472,21 @@ class cl_mtPriorityQueue(object):
 
         #   Create a log
         #   Pushing task to priority queue.
-            log_message = prj_dict['cl_mtPriorityQueue_dequeue_start'] + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_name'] + ': {}'. format(self.name) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_dequeue_name'] + ': ' + str(name) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_dequeue_priority'] + ': ' + str(priority) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_dequeue_cnt'] + ': ' + str(counter) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_dequeue_task'] + ': ' + str(task)
+            log_message = (f'{prj_dict["cl_mtPriorityQueue_dequeue_start"]}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_name"]}: {self.name}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_dequeue_name"]}: {name}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_dequeue_priority"]}: {priority}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_dequeue_cnt"]}: {counter}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_dequeue_task"]}: {task}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
             check = False
 
     #   Error detection
         except Exception as e:
-            log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                          + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                          + prj_dict['cl_mtPriorityQueue_name'] + ': {}'. format(self.name)
+            log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                          f'{prj_dict["err_excp"]}: {e}\n'
+                          f'{prj_dict["cl_mtPriorityQueue_name"]}: {self.name}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
         finally:
@@ -525,39 +525,39 @@ def mt_init(mpy_trace, prj_dict):
 
 #   Preparing parameters
     check = False
-    sys_threads = prj_dict['threads'] # Total threads available to the system
+    sys_threads = prj_dict["threads"] # Total threads available to the system
 
     try:
 
     #   Initialize threading exit flag
-        prj_dict['mpy_mt_exit'] = False
+        prj_dict["mpy_mt_exit"] = False
 
     #   Initialize total thread counter to be used as a unique task ID
-        prj_dict['mpy_mt_tasks_cnt'] = 0
+        prj_dict["mpy_mt_tasks_cnt"] = 0
 
     #   Initialize list for running workers
-        prj_dict['mpy_workers_running'] = []
+        prj_dict["mpy_workers_running"] = []
 
     #   Initialize the interrupt flag
-        prj_dict['mpy_interrupt'] = False
+        prj_dict["mpy_interrupt"] = False
 
     #   Evaluate, if MT is enabled
-        if prj_dict['mt_enabled'] == True:
+        if prj_dict["mt_enabled"]:
 
         #   Determine the maximum thread count available for runtime
         #   Absolute determination
-            if prj_dict['mt_max_threads_set_abs'] == True:
+            if prj_dict["mt_max_threads_set_abs"]:
 
-                max_threads = prj_dict['mt_max_threads_cnt_abs']
+                max_threads = prj_dict["mt_max_threads_cnt_abs"]
 
         #   Determine the maximum thread count available for runtime
         #   Relative determination
             else:
 
-                max_threads = sys_threads * prj_dict['mt_max_threads_cnt_abs']
+                max_threads = sys_threads * prj_dict["mt_max_threads_cnt_abs"]
 
             #   Round down
-                if prj_dict['mt_max_threads_rel_floor'] == True:
+                if prj_dict["mt_max_threads_rel_floor"]:
 
                     max_threads = math.floor(max_threads)
 
@@ -568,8 +568,7 @@ def mt_init(mpy_trace, prj_dict):
 
         #   Log preparation.
         #   Multithreading enabled.
-            mt_init_message = prj_dict['mt_init_done'] + ' ' \
-                              + prj_dict['mt_init_enabled_yes']
+            mt_init_message = f'{prj_dict["mt_init_done"]} {prj_dict["mt_init_enabled_yes"]}'
 
     #   Fallback to ST, if MT is disabled
         else:
@@ -578,8 +577,7 @@ def mt_init(mpy_trace, prj_dict):
 
         #   Log preparation.
         #   Multithreading disabled. Fallback to single threaded mode.
-            mt_init_message = prj_dict['mt_init_done'] + ' ' \
-                               + prj_dict['mt_init_enabled_no']
+            mt_init_message = f'{prj_dict["mt_init_done"]} {prj_dict["mt_init_enabled_no"]}'
 
     #   Correct the maximum thread count, if architecturally there are less available.
         if sys_threads < max_threads:
@@ -587,16 +585,16 @@ def mt_init(mpy_trace, prj_dict):
             max_threads = sys_threads
 
     #   Set the maximum thread count for runtime in prj_dict
-        prj_dict['mt_max_threads'] = max_threads
+        prj_dict["mt_max_threads"] = max_threads
 
     #   Create an empty list of thread IDs
-        prj_dict['mt_threads_id_lst'] = []
+        prj_dict["mt_threads_id_lst"] = []
 
     #   Create a log
     #   Multithreading initialized.
-        log_message = mt_init_message + '\n' \
-                        + prj_dict['mt_init_thr_available'] + ': ' + str(sys_threads) + '\n' \
-                        + prj_dict['mt_init_thr_max'] + ': ' + str(max_threads)
+        log_message = (f'{mt_init_message}\n'
+                      f'{prj_dict["mt_init_thr_available"]}: {sys_threads}\n'
+                      f'{prj_dict["mt_init_thr_max"]}: {max_threads}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     #   Initialize and create the queue instance for this frameworks runtime
@@ -606,8 +604,8 @@ def mt_init(mpy_trace, prj_dict):
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:
@@ -653,18 +651,18 @@ class cl_thread(threading.Thread):
 
         #   Create a log
         #   A worker thread is being created.
-            log_message = prj_dict['cl_thread_init_start']
+            log_message = prj_dict["cl_thread_init_start"]
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         #   Define the attributes of the class
-            self.ID = thread_id(mpy_trace, prj_dict)['thread_id']
+            self.ID = thread_id(mpy_trace, prj_dict)["thread_id"]
             self.name = 'VOID'
             self.trace = mpy_trace
             self.prj_dict = prj_dict
-            self.log = mpy_trace['log_enable']
+            self.log = mpy_trace["log_enable"]
 
         #   Increment the task counter
-            prj_dict['mpy_mt_tasks_cnt'] + 1
+            prj_dict["mpy_mt_tasks_cnt"] += 1
 
         #   Invoke an instance of threading.Thread
             threading.Thread.__init__(self)
@@ -674,15 +672,15 @@ class cl_thread(threading.Thread):
 
         #   Create a log
         #   Worker thread created. ID reserved.
-            log_message = prj_dict['cl_thread_init_done'] + '\n' \
-                          + prj_dict['cl_thread_id'] + ': ' + str(self.ID) + '\n' \
-                          + prj_dict['cl_thread_lock'] + ': ' + str(self.lock)
+            log_message = (f'{prj_dict["cl_thread_init_done"]}\n'
+                          f'{prj_dict["cl_thread_id"]}: {self.ID}\n'
+                          f'{prj_dict["cl_thread_lock"]}: {self.lock}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     #   Error detection
         except Exception as e:
-            log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                          + prj_dict['err_excp'] + ': {}'. format(e)
+            log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                          f'{prj_dict["err_excp"]}: {e}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
         finally:
@@ -708,7 +706,7 @@ class cl_thread(threading.Thread):
         module = 'mpy_mt'
         operation = 'cl_thread.run(~)'
         mpy_trace = mpy_fct.tracing(module, operation, self.trace)
-        log_enable = mpy_trace['log_enable']
+        log_enable = mpy_trace["log_enable"]
 
     #   Preparing parameters
         check = False
@@ -722,32 +720,32 @@ class cl_thread(threading.Thread):
 
         #   Create a log
         #   A task is starting. Thread has been locked.
-            log_message = self.prj_dict['cl_thread_run_start'] + '\n' \
-                            + 'ID: ' + str(self.ID) + '\n' \
-                            + self.prj_dict['cl_thread_lock'] + ': ' + str(self.lock)
+            log_message = (f'{self.prj_dict["cl_thread_run_start"]}\n'
+                          f'ID: {self.ID}\n'
+                          f'{self.prj_dict["cl_thread_lock"]}: {self.lock}')
             mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
 
         #   Fetch a task as long as the queue is not empty.
-            while len(self.prj_dict['mpy_PriorityQueue'].elements) > 0 and \
-                self.prj_dict['mpy_mt_exit'] == False:
+            while len(self.prj_dict["mpy_PriorityQueue"].elements) > 0 and \
+                not self.prj_dict["mpy_mt_exit"]:
 
             #   Wait for an interrupt before fetching a task
-                while self.prj_dict['mpy_interrupt'] == True:
+                while self.prj_dict["mpy_interrupt"]:
                     pass
 
-                task_dqed = self.prj_dict['mpy_PriorityQueue'].dequeue(mpy_trace, self.prj_dict)['task_dqed']
+                task_dqed = self.prj_dict["mpy_PriorityQueue"].dequeue(mpy_trace, self.prj_dict)["task_dqed"]
 
             #   Fetching the name of the task to identify the thread with it.
                 self.name = task_dqed[0]
 
             #   Defining the thread specific trace
-                mpy_trace['thread_id'] = self.ID
+                mpy_trace["thread_id"] = self.ID
 
             #   Fetching the task.
                 task = task_dqed[3]
 
             #   Disable logging for the next segment
-                mpy_trace['log_enable'] = False
+                mpy_trace["log_enable"] = False
 
             #   Exchange the traceback of the task from mpy_trace to mpy_trace
                 task = mpy_msg.log_regex_replace(mpy_trace, self.prj_dict, task, 'mpy_trace', 'mpy_trace')
@@ -759,19 +757,19 @@ class cl_thread(threading.Thread):
                 task = mpy_msg.log_regex_replace(mpy_trace, self.prj_dict, task, 'log', 'self.log')
 
             #   Reset logging for the next segment
-                mpy_trace['log_enable'] = log_enable
+                mpy_trace["log_enable"] = log_enable
 
             #   Count the tasks invoked during runtime
-                task_ID = self.prj_dict['mpy_mt_tasks_cnt'] + 1
+                task_ID = self.prj_dict["mpy_mt_tasks_cnt"] + 1
 
             #   Create a log
             #   Fetched a new task. Thread renamed with the task name.
-                log_message = self.prj_dict['cl_thread_run_task_fetched'] + '\n' \
-                                + 'ID: ' + str(self.ID) + '\n' \
-                                + self.prj_dict['cl_thread_name'] + ': ' + str(self.name) + '\n' \
-                                + self.prj_dict['cl_thread_prio'] + ': ' + str(task_dqed[1]) + '\n' \
-                                + self.prj_dict['cl_thread_run_tasks_total'] + ': ' + str(task_ID) + '\n' \
-                                + self.prj_dict['cl_thread_run_task'] + ': ' + str(task)
+                log_message = (f'{self.prj_dict["cl_thread_run_task_fetched"]}\n'
+                              f'ID: {self.ID}\n'
+                              f'{self.prj_dict["cl_thread_name"]}: {self.name}\n'
+                              f'{self.prj_dict["cl_thread_prio"]}: {task_dqed[1]}\n'
+                              f'{self.prj_dict["cl_thread_run_tasks_total"]}: {task_ID}\n'
+                              f'{self.prj_dict["cl_thread_run_task"]}: {task}')
                 mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
 
 
@@ -779,46 +777,46 @@ class cl_thread(threading.Thread):
                 imp_eval = thread_imports(mpy_trace, self.prj_dict, task)
 
             #   Evaluate the necessity to import a module
-                imp_true = imp_eval['imp_true']
+                imp_true = imp_eval["imp_true"]
 
-                if imp_true == True:
+                if imp_true:
 
-                    imp_order = imp_eval['imp_order']
+                    imp_order = imp_eval["imp_order"]
                     exec(imp_order)
 
                 #   Create a log
                 #   Modules were imported.
-                    log_message = self.prj_dict['cl_thread_run_modules'] + '\n' \
-                                    + 'ID: ' + str(self.ID) + '\n' \
-                                    + self.prj_dict['cl_thread_name'] + ': ' + str(self.name) + '\n' \
-                                    + 'imp_true: ' + str(imp_true) + '\n' \
-                                    + 'imp_order: ' + str(imp_order)
+                    log_message = (f'{self.prj_dict["cl_thread_run_modules"]}\n'
+                                  f'ID: {self.ID}\n'
+                                  f'{self.prj_dict["cl_thread_name"]}: {self.name}\n'
+                                  f'imp_true: {imp_true}\n'
+                                  f'imp_order: {imp_order}')
                     mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
 
                 else:
 
                 #   Create a log
                 #   Checked for modules to be imported.
-                    log_message = self.prj_dict['cl_thread_run_nomodules'] + '\n' \
-                                  + 'ID: ' + str(self.ID) + '\n' \
-                                  + self.prj_dict['cl_thread_name'] + ': ' + str(self.name) + '\n' \
-                                  + 'imp_true: ' + str(imp_true)
+                    log_message = (f'{self.prj_dict["cl_thread_run_nomodules"]}\n'
+                                  f'ID: {self.ID}\n'
+                                  f'{self.prj_dict["cl_thread_name"]}: {self.name}\n'
+                                  f'imp_true: {imp_true}')
                     mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
 
             #   Execute the task
                 exec(task)
 
         #   Clear the thread ID from the regarding list for another task to get started (if any).
-            self.prj_dict['mt_threads_id_lst'].remove(self.ID)
+            self.prj_dict["mt_threads_id_lst"].remove(self.ID)
 
         #   Release the thread lock - set the worker available again
             self.lock.release()
 
         #   Create a log
         #   Task ended.
-            log_message = self.prj_dict['cl_thread_run_end'] + '\n' \
-                          + 'ID: ' + str(self.ID) + '\n' \
-                          + self.prj_dict['cl_thread_name'] + ': ' + str(self.name)
+            log_message = (f'{self.prj_dict["cl_thread_run_end"]}\n'
+                          f'ID: {self.ID}\n'
+                          f'{self.prj_dict["cl_thread_name"]}: {self.name}')
             mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
 
             check = True
@@ -826,12 +824,12 @@ class cl_thread(threading.Thread):
     #   Error detection
         except Exception as e:
 
-            log_message = self.prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                          + self.prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                          + self.prj_dict['cl_thread_id'] + ': {}'. format(self.ID) + '\n' \
-                          + self.prj_dict['cl_thread_name'] + ': {}'. format(self.name) + '\n' \
-                          + self.prj_dict['cl_thread_run_task_id'] + ': {}'. format(task_ID) + '\n' \
-                          + self.prj_dict['cl_thread_run_task'] + ': {}'. format(task)
+            log_message = (f'{self.prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                          f'{self.prj_dict["err_excp"]}: {e}\n'
+                          f'{self.prj_dict["cl_thread_id"]}: {self.ID}\n'
+                          f'{self.prj_dict["cl_thread_name"]}: {self.name}\n'
+                          f'{self.prj_dict["cl_thread_run_task_id"]}: {task_ID}\n'
+                          f'{self.prj_dict["cl_thread_run_task"]}: {task}')
             mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'critical')
 
         finally:
@@ -877,7 +875,7 @@ def prio_correction(mpy_trace, prj_dict, priority, task):
 #   Preparing parameters
     check = False
     prio_in = priority
-    task = str(task)
+    task = f'{task}'
     prio_trusted = False
     prio_module_lst = ('mpy_msg')
 
@@ -897,15 +895,15 @@ def prio_correction(mpy_trace, prj_dict, priority, task):
     #   Evaluate the priority
         if prio_in < 10:
 
-            if prio_trusted == False:
+            if not prio_trusted:
 
                 priority = 10
 
             #   Create a log
             #   The priority of a task has been corrected.
-                log_message = prj_dict['prio_correction_warn'] + '\n' \
-                              + prj_dict['prio_correction_prio_in'] + ': ' + str(prio_in) + '\n' \
-                              + prj_dict['prio_correction_prio_out'] + ': ' + str(priority)
+                log_message = (f'{prj_dict["prio_correction_warn"]}\n'
+                              f'{prj_dict["prio_correction_prio_in"]}: {prio_in}\n'
+                              f'{prj_dict["prio_correction_prio_out"]}: {priority}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'warning')
 
             else:
@@ -916,17 +914,17 @@ def prio_correction(mpy_trace, prj_dict, priority, task):
 
                 #   Create a log
                 #   The priority of a morPy-task has been corrected.
-                    log_message = prj_dict['prio_correction_err'] + '\n' \
-                                  + prj_dict['prio_correction_prio_in'] + ': ' + str(prio_in) + '\n' \
-                                  + prj_dict['prio_correction_prio_out'] + ': ' + str(priority)
+                    log_message = (f'{prj_dict["prio_correction_err"]}\n'
+                                  f'{prj_dict["prio_correction_prio_in"]}: {prio_in}\n'
+                                  f'{prj_dict["prio_correction_prio_out"]}: {priority}')
                     mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
         check = True
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:
@@ -964,8 +962,7 @@ def thread_id(mpy_trace, prj_dict):
 
 #   Preparing parameters
     check = False
-    max_threads = prj_dict['mt_max_threads']
-    free_id = False
+    max_threads = prj_dict["mt_max_threads"]
     thread_id = 0
     threads_used = 0
 
@@ -973,72 +970,65 @@ def thread_id(mpy_trace, prj_dict):
 
     #   Create a log
     #   Reserving an ID for a new thread/task.
-        log_message = prj_dict['thread_id_init'] + '\n' \
-                        + prj_dict['mt_init_thr_max'] + ': ' + str(max_threads)
+        log_message = (f'{prj_dict["thread_id_init"]}\n'
+                      f'{prj_dict["mt_init_thr_max"]}: {max_threads}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     #   Check, if a list of threads exists. If not, thread_id = 0.
-        if prj_dict['mt_threads_id_lst']:
+        if prj_dict["mt_threads_id_lst"]:
 
         #   Get the amount of actively used threads
-            threads_used = len(prj_dict['mt_threads_id_lst'])
+            threads_used = len(prj_dict["mt_threads_id_lst"])
 
-        #   Check, if there are any running threads.
-            if threads_used > 0:
+        #   Sort the list of taken thread IDs
+            prj_dict["mt_threads_id_lst"].sort()
+            
+            i = 0
+            
+        #   Check, if the actual ID is already reserved
+            for reserved_id in prj_dict["mt_threads_id_lst"]:
+                
+            #   Check, if a thread ID "reserved_id - 1" exists. If not, free thread ID number is found.
+                if reserved_id - prj_dict["mt_threads_id_lst"][i-1] > 1:
+                    thread_id = reserved_id - 1
+                    break
+                else:
+                    i += 1
+                    pass
+                
+        #   No gap in the thread ID list found. Adding 1 to the last reserved thread ID.
+            else: thread_id = reserved_id + 1
+                
+        #   Thread ID available. Exit loop and reserve ID for thread/task.
+            prj_dict["mt_threads_id_lst"].append(thread_id)
 
-            #   Sort the list of taken thread IDs
-                prj_dict['mt_threads_id_lst'].sort()
+            if thread_id > prj_dict["mt_max_threads"]:
 
-                while free_id == False:
+            #   Raise an error, if the thread ID is greater than the maximum threads utilized.
+            #   Overflow in thread ID list. ID exceeds maximum threads utilized.
+                log_message = (f'{prj_dict["thread_id_err"]}\n'
+                              f'{prj_dict["mt_init_thr_max"]}: {max_threads}\n'
+                              f'{prj_dict["mt_init_thr_available"]}: {max_threads - threads_used}')
+                mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-                #   Check, if the actual ID is already reserved
-                    for reserved_id in prj_dict['mt_threads_id_lst']:
-
-                        if thread_id != reserved_id:
-
-                            free_id = True
-
-                        else:
-
-                            free_id = False
-                            break
-
-                #   ID not found in list. Exit loop and reserve for thread/task.
-                    if free_id == True:
-
-                        prj_dict['mt_threads_id_lst'].append(thread_id)
-                        break
-
-                    thread_id += 1
-
-                if thread_id > prj_dict['mt_max_threads']:
-
-                #   Raise an error, if the thread ID is greater than the maximum threads utilized.
-                #   Overflow in thread ID list. ID exceeds maximum threads utilized.
-                    log_message = prj_dict['thread_id_err'] + '\n' \
-                                  + prj_dict['mt_init_thr_max'] + ': ' + str(max_threads) + '\n' \
-                                  + prj_dict['mt_init_thr_available'] + ': ' + str(max_threads - threads_used)
-                    mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
-
-    #   No threads in use yet. Start with thread_id = 0.
         else:
-
-            prj_dict['mt_threads_id_lst'].append(thread_id)
+            
+            prj_dict["mt_threads_id_lst"].append(thread_id)
 
     #   Create a log
     #   Reserved an ID for a new thread/task.
-        log_message = prj_dict['thread_id_done'] + '\n' \
-                        + prj_dict['mt_init_thr_max'] + ': ' + str(max_threads) + '\n' \
-                        + prj_dict['mt_init_thr_available'] + ': ' + str(max_threads - threads_used) + '\n' \
-                        + prj_dict['cl_thread_id'] + ': ' + str(thread_id)
+        log_message = (f'{prj_dict["thread_id_done"]}\n'
+                      f'{prj_dict["mt_init_thr_max"]}: {max_threads}\n'
+                      f'{prj_dict["mt_init_thr_available"]}: {max_threads - threads_used}\n'
+                      f'{prj_dict["cl_thread_id"]}: {thread_id}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:
@@ -1095,15 +1085,15 @@ def thread_imports(mpy_trace, prj_dict, task):
 
         #   Create a log
         #   Task split to identify module imports.
-            log_message = prj_dict['thread_imports_start'] + '\n' \
-                            + 'module: ' + str(module)
+            log_message = (f'{prj_dict["thread_imports_start"]}\n'
+                          f'module: {module}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         #   Evaluate the existence of the extracted module and create a statement
             try:
 
             #   Create import order
-                imp_order = 'import ' + str(module)
+                imp_order = f'import {module}'
 
             #   Evaluate by execution
                 exec(imp_order)
@@ -1113,9 +1103,9 @@ def thread_imports(mpy_trace, prj_dict, task):
 
             #   Create a log
             #   The calling thread imported a module.
-                log_message = prj_dict['thread_imports_yes'] + '\n' \
-                                + 'module: ' + str(module) + '\n' \
-                                + 'imp_order: ' + str(imp_order)
+                log_message = (f'{prj_dict["thread_imports_yes"]}\n'
+                              f'module: {module}\n'
+                              f'imp_order: {imp_order}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         #   Overwrite the import order, if the module was not found
@@ -1125,17 +1115,17 @@ def thread_imports(mpy_trace, prj_dict, task):
 
             #   Create a log
             #   No module got imported by the calling thread.
-                log_message = prj_dict['thread_imports_no'] + '\n' \
-                                + 'imp_order: ' + str(imp_order)
+                log_message = (f'{prj_dict["thread_imports_no"]}\n'
+                              f'imp_order: {imp_order}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                      + 'task: {}'. format(task)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'task: {task}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:

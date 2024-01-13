@@ -39,41 +39,38 @@ def exit(mpy_trace, prj_dict):
     datetime_exit = mpy_fct.datetime_now(mpy_trace)
 
 #   determine runtime duration
-    temp_duration = mpy_fct.runtime(mpy_trace, prj_dict['init_datetime_value'])
+    temp_duration = mpy_fct.runtime(mpy_trace, prj_dict["init_datetime_value"])
 
 #   Correction of the exit occurrance counter for the very last message
-    prj_dict['events_EXIT'] = int(prj_dict['events_EXIT']) + 1
-    prj_dict['events_total'] = int(prj_dict['events_total']) + 1
+    prj_dict["events_EXIT"] += 1
+    prj_dict["events_total"] += 1
 
-#   Determine leading spaces before prj_dict['mpy_exit_msg_total']
-    spaces_total = 9 - len(prj_dict['mpy_exit_msg_total'])
-
-    if spaces_total > 0:
-        spaces_add = ' ' * spaces_total
+#   Determine leading spaces before prj_dict["mpy_exit_msg_total"] so the colons
+#   of the exit message fall in one vertcal line.
+    spaces_total = 9 - len(prj_dict["mpy_exit_msg_total"])
+    leading_total = f'{spaces_total * " "}'
 
 #   Build the exit message
-    exit_message =  prj_dict['mpy_exit_msg_done'] + '\n' \
-                    + prj_dict['mpy_exit_msg_started'] + ': ' + str(prj_dict['init_date']) \
-                    + prj_dict['mpy_exit_msg_at'] + str(prj_dict['init_time']) + '\n' \
-                    + prj_dict['mpy_exit_msg_exited'] + ': ' + str(datetime_exit['date']) \
-                    + prj_dict['mpy_exit_msg_at'] + str(datetime_exit['time']) + '\n' \
-                    + prj_dict['mpy_exit_msg_duration'] + ': ' + str(temp_duration['rnt_delta']) + '\n\n' \
-                    + prj_dict['mpy_exit_msg_occ'] + ':\n' \
-                    + '     INIT: ' + str(prj_dict['events_INIT']) + '\n' \
-                    + '    DEBUG: ' + str(prj_dict['events_DEBUG']) + '\n' \
-                    + '     INFO: ' + str(prj_dict['events_INFO']) + '\n' \
-                    + '  WARNING: ' + str(prj_dict['events_WARNING']) + '\n' \
-                    + '   DENIED: ' + str(prj_dict['events_DENIED']) + '\n' \
-                    + '    ERROR: ' + str(prj_dict['events_ERROR']) + '\n' \
-                    + ' CRITICAL: ' + str(prj_dict['events_CRITICAL']) + '\n' \
-                    + '     EXIT: ' + str(prj_dict['events_EXIT']) + '\n' \
-                    + 'UNDEFINED: ' + str(prj_dict['events_UNDEFINED']) + '\n' \
-                    + 18 * '-' + '\n' \
-                    + spaces_add + prj_dict['mpy_exit_msg_total'] + ': ' + str(prj_dict['events_total'])
+    exit_message =  (f'{prj_dict["mpy_exit_msg_done"]}\n'
+                    f'{prj_dict["mpy_exit_msg_started"]}: {prj_dict["init_date"]} {prj_dict["mpy_exit_msg_at"]} {prj_dict["init_time"]}\n'
+                    f'{prj_dict["mpy_exit_msg_exited"]}: {datetime_exit["date"]} {prj_dict["mpy_exit_msg_at"]} {datetime_exit["time"]}\n'
+                    f'{prj_dict["mpy_exit_msg_duration"]}: {temp_duration["rnt_delta"]}\n\n'
+                    f'{prj_dict["mpy_exit_msg_occ"]}:\n'
+                    f'     INIT: {prj_dict["events_INIT"]}\n'
+                    f'    DEBUG: {prj_dict["events_DEBUG"]}\n'
+                    f'     INFO: {prj_dict["events_INFO"]}\n'
+                    f'  WARNING: {prj_dict["events_WARNING"]}\n'
+                    f'   DENIED: {prj_dict["events_DENIED"]}\n'
+                    f'    ERROR: {prj_dict["events_ERROR"]}\n'
+                    f' CRITICAL: {prj_dict["events_CRITICAL"]}\n'
+                    f'     EXIT: {prj_dict["events_EXIT"]}\n'
+                    f'UNDEFINED: {prj_dict["events_UNDEFINED"]}\n'
+                    f'{18 * "-"}\n'
+                    f'{leading_total}{prj_dict["mpy_exit_msg_total"]}: {prj_dict["events_total"]}')
 
 #   Correction of the exit occurrance counter for the very last message
-    prj_dict['events_EXIT'] = int(prj_dict['events_EXIT']) - 1
-    prj_dict['events_total'] = int(prj_dict['events_total']) - 1
+    prj_dict["events_EXIT"] = int(prj_dict["events_EXIT"]) - 1
+    prj_dict["events_total"] = int(prj_dict["events_total"]) - 1
 
 #   Create a log
     mpy_msg.log(mpy_trace, prj_dict, exit_message, 'exit')

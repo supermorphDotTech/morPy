@@ -45,6 +45,11 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
 
     :return - dictionary
         check - The function ended with no errors and a file was chosen
+        
+    #TODO
+        - Use a decorator
+        - Debug
+        - Avoid import *, to enable checks for import
     """
 
     import mpy_fct, mpy_msg, mpy_common
@@ -57,13 +62,13 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
 
 #   Preparing parameters
     check = False
-    frame_title = str(GUI_dict['frame_title'])
-    frame_width = str(GUI_dict['frame_width'])
-    frame_height = str(GUI_dict['frame_height'])
-    headline_txt = str(GUI_dict['headline_txt'])
-    headline_font_size = str(GUI_dict['headline_font_size'])
-    status_font_size = str(GUI_dict['status_font_size'])
-    pbar_length = str(int(float(frame_width)*0.8))
+    frame_title = f'{GUI_dict["frame_title"]}'
+    frame_width = f'{GUI_dict["frame_width"]}'
+    frame_height = f'{GUI_dict["frame_height"]}'
+    headline_txt = f'{GUI_dict["headline_txt"]}'
+    headline_font_size = f'{GUI_dict["headline_font_size"]}'
+    status_font_size = f'{GUI_dict["status_font_size"]}'
+    pbar_length = f'{int(float(frame_width)*0.8)}'
 
     try:
 
@@ -89,19 +94,19 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
         """
 
     #   Open a dialog to select a file
-        init_dir = prj_dict['prj_path']
+        init_dir = prj_dict["prj_path"]
         ftypes = (('All Files','*.*'),('Text Files','*.txt'))
-        file = mpy_common.dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes)['sel_file']
-        mpy_fct.testprint(mpy_trace, str(file))
+        file = mpy_common.dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title)["sel_file"]
+        mpy_fct.testprint(mpy_trace, f'{file}')
 
         status = Label(root, text = file, font = status_font_size)
         status.pack(pady=5)
         status.config(text = file)
 
     #   Open a dialog to select a directory
-        init_dir = prj_dict['prj_path']
-        directory = mpy_common.dialog_sel_dir(mpy_trace, prj_dict, init_dir)['sel_dir']
-        mpy_fct.testprint(mpy_trace, str(directory))
+        init_dir = prj_dict["prj_path"]
+        directory = mpy_common.dialog_sel_dir(mpy_trace, prj_dict, init_dir, title)["sel_dir"]
+        mpy_fct.testprint(mpy_trace, f'{directory}')
 
         status.config(text = directory)
 
@@ -119,8 +124,8 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     return{

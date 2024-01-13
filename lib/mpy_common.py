@@ -46,20 +46,20 @@ def decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding):
             src_copy += ln
             lines += 1
 
-    #   Determine auto detection of encoding
-        if encoding == '':
+    #   Determine auto detection of encoding if string is empty.
+        if not encoding:
 
         #   Detect encoding
             try:
 
-                encoding = chardet.detect(src_input)['encoding']
+                encoding = chardet.detect(src_input)["encoding"]
                 decode = True
 
         #   Log a warning if src_input is of wrong format or not encoded at all.
             except Exception as e:
 
-                log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                              + prj_dict['decode_to_plain_text_msg'] + ': {}'. format(e)
+                log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                              f'{prj_dict["decode_to_plain_text_msg"]}: {e}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'warning')
 
     #   Use given encoding and check, if it exists.
@@ -68,27 +68,25 @@ def decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding):
         #   Check encoding
             try:
 
-                chardet.detect(src_copy)['encoding']
+                chardet.detect(src_copy)["encoding"]
                 decode = True
 
         #   Not encoded if an exception is raised
             except Exception as e:
 
-                log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                              + prj_dict['decode_to_plain_text_msg'] + ': {}'. format(e)
+                log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                              f'{prj_dict["decode_to_plain_text_msg"]}: {e}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'warning')
 
     #   Decode
-        if decode == True:
+        if decode:
 
             result = io.StringIO(src_copy.decode(encoding))
 
         #   Create a log
         #   Decoded from ### to plain text.
-            log_message = prj_dict['decode_to_plain_text_1'] \
-                          + ' ' + str(encoding) + ' ' \
-                          + prj_dict['decode_to_plain_text_2'] + '\n' \
-                          + 'encoding: ' + encoding
+            log_message = (f'{prj_dict["decode_to_plain_text_from"]} {encoding}) {prj_dict["decode_to_plain_text_to"]}\n'
+                          f'encoding: {encoding}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     #   Input is not encoded or not supported.
@@ -98,14 +96,14 @@ def decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding):
 
         #   Create a log
         #   The Input is not decoded or not supported. No action taken.
-            log_message = prj_dict['decode_to_plain_text_not'] + '\n' \
-                          + 'encoding: ' + encoding
+            log_message = (f'{prj_dict["decode_to_plain_text_not"]}\n'
+                          f'encoding: {encoding}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -120,7 +118,7 @@ def decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding):
             'lines' : lines
             }
 
-def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes):
+def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title):
 
     """ This function opens a dialog for the user to select a file.
     :param
@@ -130,6 +128,7 @@ def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes):
         ftypes - This tuple of 2-tuples specifies, which filetypes will be
                 displayed by the dialog box, e.g.
                 (('type1','*.t1'),('All Files','*.*'),...)
+        title - Title of the open file dialog
     :return - dictionary
         check - The function ended with no errors and a file was chosen
         sel_file - Path of the selected file
@@ -159,26 +158,27 @@ def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes):
     #   Open the actual dialog in the foreground and store the chosen folder
         root.filename = filedialog.askopenfilename( \
                             parent = root, \
+                            title = f'{title}', \
                             initialdir = init_dir, \
                             filetypes = ftypes)
         sel_file = root.filename
 
-        if len(sel_file) == 0:
+        if not sel_file:
 
         #   Create a log
         #   No file was chosen by the user.
-            log_message =   prj_dict['dialog_sel_file_nosel'] + '\n' \
-                            + 'sel_file: VOID\n' \
-                            + prj_dict['dialog_sel_file_choice'] + ': ' + prj_dict['dialog_sel_file_cancel']
+            log_message =   (f'{prj_dict["dialog_sel_file_nosel"]}\n'
+                            f'sel_file: VOID\n'
+                            f'{prj_dict["dialog_sel_file_choice"]}: {prj_dict["dialog_sel_file_cancel"]}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         else:
 
         #   Create a log
         #   A file was chosen by the user.
-            log_message =   prj_dict['dialog_sel_file_asel'] + '\n' \
-                            + 'sel_file: ' + str(sel_file) + '\n' \
-                            + prj_dict['dialog_sel_file_choice'] + ': ' + prj_dict['dialog_sel_file_open']
+            log_message =   (f'{prj_dict["dialog_sel_file_asel"]}\n'
+                            f'sel_file: {sel_file}\n'
+                            f'{prj_dict["dialog_sel_file_choice"]}: {prj_dict["dialog_sel_file_open"]}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         #   Create a path object
@@ -188,8 +188,8 @@ def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes):
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     return{
@@ -197,14 +197,14 @@ def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes):
         'sel_file' : sel_file
         }
 
-def dialog_sel_dir(mpy_trace, prj_dict, init_dir):
+def dialog_sel_dir(mpy_trace, prj_dict, init_dir, title):
 
     """ This function opens a dialog for the user to select a directory.
     :param
         mpy_trace - operation credentials and tracing
         prj_dict - morPy global dictionary
         init_dir - The directory in which the dialog will initially be opened
-
+        title - Title of the open directory dialog
     :return - dictionary
         check - The function ended with no errors and a file was chosen
         sel_dir - Path of the selected directory
@@ -233,25 +233,26 @@ def dialog_sel_dir(mpy_trace, prj_dict, init_dir):
     #   Open the actual dialog in the foreground and store the chosen folder
         root.dirname = filedialog.askdirectory( \
                             parent = root, \
+                            title = f'{title}', \
                             initialdir = init_dir)
         sel_dir = root.dirname
 
-        if len(sel_dir) == 0:
+        if not sel_dir:
 
         #   Create a log
         #   No directory was chosen by the user.
-            log_message = prj_dict['dialog_sel_dir_nosel'] + '\n' \
-                          + 'sel_dir: VOID\n' \
-                          + prj_dict['dialog_sel_dir_choice'] + ': ' + prj_dict['dialog_sel_dir_cancel']
+            log_message = (f'{prj_dict["dialog_sel_dir_nosel"]}\n'
+                          f'sel_dir: VOID\n'
+                          f'{prj_dict["dialog_sel_dir_choice"]}: {prj_dict["dialog_sel_dir_cancel"]}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         else:
 
         #   Create a log
         #   A directory was chosen by the user.
-            log_message = prj_dict['dialog_sel_dir_asel'] + '\n' \
-                            + 'sel_dir: ' + str(sel_dir) + '\n' \
-                            + prj_dict['dialog_sel_dir_choice'] + ': ' + prj_dict['dialog_sel_dir_open']
+            log_message = (f'{prj_dict["dialog_sel_dir_asel"]}\n'
+                          f'sel_dir: {sel_dir}\n'
+                          f'{prj_dict["dialog_sel_dir_choice"]}: {prj_dict["dialog_sel_dir_open"]}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         #   Create a path object
@@ -261,8 +262,8 @@ def dialog_sel_dir(mpy_trace, prj_dict, init_dir):
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     return{
@@ -301,54 +302,54 @@ def fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm):
 
     #   Check the source file
         source_eval = mpy_fct.pathtool(mpy_trace, source)
-        source_exist = source_eval['file_exists']
-        source = source_eval['out_path']
+        source_exist = source_eval["file_exists"]
+        source = source_eval["out_path"]
 
     #   Check the destination file
         dest_eval = mpy_fct.pathtool(mpy_trace, dest)
-        dest_exist = dest_eval['file_exists']
-        dest = dest_eval['out_path']
+        dest_exist = dest_eval["file_exists"]
+        dest = dest_eval["out_path"]
 
     #   Evaluate the existence of the source
-        if source_exist == True:
+        if source_exist:
 
         #   Evaluate the existence of the destination and overwrite permission
-            if dest_exist == True and ovwr_perm == True:
+            if dest_exist and ovwr_perm:
 
                 shutil.copyfile(source, dest)
 
             #   Create a log
             #   A file has been copied and the original was overwritten.
-                log_message = prj_dict['fso_copy_file_copy_ovwr'] + '\n' \
-                              + prj_dict['fso_copy_file_source'] + ': ' + str(source) + '\n' \
-                              + prj_dict['fso_copy_file_dest'] + ': ' + str(dest) + '\n' \
-                              + 'dest_exist: ' + str(dest_exist) + '\n' \
-                              + 'ovwr_perm: ' + str(ovwr_perm)
+                log_message = (f'{prj_dict["fso_copy_file_copy_ovwr"]}\n'
+                              f'{prj_dict["fso_copy_file_source"]}: {source}\n'
+                              f'{prj_dict["fso_copy_file_dest"]}: {dest}\n'
+                              f'dest_exist: {dest_exist}\n'
+                              f'ovwr_perm: {ovwr_perm}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         #   Evaluate the existence of the destination and overwrite permission
-            if dest_exist == True and ovwr_perm == False:
+            if dest_exist and not ovwr_perm:
 
                 shutil.copyfile(source, dest)
 
             #   Create a log
             #   A file was not copied because it already exists and no overwrite permission was given.
-                log_message = prj_dict['fso_copy_file_copy_not_ovwr'] + '\n' \
-                              + prj_dict['fso_copy_file_source'] + ': ' + str(source) + '\n' \
-                              + prj_dict['fso_copy_file_dest'] + ': ' + str(dest) + '\n' \
-                              + 'dest_exist: ' + str(dest_exist) + '\n' \
-                              + 'ovwr_perm: ' + str(ovwr_perm)
+                log_message = (f'{prj_dict["fso_copy_file_copy_not_ovwr"]}\n'
+                              f'{prj_dict["fso_copy_file_source"]}: {source}\n'
+                              f'{prj_dict["fso_copy_file_dest"]}: {dest}\n'
+                              f'dest_exist: {dest_exist}\n'
+                              f'ovwr_perm: {ovwr_perm}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-            if dest_exist == False:
+            if dest_exist:
 
                 shutil.copyfile(source, dest)
 
             #   Create a log
             #   A file has been copied.
-                log_message = prj_dict['fso_copy_file_copy'] + '\n' \
-                              + prj_dict['fso_copy_file_source'] + ': ' + str(source) + '\n' \
-                              + prj_dict['fso_copy_file_dest'] + ': ' + str(dest)
+                log_message = (f'{prj_dict["fso_copy_file_copy"]}\n'
+                              f'{prj_dict["fso_copy_file_source"]}: {source}\n'
+                              f'{prj_dict["fso_copy_file_dest"]}: {dest}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
             check = True
@@ -357,18 +358,18 @@ def fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm):
 
         #   Create a log
         #   A file could not be copied, because it does not exist.
-            log_message = prj_dict['fso_copy_file_not_exist'] + '\n' \
-                          + prj_dict['fso_copy_file_source'] + ': ' + str(source) + '\n' \
-                          + prj_dict['fso_copy_file_dest'] + ': ' + str(dest) + '\n' \
-                          + 'source_exist: ' + str(source_exist)
+            log_message = (f'{prj_dict["fso_copy_file_not_exist"]}\n'
+                          f'{prj_dict["fso_copy_file_source"]}: {source}\n'
+                          f'{prj_dict["fso_copy_file_dest"]}: {dest}\n'
+                          f'source_exist: {source_exist}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                      + prj_dict['fso_copy_file_source'] + ': {}'. format(source) + '\n' \
-                      + prj_dict['fso_copy_file_dest'] + ': {}'. format(dest)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["fso_copy_file_source"]}: {source}\n'
+                      f'{prj_dict["fso_copy_file_dest"]}: {dest}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     return{
@@ -405,16 +406,16 @@ def fso_create_dir(mpy_trace, prj_dict, mk_dir):
 
     #   Check the directory
         dir_eval = mpy_fct.pathtool(mpy_trace, mk_dir)
-        dir_exist = dir_eval['dir_exists']
-        mk_dir = dir_eval['out_path']
+        dir_exist = dir_eval["dir_exists"]
+        mk_dir = dir_eval["out_path"]
 
-        if dir_exist == True:
+        if dir_exist:
 
         #   Create a log
         #   The directory already exists.
-            log_message = prj_dict['fso_create_dir_not_created'] + '\n' \
-                          + prj_dict['fso_create_dir_directory'] + ': ' + str(mk_dir) + '\n' \
-                          + prj_dict['fso_create_dir_direxist'] + ': ' + str(dir_exist)
+            log_message = (f'{prj_dict["fso_create_dir_not_created"]}\n'
+                          f'{prj_dict["fso_create_dir_directory"]}: {mk_dir}\n'
+                          f'{prj_dict["fso_create_dir_direxist"]}: {dir_exist}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         else:
@@ -423,17 +424,17 @@ def fso_create_dir(mpy_trace, prj_dict, mk_dir):
 
         #   Create a log
         #   The directory has been created.
-            log_message = prj_dict['fso_create_dir_created'] + '\n' \
-                          + prj_dict['fso_create_dir_directory'] + ': ' + str(mk_dir)
+            log_message = (f'{prj_dict["fso_create_dir_created"]}\n'
+                          f'{prj_dict["fso_create_dir_directory"]}: {mk_dir}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                      + prj_dict['fso_create_dir_directory'] + ': {}'. format(mk_dir)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["fso_create_dir_directory"]}: {mk_dir}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     return{
@@ -467,35 +468,35 @@ def fso_delete_dir(mpy_trace, prj_dict, del_dir):
 
     #   Check the directory
         dir_eval = mpy_fct.pathtool(mpy_trace, del_dir)
-        dir_exist = dir_eval['dir_exists']
-        del_dir = dir_eval['out_path']
+        dir_exist = dir_eval["dir_exists"]
+        del_dir = dir_eval["out_path"]
 
-        if dir_exist == True:
+        if dir_exist:
 
             shutil.rmtree(del_dir)
 
         #   Create a log
         #   The directory has been deleted.
-            log_message = prj_dict['fso_delete_dir_deleted'] + '\n' \
-                          + prj_dict['fso_create_dir_directory'] + ': ' + str(del_dir)
+            log_message = (f'{prj_dict["fso_delete_dir_deleted"]}\n'
+                          f'{prj_dict["fso_create_dir_directory"]}: {del_dir}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         else:
 
         #   Create a log
         #   The directory does not exist.
-            log_message = prj_dict['fso_delete_dir_notexist'] + '\n' \
-                          + prj_dict['fso_create_dir_directory'] + ': ' + str(del_dir) + '\n' \
-                          + prj_dict['fso_create_dir_direxist'] + ': ' + str(dir_exist)
+            log_message = (f'{prj_dict["fso_delete_dir_notexist"]}\n'
+                          f'{prj_dict["fso_create_dir_directory"]}: {del_dir}\n'
+                          f'{prj_dict["fso_create_dir_direxist"]}: {dir_exist}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                      + prj_dict['fso_delete_dir_directory'] + ': {}'. format(del_dir)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["fso_delete_dir_directory"]}: {del_dir}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -536,35 +537,35 @@ def fso_delete_file(mpy_trace, prj_dict, del_file):
 
     #   Check the directory
         file_eval = mpy_fct.pathtool(mpy_trace, del_file)
-        file_exist = file_eval['file_exists']
-        del_file = file_eval['out_path']
+        file_exist = file_eval["file_exists"]
+        del_file = file_eval["out_path"]
 
-        if file_exist == True:
+        if file_exist:
 
             os.remove(del_file)
 
         #   Create a log
         #   The file has been deleted.
-            log_message = prj_dict['fso_delete_file_deleted'] + '\n' \
-                          + prj_dict['fso_delete_file_file'] + ': ' + str(del_file)
+            log_message = (f'{prj_dict["fso_delete_file_deleted"]}\n'
+                          f'{prj_dict["fso_delete_file_file"]}: {del_file}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         else:
 
         #   Create a log
         #   The file does not exist.
-            log_message = prj_dict['fso_delete_file_notexist'] + '\n' \
-                          + prj_dict['fso_delete_file_file'] + ': ' + str(del_file) + '\n' \
-                          + prj_dict['fso_delete_file_exist'] + ': ' + str(file_exist)
+            log_message = (f'{prj_dict["fso_delete_file_notexist"]}\n'
+                          f'{prj_dict["fso_delete_file_file"]}: {del_file}\n'
+                          f'{prj_dict["fso_delete_file_exist"]}: {file_exist}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                      + prj_dict['fso_delete_file_file'] + ': {}'. format(del_file)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["fso_delete_file_file"]}: {del_file}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -628,30 +629,30 @@ def fso_walk(mpy_trace, prj_dict, path, depth):
                     
                     break
                     
-                walk_dict.update({'root' + str(cnt_roots) : {'root' : root, 'dirs' : dirs, 'files' : files}})
+                walk_dict.update({f'root{cnt_roots}' : {'root' : root, 'dirs' : dirs, 'files' : files}})
                 
                 cnt_roots += 1
 
         #   Create a log
         #   Directory analyzed.
-            log_message = prj_dict['fso_walk_path_done'] + '\n' \
-                          + 'Directory: ' + str(path)
+            log_message = (f'{prj_dict["fso_walk_path_done"]}\n'
+                          f'{prj_dict["fso_walk_path_dir"]}: {path}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         else:
 
         #   Create a log
         #   The directory does not exist.
-            log_message = prj_dict['fso_walk_path_notexist'] + '\n' \
-                          + 'Directory: ' + str(path)
+            log_message = (f'{prj_dict["fso_walk_path_notexist"]}\n'
+                          f'{prj_dict["fso_walk_path_dir"]}: {path}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -686,15 +687,15 @@ def regex_findall(mpy_trace, prj_dict, search_obj, pattern):
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
 #   Apply standard formats
-    search_obj = str(search_obj)
-    pattern =    str(pattern)
+    search_obj = f'{search_obj}'
+    pattern =    f'{pattern}'
     result = None
 
 #   Create a log
 #   Searching for regular expressions.
-    log_message = prj_dict['regex_findall_init'] + '\n' \
-                  + prj_dict['regex_findall_pattern'] + ': ' + str(pattern) + '\n' \
-                  + 'search_obj: ' + str(search_obj)
+    log_message = (f'{prj_dict["regex_findall_init"]}\n'
+                  f'{prj_dict["regex_findall_pattern"]}: {pattern}\n'
+                  f'search_obj: {search_obj}')
     mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     try:
@@ -704,14 +705,14 @@ def regex_findall(mpy_trace, prj_dict, search_obj, pattern):
 
     #   Create a log
     #   Search completed.
-        log_message = prj_dict['regex_findall_compl'] + '\n' \
-                      + prj_dict['regex_findall_result'] + ': ' + str(result)
+        log_message = (f'{prj_dict["regex_findall_compl"]}\n'
+                      f'{prj_dict["regex_findall_result"]}: {result}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -744,15 +745,15 @@ def regex_find1st(mpy_trace, prj_dict, search_obj, pattern):
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
 #   Apply standard formats
-    search_string = str(search_obj)
-    pattern = str(pattern)
+    search_string = f'{search_obj}'
+    pattern = f'{pattern}'
     result = None
 
 #   Create a log
 #   Searching for regular expressions.
-    log_message = prj_dict['regex_find1st_init'] + '\n' \
-                  + prj_dict['regex_find1st_pattern'] + ': ' + str(pattern) + '\n' \
-                  + 'search_obj: ' + search_string
+    log_message = (f'{prj_dict["regex_find1st_init"]}\n'
+                  f'{prj_dict["regex_find1st_pattern"]}: {pattern}\n'
+                  f'search_obj: {search_string}')
     mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     try:
@@ -764,8 +765,8 @@ def regex_find1st(mpy_trace, prj_dict, search_obj, pattern):
 
             #   Create a log
             #   Search completed.
-            log_message = prj_dict['regex_find1st_compl'] + '\n' \
-                          + prj_dict['regex_find1st_result'] + ': ' + str(result)
+            log_message = (f'{prj_dict["regex_find1st_compl"]}\n'
+                          f'{prj_dict["regex_find1st_result"]}: {result}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         else:
@@ -774,14 +775,14 @@ def regex_find1st(mpy_trace, prj_dict, search_obj, pattern):
 
             #   Create a log
             #   String is NoneType. No Regex executed.
-            log_message = prj_dict['regex_find1st_none'] + '\n' \
-                          + prj_dict['regex_find1st_result'] + ': ' + str(result)
+            log_message = (f'{prj_dict["regex_find1st_none"]}\n'
+                          f'{prj_dict["regex_find1st_result"]}: {result}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'warning')
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -815,14 +816,14 @@ def regex_split(mpy_trace, prj_dict, search_obj, delimiter):
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
 #   Apply standard formats
-    search_string = str(search_obj)
-    delimiter =    str(delimiter)
+    search_string = f'{search_obj}'
+    delimiter =    f'{delimiter}'
 
 #   Create a log
 #   Splitting a string by a given delimiter.
-    log_message = prj_dict['regex_split_init'] + '\n' \
-                  + prj_dict['regex_split_delimiter'] + ': ' + str(delimiter) + '\n' \
-                  + 'search_obj: ' + search_string
+    log_message = (f'{prj_dict["regex_split_init"]}\n'
+                  f'{prj_dict["regex_split_delimiter"]}: {delimiter}\n'
+                  f'search_obj: {search_string}')
     mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     try:
@@ -833,8 +834,8 @@ def regex_split(mpy_trace, prj_dict, search_obj, delimiter):
 
             #   Create a log
             #   String has been split.
-            log_message = prj_dict['regex_split_compl'] + '\n' \
-                          + prj_dict['regex_split_result'] + ': ' + str(result)
+            log_message = (f'{prj_dict["regex_split_compl"]}\n'
+                          f'{prj_dict["regex_split_result"]}: {result}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         else:
@@ -843,14 +844,14 @@ def regex_split(mpy_trace, prj_dict, search_obj, delimiter):
 
             #   Create a log
             #   String is NoneType. No Split executed.
-            log_message = prj_dict['regex_split_none'] + '\n' \
-                          + prj_dict['regex_split_result'] + ': ' + str(result)
+            log_message = (f'{prj_dict["regex_split_none"]}\n'
+                          f'{prj_dict["regex_split_result"]}: {result}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'warning')
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -884,16 +885,16 @@ def regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
 #   Apply standard formats
-    search_obj = str(search_obj)
-    search_for = str(search_for)
-    replace_by = str(replace_by)
+    search_obj = f'{search_obj}'
+    search_for = f'{search_for}'
+    replace_by = f'{replace_by}'
 
 #   Create a log
 #   Changing a string by given parameters.
-    log_message = prj_dict['regex_replace_init'] + '\n' \
-                  + 'search_for: ' + str(search_for) + '\n' \
-                  + 'replace_by: ' + str(replace_by) + '\n' \
-                  + 'search_obj: ' + str(search_obj)
+    log_message = (f'{prj_dict["regex_replace_init"]}\n'
+                  f'search_for: {search_for}\n'
+                  f'replace_by: {replace_by}\n'
+                  f'search_obj: {search_obj}')
     mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     try:
@@ -901,14 +902,14 @@ def regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
 
         #   Create a log
         #   String substituted.
-        log_message = prj_dict['regex_replace_compl'] + '\n' \
-                      + prj_dict['regex_replace_result'] + ': ' + str(result)
+        log_message = (f'{prj_dict["regex_replace_compl"]}\n'
+                      f'{prj_dict["regex_replace_result"]}: {result}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -995,7 +996,7 @@ def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
 
     #   Preparing parameters
         load_std = False
-        inp_string = str(inp_string)
+        inp_string = f'{inp_string}'
 
     #   Evaluate the length of spec_lst
         lst_len = len(spec_lst)
@@ -1008,10 +1009,10 @@ def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
 
     #   Create a log
     #   Removing special characters of a string and replacing them.
-        log_message = prj_dict['regex_remove_special_init'] + '\n' \
-                      + 'inp_string: ' + str(inp_string) + '\n' \
-                      + 'spec_lst: ' + str(spec_lst) + '\n' \
-                      + 'load_std: ' + str(load_std)
+        log_message = (f'{prj_dict["regex_remove_special_init"]}\n'
+                      f'inp_string: {inp_string}\n'
+                      f'spec_lst: {spec_lst}\n'
+                      f'load_std: {load_std}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     #   Initialize the resulting string
@@ -1022,26 +1023,26 @@ def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
         for tpl in spec_lst:
 
         #   Convert specials to raw string and perform search/replace
-            result = re.sub(str(tpl[0]), str(tpl[1]), result)
+            result = re.sub(f'{tpl[0]}', f'{tpl[1]}', result)
 
         #   Create a log
         #   String substituted.
-        log_message = prj_dict['regex_remove_special_compl'] + '\n' \
-                      + 'inp_string: ' + str(inp_string) + '\n' \
-                      + prj_dict['regex_remove_special_result'] + ': ' + str(result)
+        log_message = (f'{prj_dict["regex_remove_special_compl"]}\n'
+                      f'inp_string: {inp_string}\n'
+                      f'{prj_dict["regex_remove_special_result"]}: {result}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n' \
-                      + 'inp_string: {}'. format(inp_string) + '\n' \
-                      + prj_dict['regex_remove_special_result'] + ': {}'. format(result) + '\n' \
-                      + prj_dict['regex_remove_special_tuple'] + ': {}'. format(tpl) + '\n' \
-                      + prj_dict['regex_remove_special_special'] + ': {}'. format(tpl[0]) + '\n' \
-                      + prj_dict['regex_remove_special_replacer'] + ': {}'. format(tpl[1]) + '\n' \
-                      + 'load_std: {}'. format(load_std) + '\n' \
-                      + 'spec_lst: {}'. format(spec_lst)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'inp_string: {inp_string}\n'
+                      f'{prj_dict["regex_remove_special_result"]}: {result}\n'
+                      f'{prj_dict["regex_remove_special_tuple"]}: {tpl}\n'
+                      f'{prj_dict["regex_remove_special_special"]}: {tpl[0]}\n'
+                      f'{prj_dict["regex_remove_special_replacer"]}: {tpl[1]}\n'
+                      f'load_std: {load_std}\n'
+                      f'spec_lst: {spec_lst}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -1075,23 +1076,22 @@ def textfile_write(mpy_trace, prj_dict, filepath, content):
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
 #   Apply standard formats
-    content = str(content)
+    content = f'{content}'
     filepath = os.path.abspath(filepath)
 
     try:
 
     #   Append to a textfile
-        if os.path.isfile(filepath) == True:
+        if os.path.isfile(filepath):
 
             with open(filepath, 'a') as ap:
-                ap.write('\n' + content)
+                ap.write(f'\n{content}')
 
         #   Create a log
         #   Textfile has been appended to.
-            if mpy_trace['log_enable'] == True:
-                log_message = prj_dict['textfile_write_appended'] + '\n' \
-                              + prj_dict['textfile_write_content'] + ': ' + str(content)
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log_message = (f'{prj_dict["textfile_write_appended"]}\n'
+                          f'{prj_dict["textfile_write_content"]}: {content}')
+            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
     #   Create and write a textfile
         else:
@@ -1100,15 +1100,14 @@ def textfile_write(mpy_trace, prj_dict, filepath, content):
 
         #   Create a log
         #   Textfile has been created.
-            if mpy_trace['log_enable'] == True:
-                log_message = prj_dict['textfile_write_created'] + '\n' \
-                              + prj_dict['textfile_write_content'] + ': ' + str(content)
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log_message = (f'{prj_dict["textfile_write_created"]}\n'
+                          f'{prj_dict["textfile_write_content"]}: {content}')
+            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
@@ -1134,10 +1133,11 @@ def testprint(mpy_trace, input):
     # operation = 'testprint(~)'
     # mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    value     = str(input)
-    intype    = str(type(input))
+    value     = f'{input}'
+    intype    = f'{type(input)}'
 
-    print('<TEST> value: ' + value + '\n' + '<TEST> type: ' + intype + '\n')
+    print(f'<TEST> value: {value}\n'
+          f'<TEST> type: {intype}\n')
 
 def wait_for_input(mpy_trace, prj_dict, msg_text):
 
@@ -1161,19 +1161,19 @@ def wait_for_input(mpy_trace, prj_dict, msg_text):
 
     try:
 
-        usr_input = input(str(msg_text) + '\n')
+        usr_input = input(f'{msg_text}\n')
 
     #   Create a log
     #   A user input has been made.
-        log_message = prj_dict['wait_for_input_compl'] + '\n' \
-                      + prj_dict['wait_for_input_messsage'] + ': ' + str(msg_text) + '\n' \
-                      + prj_dict['wait_for_input_usr_inp'] + ': ' + str(usr_input)
+        log_message = (f'{prj_dict["wait_for_input_compl"]}\n'
+                      f'{prj_dict["wait_for_input_messsage"]}: {msg_text}\n'
+                      f'{prj_dict["wait_for_input_usr_inp"]}: {usr_input}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:

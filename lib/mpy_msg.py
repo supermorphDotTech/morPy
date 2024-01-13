@@ -18,7 +18,7 @@ def log(mpy_trace, prj_dict, log_message, level):
     :return
         -
 
-    TODO
+    #TODO
     Reserve a process to work on a log queue for all other threads
         > Implement the feature for a minimum of 3 logical cores
         > Have a thread queue implemented per enabled threads per core (see mpy_param.py 'mt_max_threads_cnt_abs')
@@ -28,72 +28,62 @@ def log(mpy_trace, prj_dict, log_message, level):
     import mpy_fct
     import gc
 
-#   FIXME Wait for an interrupt to end
-    while prj_dict['mpy_interrupt'] == True:
+#   Wait for an interrupt to end
+    while prj_dict["mpy_interrupt"] == True:
         pass
 
 #   Event handling (counting and formatting)
     log_event_dict = log_event_handler(prj_dict, log_message, level)
-    level_dict = log_event_dict['level_dict']
+    level_dict = log_event_dict["level_dict"]
 
 #   The log level will be evaluated as long as logging or prints to console are enabled. The
 #   mpy_trace may be manipulated.
-    if prj_dict['mpy_msg_print'] == True or prj_dict['mpy_log_enable'] == True:
-        mpy_trace_eval = log_eval(mpy_trace, prj_dict, log_event_dict['level'], level_dict)
+    if prj_dict["mpy_msg_print"] or prj_dict["mpy_log_enable"]:
+        mpy_trace_eval = log_eval(mpy_trace, prj_dict, log_event_dict["level"], level_dict)
 
 #   Retrieve a log specific datetimestamp
     time_lst = mpy_fct.datetime_now(mpy_trace_eval)
-    datetimestamp = time_lst['datetimestamp']
-    datetime_value = time_lst['datetime_value']
-
-#   TODO log_enable evaluation
-#   Def new function log_eval(~)
-#   Always log the levels, that would raise an interrupt as long as prj_dict['mpy_log_enable'] is true.
-#       prj_dict['mpy_log_lvl_nolog'] == False and
-#       mpy_trace_eval['log_enable'] == True and
-#       prj_dict['mpy_log_enable'] == True
-#   Update log_dict with the return value
-#   Use the return before log_txt and log_db call
+    datetimestamp = time_lst["datetimestamp"]
+    datetime_value = time_lst["datetime_value"]
 
 #   Prepare a passthrough dictionary for logging operations
     log_dict = { \
-                'level' : log_event_dict['level'], \
+                'level' : log_event_dict["level"], \
                 'datetimestamp' : datetimestamp, \
                 'datetime_value' : datetime_value, \
-                'module' : mpy_trace_eval['module'], \
-                'operation' : mpy_trace_eval['operation'], \
-                'tracing' : mpy_trace_eval['tracing'], \
-                'process_id' : mpy_trace_eval['process_id'], \
-                'thread_id' : mpy_trace_eval['thread_id'], \
-                'task_id' : mpy_trace_eval['task_id'], \
+                'module' : mpy_trace_eval["module"], \
+                'operation' : mpy_trace_eval["operation"], \
+                'tracing' : mpy_trace_eval["tracing"], \
+                'process_id' : mpy_trace_eval["process_id"], \
+                'thread_id' : mpy_trace_eval["thread_id"], \
+                'task_id' : mpy_trace_eval["task_id"], \
                 'log_message' : log_message, \
                 'log_msg_complete' : 'VOID', \
-                'log_enable' : mpy_trace_eval['log_enable'] , \
-                'interrupt_enable' : mpy_trace_eval['interrupt_enable']
+                'log_enable' : mpy_trace_eval["log_enable"] , \
+                'pnt_enable' : mpy_trace_eval["pnt_enable"] , \
+                'interrupt_enable' : mpy_trace_eval["interrupt_enable"]
                 }
 
 #   Build the complete log message
     msg = log_msg_builder(prj_dict, log_dict)
+    log_dict["log_msg_complete"] = msg
 
-#   Prepare a passthrough dictionary for logging operations
-    log_dict['log_msg_complete'] = msg
-
-    if prj_dict['mpy_log_enable'] == True and \
-        log_dict['log_enable'] == True and \
-        prj_dict['mpy_log_txt_enable'] == True:
+    if prj_dict["mpy_log_enable"] and \
+        log_dict["log_enable"] and \
+        prj_dict["mpy_log_txt_enable"]:
 
     #   Write to text file - Fallback if SQLite functionality is broken
         log_txt(log_dict, prj_dict, log_dict)
 
-    if prj_dict['mpy_log_enable'] == True and \
-        log_dict['log_enable'] == True and \
-        prj_dict['mpy_log_db_enable'] == True:
+    if prj_dict["mpy_log_enable"] and \
+        log_dict["log_enable"] and \
+        prj_dict["mpy_log_db_enable"]:
 
     #   Write to logging database
         log_db(log_dict, prj_dict, log_dict)
 
 #   Print messages according to mpy_param.py
-    if prj_dict['mpy_msg_print'] == True:
+    if prj_dict["mpy_msg_print"]:
 
     #   Print the events according to their log level
         mpy_msg_print(mpy_trace, prj_dict, log_dict)
@@ -120,22 +110,53 @@ def log_eval(mpy_trace, prj_dict, level, level_dict):
 
     import copy
 
-#   Deepcopy mpy_trace to manipulate it passdown only
+#   Deepcopy mpy_trace to manipulate it "passdown only"
     mpy_trace_eval = copy.deepcopy(mpy_trace)
 
-#   Evaluate the log level, if it is excluded from logging.
-    for lvl_nolog in prj_dict['mpy_log_lvl_nolog']:
+#   Set defaults
+    log_enable = True
+    pnt_enable = True
+    mpy_trace_eval["pnt_enable"] = True
+    
+#   Check, if printing is enabled globally.
+    if prj_dict["mpy_log_enable"]:
+        
+    #   Evaluate the log level, if it is excluded from logging.
+        for lvl_nolog in prj_dict["mpy_log_lvl_nolog"]:
+    
+            if level == lvl_nolog:
+                mpy_trace_eval["log_enable"] = False
+                log_enable = False
+                break
+            
+    else: log_enable = False
 
-        if level == lvl_nolog:
-            mpy_trace_eval['log_enable'] = False
-            break
+#   Check, if printing is enabled globally.
+    if prj_dict["mpy_msg_print"]:
+        
+    #   Evaluate the log level, if it is excluded from printing.
+        for lvl_noprint in prj_dict["mpy_log_lvl_noprint"]:
+    
+            if level == lvl_noprint:
+                mpy_trace_eval["pnt_enable"] = False
+                pnt_enable = False
+                break
+            
+    else: pnt_enable = False
 
 #   Evaluate the log level, if it will raise an interrupt.
-    for lvl_intpt in prj_dict['mpy_log_lvl_interrupts']:
+    for lvl_intpt in prj_dict["mpy_log_lvl_interrupts"]:
 
         if level == lvl_intpt:
-            mpy_trace_eval['interrupt_enable'] = True
+            mpy_trace_eval["interrupt_enable"] = True
             break
+
+#   Count occurences per log level. Count only if relevant regarding project parameters.
+#   (see mpy_param.py to alter behaviour)
+    if log_enable or pnt_enable:
+
+        prj_dict["events_total"] += 1
+        prj_dict[f'events_{level}'] += 1
 
     return mpy_trace_eval
 
@@ -152,9 +173,9 @@ def log_event_handler(prj_dict, log_message, level):
     """
 
 #   standardizing the log level to uppercase
-    level = str(level.upper())
+    level = f'{level.upper()}'
 
-#   Log level definition
+#   Log level definition. Dictionary serves the purpose of avoiding a loop over a list.
     level_dict = { \
                 'INIT' : 'INIT', \
                 'DEBUG' : 'DEBUG', \
@@ -168,17 +189,8 @@ def log_event_handler(prj_dict, log_message, level):
                 }
 
 #   Set logging level UNDEFINED if not part of level definition
-    try:
-        level = level_dict[level]
-    except:
-        level = 'UNDEFINED'
-
-#   Count occurences per log level; count only if logging is enabled or if
-#   prints are generated (see mpy_param.py paramters mpy_msg_print and mpy_log_enable)
-    if prj_dict['mpy_msg_print'] == True or prj_dict['mpy_log_enable'] == True:
-
-        prj_dict['events_total'] = int(prj_dict['events_total']) + 1
-        prj_dict['events_' + level] = int(prj_dict['events_' + level]) + 1
+    try: level = level_dict[level]
+    except: level = 'UNDEFINED'
 
     return {
             'level' : level, \
@@ -194,7 +206,7 @@ def log_interrupt(mpy_trace, prj_dict):
     :return
         -
 
-    TODO
+    #TODO
     Change the way an interrupt is displayed. Working threads should somehow
     not overwrite the interrupt message or copy it or something.
         > use condition objects i.e. notify()
@@ -206,18 +218,18 @@ def log_interrupt(mpy_trace, prj_dict):
 #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_msg'
     # operation = 'log_interrupt(~)'
-    mpy_trace = mpy_fct.tracing(mpy_trace['module'], mpy_trace['operation'], mpy_trace)
-    mpy_trace['log_enable'] = False
+    mpy_trace = mpy_fct.tracing(mpy_trace["module"], mpy_trace["operation"], mpy_trace)
+    mpy_trace["log_enable"] = False
 
 #   Set the global interrupt flag
-    prj_dict['mpy_interrupt'] = True
+    prj_dict["mpy_interrupt"] = True
 
 #   >>> INTERRUPT <<< Press Enter to continue...
-    msg_text = prj_dict['mpy_msg_print_intrpt']
+    msg_text = prj_dict["mpy_msg_print_intrpt"]
     log_wait_for_input(mpy_trace, prj_dict, msg_text)
 
 #   Reset the global interrupt flag
-    prj_dict['mpy_interrupt'] = False
+    prj_dict["mpy_interrupt"] = False
 
 def log_msg_builder(prj_dict, log_dict):
 
@@ -230,26 +242,27 @@ def log_msg_builder(prj_dict, log_dict):
     """
 
 #   Apply standard formats
-    log_message = log_dict['log_message']
+    log_message = log_dict["log_message"]
 
 #   Format the message
     msg_indented = ''
 
 #   Indentation
     for line in log_message.splitlines():
-        line_Indented = '\t' + str(line)
+        line_Indented = f'\t{line}'
 
-        if msg_indented == '':
-            msg_indented = line_Indented
+    #   Check, if msg_indented is an empty string
+        if msg_indented:
+            msg_indented = f'{msg_indented}\n{line_Indented}'
         else:
-            msg_indented = msg_indented + '\n' + line_Indented
+            msg_indented = line_Indented
 
 #   Build the log message
-    msg = (log_dict['level'] + ' - ' + log_dict['datetimestamp'] + '\n\t' \
-          + prj_dict['log_msg_builder_trace'] + ': ' + log_dict['tracing'] + '\n\n\t' \
-          + prj_dict['log_msg_builder_process_id'] + ': ' + str(log_dict['process_id']) + '\n\t' \
-          + prj_dict['log_msg_builder_thread_id'] + ': ' + str(log_dict['thread_id']) + '\n\n' \
-          + str(msg_indented + '\n'))
+    msg = (f'{log_dict["level"]} - {log_dict["datetimestamp"]}\n\t'
+          f'{prj_dict["log_msg_builder_trace"]}: {log_dict["tracing"]}\n\n\t'
+          f'{prj_dict["log_msg_builder_process_id"]}: {log_dict["process_id"]}\n\t'
+          f'{prj_dict["log_msg_builder_thread_id"]}: {log_dict["thread_id"]}\n\n'
+          f'{msg_indented}\n')
 
     return msg
 
@@ -272,23 +285,23 @@ def mpy_msg_print(mpy_trace, prj_dict, log_dict):
 #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_msg'
     # operation = 'mpy_msg_print(~)'
-    # mpy_trace = mpy_fct.tracing(mpy_trace['module'], mpy_trace['operation'], mpy_trace)
-    # mpy_trace['log_enable'] = False
+    # mpy_trace = mpy_fct.tracing(mpy_trace["module"], mpy_trace["operation"], mpy_trace)
+    # mpy_trace["log_enable"] = False
 
 #   print messages according to their log level
     pnt = True
 
-    for lvl_pnt in prj_dict['mpy_log_lvl_noprint']:
+    for lvl_pnt in prj_dict["mpy_log_lvl_noprint"]:
 
-        if log_dict['level'] == lvl_pnt:
+        if log_dict["level"] == lvl_pnt:
             pnt = False
             break
 
-    if pnt == True:
-        print(log_dict['log_msg_complete'])
+    if pnt:
+        print(log_dict["log_msg_complete"])
 
 #   Raise an interrupt if certain log levels are met
-    if log_dict['interrupt_enable'] == True:
+    if log_dict["interrupt_enable"]:
         log_interrupt(mpy_trace, prj_dict)
 
 def log_txt(mpy_trace, prj_dict, log_dict):
@@ -308,11 +321,11 @@ def log_txt(mpy_trace, prj_dict, log_dict):
     module = 'mpy_msg'
     operation = 'log_db(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-    mpy_trace['log_enable'] = False
+    mpy_trace["log_enable"] = False
 
 #   Write to text file - Fallback if SQLite functionality is broken
     filepath = prj_dict.get('log_txt_path')
-    mpy_fct.txt_wr(mpy_trace, prj_dict, filepath, log_dict['log_msg_complete'])
+    mpy_fct.txt_wr(mpy_trace, prj_dict, filepath, log_dict["log_msg_complete"])
 
 def log_db(mpy_trace, prj_dict, log_dict):
 
@@ -331,27 +344,28 @@ def log_db(mpy_trace, prj_dict, log_dict):
     module = 'mpy_msg'
     operation = 'log_db(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-    mpy_trace['log_enable'] = False
+    mpy_trace["log_enable"] = False
 
-#   Define the table to be adressed
-    db_path = prj_dict['log_db_path']
-    table_name = 'log_' + str(prj_dict['init_loggingstamp'])
+#   Define the table to be adressed.
+    db_path = prj_dict["log_db_path"]
+    table_name = f'log_{prj_dict["init_loggingstamp"]}'
 
     check = log_db_table_check(mpy_trace, prj_dict, db_path, table_name)
 
-#   Define the columns for logging and their data types
-    columns = ['level','process_id','thread_id','task_id','datetimestamp','module','operation','tracing','message']
-    col_types = ['CHAR(20)','BIGINT','BIGINT','BIGINT','DATETIME','TEXT','TEXT','TEXT','TEXT']
+#   Define the columns for logging and their data types.
+    columns = ["level","process_id","thread_id","task_id","datetimestamp","module","operation","tracing","message"]
+    col_types = ["CHAR(20)","BIGINT","BIGINT","BIGINT","DATETIME","TEXT","TEXT","TEXT","TEXT"]
 
-#   Create table for logging during runtime
-    if check == False:
+#   Check, if the actual logging table already exists.
+    if not check:
 
+    #   Create table for logging during runtime.
         log_db_table_create(mpy_trace, prj_dict, db_path, table_name)
 
-    #   Add columns to the new log table
+    #   Add columns to the new log table.
         log_db_table_add_column(mpy_trace, prj_dict, db_path, table_name, columns, col_types)
 
-#   Insert the actual log into the logging database table
+#   Insert the actual log into the logging database table.
     log_db_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, log_dict)
 
 def log_db_connect(mpy_trace, prj_dict, db_path):
@@ -373,7 +387,7 @@ def log_db_connect(mpy_trace, prj_dict, db_path):
     module = 'mpy_msg'
     operation = 'log_db_connect(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-    mpy_trace['log_enable'] = False
+    mpy_trace["log_enable"] = False
 
 
     conn = None
@@ -385,10 +399,10 @@ def log_db_connect(mpy_trace, prj_dict, db_path):
 #   Error detection
     except Exception as e:
     #   The database could not be found and/or connected.
-        log_message = prj_dict['log_db_connect_excpt'] + '\n' \
-                      + 'db_path: ' + str(db_path) + '\n'  \
-                      + prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["log_db_connect_excpt"]}\n'
+                      f'db_path: {db_path}')
         log(mpy_trace, prj_dict, log_message, 'critical')
 
 def log_db_disconnect(mpy_trace, prj_dict, db_path):
@@ -409,7 +423,7 @@ def log_db_disconnect(mpy_trace, prj_dict, db_path):
     module = 'mpy_msg'
     operation = 'log_db_disconnect(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-    mpy_trace['log_enable'] = False
+    mpy_trace["log_enable"] = False
 
     conn = None
     try:
@@ -418,10 +432,10 @@ def log_db_disconnect(mpy_trace, prj_dict, db_path):
 #   Error detection
     except Exception as e:
     #   The database could not be found and/or disconnected.
-        log_message = prj_dict['log_db_disconnect_excpt'] + '\n' \
-                      + 'db_path: ' + str(db_path) + '\n'  \
-                      + prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["log_db_disconnect_excpt"]}\n'
+                      f'db_path: {db_path}')
         log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:
@@ -447,16 +461,14 @@ def log_db_table_create(mpy_trace, prj_dict, db_path, table_name):
     module = 'mpy_msg'
     operation = 'log_db_table_create(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-    mpy_trace['log_enable'] = False
+    mpy_trace["log_enable"] = False
 
 #   Apply standard formats
-    table_name = str(table_name)
+    table_name = f'{table_name}'
 
 #   Define the execution statement
     exec_statement = \
-        'CREATE TABLE IF NOT EXISTS {} '. \
-        format(table_name) \
-        + '(ID INTEGER PRIMARY KEY)'
+        f'CREATE TABLE IF NOT EXISTS {table_name} (ID INTEGER PRIMARY KEY)'
 
 #   Execution
     try:
@@ -478,10 +490,10 @@ def log_db_table_create(mpy_trace, prj_dict, db_path, table_name):
 #   Error detection
     except Exception as e:
     #   The log table for runtime could not be created.
-        log_message = prj_dict['log_db_table_create_excpt'] + '\n' \
-                      + prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n'  \
-                      + prj_dict['log_db_table_create_stmt'] + ': {}'. format(exec_statement)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["log_db_table_create_excpt"]}\n'
+                      f'{prj_dict["log_db_table_create_stmt"]}: {exec_statement}')
         log(mpy_trace, prj_dict, log_message, 'critical')
 
 def log_db_table_check(mpy_trace, prj_dict, db_path, table_name):
@@ -504,17 +516,14 @@ def log_db_table_check(mpy_trace, prj_dict, db_path, table_name):
     module = 'mpy_msg'
     operation = 'log_db_table_check(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-    mpy_trace['log_enable'] = False
+    mpy_trace["log_enable"] = False
 
 #   Apply standard formats
-    table_name = str(table_name)
+    table_name = f'{table_name}'
     check = False
 
 #   Define the execution statement
-    exec_statement = \
-        'SELECT count(name) FROM sqlite_master WHERE ' \
-         + 'type=\'table\' AND name=\'{}\''. \
-         format(table_name)
+    exec_statement = (f'SELECT count(name) FROM sqlite_master WHERE type=\'table\' AND name=\'{table_name}\'')
 
 #   Execution
     try:
@@ -543,9 +552,9 @@ def log_db_table_check(mpy_trace, prj_dict, db_path, table_name):
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n'  \
-                      + prj_dict['log_db_table_create_stmt'] + ': {}'. format(exec_statement)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["log_db_table_create_stmt"]}: {exec_statement}')
         log(mpy_trace, prj_dict, log_message, 'critical')
 
 def log_db_table_add_column(mpy_trace, prj_dict, db_path, table_name, columns, col_types):
@@ -570,17 +579,17 @@ def log_db_table_add_column(mpy_trace, prj_dict, db_path, table_name, columns, c
     module = 'mpy_msg'
     operation = 'log_db_table_add_column(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-    mpy_trace['log_enable'] = False
+    mpy_trace["log_enable"] = False
 
 #   Apply standard formats
-    table_name = str(table_name)
+    table_name = f'{table_name}'
 
 #   Execution
     try:
     #   Check the existence of the table
         check = log_db_table_check(mpy_trace, prj_dict, db_path, table_name)
 
-        if check == True:
+        if check:
 
         #   Connect the database
             conn = log_db_connect(mpy_trace, prj_dict, db_path)
@@ -592,9 +601,7 @@ def log_db_table_add_column(mpy_trace, prj_dict, db_path, table_name, columns, c
 
             for col in columns:
             #   Define the execution statement
-                exec_statement = \
-                    'ALTER TABLE {} ADD COLUMN {} {}'. \
-                    format(table_name,columns[i],col_types[i])
+                exec_statement = f'ALTER TABLE {table_name} ADD COLUMN {columns[i]} {col_types[i]}'
 
             #   Execution
                 try:
@@ -607,29 +614,29 @@ def log_db_table_add_column(mpy_trace, prj_dict, db_path, table_name, columns, c
             #   Error detection
                 except Exception as e:
                 #   The log table could not be edited.
-                    log_message = prj_dict['log_db_table_add_column_excpt'] + '\n' \
-                                  + prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                                  + prj_dict['err_excp'] + ': {}'. format(e) \
-                                  + prj_dict['log_db_table_add_column_stmt'] + ': {}'. format(exec_statement)
+                    log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                                  f'{prj_dict["err_excp"]}: {e}\n'
+                                  f'{prj_dict["log_db_table_add_column_excpt"]}\n'
+                                  f'{prj_dict["log_db_table_add_column_stmt"]}: {exec_statement}')
                     log(mpy_trace, prj_dict, log_message, 'critical')
 
-                i = i + 1
+                i += 1
 
         #   Disconnect from the database
             log_db_disconnect(mpy_trace, prj_dict, db_path)
 
         else:
         #   The log table could not be found. Logging not possible.
-            log_message = prj_dict['log_db_table_add_column_failed']
+            log_message = prj_dict["log_db_table_add_column_failed"]
             log(mpy_trace, prj_dict, log_message, 'critical')
 
         return check
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n'  \
-                      + prj_dict['log_db_table_create_stmt'] + ': {}'. format(exec_statement)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["log_db_table_create_stmt"]}: {exec_statement}')
         log(mpy_trace, prj_dict, log_message, 'critical')
 
 def log_db_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, log_dict):
@@ -657,24 +664,22 @@ def log_db_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, log_dic
     module = 'mpy_msg'
     operation = 'log_db_row_insert(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-    mpy_trace['log_enable'] = False
+    mpy_trace["log_enable"] = False
 
 #   Preparation
-    table_name = str(table_name)
+    table_name = f'{table_name}'
     row_id = 0
 
 #   Execution
     try:
 
     #   Define the execution statement
-        exec_statement = \
-            '''INSERT INTO {} ('level','process_id','thread_id','task_id','datetimestamp','module','operation','tracing','message') VALUES (?,?,?,?,?,?,?,?,?)'''. \
-            format(table_name)
+        exec_statement = f'INSERT INTO {table_name} (\'level\',\'process_id\',\'thread_id\',\'task_id\',\'datetimestamp\',\'module\',\'operation\',\'tracing\',\'message\') VALUES (?,?,?,?,?,?,?,?,?)'
 
     #   Check the existence of the table
         check = log_db_table_check(mpy_trace, prj_dict, db_path, table_name)
 
-        if check == True:
+        if check:
 
         #   Connect the database
             conn = log_db_connect(mpy_trace, prj_dict, db_path)
@@ -688,15 +693,15 @@ def log_db_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, log_dic
 
             #   Insert a new row and write to cell(s)
                 c.execute(exec_statement, (\
-                          log_dict['level'], \
-                          log_dict['process_id'], \
-                          log_dict['thread_id'], \
-                          log_dict['task_id'], \
-                          log_dict['datetime_value'], \
-                          log_dict['module'], \
-                          log_dict['operation'], \
-                          log_dict['tracing'], \
-                          log_dict['log_message']) \
+                          log_dict["level"], \
+                          log_dict["process_id"], \
+                          log_dict["thread_id"], \
+                          log_dict["task_id"], \
+                          log_dict["datetime_value"], \
+                          log_dict["module"], \
+                          log_dict["operation"], \
+                          log_dict["tracing"], \
+                          log_dict["log_message"]) \
                           )
 
             #   Check for the last ID
@@ -709,10 +714,10 @@ def log_db_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, log_dic
         #   Error detection
             except Exception as e:
             #   The log entry could not be created.
-                log_message = prj_dict['log_db_row_insert_excpt'] + '\n' \
-                              + prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                              + prj_dict['err_excp'] + ': {}'. format(e) + '\n'  \
-                              + prj_dict['log_db_row_insert_stmt'] + ': {}'. format(exec_statement)
+                log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                              f'{prj_dict["err_excp"]}: {e}\n'
+                              f'{prj_dict["log_db_row_insert_excpt"]}\n'
+                              f'{prj_dict["log_db_row_insert_stmt"]}: {exec_statement}')
                 log(mpy_trace, prj_dict, log_message, 'critical')
 
         #   Disconnect from the database
@@ -720,7 +725,7 @@ def log_db_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, log_dic
 
         else:
         #   The log table could not be found. Logging not possible.
-            log_message = prj_dict['log_db_row_insert_failed']
+            log_message = prj_dict["log_db_row_insert_failed"]
             log(mpy_trace, prj_dict, log_message, 'critical')
 
         return{
@@ -730,9 +735,9 @@ def log_db_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, log_dic
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e) + '\n'  \
-                      + prj_dict['log_db_table_create_stmt'] + ': {}'. format(exec_statement)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}\n'
+                      f'{prj_dict["log_db_table_create_stmt"]}: {exec_statement}')
         log(mpy_trace, prj_dict, log_message, 'critical')
 
 def log_regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
@@ -758,9 +763,9 @@ def log_regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
 #   Apply standard formats
-    search_obj = str(search_obj)
-    search_for = str(search_for)
-    replace_by = str(replace_by)
+    search_obj = f'{search_obj}'
+    search_for = f'{search_for}'
+    replace_by = f'{replace_by}'
 
     try:
         result = re.sub(search_for, replace_by, search_obj)
@@ -769,8 +774,8 @@ def log_regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'critical')
 
 def log_wait_for_input(mpy_trace, prj_dict, msg_text):
@@ -795,12 +800,12 @@ def log_wait_for_input(mpy_trace, prj_dict, msg_text):
 
     try:
 
-        usr_input = input(str(msg_text) + '\n')
+        usr_input = input(f'{msg_text}\n')
 
         return usr_input
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'critical')

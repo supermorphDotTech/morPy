@@ -18,10 +18,11 @@ def privileges_handler(mpy_trace, prj_dict):
     :return
         -
 
-    TODO
+    #TODO
     Finish the module and fix all bugs
     """
 
+    import mpy_msg
     import sys, ctypes, enum, gc
 
 #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -65,13 +66,13 @@ def privileges_handler(mpy_trace, prj_dict):
             SHARE = 26
 
     #   Test if elevated privileges are required
-        if  prj_dict['mpy_priv_required'] == True:
+        if  prj_dict["mpy_priv_required"]:
 
         #   Routine for MS Windows
-            if prj_dict['system'].upper == 'WINDOWS':
+            if prj_dict["system"].upper == 'WINDOWS':
                 if ctypes.windll.shell32.IsUserAnAdmin():
                 #   Program started with elevated Privileges.
-                    msg = prj_dict['mpy_priv_handler_eval']
+                    msg = prj_dict["mpy_priv_handler_eval"]
                 else:
                     hinstance = ctypes.windll.shell32.ShellExecuteW(
                         None, 'runas', sys.executable, sys.argv[0], None, el_spec.SHOWNORMAL
@@ -80,15 +81,14 @@ def privileges_handler(mpy_trace, prj_dict):
                         raise RuntimeError(el_error(hinstance))
 
         #   Routine for Linux
-            elif prj_dict['system'].upper == 'LINUX':
+            elif prj_dict["system"].upper == 'LINUX':
                 i = 0
 
 #   Error detection
     except Exception as e:
-        log_message = \
-            'Line: {}\nException: {}'. \
-             format(sys.exc_info()[-1].tb_lineno,e)
-        print(log_message)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
+        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
 
@@ -123,41 +123,43 @@ def datetime_now(mpy_trace):
 #   Retrieve the actual time value
     datetime_value  = datetime.now()
 
+#   Year
+    std_year = datetime_value.year
+
+#   Month
+    std_month = f'{datetime_value.month}'
     if datetime_value.month <= 9:
-        std_month = "0" + str(datetime_value.month)
-    else:
-        std_month = str(datetime_value.month)
-
+        std_month = f'0{std_month}'
+        
+#   Day
+    std_day = f'{datetime_value.day}'
     if datetime_value.day <= 9:
-        std_day   =   "0" + str(datetime_value.day)
-    else:
-        std_day   =   str(datetime_value.day)
+        std_day = f'0{std_day}'
 
-    date = std_day + "." + std_month + "." + str(datetime_value.year)
-    datestamp = str(datetime_value.year) + "-" + std_month + "-" + std_day
+    date = f'{std_day}.{std_month}.{std_year}'
+    datestamp = f'{std_year}-{std_month}-{std_day}'
 
+#   Hour
+    std_hour = f'{datetime_value.hour}'
     if datetime_value.hour <= 9:
-        std_hour = "0" + str(datetime_value.hour)
-    else:
-        std_hour = str(datetime_value.hour)
+        std_hour = f'0{std_hour}'
 
+#   Minute
+    std_minute = f'{datetime_value.minute}'
     if datetime_value.minute <= 9:
-        std_minute = "0" + str(datetime_value.minute)
-    else:
-        std_minute = str(datetime_value.minute)
+        std_minute = f'0{std_minute}'
 
+#   Second
+    std_second = f'{datetime_value.second}'
     if datetime_value.second <= 9:
-        std_second = "0" + str(datetime_value.second)
-    else:
-        std_second = str(datetime_value.second)
+        std_second = f'0{std_second}'
 
-    time = std_hour + ':' + std_minute + ':' +  std_second
-    timestamp = std_hour + std_minute + std_second
+    time = f'{std_hour}:{std_minute}:{std_second}'
+    timestamp = f'{std_hour}{std_minute}{std_second}'
 
-    datetimestamp = datestamp + "_" + timestamp
+    datetimestamp = f'{datestamp}_{timestamp}'
 
-    loggingstamp = str(datetime_value.year) + std_month + std_day + '_' \
-        + timestamp
+    loggingstamp = f'{std_year}{std_month}{std_day}_{timestamp}'
 
     return{
         'datetime_value' : datetime_value , \
@@ -210,6 +212,7 @@ def sysinfo(mpy_trace):
     """
 
     import platform, getpass, os.path, socket
+    from tkinter import Tk
 
 #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_fct'
@@ -221,11 +224,16 @@ def sysinfo(mpy_trace):
     version     = platform.uname().version
     arch        = platform.uname().machine
     processor   = platform.uname().processor
-    threads     = perfinfo(mpy_trace)['cpu_count_log']
+    threads     = perfinfo(mpy_trace)["cpu_count_log"]
 
     username    = getpass.getuser()
     homedir     = os.path.expanduser("~")
     hostname    = socket.gethostname()
+    
+    root = Tk()
+    res_height = root.winfo_screenheight()
+    res_width = root.winfo_screenwidth()
+    root.destroy()
 
     return{
         'system' : system, \
@@ -237,6 +245,8 @@ def sysinfo(mpy_trace):
         'username' : username,\
         'homedir' : homedir, \
         'hostname' : hostname, \
+        'res_height' : res_height, \
+        'res_width' : res_width
     }
 
 def pathtool(mpy_trace, in_path):
@@ -265,7 +275,7 @@ def pathtool(mpy_trace, in_path):
     # operation = 'makepath(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
 
-    out_path    = pathlib.Path(str(in_path))
+    out_path    = pathlib.Path(f'{in_path}')
 
     if os.path.isfile(in_path):
         is_file      = os.path.isfile(out_path)
@@ -337,24 +347,25 @@ def path_join(mpy_trace, path_parts, file_extension):
     if type(path_parts) is tuple:
     
     #   Harmonize file extension
-        if file_extension == '':
+        if not file_extension:
             
             file_extension = None
     
     #   Loop through all parts of the path
         for part in path_parts:
     
-            if cnt > 0:
-                path_str += '\\' + str(part)
+        #   Check, if count is greater 0.
+            if cnt:
+                path_str += f'\\{part}'
                 cnt += 1
             else:
-                path_str = str(part)
+                path_str = f'{part}'
                 cnt += 1
     
     #   Add the file extension
         if file_extension is not None:
             
-            path_str += str(file_extension)
+            path_str += f'{file_extension}'
         
         path_obj = pathlib.Path(path_str)
         
@@ -392,8 +403,8 @@ def perfinfo(mpy_trace):
     # operation = 'perfinfo(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
 
-#   TODO: "cpu_perc_indv" only works on Linux
-#   TODO: "cpu_perc_comb" and "cpu_perc_indv" do not work if interval=None
+#TODO: "cpu_perc_indv" only works on Linux
+#TODO: "cpu_perc_comb" and "cpu_perc_indv" do not work if interval=None
 
     boot_time       = datetime.fromtimestamp(psutil.boot_time())
 
@@ -424,26 +435,27 @@ def perfinfo(mpy_trace):
         'mem_free_MB' : mem_free_MB, \
     }
 
-def print_prj_dict(prj_dict):
+def prj_dict_to_string(prj_dict):
 
-    """ This function prints the entire project dictionary in Terminal.
+    """ This function creates a string for the entire prj_dict. May exceed emory.
     :param
         prj_dict - morPy global dictionary
     :return
-        -
+        prj_dict_str - morPy global dictionary as a UTF-8 string
     """
 
 #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_fct'
-    # operation = 'print_prj_dict(~)'
+    # operation = 'prj_dict_to_string(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
 
-    print('\n')
+    prj_dict_str = ''
 
     for key, value in prj_dict.items():
-        print('\t' + key, ' : ', value)
-
-    print('\n')
+        prj_dict_str = f'{prj_dict_str}\n{key} : {value}'
+        prj_dict_str.strip()
+        
+    return prj_dict_str
 
 def tracing(module, operation, mpy_trace):
 
@@ -468,9 +480,9 @@ def tracing(module, operation, mpy_trace):
     mpy_trace_passdown = copy.deepcopy(mpy_trace)
 
 #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    mpy_trace_passdown['module'] = str(module)
-    mpy_trace_passdown['operation'] = str(operation)
-    mpy_trace_passdown['tracing'] = mpy_trace['tracing'] + ' > {}.{}'. format(module, operation)
+    mpy_trace_passdown["module"] = f'{module}'
+    mpy_trace_passdown["operation"] = f'{operation}'
+    mpy_trace_passdown["tracing"] = f'{mpy_trace["tracing"]} > {module}.{operation}'
 
     return mpy_trace_passdown
 
@@ -496,17 +508,17 @@ def txt_wr(mpy_trace, prj_dict, filepath, content):
     mpy_trace = tracing(module, operation, mpy_trace)
 
 #   Apply standard formats
-    content = str(content)
+    content = f'{content}'
     filepath = pathlib.Path(filepath)
 
 #   Write to file
     try:
 
     #   Append to a textfile
-        if filepath.is_file() == True:
+        if filepath.is_file():
 
             with open(filepath, 'a') as ap:
-                ap.write('\n' + content)
+                ap.write(f'\n{content}')
 
     #   Create and write a textfile
         else:
@@ -516,8 +528,8 @@ def txt_wr(mpy_trace, prj_dict, filepath, content):
 
 #   Error detection
     except Exception as e:
-        log_message = prj_dict['err_line'] + ': {}'. format(sys.exc_info()[-1].tb_lineno) + '\n' \
-                      + prj_dict['err_excp'] + ': {}'. format(e)
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:
