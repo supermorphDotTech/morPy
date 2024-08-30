@@ -1,4 +1,7 @@
-![supermorph_morPy_alpha_v001](https://github.com/user-attachments/assets/d2dcad66-87a4-446a-924c-bce997bc595a)
+[![supermorph_PixelSnake_logo_v001](https://github.com/user-attachments/assets/0e92f76c-67db-4ff6-8e58-9ab77a9a6e8e)](https://www.supermorph.tech/)
+<br><br><br>
+![supermorph_morPy_github_v001](https://github.com/user-attachments/assets/51fd6975-d4cd-4123-b708-552e8fee9c1a)
+
 
 More solutions. More insights. morPy.
 
