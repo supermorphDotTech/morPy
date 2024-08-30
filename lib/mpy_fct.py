@@ -1,12 +1,16 @@
 """
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
 Author:     Bastian Neuwirth
-Date:       29.06.2021
-Version:    0.1
 Descr.:     This module yields the most basic functions of the morPy fork. These
             functions are optimised for initilization, so they do not support
             logging. Although not intended, these modules may be used freely
             since they are fully compatible with morPy.
 """
+
+import sys
+import logging
 
 def privileges_handler(mpy_trace, prj_dict):
 
@@ -25,14 +29,17 @@ def privileges_handler(mpy_trace, prj_dict):
     import mpy_msg
     import sys, ctypes, enum, gc
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_fct'
     operation = 'privileges_handler(~)'
     mpy_trace = tracing(module, operation, mpy_trace)
 
+    # Preparing parameters
+    check = False
+
     try:
 
-    #   Specification of how to open an elevated program
+        # Specification of how to open an elevated program
         class el_spec(enum.IntEnum):
 
             HIDE = 0
@@ -48,7 +55,7 @@ def privileges_handler(mpy_trace, prj_dict):
             SHOWNOACTIVATE = 4
             SHOWNORMAL = 1
 
-    #   Specification of how to interpret errors from ctypes
+        # Specification of how to interpret errors from ctypes
         class el_error(enum.IntEnum):
 
             ZERO = 0
@@ -65,13 +72,13 @@ def privileges_handler(mpy_trace, prj_dict):
             OOM = 8
             SHARE = 26
 
-    #   Test if elevated privileges are required
-        if  prj_dict["mpy_priv_required"]:
+        # Test if elevated privileges are required
+        if  prj_dict["conf"]["mpy_priv_required"]:
 
-        #   Routine for MS Windows
-            if prj_dict["system"].upper == 'WINDOWS':
+            # Routine for MS Windows
+            if prj_dict["sys"]["os"].upper == 'WINDOWS':
                 if ctypes.windll.shell32.IsUserAnAdmin():
-                #   Program started with elevated Privileges.
+                    # Program started with elevated Privileges.
                     msg = prj_dict["mpy_priv_handler_eval"]
                 else:
                     hinstance = ctypes.windll.shell32.ShellExecuteW(
@@ -80,21 +87,28 @@ def privileges_handler(mpy_trace, prj_dict):
                     if hinstance <= 32:
                         raise RuntimeError(el_error(hinstance))
 
-        #   Routine for Linux
-            elif prj_dict["system"].upper == 'LINUX':
+            # Routine for Linux
+            elif prj_dict["sys"]["os"].upper == 'LINUX':
                 i = 0
+                
+        check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
     finally:
 
-    #   Garbage collection
-        del mpy_trace
+        # Garbage collection
         gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check
+            }
 
 def datetime_now(mpy_trace):
 
@@ -115,23 +129,23 @@ def datetime_now(mpy_trace):
 
     from datetime import datetime
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_fct'
     # operation = 'datetime_now(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
 
-#   Retrieve the actual time value
+    # Retrieve the actual time value
     datetime_value  = datetime.now()
 
-#   Year
+    # Year
     std_year = datetime_value.year
 
-#   Month
+    # Month
     std_month = f'{datetime_value.month}'
     if datetime_value.month <= 9:
         std_month = f'0{std_month}'
         
-#   Day
+    # Day
     std_day = f'{datetime_value.day}'
     if datetime_value.day <= 9:
         std_day = f'0{std_day}'
@@ -139,17 +153,17 @@ def datetime_now(mpy_trace):
     date = f'{std_day}.{std_month}.{std_year}'
     datestamp = f'{std_year}-{std_month}-{std_day}'
 
-#   Hour
+    # Hour
     std_hour = f'{datetime_value.hour}'
     if datetime_value.hour <= 9:
         std_hour = f'0{std_hour}'
 
-#   Minute
+    # Minute
     std_minute = f'{datetime_value.minute}'
     if datetime_value.minute <= 9:
         std_minute = f'0{std_minute}'
 
-#   Second
+    # Second
     std_second = f'{datetime_value.second}'
     if datetime_value.second <= 9:
         std_second = f'0{std_second}'
@@ -183,7 +197,7 @@ def runtime(mpy_trace, in_ref_time):
 
     from datetime import datetime
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_fct'
     # operation = 'runtime(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
@@ -214,7 +228,7 @@ def sysinfo(mpy_trace):
     import platform, getpass, os.path, socket
     from tkinter import Tk
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_fct'
     # operation = 'sysinfo(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
@@ -236,17 +250,17 @@ def sysinfo(mpy_trace):
     root.destroy()
 
     return{
-        'system' : system, \
-        'system_release' : release, \
-        'system_version' : version, \
-        'system_arch' : arch, \
-        'processor' : processor, \
-        'threads' : threads, \
-        'username' : username,\
-        'homedir' : homedir, \
-        'hostname' : hostname, \
-        'res_height' : res_height, \
-        'res_width' : res_width
+        'os' : system,
+        'os_release' : release,
+        'os_version' : version,
+        'os_arch' : arch,
+        'processor' : processor,
+        'threads' : threads,
+        'username' : username,
+        'homedir' : homedir,
+        'hostname' : hostname,
+        'resolution_height' : res_height,
+        'resolution_width' : res_width,
     }
 
 def pathtool(mpy_trace, in_path):
@@ -270,7 +284,7 @@ def pathtool(mpy_trace, in_path):
 
     import pathlib, os.path
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_fct'
     # operation = 'makepath(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
@@ -329,32 +343,32 @@ def path_join(mpy_trace, path_parts, file_extension):
 
     import pathlib
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_fct'
     # operation = 'makepath(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
 
-#   Preparation
+    # Preparation
     path_str = ''
     cnt = 0
     
-#   Autocorrect path_parts to tuple
+    # Autocorrect path_parts to tuple
     if type(path_parts) is str:
         
         path_parts = (path_parts,)
 
-#   Check, if path_parts is a tuple to ensure correct loop
+    # Check, if path_parts is a tuple to ensure correct loop
     if type(path_parts) is tuple:
     
-    #   Harmonize file extension
+        # Harmonize file extension
         if not file_extension:
             
             file_extension = None
     
-    #   Loop through all parts of the path
+        # Loop through all parts of the path
         for part in path_parts:
     
-        #   Check, if count is greater 0.
+            # Check, if count is greater 0.
             if cnt:
                 path_str += f'\\{part}'
                 cnt += 1
@@ -362,7 +376,7 @@ def path_join(mpy_trace, path_parts, file_extension):
                 path_str = f'{part}'
                 cnt += 1
     
-    #   Add the file extension
+        # Add the file extension
         if file_extension is not None:
             
             path_str += f'{file_extension}'
@@ -398,7 +412,7 @@ def perfinfo(mpy_trace):
     import psutil
     from datetime import datetime
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_fct'
     # operation = 'perfinfo(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
@@ -444,7 +458,7 @@ def prj_dict_to_string(prj_dict):
         prj_dict_str - morPy global dictionary as a UTF-8 string
     """
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     # module = 'mpy_fct'
     # operation = 'prj_dict_to_string(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
@@ -474,12 +488,12 @@ def tracing(module, operation, mpy_trace):
 
     import copy
 
-#   Deepcopy the mpy_trace dictionary. Any change in either dictionary is not reflected
-#   in the other one. This is important to pass down informationen opersation for
-#   operation and log for log.
+    # Deepcopy the mpy_trace dictionary. Any change in either dictionary is not reflected
+    # in the other one. This is important to pass down informationen opersation for
+    # operation and log for log.
     mpy_trace_passdown = copy.deepcopy(mpy_trace)
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     mpy_trace_passdown["module"] = f'{module}'
     mpy_trace_passdown["operation"] = f'{operation}'
     mpy_trace_passdown["tracing"] = f'{mpy_trace["tracing"]} > {module}.{operation}'
@@ -502,38 +516,96 @@ def txt_wr(mpy_trace, prj_dict, filepath, content):
         -
     """
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_fct'
     operation = 'txt_wr(~)'
     mpy_trace = tracing(module, operation, mpy_trace)
 
-#   Apply standard formats
+    # Preparing parameters
+    check = False
+
+    # Apply standard formats
     content = f'{content}'
     filepath = pathlib.Path(filepath)
 
-#   Write to file
+    # Write to file
     try:
 
-    #   Append to a textfile
+        # Append to a textfile
         if filepath.is_file():
 
             with open(filepath, 'a') as ap:
                 ap.write(f'\n{content}')
 
-    #   Create and write a textfile
+        # Create and write a textfile
         else:
 
             with open(filepath, 'w') as wr:
                 wr.write(content)
+                
+        check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
 
     finally:
 
-    #   Garbage collection
-        del mpy_trace
+        # Garbage collection
         gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check
+            }
+            
+def handle_exception_main(e, mpy_init_check, prj_dict=None):
+    """
+    Handle any exception outside the scope of mpy_msg.py
+    """
+    import mpy_msg
+
+    if mpy_init_check and prj_dict is not None:
+        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                       f'{prj_dict["err_excp"]}: {e}')
+        mpy_msg.log('__main__', prj_dict, log_message, 'critical')
+    elif not mpy_init_check:
+        # Fallback logging in case the project dictionary or logging fails
+        logging.critical(f'Module: __main__\n'
+                         f'Line: {sys.exc_info()[-1].tb_lineno}\n'
+                         f'CRITICAL Exception: {e}\n'
+                         f'morPy initialization failed!')
+    elif mpy_init_check and prj_dict is None:
+        # Fallback logging in case the project dictionary or logging fails
+        logging.critical(f'Module: __main__\n'
+                         f'Line: {sys.exc_info()[-1].tb_lineno}\n'
+                         f'CRITICAL Exception: {e}\n'
+                         f'morPy execution failed!')
+    
+def handle_exception_init(e):
+    """
+    Handle any exception outside the scope of mpy_msg.py
+    """
+   
+    # Fallback logging in case the project dictionary or logging fails
+    logging.critical(f'Module: mpy_init\n'
+                     f'Line: {sys.exc_info()[-1].tb_lineno}\n'
+                     f'CRITICAL Exception: {e}\n'
+                     f'morPy initialization failed!')
+
+    # Quit the program
+    sys.exit()
+    
+def handle_exception_decorator(e):
+    """
+    Handle any exception outside the scope of mpy_msg.py
+    """
+   
+    # Fallback logging in case the project dictionary or logging fails
+    logging.critical(f'Module: mpy_decorators\n'
+                     f'Line: {sys.exc_info()[-1].tb_lineno}\n'
+                     f'CRITICAL Exception: {e}\n'
+                     f'Wrapper function error.')

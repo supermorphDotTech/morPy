@@ -1,7 +1,8 @@
 """
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
 Author:     Bastian Neuwirth
-Date:       06.11.2021
-Version:    0.1
 Descr.:     This module delivers Microsoft Excel specific routines.
 
 WARNING (openpyxl)
@@ -12,6 +13,9 @@ NB you must use the English name for a function and function arguments
 must be separated by commas and not other punctuation such as semi-colons.
 """
 
+from mpy_decorators import metrics
+
+@metrics
 def cl_autof_rd(mpy_trace, prj_dict, cells):
 
     """ This function converts a list of cells and cell ranges to a
@@ -33,14 +37,14 @@ def cl_autof_rd(mpy_trace, prj_dict, cells):
     """
 
     import mpy_fct, mpy_msg, mpy_common
-    import sys, openpyxl, openpyxl.utils.cell
+    import sys, gc, openpyxl, openpyxl.utils.cell
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'cl_autof_rd(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
     cl_invalid = False
     cl_dict = {}
@@ -48,41 +52,41 @@ def cl_autof_rd(mpy_trace, prj_dict, cells):
 
     try:
 
-    #   Loop through every list item
+        # Loop through every list item
         for cl in cells:
 
-        #   Harmonize cell letters
+            # Harmonize cell letters
             cl = cl.upper()
 
-        #   Evaluate the type. If a list with 0 or more than 2 items was found, the cell
-        #   list is invalid. For 1 item it is a single cell and for 2 items it is a range.
+            # Evaluate the type. If a list with 0 or more than 2 items was found, the cell
+            # list is invalid. For 1 item it is a single cell and for 2 items it is a range.
             pattern = '[a-zA-Z]?[a-zA-Z]{1}[0-9]+'
             type_cl = mpy_common.regex_findall(mpy_trace, prj_dict, cl, pattern, rx_log)
             type_cl_len = len(type_cl)
 
-        #   The item is a cell
+            # The item is a cell
             if type_cl_len == 1:
 
-            #   Add the cell to the dictionary
+                # Add the cell to the dictionary
                 cl_dict.update({type_cl[0] : ''})
 
-            #   Create a log
-            #   A single cell was added to the dictionary.
-                log_message = (f'{prj_dict["cl_autof_rd_1cell"]}\n'
-                              f'{prj_dict["cl_autof_rd_cl"]}: {type_cl[0]}')
+                # Create a log
+                # A single cell was added to the dictionary.
+                log_message = (f'{prj_dict["loc"]["mpy"]["cl_autof_rd_1cell"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["cl_autof_rd_cl"]}: {type_cl[0]}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   The item is a range
+            # The item is a range
             elif type_cl_len == 2:
 
-            #   Convert the range to a list
-            #   1) Extract columns
+                # Convert the range to a list
+                # 1) Extract columns
                 pattern = '[a-zA-Z]?[a-zA-Z]{1}'
                 rng_col1 = mpy_common.regex_findall(mpy_trace, prj_dict, type_cl[0], pattern, rx_log)
                 pattern = '[a-zA-Z]?[a-zA-Z]{1}'
                 rng_col2 = mpy_common.regex_findall(mpy_trace, prj_dict, type_cl[1], pattern, rx_log)
 
-            #   Compare columns by string lentgh
+                # Compare columns by string lentgh
                 if len(rng_col1) <= len(rng_col2):
 
                     col_from = rng_col1
@@ -93,41 +97,41 @@ def cl_autof_rd(mpy_trace, prj_dict, cells):
                     col_from = rng_col2
                     col_to = rng_col1
 
-            #   Extract and enumerate components of columns to loop through them.
+                # Extract and enumerate components of columns to loop through them.
                 if len(col_from[0]) == 2:
 
                     pattern = '[A-Z]{1}'
                     col_from = mpy_common.regex_findall(mpy_trace, prj_dict, col_from, pattern, rx_log)
 
-                #   Build the sum of columns from A to col_from for further comparison.
-                #   64 refers to the unicode value of capital A minus 1.
+                    # Build the sum of columns from A to col_from for further comparison.
+                    # 64 refers to the unicode value of capital A minus 1.
                     col_from_sum = abs((int(ord(col_from[0])) - 64) * 26 + (int(ord(col_from[1])) - 64))
 
                 else:
 
                     col_from_sum = int(ord(col_from[0])) - 64
 
-            #   Extract and enumerate components of columns to loop through them.
+                # Extract and enumerate components of columns to loop through them.
                 if len(col_to[0]) == 2:
 
                     pattern = '[A-Z]{1}'
                     col_to = mpy_common.regex_findall(mpy_trace, prj_dict, col_to, pattern, rx_log)
 
-                #   Build the sum of columns from A to col_to for further comparison.
-                #   64 refers to the unicode value of capital A minus 1.
+                    # Build the sum of columns from A to col_to for further comparison.
+                    # 64 refers to the unicode value of capital A minus 1.
                     col_to_sum = abs((int(ord(col_to[0])) - 64) * 26 + (int(ord(col_to[1])) - 64))
 
                 else:
 
                     col_to_sum = int(ord(col_to[0])) - 64
 
-            #   Temporarily store col_from and col_to for eventual reordering
+                # Temporarily store col_from and col_to for eventual reordering
                 tmp_col_from = col_from
                 tmp_col_from_sum = col_from_sum
                 tmp_col_to = col_to
                 tmp_col_to_sum = col_to_sum
 
-            #   Compare columns by the enumerated values and exchange them if necessary
+                # Compare columns by the enumerated values and exchange them if necessary
                 if col_from_sum > col_to_sum:
 
                     col_from = tmp_col_to
@@ -135,17 +139,17 @@ def cl_autof_rd(mpy_trace, prj_dict, cells):
                     col_to = tmp_col_from
                     col_to_sum = tmp_col_from_sum
 
-            #   2) Extract rows
+                # 2) Extract rows
                 pattern = '[0-9]+'
                 rng_row1 = mpy_common.regex_findall(mpy_trace, prj_dict, type_cl[0], pattern, rx_log)
                 pattern = '[0-9]+'
                 rng_row2 = mpy_common.regex_findall(mpy_trace, prj_dict, type_cl[1], pattern, rx_log)
 
-            #   Make rows integers
+                # Make rows integers
                 rng_row1 = int(rng_row1[0])
                 rng_row2 = int(rng_row2[0])
 
-            #   Compare rows to which is higher and set start and end of rows for the range
+                # Compare rows to which is higher and set start and end of rows for the range
                 if rng_row1 <= rng_row2:
 
                     row_from = rng_row1
@@ -156,68 +160,75 @@ def cl_autof_rd(mpy_trace, prj_dict, cells):
                     row_to = rng_row1
                     row_from = rng_row2
 
-            #   Loop through all cells and add them to the dictionary
-            #   1) Loop through columns
+                # Loop through all cells and add them to the dictionary
+                # 1) Loop through columns
                 col_counter = col_from_sum
 
                 while col_counter <= col_to_sum:
 
-                #   Start from the first requested row
+                    # Start from the first requested row
                     row_counter = row_from
 
-                    #   2) Loop through rows
+                        # 2) Loop through rows
                     while row_counter <= row_to:
 
-                    #   Rebuild the cell
+                        # Rebuild the cell
                         clmn = openpyxl.utils.cell.get_column_letter(col_counter)
                         cll = f'{clmn}{row_counter}'
 
-                    #   Add the cell to the dictionary
+                        # Add the cell to the dictionary
                         cl_dict.update({cll : ''})
 
-                    #   Iterate
+                        # Iterate
                         row_counter += 1
 
-                #   Iterate
+                    # Iterate
                     col_counter += 1
 
-            #   Create a log
-            #   A range of cells was added to the dictionary.
-                log_message = (f'{prj_dict["cl_autof_rd_done"]}\n'
-                              f'{prj_dict["cl_autof_rd_rng"]}: {openpyxl.utils.cell.get_column_letter(col_from_sum)}){row_from})'
+                # Create a log
+                # A range of cells was added to the dictionary.
+                log_message = (f'{prj_dict["loc"]["mpy"]["cl_autof_rd_done"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["cl_autof_rd_rng"]}: {openpyxl.utils.cell.get_column_letter(col_from_sum)}){row_from})'
                               f' : {openpyxl.utils.cell.get_column_letter(col_to_sum)}){row_to}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   The item is not a valid cell
+            # The item is not a valid cell
             elif type_cl_len < 1 or type_cl_len > 2:
 
                 cl_invalid == True
 
-            #   Create a log
-            #   The cell value is invalid. Autoformatting aborted.
-                log_message = (f'{prj_dict["cl_autof_rd_invalid"]}\n'
-                              f'{prj_dict["cl_autof_rd_cls"]}: {cells}\n'
+                # Create a log
+                # The cell value is invalid. Autoformatting aborted.
+                log_message = (f'{prj_dict["loc"]["mpy"]["cl_autof_rd_invalid"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["cl_autof_rd_cls"]}: {cells}\n'
                               f'check: {check}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'warning')
 
-    #   Evaluate the validity of the dictionary
+        # Evaluate the validity of the dictionary
         if not cl_invalid:
 
             check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}\n'
-                      f'{prj_dict["cl_autof_rd_cls"]}: {cells}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                      f'{prj_dict["loc"]["mpy"]["cl_autof_rd_cls"]}: {cells}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check, \
-        'cl_dict' : cl_dict
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check, \
+            'cl_dict' : cl_dict
+            }
+
+@metrics
 def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
 
     """ This function reads the cells of MS Excel workbooks.
@@ -248,21 +259,21 @@ def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
     """
 
     import mpy_fct, mpy_msg
-    import sys
+    import sys, gc
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'cl_read(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
     cl_dict = {}
     wb_sht_active = False
 
     try:
 
-    #   Load the workbook and retrieve all necessary returns
+        # Load the workbook and retrieve all necessary returns
         wb = wb_load(mpy_trace, prj_dict, wb_path, dat, vba)
         wb_check = wb["check"]
         wb_obj = wb["wb_obj"]
@@ -270,92 +281,99 @@ def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
         wb_sheets = wb["wb_sheets"]
         sht_active = wb["sht_active"]
 
-    #   Evaluate the availability of the workbook
+        # Evaluate the availability of the workbook
         if wb_check:
 
-        #   Look up the active sheet
+            # Look up the active sheet
             if sht_active == wb_sht:
 
                 sheet_obj = wb_obj.active
                 wb_sht_active = True
 
-            #   Create a log
-            #   The requested sheet is active.
-                log_message = (f'{prj_dict["cl_read_sht_active"]}\n'
-                              f'{prj_dict["cl_read_file"]}: {wb_path}\n'
-                              f'{prj_dict["cl_read_sht"]}: {wb_sht}')
+                # Create a log
+                # The requested sheet is active.
+                log_message = (f'{prj_dict["loc"]["mpy"]["cl_read_sht_active"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["cl_read_file"]}: {wb_path}\n'
+                              f'{prj_dict["loc"]["mpy"]["cl_read_sht"]}: {wb_sht}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   Set the requested sheet active
+            # Set the requested sheet active
             else:
 
-            #   The requested sheet exists as part of the workbook
+                # The requested sheet exists as part of the workbook
                 if wb_sht in wb_sheets:
 
                     wb_obj.active = wb_obj[wb_sht]
                     sheet_obj = wb_obj.active
                     wb_sht_active = True
 
-                #   Create a log
-                #   Activated requested sheet.
-                    log_message = (f'{prj_dict["cl_read_sht_activated"]}\n'
-                                  f'{prj_dict["cl_read_file"]}: {wb_path}\n'
-                                  f'{prj_dict["cl_read_sht"]}: {wb_sht}')
+                    # Create a log
+                    # Activated requested sheet.
+                    log_message = (f'{prj_dict["loc"]["mpy"]["cl_read_sht_activated"]}\n'
+                                  f'{prj_dict["loc"]["mpy"]["cl_read_file"]}: {wb_path}\n'
+                                  f'{prj_dict["loc"]["mpy"]["cl_read_sht"]}: {wb_sht}')
                     mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-            #   The requested sheet was not found
+                # The requested sheet was not found
                 else:
 
-                #   Create a log
-                #   Could not find the requested workbook sheet.
-                    log_message = (f'{prj_dict["cl_read_nfnd"]}\n'
-                                  f'{prj_dict["cl_read_file"]}: {wb_path}\n'
-                                  f'{prj_dict["cl_read_sht"]}: {wb_sht}\n'
-                                  f'{prj_dict["cl_read_av_shts"]}: {wb_sheets}')
+                    # Create a log
+                    # Could not find the requested workbook sheet.
+                    log_message = (f'{prj_dict["loc"]["mpy"]["cl_read_nfnd"]}\n'
+                                  f'{prj_dict["loc"]["mpy"]["cl_read_file"]}: {wb_path}\n'
+                                  f'{prj_dict["loc"]["mpy"]["cl_read_sht"]}: {wb_sht}\n'
+                                  f'{prj_dict["loc"]["mpy"]["cl_read_av_shts"]}: {wb_sheets}')
                     mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
 
-        #   Copy the requested cells
+            # Copy the requested cells
             if wb_sht_active:
 
-            #   Convert wb_sht to a standardized dictionary
+                # Convert wb_sht to a standardized dictionary
                 cl_dict = cl_autof_rd(mpy_trace, prj_dict, cells)
 
-            #   Loop through all the cells and copy them
+                # Loop through all the cells and copy them
                 for cl in cl_dict["cl_dict"]:
 
                     cl_dict[cl] = sheet_obj[cl].value
 
                 check = True
 
-            #   Create a log
-            #   The cells and/or ranges were copied.
-                log_message = (f'{prj_dict["cl_read_copied"]}\n'
-                              f'{prj_dict["cl_read_file"]}: {wb_path}\n'
-                              f'{prj_dict["cl_read_sht"]}: {wb_sht}\n'
-                              f'{prj_dict["cl_read_cls"]}: {cells}')
+                # Create a log
+                # The cells and/or ranges were copied.
+                log_message = (f'{prj_dict["loc"]["mpy"]["cl_read_copied"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["cl_read_file"]}: {wb_path}\n'
+                              f'{prj_dict["loc"]["mpy"]["cl_read_sht"]}: {wb_sht}\n'
+                              f'{prj_dict["loc"]["mpy"]["cl_read_cls"]}: {cells}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}\n'
-                      f'{prj_dict["cl_read_file"]}: {wb_path}\n'
-                      f'{prj_dict["cl_read_sht"]}: {wb_sht}\n'
-                      f'{prj_dict["cl_autof_rd_cls"]}: {cells}\n'
-                      f'{prj_dict["cl_read_dat"]}: {dat}\n'
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                      f'{prj_dict["loc"]["mpy"]["cl_read_file"]}: {wb_path}\n'
+                      f'{prj_dict["loc"]["mpy"]["cl_read_sht"]}: {wb_sht}\n'
+                      f'{prj_dict["loc"]["mpy"]["cl_autof_rd_cls"]}: {cells}\n'
+                      f'{prj_dict["loc"]["mpy"]["cl_read_dat"]}: {dat}\n'
                       f'VBA: {vba}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check, \
-        'cl_dict' : cl_dict
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check, \
+            'cl_dict' : cl_dict
+            }
+
+@metrics
 def cl_write(mpy_trace, prj_dict, wb_path):
 
     import mpy_fct, mpy_msg
-    import sys
+    import sys, gc
     from openpyxl import Workbook
 
     """ This function writes into cells of an Excel workbook.
@@ -370,39 +388,46 @@ def cl_write(mpy_trace, prj_dict, wb_path):
         Finish the function
     """
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'cl_write(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
 
     try:
 
-    #   Create a log
-    #   New workbook created.
-        log_message = (f'{prj_dict["cl_write_#######"]}\n'
+        # Create a log
+        # New workbook created.
+        log_message = (f'{prj_dict["loc"]["mpy"]["cl_write_#######"]}\n'
                       f'wb_path: {wb_path}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check
+            }
+
+@metrics
 def sht_edit(mpy_trace, prj_dict, wb_path, ops_dict):
 
     import mpy_fct, mpy_msg
-    import sys
+    import sys, gc
     from openpyxl import Workbook
 
     """ This function edits worksheets of an Excel workbook. There are
@@ -427,19 +452,19 @@ def sht_edit(mpy_trace, prj_dict, wb_path, ops_dict):
         - Finish the function
     """
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'sht_edit(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
     wb_sht_active = False
     wb_sht = f'{wb_sht}'
 
     try:
 
-    #   Load the workbook and retrieve all necessary returns
+        # Load the workbook and retrieve all necessary returns
         wb = wb_load(mpy_trace, prj_dict, wb_path, False, True)
         wb_check = wb["check"]
         wb_obj = wb["wb_obj"]
@@ -448,33 +473,33 @@ def sht_edit(mpy_trace, prj_dict, wb_path, ops_dict):
         cnt_sheets = len(wb_sheets)
         sht_active = wb["sht_active"]
         
-    #   Evaluate the availability of the workbook
+        # Evaluate the availability of the workbook
         if wb_check:
     
-        #   Evaluate if requested sheet exists as part of the workbook
+            # Evaluate if requested sheet exists as part of the workbook
             if wb_sht in wb_sheets:
 
-            #   Create a log
-            #   The requested workbook sheet was found.
-                log_message = (f'{prj_dict["sht_edit_found"]}\n'
+                # Create a log
+                # The requested workbook sheet was found.
+                log_message = (f'{prj_dict["loc"]["mpy"]["sht_edit_found"]}\n'
                               f'wb_sht: {wb_sht}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   The requested sheet was not found
+            # The requested sheet was not found
             else:
 
-            #   Create a log
-            #   Could not find the requested workbook sheet.
-                log_message = (f'{prj_dict["sht_edit_nfnd"]}\n'
-                              f'{prj_dict["sht_edit_file"]}: {wb_path}\n'
-                              f'{prj_dict["sht_edit_sht"]}: {wb_sht}\n'
-                              f'{prj_dict["sht_edit_shts"]}: {wb_sheets}')
+                # Create a log
+                # Could not find the requested workbook sheet.
+                log_message = (f'{prj_dict["loc"]["mpy"]["sht_edit_nfnd"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["sht_edit_file"]}: {wb_path}\n'
+                              f'{prj_dict["loc"]["mpy"]["sht_edit_sht"]}: {wb_sht}\n'
+                              f'{prj_dict["loc"]["mpy"]["sht_edit_shts"]}: {wb_sheets}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   Check for and execute create_sheet
+            # Check for and execute create_sheet
             if 'create_sheet' in ops_dict:
                 
-                #   Correction of sheet position if exceeding sheet count of the workbook.
+                    # Correction of sheet position if exceeding sheet count of the workbook.
                 if ops_dict["create_sheet"](1) > cnt_sheets:
                     
                     sht_pos = cnt_sheets
@@ -483,41 +508,41 @@ def sht_edit(mpy_trace, prj_dict, wb_path, ops_dict):
                     
                     sht_pos = ops_dict["create_sheet"](1)
                         
-            #   Evaluate if requested sheet exists as part of the workbook
+                # Evaluate if requested sheet exists as part of the workbook
                 if wb_sht in wb_sheets:
     
-                #   Create a log
-                #   Operation skipped. The requested worksheet already exists.
-                    log_message = (f'{prj_dict["sht_edit_found"]}\n'
+                    # Create a log
+                    # Operation skipped. The requested worksheet already exists.
+                    log_message = (f'{prj_dict["loc"]["mpy"]["sht_edit_found"]}\n'
                                   f'wb_sht: {wb_sht}')
                     mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
     
-            #   The requested sheet was not found
+                # The requested sheet was not found
                 else:
 
-#   TODO                sheet_name = 
+    # TODO                sheet_name = 
                     dummy = 0
                 
-            #   Create a log
-            #   Workbook sheet created.
-                log_message = (f'{prj_dict["sht_edit_create_sheet_done"]}\n'
-                              f'{prj_dict["sht_edit_name"]}: {sheet_name}')
+                # Create a log
+                # Workbook sheet created.
+                log_message = (f'{prj_dict["loc"]["mpy"]["sht_edit_create_sheet_done"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["sht_edit_name"]}: {sheet_name}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   Check for and execute rename_sheet
+            # Check for and execute rename_sheet
             elif 'rename_sheet' in ops_dict:
                 
-            #   Create a log
-            #   Workbook sheet renamed.
-                log_message = (f'{prj_dict["sht_edit_rename_sheet_done"]}\n'
-                              f'{prj_dict["sht_edit_old_name"]}: {old_name}\n'
-                              f'{prj_dict["sht_edit_new_name"]}: {new_name}')
+                # Create a log
+                # Workbook sheet renamed.
+                log_message = (f'{prj_dict["loc"]["mpy"]["sht_edit_rename_sheet_done"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["sht_edit_old_name"]}: {old_name}\n'
+                              f'{prj_dict["loc"]["mpy"]["sht_edit_new_name"]}: {new_name}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   Check for and execute duplicate_sheet
+            # Check for and execute duplicate_sheet
             elif 'duplicate_sheet' in ops_dict:
                 
-            #   Correction of sheet position if exceeding sheet count of the workbook.
+                # Correction of sheet position if exceeding sheet count of the workbook.
                 if ops_dict["duplicate_sheet"](2) > cnt_sheets:
                     
                     sht_pos = cnt_sheets
@@ -526,33 +551,40 @@ def sht_edit(mpy_trace, prj_dict, wb_path, ops_dict):
                     
                     sht_pos = ops_dict["duplicate_sheet"](2)
 
-#   TODO                sheet_name = 
-#   TODO                dup_name = 
+    # TODO                sheet_name = 
+    # TODO                dup_name = 
                     dummy = 0
                 
-            #   Create a log
-            #   Workbook sheet duplicated.
-                log_message = (f'{prj_dict["sht_edit_duplicate_sheet_done"]}\n'
-                               f'{prj_dict["sht_edit_name"]}: {sheet_name}\n'
-                               f'{prj_dict["sht_edit_dup_name"]}: {dup_name}')
+                # Create a log
+                # Workbook sheet duplicated.
+                log_message = (f'{prj_dict["loc"]["mpy"]["sht_edit_duplicate_sheet_done"]}\n'
+                               f'{prj_dict["loc"]["mpy"]["sht_edit_name"]}: {sheet_name}\n'
+                               f'{prj_dict["loc"]["mpy"]["sht_edit_dup_name"]}: {dup_name}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   Check for and execute remove_sheet
+            # Check for and execute remove_sheet
             elif 'remove_sheet' in ops_dict:
-#   TODO
+    # TODO
                 dummy = 0
                 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check
+            }
+
+@metrics
 def wb_close(mpy_trace, prj_dict, wb_path):
 
     """ This function closes an MS Excel workbook. It is advisory to
@@ -567,99 +599,106 @@ def wb_close(mpy_trace, prj_dict, wb_path):
     """
 
     import mpy_fct, mpy_msg
-    import sys
+    import sys, gc
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'wb_close(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
 
     try:
 
-    #   Test if a list of workbook objects was created
+        # Test if a list of workbook objects was created
         if 'mpy_xl_loaded_wb_lst' in prj_dict:
 
-        #   Raise an ERROR if the prj_dict key exists, but is not a dictionary
+            # Raise an ERROR if the prj_dict key exists, but is not a dictionary
             if not type(prj_dict["mpy_xl_loaded_wb_lst"]) is dict:
 
-            #   Create a log
-            #   The dedicated list for MS Excel workbook objects appears to be occupied by
-            #   a user variable (type mismatch).
-                log_message = (f'{prj_dict["wb_close_lst_occupied"]}\n'
-                              f'{prj_dict["wb_close_lst_type"]}: {type(prj_dict["mpy_xl_loaded_wb_lst"])}\n'
-                              f'{prj_dict["wb_close_lst_content"]}: {prj_dict["mpy_xl_loaded_wb_lst"]}')
+                # Create a log
+                # The dedicated list for MS Excel workbook objects appears to be occupied by
+                # a user variable (type mismatch).
+                log_message = (f'{prj_dict["loc"]["mpy"]["wb_close_lst_occupied"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["wb_close_lst_type"]}: {type(prj_dict["mpy_xl_loaded_wb_lst"])}\n'
+                              f'{prj_dict["loc"]["mpy"]["wb_close_lst_content"]}: {prj_dict["mpy_xl_loaded_wb_lst"]}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-        #   Move along if the prj_dict key exists and is a dictionary
+            # Move along if the prj_dict key exists and is a dictionary
             else:
 
-            #   Check if file exists and convert the file path to a path object
+                # Check if file exists and convert the file path to a path object
                 if mpy_fct.pathtool(mpy_trace, wb_path)["file_exists"]:
 
                     wb_path = mpy_fct.pathtool(mpy_trace, wb_path)["out_path"]
 
-                #   Check, if the workbook is an existing object and load it, if available
+                    # Check, if the workbook is an existing object and load it, if available
                     if wb_path in prj_dict["mpy_xl_loaded_wb_lst"]:
 
                         wb_obj = prj_dict["mpy_xl_loaded_wb_lst"][wb_path]
 
-                    #   Close the workbook
+                        # Close the workbook
                         wb_obj.close()
 
-                    #   Remove the wb_obj from the open workbooks dictionary
+                        # Remove the wb_obj from the open workbooks dictionary
                         prj_dict["mpy_xl_loaded_wb_lst"].pop(wb_path)
 
-                    #   Create a log
-                    #   The workbook object was closed.
-                        log_message = (f'{prj_dict["wb_close_done"]}\n'
+                        # Create a log
+                        # The workbook object was closed.
+                        log_message = (f'{prj_dict["loc"]["mpy"]["wb_close_done"]}\n'
                                       f'wb_path: {wb_path}\n'
                                       f'wb_obj: {wb_obj}')
                         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-                #   No such workbook object exists
+                    # No such workbook object exists
                     else:
 
-                    #   Create a log
-                    #   The workbook object could not be found.
-                        log_message = (f'{prj_dict["wb_close_nfnd"]}\n'
+                        # Create a log
+                        # The workbook object could not be found.
+                        log_message = (f'{prj_dict["loc"]["mpy"]["wb_close_nfnd"]}\n'
                                       f'wb_path: {wb_path}\n'
-                                      f'{prj_dict["wb_close_obj_loaded"]}: {prj_dict["mpy_xl_loaded_wb_lst"]}')
+                                      f'{prj_dict["loc"]["mpy"]["wb_close_obj_loaded"]}: {prj_dict["mpy_xl_loaded_wb_lst"]}')
                         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-            #   No such file exists
+                # No such file exists
                 else:
 
-                #   Create a log
-                #   The workbook does not exist.
-                    log_message = (f'{prj_dict["wb_close_no_wb"]}\n'
+                    # Create a log
+                    # The workbook does not exist.
+                    log_message = (f'{prj_dict["loc"]["mpy"]["wb_close_no_wb"]}\n'
                                   f'wb_path: {wb_path}')
                     mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-    #   No list of workbook objects was created
+        # No list of workbook objects was created
         else:
 
-        #   Create a log
-        #   No workbook object list was created. No loaded workbooks could be found and closed.
+            # Create a log
+            # No workbook object list was created. No loaded workbooks could be found and closed.
             log_message = prj_dict["wb_close_no_lst"]
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}\n'
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
                       f'wb_path: {wb_path}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check
+            }
+
+@metrics
 def wb_close_all(mpy_trace, prj_dict):
 
     """ This function closes all MS Excel workbooks opened by this project. It is
@@ -673,45 +712,45 @@ def wb_close_all(mpy_trace, prj_dict):
     """
 
     import mpy_fct, mpy_msg
-    import sys
+    import sys, gc
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'wb_close_all(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
 
     try:
 
-    #   Test if a list of workbook objects was created
+        # Test if a list of workbook objects was created
         if 'mpy_xl_loaded_wb_lst' in prj_dict:
 
             if len(prj_dict["mpy_xl_loaded_wb_lst"]) > 0:
 
-            #   Closing all open workbooks. Deleting the list.
+                # Closing all open workbooks. Deleting the list.
                 dyn_msg = prj_dict["wb_close_all_cls_del"]
 
             else:
 
-            #   Deleting the list.
+                # Deleting the list.
                 dyn_msg = prj_dict["wb_close_all_del"]
 
-        #   Create a log
-        #   A workbook object list was found.
-            log_message = (f'{prj_dict["wb_close_all_lst_fnd"]}{dyn_msg}\n'
-                          f'{prj_dict["wb_close_all_obj_loaded"]}: {prj_dict["mpy_xl_loaded_wb_lst"]}')
+            # Create a log
+            # A workbook object list was found.
+            log_message = (f'{prj_dict["loc"]["mpy"]["wb_close_all_lst_fnd"]}{dyn_msg}\n'
+                          f'{prj_dict["loc"]["mpy"]["wb_close_all_obj_loaded"]}: {prj_dict["mpy_xl_loaded_wb_lst"]}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   Make a list from the list of loaded workbooks to loop through it
+            # Make a list from the list of loaded workbooks to loop through it
             wb_list = list(prj_dict["mpy_xl_loaded_wb_lst"])
             i = 0
 
-        #   Loop through all workbook objects to close them
+            # Loop through all workbook objects to close them
             while prj_dict["mpy_xl_loaded_wb_lst"] != {}:
 
-            #   Close a workbook
+                # Close a workbook
                 wb_close(mpy_trace, prj_dict, wb_list[i])
                 i += 1
 
@@ -719,26 +758,33 @@ def wb_close_all(mpy_trace, prj_dict):
 
         else:
 
-        #   Create a log
-        #   No workbooks list has been created. Nothing to be closed.
+            # Create a log
+            # No workbooks list has been created. Nothing to be closed.
             log_message = prj_dict["wb_close_all_nothing"]
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check
+            }
+
+@metrics
 def wb_create(mpy_trace, prj_dict, xl_path):
 
     import mpy_fct, mpy_msg
-    import sys
+    import sys, gc
     from openpyxl import Workbook
 
     """ This function creates a new empty excel workbook at a path handed
@@ -751,12 +797,12 @@ def wb_create(mpy_trace, prj_dict, xl_path):
         check - The function ended with no errors
     """
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'wb_create(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
 
     try:
@@ -764,25 +810,32 @@ def wb_create(mpy_trace, prj_dict, xl_path):
         wb = Workbook()
         wb.save(filename = f'{xl_path}')
 
-    #   Create a log
-    #   New workbook created.
-        log_message = (f'{prj_dict["wb_create_done"]}\n'
+        # Create a log
+        # New workbook created.
+        log_message = (f'{prj_dict["loc"]["mpy"]["wb_create_done"]}\n'
                       f'xl_path: {xl_path}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check
+            }
+
+@metrics
 def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
 
     """ This function connects to an MS Excel workbook. It is advisory to
@@ -813,15 +866,15 @@ def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
     """
 
     import mpy_fct, mpy_msg
-    import sys
+    import sys, gc
     from openpyxl import load_workbook
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'wb_load(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     path_dct = mpy_fct.pathtool(mpy_trace, wb_path)
     wb_path = path_dct["out_path"]
     check = False
@@ -831,88 +884,95 @@ def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
 
     try:
 
-    #   Create a list of workbook objects, if it does not yet exist
+        # Create a list of workbook objects, if it does not yet exist
         if not 'mpy_xl_loaded_wb_lst' in prj_dict:
 
             prj_dict["mpy_xl_loaded_wb_lst"] = {}
 
-    #   Raise an ERROR if the prj_dict key exists, but is not a dictionary
+        # Raise an ERROR if the prj_dict key exists, but is not a dictionary
         elif not type(prj_dict["mpy_xl_loaded_wb_lst"]) is dict:
 
-            #   Create a log
-            #   The dedicated list for MS Excel workbook objects appears to be occupied by a user variable.
-                log_message = (f'{prj_dict["wb_load_wblst_mismatch"]}\n'
+                # Create a log
+                # The dedicated list for MS Excel workbook objects appears to be occupied by a user variable.
+                log_message = (f'{prj_dict["loc"]["mpy"]["wb_load_wblst_mismatch"]}\n'
                               f'type(prj_dict[\"mpy_xl_loaded_wb_lst\"]): {type(prj_dict["mpy_xl_loaded_wb_lst"])}\n'
                               f'prj_dict[\"mpy_xl_loaded_wb_lst\"]: {prj_dict["mpy_xl_loaded_wb_lst"]}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-    #   Test if the workbook path is an existing file
+        # Test if the workbook path is an existing file
         if path_dct["file_exists"]:
 
-        #   Test if the workbook is already an existing object
+            # Test if the workbook is already an existing object
             if wb_path in prj_dict["mpy_xl_loaded_wb_lst"]:
 
-            #   Create a log
-            #   The workbook is already a loaded object. No action required.
-                log_message = (f'{prj_dict["wb_load_wb_exists"]}\n'
-                              f'{prj_dict["wb_load_path"]}: {wb_path}\n'
-                              f'{prj_dict["wb_load_obj"]}: {prj_dict["mpy_xl_loaded_wb_lst"][wb_path]}')
+                # Create a log
+                # The workbook is already a loaded object. No action required.
+                log_message = (f'{prj_dict["loc"]["mpy"]["wb_load_wb_exists"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["wb_load_path"]}: {wb_path}\n'
+                              f'{prj_dict["loc"]["mpy"]["wb_load_obj"]}: {prj_dict["mpy_xl_loaded_wb_lst"][wb_path]}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-            #   Fetch the workbook
+                # Fetch the workbook
                 wb_obj = prj_dict["mpy_xl_loaded_wb_lst"][wb_path]
 
             else:
 
-            #   Load the workbook
+                # Load the workbook
                 wb_obj = load_workbook(wb_path, data_only=dat, keep_vba=vba)
 
-            #   Connect the filepath to the object
+                # Connect the filepath to the object
                 prj_dict["mpy_xl_loaded_wb_lst"][wb_path] = wb_obj
 
-            #   Create a log
-            #   MS Excel workbook loaded.
-                log_message = (f'{prj_dict["wb_load_wb_loaded"]}\n'
-                              f'{prj_dict["wb_load_path"]}: {wb_path}')
+                # Create a log
+                # MS Excel workbook loaded.
+                log_message = (f'{prj_dict["loc"]["mpy"]["wb_load_wb_loaded"]}\n'
+                              f'{prj_dict["loc"]["mpy"]["wb_load_path"]}: {wb_path}')
                 mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        #   Retrieve the name of the active sheet
+            # Retrieve the name of the active sheet
             sht_active = prj_dict["mpy_xl_loaded_wb_lst"][wb_path].active.title
 
-        #   Retrieve all sheetnames of the workbook
+            # Retrieve all sheetnames of the workbook
             wb_sheets = prj_dict["mpy_xl_loaded_wb_lst"][wb_path].sheetnames
 
             check = True
 
         else:
-        #   Create a log
-        #   The file does not exist.
-            log_message = (f'{prj_dict["wb_load_no_file"]}\n'
-                          f'{prj_dict["wb_load_path"]}: {wb_path}\n'
+            # Create a log
+            # The file does not exist.
+            log_message = (f'{prj_dict["loc"]["mpy"]["wb_load_no_file"]}\n'
+                          f'{prj_dict["loc"]["mpy"]["wb_load_path"]}: {wb_path}\n'
                           f'file_exists: {path_dct["file_exists"]}\n'
                           f'file_name: {path_dct["file_name"]}\n'
                           f'dir_exists: {path_dct["dir_exists"]}\n'
                           f'dir_name: {path_dct["dir_name"]}')
             mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}\n'
-                      f'{prj_dict["wb_load_path"]}: {wb_path}\n'
-                      f'{prj_dict["wb_load_dat"]}: {dat}\n'
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_load_path"]}: {wb_path}\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_load_dat"]}: {dat}\n'
                       f'VBA: {vba}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check, \
-        'wb_obj' : wb_obj, \
-        'wb_path' : wb_path, \
-        'wb_sheets' : wb_sheets, \
-        'sht_active' : sht_active
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check, \
+            'wb_obj' : wb_obj, \
+            'wb_path' : wb_path, \
+            'wb_sheets' : wb_sheets, \
+            'sht_active' : sht_active
+            }
+
+@metrics
 def wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl):
 
     """ This function retrieves all attributes of an MS Excel table. To achieve
@@ -931,14 +991,14 @@ def wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl):
     """
 
     import mpy_fct, mpy_msg
-    import sys
+    import sys, gc
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'wb_tbl_attributes(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
     wb_path = mpy_fct.pathtool(mpy_trace, wb_path)["out_path"]
     wb_obj = 'VOID'
@@ -946,46 +1006,53 @@ def wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl):
 
     try:
 
-    #   Load the workbook and inquire for tables
+        # Load the workbook and inquire for tables
         wb = wb_tbl_inquiry(mpy_trace, prj_dict, wb_path)
 
-    #   Retrieve the workbook object
+        # Retrieve the workbook object
         wb_obj = prj_dict["mpy_xl_loaded_wb_lst"][wb_path]
 
-    #   Inquire the according worksheet of the table
+        # Inquire the according worksheet of the table
         rtrn = wb["tbl_sht"]
         sht = rtrn[tbl]
 
-    #   Get all values of an MS Excel table
+        # Get all values of an MS Excel table
         datb_temp = wb_obj[sht].tables.values()
         datb_temp = opyxl_tbl_datb_dict(mpy_trace, prj_dict, datb_temp, tbl)
         tbl_attr = datb_temp["tbl_attr"]
 
-    #   Create a log
-    #   Retrieved all values of an MS Excel table.
-        log_message = (f'{prj_dict["wb_tbl_attributes_retr"]}\n'
-                      f'{prj_dict["wb_tbl_attributes_path"]}: {wb_path}\n'
-                      f'{prj_dict["wb_tbl_attributes_sheet"]}: {sht}\n'
-                      f'{prj_dict["wb_tbl_attributes_tbl"]}: {tbl}')
+        # Create a log
+        # Retrieved all values of an MS Excel table.
+        log_message = (f'{prj_dict["loc"]["mpy"]["wb_tbl_attributes_retr"]}\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_tbl_attributes_path"]}: {wb_path}\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_tbl_attributes_sheet"]}: {sht}\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_tbl_attributes_tbl"]}: {tbl}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}\n'
-                      f'{prj_dict["wb_tbl_attributes_path"]}: {wb_path}\n'
-                      f'{prj_dict["wb_tbl_attributes_tbl"]}: {tbl}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_tbl_attributes_path"]}: {wb_path}\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_tbl_attributes_tbl"]}: {tbl}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check, \
-        'wb_obj' : wb_obj, \
-        'tbl_attr' : tbl_attr
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check, \
+            'wb_obj' : wb_obj, \
+            'tbl_attr' : tbl_attr
+            }
+
+@metrics
 def wb_tbl_inquiry(mpy_trace, prj_dict, wb_path):
 
     """ This function inquires all tables of a worksheet. The result is a
@@ -1004,14 +1071,14 @@ def wb_tbl_inquiry(mpy_trace, prj_dict, wb_path):
     """
 
     import mpy_fct, mpy_msg
-    import sys
+    import sys, gc
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'wb_tbl_inquiry(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
     wb_path = mpy_fct.pathtool(mpy_trace, wb_path)["out_path"]
     wb_obj = 'VOID'
@@ -1026,78 +1093,85 @@ def wb_tbl_inquiry(mpy_trace, prj_dict, wb_path):
 
     try:
 
-    #   Load the workbook
+        # Load the workbook
         wb = wb_load(mpy_trace, prj_dict, wb_path, dat, vba)
 
-    #   Retrieve the workbook object
+        # Retrieve the workbook object
         wb_obj = prj_dict["mpy_xl_loaded_wb_lst"][wb_path]
 
-    #   Retrieve all sheet names of the workbook
+        # Retrieve all sheet names of the workbook
         wb_sheets = wb["wb_sheets"]
 
-    #   Retrieve the tables dictionary and create a dictionary with the table
-    #   being the key and the sheet of the workbook being the object
+        # Retrieve the tables dictionary and create a dictionary with the table
+        # being the key and the sheet of the workbook being the object
         for sht in wb_sheets:
 
-        #   Get all tables of the sheet "sht" including the range (List)
+            # Get all tables of the sheet "sht" including the range (List)
             tbl_tmp = wb_obj[sht].tables.items()
 
-        #   Build the dictionaries
+            # Build the dictionaries
             for index, tuple in enumerate(tbl_tmp):
 
-            #   Extract table and range from the List of tuples
+                # Extract table and range from the List of tuples
                 tbl = tuple[0]
                 rng = tuple[1]
 
-            #   Create a list of tables
+                # Create a list of tables
                 if tbl_lst == void_list:
                     tbl_lst = [tbl]
                 else:
                     tbl_lst.append(tbl)
 
-            #   Create a dictionary of tables and ranges
+                # Create a dictionary of tables and ranges
                 if tbl_rng == void_dict:
                     tbl_rng = {tbl : rng}
                 else:
                     tbl_rng.update({tbl : rng})
 
-            #   Create a dictionary of tables and sheets
+                # Create a dictionary of tables and sheets
                 if tbl_sht == void_dict:
                     tbl_sht = {tbl : sht}
                 else:
                     tbl_sht.update({tbl : sht})
 
-    #   Create a log
-    #   Retrieved all tables of a workbook.
-        log_message = (f'{prj_dict["wb_tbl_inquiry_retr"]}\n'
-                      f'{prj_dict["wb_tbl_inquiry_Path"]}: {wb_path}\n\n'
-                      f'{prj_dict["wb_tbl_inquiry_tbl_wksh"]}:\n{tbl_sht}\n\n'
-                      f'{prj_dict["wb_tbl_inquiry_tbl_rng"]}:\n{tbl_rng}')
+        # Create a log
+        # Retrieved all tables of a workbook.
+        log_message = (f'{prj_dict["loc"]["mpy"]["wb_tbl_inquiry_retr"]}\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_tbl_inquiry_Path"]}: {wb_path}\n\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_tbl_inquiry_tbl_wksh"]}:\n{tbl_sht}\n\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_tbl_inquiry_tbl_rng"]}:\n{tbl_rng}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}\n'
-                      f'{prj_dict["wb_tbl_inquiry_Path"]}: {wb_path}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                      f'{prj_dict["loc"]["mpy"]["wb_tbl_inquiry_Path"]}: {wb_path}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check, \
-        'wb_obj' : wb_obj, \
-        'wb_sheets' : wb_sheets, \
-        'tbl_lst' : tbl_lst, \
-        'tbl_rng' : tbl_rng, \
-        'tbl_sht' : tbl_sht
-        }
+    finally:
 
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check, \
+            'wb_obj' : wb_obj, \
+            'wb_sheets' : wb_sheets, \
+            'tbl_lst' : tbl_lst, \
+            'tbl_rng' : tbl_rng, \
+            'tbl_sht' : tbl_sht
+            }
+
+@metrics
 def opyxl_tbl_datb_dict(mpy_trace, prj_dict, datb, tbl):
 
     import mpy_fct, mpy_msg, mpy_common
-    import sys
+    import sys, gc
 
     """ This function converts the horrible interface of an openpyxl databook
         to a dictionary carrying all attributes of the table to be analyzed.
@@ -1113,28 +1187,28 @@ def opyxl_tbl_datb_dict(mpy_trace, prj_dict, datb, tbl):
         tbl_attr - List with all information of the openpyxl databook.
     """
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
     operation = 'tbl_opyxl_datb_dict(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
     datb = f'{datb}'
 
     try:
-    #   Search for regular expressions in the databook to extract only the
-    #   relevant Part.
+        # Search for regular expressions in the databook to extract only the
+        # relevant Part.
 
-    #   1. Purge all whitespace characters to make regex easier and more precise
+        # 1. Purge all whitespace characters to make regex easier and more precise
         datb = mpy_common.regex_replace(mpy_trace, prj_dict, datb, '\s', '')
 
-    #   2. Split the databook into a list of distinct table attributes
+        # 2. Split the databook into a list of distinct table attributes
         delimiter = '<openpyxl.worksheet.table.Tableobject>'
         datb_list = mpy_common.regex_split(mpy_trace, prj_dict, datb, delimiter)
 
-    #   3. Iterate through the list in search for the table and delete
-    #   elements not associated with it
+        # 3. Iterate through the list in search for the table and delete
+        # elements not associated with it
         pattern = f'\'{tbl}\''
 
         for item in datb_list:
@@ -1144,34 +1218,40 @@ def opyxl_tbl_datb_dict(mpy_trace, prj_dict, datb, tbl):
             if result:
                 break
 
-    #   4. Replace the comma at the end of the string, if there is any
+        # 4. Replace the comma at the end of the string, if there is any
         item = mpy_common.regex_replace(mpy_trace, prj_dict, item, ',$', '')
 
-    #   5. Add the first delimiter and reinsert some spaces for compatibility
-    #   with Openpyxl
+        # 5. Add the first delimiter and reinsert some spaces for compatibility
+        # with Openpyxl
         item = f'<openpyxl.worksheet.table.Tableobject>{item}'
         item = mpy_common.regex_replace(mpy_trace, prj_dict, item, 'object>', ' object>')
 
-    #   6. Split the string into different sections
+        # 6. Split the string into different sections
         tbl_attr = mpy_common.regex_split(mpy_trace, prj_dict, item, ',')
 
-    #   Create a log
-        log_message = (f'{prj_dict["opyxl_tbl_datb_dict_conv"]}\n'
-                      f'{prj_dict["opyxl_tbl_datb_dict_tbl"]}: {tbl}\n'
-                      f'{prj_dict["opyxl_tbl_datb_dict_attr"]}:\n{tbl_attr}')
+        # Create a log
+        log_message = (f'{prj_dict["loc"]["mpy"]["opyxl_tbl_datb_dict_conv"]}\n'
+                      f'{prj_dict["loc"]["mpy"]["opyxl_tbl_datb_dict_tbl"]}: {tbl}\n'
+                      f'{prj_dict["loc"]["mpy"]["opyxl_tbl_datb_dict_attr"]}:\n{tbl_attr}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
         check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}\n'
-                      f'{prj_dict["opyxl_tbl_datb_dict_tbl"]}: {tbl}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                      f'{prj_dict["loc"]["mpy"]["opyxl_tbl_datb_dict_tbl"]}: {tbl}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-#   Return a dictionary
-    return{
-        'check' : check, \
-        'tbl_attr' : tbl_attr
-        }
+    finally:
+
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check, \
+            'tbl_attr' : tbl_attr
+            }

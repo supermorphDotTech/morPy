@@ -1,7 +1,8 @@
 """
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
 Author:     Bastian Neuwirth
-Date:       13.05.2022
-Version:    0.1
 Descr.:     This module provides UI-building functions using the TKinter
             libraries.
 
@@ -53,14 +54,14 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
     """
 
     import mpy_fct, mpy_msg, mpy_common
-    import sys
+    import sys, gc
 
-#   Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_ui_tk'
     operation = 'tk_progbar_indeterminate(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-#   Preparing parameters
+    # Preparing parameters
     check = False
     frame_title = f'{GUI_dict["frame_title"]}'
     frame_width = f'{GUI_dict["frame_width"]}'
@@ -72,14 +73,14 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
 
     try:
 
-    #   Invoke GUI
+        # Invoke GUI
         root = Tk()
 
-    #   Headline on top of the progress bar
+        # Headline on top of the progress bar
         label = Label(root, text = headline_txt, font = headline_font_size)
         label.pack(pady=5)
 
-    #   Draw progress bar
+        # Draw progress bar
         progbar = ttk.Progressbar(root, orient=HORIZONTAL, length=pbar_length, mode="indeterminate")
         progbar.pack(pady=20)
         progbar.start()
@@ -93,7 +94,7 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
         All logs will show up in the status text below the progress bar.
         """
 
-    #   Open a dialog to select a file
+        # Open a dialog to select a file
         init_dir = prj_dict["prj_path"]
         ftypes = (('All Files','*.*'),('Text Files','*.txt'))
         file = mpy_common.dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title)["sel_file"]
@@ -103,7 +104,7 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
         status.pack(pady=5)
         status.config(text = file)
 
-    #   Open a dialog to select a directory
+        # Open a dialog to select a directory
         init_dir = prj_dict["prj_path"]
         directory = mpy_common.dialog_sel_dir(mpy_trace, prj_dict, init_dir, title)["sel_dir"]
         mpy_fct.testprint(mpy_trace, f'{directory}')
@@ -116,18 +117,25 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
         The window will be closed once all code is executed.
         """
 
-    #   Close window and exit the loop
+        # Close window and exit the loop
         root.destroy
         root.mainloop()
 
         check = True
 
-#   Error detection
+    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
-    return{
-        'check' : check
-        }
+    finally:
+
+        # Garbage collection
+        gc.collect()
+
+        # Return a dictionary
+        return{
+            'mpy_trace' : mpy_trace, \
+            'check' : check
+            }

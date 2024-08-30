@@ -1,113 +1,81 @@
 """
-Author:     Bastian Neuwirth
-Date:       28.06.2021
-Version:    0.1
-Descr.:     This module is prebuilt to use the Python Productivity Suite (morPy).
+Author: Bastian Neuwirth
+Date: 28.08.2024
+Version: 1.0.0c
 
+IN PROGRESS
+- Call parameters from the sub-dictionary prj_dict['mpy_params']
+    > Weiter mit 'mpy_log_lvl_noprint' : mpy_log_lvl_noprint, \
+    
 TODO
-[- enqueue log_db mit lock und unlock
-    > Immer das Modul mit angeben mpy_msg.[...]
-- enqueue log_txt mit lock und unlock
-    > Immer das Modul mit angeben mpy_msg.[...]
-    ]
-    >>> Erstmal verworfen, um logging zeitnah zu ermöglichen
-    >>> Workaround nötig
+- Can I create a macro for logs?
+- Add :example to the headers
+- Note the datatype in the headers
+- Split the prj_dict deeper into a core-section
 
-- Listen von Objekten in Klassen überführen
-    > mpy_xl Workbooks
-    > mpy_xl_wb Tabellen
-    > mpy_xl Copy/Cut
-    > mpy_ui_tk
-    > webscraper
-    > mpy_mt
-
-- Localization
-    > Präfix core_ für alle framework-keys hinzufügen
-    > Gemeinsame Ausdrücke definieren, um das dictionary zu kürzen
-        > Im Idealfall je modul, nicht global, um flexibel zu bleiben
-
-- Anpassung wb_tbl_attributes, sodass tatsächlich nur die angefragte
-    Tabelle zurückgegeben wird
-
-- Unterscheidung Anzahl Logs/prints
-
-- Multithreading vorbereiten
->>>ToDo:
-    > verfügbare Threads erkennen
-    > Threads direkt reservieren (max. von Parametern beachten)
-        > Minimal verfügbare Threads für Multithreading aktivieren
-        >>> Sonst Fallback auf morPy Thread
-    > Nutzung max. Anz. Threads vorbereiten (z.b. max 75%)
-        > Am besten mit einer Reservierung im Betriebssystem
-    > ERSTEN FREIEN Thread für morPy reservieren
-        > Vermutlich wird eine queue für morPy Thread notwendig
-        > Dadurch kann auch ein Stau entstehen
-        >>> Workauround durch Rückmeldung von Task 1, dass logging fertig
-        >>> Erst dann darf der aufrufende Thread weiter arbeiten
-    > Restliche Threads werden durchlaufen (cycle through) von
-        morPy Thread +1 bis letzten Thread
-
-- Pfadbäume lesen und auswerten
-    > Ausbau zu Toll für
-        1) Recursive tree exploration
-        2) Tree traversal in a node
-
-- Webscraper.py
-   > Debugging der Antwort: Warum ist jeder request 'None'
-   + Ping-Routine entwickeln, für die Überprüfung am Anfang eines requests
-   + HTML-Response codes dictionary anlegen
-
-- mpy_fct.privileges_handler
-    > Debugging der Adminrechte-funktion
-
-- Paketkompilierung zu .exe und linux-shell (siehe Forks)
-
-- raise SystemExit wenn CRITICAL
-
-- Review/ToDo mpy_fct.perfinfo()
-
+DONE:
+- !! Always return function credentials for the metrics wrapper 'mpy_trace', 'module', 'operation'
 """
 
-if __name__ == '__main__':
+import sys
+import os
+import pathlib
+import logging
 
-#   Import standard modules only
-    import sys, os, pathlib
+# Setup fallback-logging for __main__
+logging.basicConfig(level=logging.CRITICAL)
+mpy_init_check = False
 
-#   Add the project specific module library to sys.path
-    lib_path = os.path.join(pathlib.Path(__file__).parent.resolve(),'lib')
-    sys.path.append(lib_path)
+# TODO develop pre-init metrics
+def add_mpy_paths():
+    """
+    Add morPy specific paths to sys.path.
+    """
+    base_path = pathlib.Path(__file__).parent.resolve()
+    sys.path.append(os.path.join(base_path, 'lib'))
+    sys.path.append(os.path.join(base_path, 'loc'))
+    sys.path.append(os.path.join(base_path, 'prj'))
+    sys.path.append(os.path.join(base_path, 'res'))
 
-#   Add the path for the localized dictionaries
-    loc_path = os.path.join(pathlib.Path(__file__).parent.resolve(),'loc')
-    sys.path.append(loc_path)
-
-#   Import morPy modules
-    import mpy_init, mpy_exit
-
-#   Initialize the morPy tracing dictionary
+# TODO develop pre-init metrics
+def initialize_morpy():
+    """
+    Initialize crucial morPy components.
+    """
+    import mpy_init
     mpy_trace = mpy_init.init_cred()
-
-#   Initialize the globally used project dictionary
-    global prj_dict
     prj_dict = mpy_init.init(mpy_trace)
+    return mpy_trace, prj_dict
 
-    """--------------------------------------------------
-            >>> YOUR PROGRAM STARTS HERE <<<
+def main(mpy_trace, prj_dict):
+    """
+    Execute the main logic of the program.
+    """
+    # import prj_exec
+    # prj_exec.prj_init(mpy_trace, prj_dict)
+    # prj_exec.prj_run(mpy_trace, prj_dict)
+    # prj_exec.prj_exit(mpy_trace, prj_dict)
+    import mpy_dbg
+    mpy_dbg.mpy_ut(mpy_trace, prj_dict)
 
-        This section is only meant to execute modules.
-        Optionally, it may be executed with the multi-
-        processing capabilities of morPy.
-    --------------------------------------------------"""
-
-#   Import project modules
-    import debug
-
-    """ >>> DEBUGGING <<< """
-    debug.dbg(mpy_trace, prj_dict)
-
-    """--------------------------------------------------
-            >>> YOUR PROGRAM ENDS HERE <<<
-    --------------------------------------------------"""
-
-#   Executing the morPy exit routine
+def finalize_morpy(mpy_trace, prj_dict):
+    """
+    Finalize morPy components.
+    """
+    import mpy_exit
     mpy_exit.exit(mpy_trace, prj_dict)
+    
+if __name__ == '__main__':
+    add_mpy_paths()
+
+    try:
+        mpy_trace, prj_dict = initialize_morpy()
+        mpy_init_check = True
+        main(mpy_trace, prj_dict)
+    except Exception as e:
+        import mpy_fct
+        mpy_fct.handle_exception_main(e, mpy_init_check)
+        raise
+    finally:
+        if mpy_init_check:
+            finalize_morpy(mpy_trace, prj_dict)

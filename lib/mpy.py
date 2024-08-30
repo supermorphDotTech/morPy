@@ -26,22 +26,24 @@ def decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding):
                    '' - Empty. Encoding will be determined automatically. May be incorrect.
                    'utf-16-le' - Decode UTF-16 LE to buffered text.
     :return - dictionary
-        result - Decoded result. Bufferd object that my be used with the readlines() method.
+        result - Decoded result. Buffered object that my be used with the readlines() method.
         encoding - String containing the encoding of src_input.
+        mpy_trace - [dictionary] operation credentials and tracing
     """
 
     try:
         import sys, mpy_common
         return mpy_common.decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'decode_to_plain_text(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'decode_to_plain_text(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title):
@@ -58,20 +60,22 @@ def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title):
     :return - dictionary
         check - The function ended with no errors and a file was chosen
         sel_file - Path of the selected file
+        mpy_trace - [dictionary] operation credentials and tracing
     """
 
     try:
         import sys, mpy_common
         return mpy_common.dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'dialog_sel_file(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'dialog_sel_file(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def dialog_sel_dir(mpy_trace, prj_dict, init_dir, title):
@@ -85,20 +89,22 @@ def dialog_sel_dir(mpy_trace, prj_dict, init_dir, title):
     :return - dictionary
         check - The function ended with no errors and a file was chosen
         sel_dir - Path of the selected directory
+        mpy_trace - [dictionary] operation credentials and tracing
     """
 
     try:
         import sys, mpy_common
         return mpy_common.dialog_sel_dir(mpy_trace, prj_dict, init_dir, title)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'dialog_sel_dir(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'dialog_sel_dir(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm):
@@ -115,20 +121,22 @@ def fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm):
         check - The function ended with no errors
         source - Path to the source file as a path object
         dest - Path to the destination file as a path object
+        mpy_trace - [dictionary] operation credentials and tracing
     """
 
     try:
         import sys, mpy_common
         return mpy_common.fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'fso_copy_file(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'fso_copy_file(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_create_dir(mpy_trace, prj_dict, mk_dir):
@@ -139,23 +147,24 @@ def fso_create_dir(mpy_trace, prj_dict, mk_dir):
         mpy_trace - operation credentials and tracing
         prj_dict - morPy global dictionary
         mk_dir - Path to the directory/tree to be created
-
     :return - dictionary
         check - The function ended with no errors
+        mpy_trace - [dictionary] operation credentials and tracing
     """
 
     try:
         import sys, mpy_common
         return mpy_common.fso_create_dir(mpy_trace, prj_dict, mk_dir)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'fso_create_dir(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'fso_create_dir(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_delete_dir(mpy_trace, prj_dict, del_dir):
@@ -168,20 +177,22 @@ def fso_delete_dir(mpy_trace, prj_dict, del_dir):
         del_dir - Path to the directory to be deleted
     :return - dictionary
         check - The function ended with no errors
+        mpy_trace - [dictionary] operation credentials and tracing
     """
 
     try:
         import sys, mpy_common
         return mpy_common.fso_delete_dir(mpy_trace, prj_dict, del_dir)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'fso_delete_dir(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'fso_delete_dir(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_delete_file(mpy_trace, prj_dict, del_file):
@@ -195,20 +206,22 @@ def fso_delete_file(mpy_trace, prj_dict, del_file):
 
     :return - dictionary
         check - The function ended with no errors
+        mpy_trace - [dictionary] operation credentials and tracing
     """
 
     try:
         import sys, mpy_common
         return mpy_common.fso_delete_file(mpy_trace, prj_dict, del_file)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'fso_delete_file(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'fso_delete_file(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def fso_walk(mpy_trace, prj_dict, path, depth):
@@ -232,20 +245,22 @@ def fso_walk(mpy_trace, prj_dict, path, depth):
                             'files' : [file list]}
                  ...
                 }
+        mpy_trace - [dictionary] operation credentials and tracing
     """
 
     try:
         import sys, mpy_common
         return mpy_common.fso_walk(mpy_trace, prj_dict, path, depth)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'fso_walk(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'fso_walk(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_findall(mpy_trace, prj_dict, search_obj, pattern):
@@ -263,15 +278,16 @@ def regex_findall(mpy_trace, prj_dict, search_obj, pattern):
     try:
         import sys, mpy_common
         return mpy_common.regex_findall(mpy_trace, prj_dict, search_obj, pattern)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'regex_findall(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'regex_findall(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_find1st(mpy_trace, prj_dict, search_obj, pattern):
@@ -290,15 +306,16 @@ def regex_find1st(mpy_trace, prj_dict, search_obj, pattern):
     try:
         import sys, mpy_common
         return mpy_common.regex_find1st(mpy_trace, prj_dict, search_obj, pattern)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'regex_find1st(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'regex_find1st(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_split(mpy_trace, prj_dict, search_obj, delimiter):
@@ -318,15 +335,16 @@ def regex_split(mpy_trace, prj_dict, search_obj, delimiter):
     try:
         import sys, mpy_common
         return mpy_common.regex_split(mpy_trace, prj_dict, search_obj, delimiter)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'regex_split(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'regex_split(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
@@ -346,15 +364,16 @@ def regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
     try:
         import sys, mpy_common
         return mpy_common.regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'regex_replace(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'regex_replace(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
@@ -381,15 +400,16 @@ def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
     try:
         import sys, mpy_common
         return mpy_common.regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'regex_remove_special(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'regex_remove_special(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def textfile_write(mpy_trace, prj_dict, filepath, content):
@@ -409,15 +429,16 @@ def textfile_write(mpy_trace, prj_dict, filepath, content):
     try:
         import sys, mpy_common
         return mpy_common.textfile_write(mpy_trace, prj_dict, filepath, content)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'textfile_write(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'textfile_write(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def testprint(mpy_trace, input):
@@ -448,15 +469,16 @@ def wait_for_input(mpy_trace, prj_dict, msg_text):
     try:
         import sys, mpy_common
         return mpy_common.wait_for_input(mpy_trace, prj_dict, msg_text)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'wait_for_input(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'wait_for_input(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def datetime_now(mpy_trace):
@@ -630,20 +652,21 @@ def log(mpy_trace, prj_dict, log_message, level):
     try:
         import mpy_msg, sys
         return mpy_msg.log(mpy_trace, prj_dict, log_message, level)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'log(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'log(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
 
 def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
 
-    """ This function handles the task queue (instance 'mpy_PriorityQueue' of cl_mtPriorityQueue)
+    """ This function handles the task queue (instance 'mpy_mt_priority_queue' of cl_mtPriorityQueue)
         of this framework. Its main purpose is to provide an easy handling of multithreaded
         programming in the way, that the developer just needs to fill the queue with tasks
         and tailor the multithreading parameters to the projects needs. However, when being
@@ -667,15 +690,16 @@ def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
     try:
         import sys, mpy_mt
         return mpy_mt.mpy_thread_queue(mpy_trace, prj_dict, name, priority, task)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'mpy_thread_queue(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'mpy_thread_queue(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def mpy_threads_joinall(mpy_trace, prj_dict):
@@ -691,15 +715,16 @@ def mpy_threads_joinall(mpy_trace, prj_dict):
     try:
         import sys, mpy_mt
         return mpy_mt.mpy_threads_joinall(mpy_trace, prj_dict)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'mpy_threads_joinall(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'mpy_threads_joinall(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def mpy_mt_abort(mpy_trace, prj_dict):
@@ -716,15 +741,16 @@ def mpy_mt_abort(mpy_trace, prj_dict):
     try:
         import sys, mpy_mt
         return mpy_mt.mpy_mt_abort(mpy_trace, prj_dict)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'mpy_mt_abort(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'mpy_mt_abort(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
@@ -759,15 +785,16 @@ def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
     try:
         import sys, mpy_xl
         return mpy_xl.cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'cl_read(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'cl_read(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_close(mpy_trace, prj_dict, wb_path):
@@ -786,15 +813,16 @@ def wb_close(mpy_trace, prj_dict, wb_path):
     try:
         import sys, mpy_xl
         return mpy_xl.wb_close(mpy_trace, prj_dict, wb_path)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'wb_close(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'wb_close(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_close_all(mpy_trace, prj_dict):
@@ -812,15 +840,16 @@ def wb_close_all(mpy_trace, prj_dict):
     try:
         import sys, mpy_xl
         return mpy_xl.wb_close_all(mpy_trace, prj_dict)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'wb_close_all(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'wb_close_all(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_create(mpy_trace, prj_dict, xl_path):
@@ -837,15 +866,16 @@ def wb_create(mpy_trace, prj_dict, xl_path):
     try:
         import sys, mpy_xl
         return mpy_xl.wb_create(mpy_trace, prj_dict, xl_path)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'wb_create(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'wb_create(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
@@ -880,15 +910,16 @@ def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
     try:
         import sys, mpy_xl
         return mpy_xl.wb_load(mpy_trace, prj_dict, wb_path, dat, vba)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'wb_load(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'wb_load(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl):
@@ -911,15 +942,16 @@ def wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl):
     try:
         import sys, mpy_xl
         return mpy_xl.wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'wb_tbl_attributes(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'wb_tbl_attributes(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def wb_tbl_inquiry(mpy_trace, prj_dict, wb_path):
@@ -942,15 +974,16 @@ def wb_tbl_inquiry(mpy_trace, prj_dict, wb_path):
     try:
         import sys, mpy_xl
         return mpy_xl.wb_tbl_inquiry(mpy_trace, prj_dict, wb_path)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'wb_tbl_inquiry(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'wb_tbl_inquiry(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
@@ -977,15 +1010,16 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
     try:
         import sys, mpy_ui_tk
         return mpy_ui_tk.tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'tk_progbar_indeterminate(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'tk_progbar_indeterminate(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, overwrite):
@@ -1015,15 +1049,16 @@ def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, o
     try:
         import sys, mpy_bulk_ops
         return mpy_bulk_ops.find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, overwrite)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'find_replace_saveas(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'find_replace_saveas(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
 
 def web_request(mpy_trace, prj_dict, URL, req_dict):
@@ -1067,13 +1102,14 @@ def web_request(mpy_trace, prj_dict, URL, req_dict):
     try:
         import sys, mpy_wscraper
         return mpy_wscraper.web_request(mpy_trace, prj_dict, URL, req_dict)
-#   Error detection
+    # Error detection
     except Exception as e:
-    #   Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        err_m = 'mpy'
-        err_o = 'dialog_sel_file(~)'
-        mpy_trace = tracing(err_m, err_o, mpy_trace)
+        import mpy_fct
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'dialog_sel_file(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["err_excp"]}: {e}')
+        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
         log(mpy_trace, prj_dict, log_message, 'error')
