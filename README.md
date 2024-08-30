@@ -2,21 +2,16 @@
 
 More solutions. More insights. morPy.
 
-Multiprocessing aided Python framework with integrated logging to a database with the aim to document debugging and rolling out software that may be used in GxP environments.
-
-
-This framework is still in beta. The development goals to v1.0 are:
-1) Supporting Multiprocessing including concurrent file I/O and benchmarking.
-2) Making more use of object oriented programming with a number of functions, which already are working.
-3) Making use of decorators.
+Multiprocessing aided Python framework with integrated logging to database. Be the master of your app by analyzing runtime. Enjoy the comfort of runtime documentation ready for use in validated environments.
 
 Feel free to comment, share and support this project.
+Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with me.
 
 # Versioning - α.β.γλ
 
 | Symbol | Description |
 | --- | --- |
-| α   | Major Version.  <br>No downward compatibility. Error level CRITICAL would emerge. |
-| β   | Improvement Version.  <br>Limited downward compatibility. Error levels WARNING and DENIED may emerge. |
+| α   | Major Version.  <br>No downward compatibility: CRITICAL errors expected. |
+| β   | Improvement Version.  <br>Limited downward compatibility: WARNING and DENIED messages expected. |
 | γ   | Bugfix Version.  <br>Full downward compatibility. |
 | λ   | Version status.  <br>*None*: Release version  <br>*a*: Alpha version with minor bugs for public testing.  <br>*b*: Beta version with potential showstopper bugs for internal testing.  <br>*c*: Gamma version. Development. Not presentable to public. |
