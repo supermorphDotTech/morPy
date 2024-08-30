@@ -1,4 +1,5 @@
-# morPy
+![supermorph_morPy_alpha_v001](https://github.com/user-attachments/assets/d2dcad66-87a4-446a-924c-bce997bc595a)
+
 More solutions. More insights. morPy.
 
 Multiprocessing aided Python framework with integrated logging to a database with the aim to document debugging and rolling out software that may be used in GxP environments.
