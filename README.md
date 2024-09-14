@@ -18,3 +18,9 @@ Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with
 | β   | Improvement Version.  <br>Limited downward compatibility: WARNING and DENIED messages expected. |
 | γ   | Bugfix Version.  <br>Full downward compatibility. |
 | λ   | Version status.  <br>*None*: Release version  <br>*a*: Alpha version with minor bugs for public testing.  <br>*b*: Beta version with potential showstopper bugs for internal testing.  <br>*c*: Gamma version. Development. Not presentable to public. |
+
+# Parallelization
+
+The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends. The process ID "0" is always reserved for the orchestration process. It will take care of logging and is reserved for tasks with a priority in between 0 and 10 (smaller numbers for higher priority). All project tasks will automatically receive a higher number (lower priority) than morPy reserved tasks. In case a priority is corrected, a warning will be raised.
+
+![EN-morPy-parallelization-scheme-v1 0 0-darkmode](https://github.com/user-attachments/assets/fc294072-54d8-4566-a454-5c884953d3d2)
