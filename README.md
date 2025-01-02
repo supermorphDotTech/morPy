@@ -10,6 +10,138 @@ Multiprocessing aided Python framework with integrated logging to database. Be t
 Feel free to comment, share and support this project.
 Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with me.
 
+# Requirements and Dependencies
+
+
+## Software
+
+### morPy v1.0.0c - Microsoft Windows
+
+| Depency | Requirements |
+| --- | --- |
+| Python | [Python 3.10.11](https://www.python.org/downloads/release/python-31011/) |
+| UltraDict | [Microsoft Visual C++ BuildTools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (Install Desktopdevelopment with C++) |
+
+1.  Install Python with the option "Add python.exe to PATH" enabled.
+
+## Virtual Environment (MS Windows)
+
+*Compare with [freeCodeCamp.org](https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/)*
+
+### Basic Setup
+
+1.  Run PowerShell
+2.  Navigate to `pip.exe`  
+    If Python was installed in the user path, type
+
+```PowerShell
+cd $env:userprofile\AppData\Local\Programs\Python\Python313\Scripts
+```
+
+3.  install the virtualenv library
+
+```PowerShell
+.\pip install virtualenv
+```
+
+4.  install tcl libraries
+
+```PowerShell
+.\pip install tcl
+```
+
+```PowerShell
+.\pip install tk
+```
+
+5.  Setup the path to the Python project as an environment variable (for this PowerShell session only), i.e.
+
+```PowerShell
+$env:PythonProject = "C:\Projects\morPy"
+```
+
+6.  Navigate to the root folder of the Python project, i.e.
+
+```PowerShell
+cd $env:PythonProject
+```
+
+7.  Insert the virtual environment into the project.
+
+```PowerShell
+python -m venv .venv-win
+```
+
+If an error occurs indicating `python<version> was not recognized as a cmdlet`, it is likely, that Python was not installed with the option "Add python.exe to PATH".
+
+### Install Dependencies
+
+1.  Navigate to the root folder of the Python project (if not still there), i.e.
+
+```PowerShell
+cd $env:PythonProject
+```
+
+2.  Activate the virtual environment:
+
+```PowerShell
+& "$env:PythonProject\.venv-win\scripts\activate.ps1"
+```
+
+3.  Upgrade Pip
+
+```PowerShell
+python.exe -m pip install --upgrade pip
+```
+
+4.  Run the following pip installations one by one:
+
+```PowerShell
+pip install psutil
+```
+
+```PowerShell
+pip install chardet
+```
+
+```PowerShell
+pip install openpyxl
+```
+
+```PowerShell
+pip install atomics
+```
+
+```PowerShell
+pip install ultradict
+```
+
+### Copy Packages to Virtual Environment
+
+*Manual installation of* `tcl` *and* `tk` *in the virtual environment. This needed, as tcl does not install correctly, otherwise.*
+
+1.  Navigate to the tcl installation folder and copy it to the virtual environment, i.e.:
+
+`\> copy tcl`
+
+```PowerShell
+$env:userprofile\AppData\Local\Programs\Python\Python313\tcl\tcl8.6
+```
+
+`\> copy tk`
+
+```PowerShell
+$env:userprofile\AppData\Local\Programs\Python\Python313\tcl\tk8.6
+```
+
+`\> paste to`
+
+```PowerShell
+$env:PythonProject\.venv-win\Lib\site-packages\Tcl
+```
+
+*Create the* `tcl` *subfolder if it does not exist.*
+
 # Versioning - α.β.γλ
 
 | Symbol | Description |
