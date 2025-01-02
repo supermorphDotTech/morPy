@@ -1,14 +1,14 @@
-"""
+r"""
 Author:     Bastian Neuwirth
 Date:       29.06.2021
 Version:    0.1
 Descr.:     This module defines all descriptive strings as a dictionary. This
             dictionary will be initialized, if localization was set accordingly
             in mpy_param.py. The function localization_mpy() is reserved for the
-            morPy framework. You may add project specific definitions,
+            morPy framework. You may add app specific definitions,
             explanations and whatever you need within the function
-            localization_prj(). Both of the dictionaries will be initialized
-            and may be accessed via prj_dict throughout the program.
+            localization_app(). Both of the dictionaries will be initialized
+            and may be accessed via app_dict throughout the program.
 
             The main idea and purpose of this module is to provide a single file
             for later translation that may be translated to other languages.
@@ -19,30 +19,35 @@ Descr.:     This module defines all descriptive strings as a dictionary. This
 
 def loc_mpy() -> dict:
 
-    """
+    r"""
     This dictionary defines all messages for morPy core functions localized to a
     specific language.
-    
+
     :param:
         -
-        
+
     :return: dict
-        loc_dict_mpy: Localization dictionary for morPy core functions. All keys
-            will be copied to prj_dict during morPy initialization.
-            
+        loc_mpy_dict: Localization dictionary for morPy core functions. All keys
+            will be copied to app_dict during morPy initialization.
+
     :example:
-        prj_dict["loc"]["mpy"][KEY]
+        app_dict["loc"]["mpy"][KEY]
     """
 
     mpy_language = 'en-US'
 
-    loc_dict_mpy = {
+    loc_mpy_dict = {
 
         # morPy specific area - BEGIN
 
         # ERRORS
         'err_line' : 'Line',
         'err_excp' : 'Exception',
+        'priority' : 'priority',
+        'trace' : 'trace',
+        'process' : 'process',
+        'thread' : 'thread',
+        'task' : 'task',
 
         # mpy_init.py - init(~)
         'events_total_descr' : 'Total number of logged events.',
@@ -55,15 +60,16 @@ def loc_mpy() -> dict:
         'events_UNDEFINED_descr' : 'Number of occurences with the log level "undefined".',
         'events_INIT_descr' : 'Number of occurences with the log level "init".',
         'events_EXIT_descr' : 'Number of occurences with the log level "exit".',
-        'init_loc_prj_loaded' : f'Localized dictionary loaded.\nLanguage: {mpy_language}',
-        'init_loc_finished' : 'Project dictionary updated with localized descriptors.',
+        'init_loc_dbg_loaded' : 'morPy debug localization loaded.',
+        'init_loc_app_loaded' : 'App localization loaded.',
+        'init_loc_finished' : f'Localization initialized.\nLanguage: {mpy_language}',
         'init_finished' : 'Initialization process finished.',
         'init_duration' : 'Duration',
 
         # mpy_init.py - mpy_log_header(~)
         'mpy_log_header_start' : 'START',
         'mpy_log_header_author' : 'Author',
-        'mpy_log_header_project' : 'Project',
+        'mpy_log_header_app' : 'App',
         'mpy_log_header_timestamp' : 'Timestamp',
         'mpy_log_header_user' : 'User',
         'mpy_log_header_system' : 'System',
@@ -73,12 +79,9 @@ def loc_mpy() -> dict:
         'mpy_log_header_begin' : 'BEGIN',
 
         # mpy_init.py - mpy_ref(~)
-        'mpy_ref_descr' : 'This file shows the parameters set in mpy_param.py as well as the most important system and project related information. All of these are adressable through the prj_dict which is available throughout all functions and modules of this framework. This reference is meant to be used for development only.',
-        'mpy_ref_created' : 'The initialization reference was written to a textfile.',
+        'mpy_ref_descr' : 'This file shows the parameters set in mpy_param.py as well as the most important system and app related information. All of these are adressable through the app_dict which is available throughout all functions and modules of this framework. This reference is meant to be used for development only.',
+        'mpy_ref_created' : 'The init_dict was written to textfile.',
         'mpy_ref_path' : 'Filepath',
-        'mpy_ref_noref' : 'The project dictionary has been created.',
-        'mpy_ref_glob_param' : 'Set Parameters',
-        'mpy_ref_sys_param' : 'Initialized System and Project Parameters',
 
         # mpy_fct.py - privileges_handler(~)
         'mpy_priv_handler_eval' : 'Program started with elevated Privileges.',
@@ -131,10 +134,43 @@ def loc_mpy() -> dict:
         'mem_used_MB_descr' : 'Memory used in MB.',
         'mem_free_MB_descr' : 'Memory not being used at all (zeroed) that is readily available in MB.',
 
+        # mpy_dict.py - cl_attr_guard(~)
+        'cl_attr_guard' : {
+            'cl_attr_guard_no_mod' : 'can not modify an attribute of',
+            'cl_attr_guard_no_del': 'Deletion prohibited!',
+        },
+
+        # mpy_dict.py - cl_shared_dict(~)
+        'cl_shared_dict' : {
+            'cl_shared_dict_unk_pref': 'Unknown prefix in data',
+            'cl_shared_dict_mem_full': 'Shared memory block is full.',
+            'cl_shared_dict_key_str': 'Keys must be strings.',
+            'cl_shared_dict_empty': 'Dictionary is empty.',
+        },
+
+        # mpy_dict.py - mpy_dict_nesting(~)
+        'mpy_dict_nesting_done' : 'Dictionary referenced for nesting.',
+
+        # mpy_dict.py - cl_mpy_dict(~)
+        'cl_mpy_dict' : {
+            'cl_mpy_dict_denied' : 'Prohibited method',
+            'cl_mpy_dict_new_key' : 'Keys can not be added.',
+            'cl_mpy_dict_del_key' : 'Keys can not be deleted.',
+            'cl_mpy_dict_clear' : 'Dictionary can not be cleared.',
+            'cl_mpy_dict_lock' : 'Dictionary is locked.',
+            'cl_mpy_dict_item' : 'Item',
+            'cl_mpy_dict_key' : 'Key',
+            'cl_mpy_dict_val' : 'Value',
+            "cl_mpy_dict_key_str" : "Keys must be strings.",
+            "cl_mpy_dict_empty" : "Dictionary is empty.",
+            "cl_mpy_dict_err_unlink" : "Error unlinking UltraDict instance",
+        },
+
         # mpy_msg.py - log_msg_builder(~)
         'log_msg_builder_trace' : 'Trace',
         'log_msg_builder_process_id' : 'Process',
         'log_msg_builder_thread_id' : 'Thread',
+        'log_msg_builder_task_id' : 'Task',
 
         # mpy_msg.py - mpy_msg_print(~)
         'mpy_msg_print_intrpt' : '>>> INTERRUPT <<< Press Enter to continue...',
@@ -158,6 +194,25 @@ def loc_mpy() -> dict:
         'log_db_row_insert_excpt' : 'The log entry could not be created.',
         'log_db_row_insert_stmt' : 'Statement',
         'log_db_row_insert_failed' : 'The log table could not be found. Logging not possible.',
+
+        # mpy_common.py - cl_priority_queue.__init__(~)
+        'cl_priority_queue_name' : 'Entity name',
+        'cl_priority_queue_init_done' : 'Priority queue initialized.',
+
+        # mpy_common.py - cl_priority_queue.enqueue(~)
+        'cl_priority_queue_enqueue_task' : 'Task',
+        'cl_priority_queue_enqueue_prio_corr' : 'Invalid argument given to process queue. Autocorrected.',
+        'cl_priority_queue_enqueue_start' : 'Pushing task to',
+        'cl_priority_queue_enqueue_priority' : 'Priority',
+        'cl_priority_queue_enqueue_none' : 'Task can not be None. Skipping enqueue.',
+
+        # mpy_common.py - cl_priority_queue.dequeue(~)
+        'cl_priority_queue_dequeue_task' : 'Task',
+        'cl_priority_queue_dequeue_start' : 'Pulling task from',
+        'cl_priority_queue_dequeue_name' : 'Task name',
+        'cl_priority_queue_dequeue_priority' : 'Priority',
+        'cl_priority_queue_dequeue_cnt' : 'Counter',
+        'cl_priority_queue_dequeue_void' : 'Can not dequeue from an empty priority queue. Skipped...',
 
         # mpy_common.py - decode_to_plain_text(~)
         'decode_to_plain_text_from' : 'Decoded from',
@@ -209,7 +264,10 @@ def loc_mpy() -> dict:
         'fso_walk_path_done' : 'Directory analyzed.',
         'fso_walk_path_dir' : 'Directory',
         'fso_walk_path_notexist' : 'The directory does not exist.',
-            
+
+        # mpy_common.py - print_progress(~)
+        'cl_progress_proc' : 'Processing',
+
         # mpy_common.py - regex_findall(~)
         'regex_findall_init' : 'Searching for regular expressions.',
         'regex_findall_pattern' : 'Pattern',
@@ -253,13 +311,23 @@ def loc_mpy() -> dict:
         'wait_for_input_messsage' : 'Message',
         'wait_for_input_usr_inp' : 'User input',
 
+        # mpy_csv.py - csv_read(~)
+        'csv_read_start' : 'Started processing CSV-file.',
+        'csv_read_done' : 'CSV file processed. Keys in dictionary',
+        'csv_read_not_done' : 'File does not exist or is not a CSV file.',
+        'csv_read_file_exist' : 'File exists',
+        'csv_read_isfile' : 'Is file',
+        'csv_read_file_ext' : 'File extension',
+        'csv_read_file_path' : 'File path',
+        'csv_read_no_return' : 'Delimiters could not be determined or data is corrupted. No return dictionary created.',
+
         # mpy_exit.py - exit(~)
-        'mpy_exit_msg_done' : 'Project exited.',
+        'mpy_exit_msg_done' : 'App exited.',
         'mpy_exit_msg_started' : 'Started',
         'mpy_exit_msg_at' : 'at',
         'mpy_exit_msg_exited' : 'Exited',
         'mpy_exit_msg_duration' : 'Duration',
-        'mpy_exit_msg_occ' : 'Number of occured events',
+        'mpy_exit_msg_events' : 'Events',
         'mpy_exit_msg_total' : 'Total',
 
         # mpy_xl.py - cl_autof_rd(~)
@@ -431,23 +499,46 @@ def loc_mpy() -> dict:
         'sqlite3_row_update_where_tbl_nex' : 'The table does not exist.',
         'sqlite3_row_update_where_mismatch' : 'The number of columns does not match the number of values handed to the function.',
 
-        # mpy_mt.py - [CLASS]cl_mtPriorityQueue.[MODULE]__init__(~)
-        'cl_mtPriorityQueue_name' : 'Entity name',
-        'cl_mtPriorityQueue_init_done' : 'Priority queue initialized.',
+        # mpy_mp.py - cl_orchestrator._init(~)
+        'cl_orchestrator_init_not_bool' : 'Value is not a boolean. Check mpy_conf.py for correction.',
+        'cl_orchestrator_init_not_int' : 'Value is not an integer. Check mpy_conf.py for correction.',
+        'cl_orchestrator_init_not_float' : 'Value is not a float. Check mpy_conf.py for correction.',
+        'cl_orchestrator_init_not_str' : 'Value is not a string. Check mpy_conf.py for correction.',
+        'cl_orchestrator_init_rel_math_corr' : 'Rounding corrected.',
+        'cl_orchestrator_init_cpus_determined' : 'Maximum amount of parallel processes determined.',
+        'cl_orchestrator_init_memory_set' : 'Maximum memory set.',
+        'cl_orchestrator_init_done' : 'Multiprocessing initialized.',
 
-        # mpy_mt.py - [CLASS]cl_mtPriorityQueue.[MODULE]enqueue(~)
-        'cl_mtPriorityQueue_enqueue_task' : 'Task',
-        'cl_mtPriorityQueue_enqueue_start' : 'Pushing task to priority queue.',
-        'cl_mtPriorityQueue_enqueue_priority' : 'Priority',
+        # mpy_mp.py - cl_orchestrator._run(~)
+        'cl_orchestrator_run_app_start': 'App starting.',
 
-        # mpy_mt.py - [CLASS]cl_mtPriorityQueue.[MODULE]dequeue(~)
-        'cl_mtPriorityQueue_dequeue_task' : 'Task',
-        'cl_mtPriorityQueue_dequeue_start' : 'Pulling task from priority queue.',
-        'cl_mtPriorityQueue_dequeue_name' : 'Task name',
-        'cl_mtPriorityQueue_dequeue_priority' : 'Priority',
-        'cl_mtPriorityQueue_dequeue_cnt' : 'Counter',
+        # mpy_mp.py - join_processes(~)
+        'join_processes_start': 'Joining processes',
 
-        # mpy_mt.py - [CLASS]cl_thread.[MODULE]__init__(~)
+        # mpy_mp.py - watcher(~)
+        'watcher_is_alive': 'Process Watcher: Process still alive.',
+        'watcher_end': 'Process Watcher: Process ended, cleaning up process',
+
+        # mpy_decorators.py - run_parallel(~)
+        'run_parallel_task' : 'Task',
+        'run_parallel_task_sys_id' : 'Task ID',
+        'run_parallel_start' : 'Parallel process starting. ID',
+        'run_parallel_exit' : 'Parallel process created. ID',
+        'run_parallel_call_err' : 'Task provided is not callable.',
+        'run_parallel_id_abort' : 'Could not get process ID. Task was enqueued again.',
+        'run_parallel_issues' : 'Issues encountered:',
+        'run_parallel_id_err_avl' : 'Process ID conflict. Possible concurrent process creation. Process creation skipped.',
+        'run_parallel_id_err_busy' : 'Process ID conflict. ID# seemed available, is busy. Process creation skipped.',
+        'run_parallel_id_err_dict' : 'Process ID conflict. A process may have terminated dirty. Process creation skipped.',
+        'run_parallel_requeue_err' : 'Task could not be enqueued again. Task ID still in queue. Data loss possible.',
+        'run_parallel_proc_busy' : 'Processes busy',
+        'run_parallel_proc_avl' : 'Processes available',
+        'run_parallel_start_w_arg' : 'Starting process control with arguments',
+        'run_parallel_search_p_id' : 'Searching for available process ID.',
+        'run_parallel_search_iter_end' : 'Process ID determined.',
+        'run_parallel_clean_up_remnants' : 'Process remnant found.Cleaning up after supposed process crash.',
+
+        # mpy_mt.py - cl_thread.__init__(~)
         'cl_thread_init_start' : 'A worker thread is being created.',
         'cl_thread_init_done' : 'Worker thread created. ID reserved.',
         'cl_thread_lock' : 'Thread lock',
@@ -456,7 +547,7 @@ def loc_mpy() -> dict:
         'cl_thread_id' : 'Identifier',
         'cl_thread_counter' : 'Counter',
 
-        # mpy_mt.py - [CLASS]cl_thread.[MODULE]run(~)
+        # mpy_mt.py - cl_thread.run(~)
         'cl_thread_run_start' : 'A task is starting. Thread has been locked.',
         'cl_thread_run_task' : 'Task',
         'cl_thread_run_task_id' : 'Task identifier',
@@ -499,6 +590,8 @@ def loc_mpy() -> dict:
         'mpy_thread_queue_dbg_enq_new_done' : 'New Thread ID list created. Task successfully enqueued.',
         'mpy_thread_queue_task' : 'Task',
         'mpy_thread_queue_priority' : 'Priority',
+        'cl_priority_queue_enqueue_id_conflict' : 'Task not enqueued. Task ID mismatch or conflict.',
+        'cl_priority_queue_enqueue_task_duplicate' : 'Task is already enqueued. Referencing in queue.',
         'mpy_thread_queue_enqueue_err' : 'Enqueing failed.',
         'mpy_thread_queue_dbg_threads_available' : 'Checking threads availability.',
         'mpy_thread_queue_dbg_threads_used' : 'Threads in use',
@@ -514,67 +607,33 @@ def loc_mpy() -> dict:
         'find_replace_saveas_start' : 'Operation start.',
         'find_replace_saveas_f_ex_skip' : 'File already exists. Operation skipped.',
         'find_replace_saveas_tpl_err' : 'Wrong type. Input must be a tuple of tuples.',
-        
+
         # morPy specific area - END
     }
 
-    return loc_dict_mpy
+    return loc_mpy_dict
 
-def loc_dbg() -> dict:
+def loc_mpy_dbg() -> dict:
 
-    """
-    This dictionary defines all messages for project functions localized to a
+    r"""
+    This dictionary defines all messages for morPy core functions debugging localized to a
     specific language.
-    
+
     :param:
         -
-        
+
     :return: dict
-        loc_dict_dbg: Localization dictionary for morPy unit tests. All keys
-            will be copied to prj_dict during unit testing instead of morPy
+        loc_mpy_dbg_dict: Localization dictionary for morPy unit tests. All keys
+            will be copied to app_dict during unit testing instead of morPy
             initialization.
-            
+
     :example:
-        prj_dict["loc"]["dbg"][KEY]
+        app_dict["loc"]["dbg"][KEY]
     """
 
-    loc_dict_dbg = {
+    loc_mpy_dbg_dict = {
 
         # Debug specific area - BEGIN
-
-        # _mpydbg_.py - dbg_init(~)
-        'dbg_init_finished' : 'Initialization of morPy unit testing finished.',
-        
-        # _mpydbg_.py - ###_test_call(~)
-        'test_call_start' : 'START unit test of:',
-        'test_call_pass' : 'PASSED:',
-        'test_call_fail' : 'FAILED:',
-        
-        # Project specific area - END
-    }
-
-    return loc_dict_dbg
-
-def loc_prj() -> dict:
-
-    """
-    This dictionary defines all messages for project functions localized to a
-    specific language.
-    
-    :param:
-        -
-        
-    :return: dict
-        loc_dict_prj: Localization dictionary for project functions. All keys
-            will be copied to prj_dict during morPy initialization.
-            
-    :example:
-        prj_dict["loc"]["prj"][KEY]
-    """
-
-    loc_dict_prj = {
-
-        # Project specific area - BEGIN
 
         # debug.py - dbg_mpy_param(~)
         'dbg_mpy_param_start' : 'Start debugging of the mpy_param.py module.',
@@ -628,7 +687,64 @@ def loc_prj() -> dict:
         'dummy_process_math_start' : 'Start simple math benchmark.\nComplexity',
         'dummy_process_math_end' : 'Finished simple math benchmark.',
 
-        # Project specific area - END
+        # mpy_dbg.py - mpy_ut_call_test_op(~)
+        'mpy_ut_call_start' : 'START unit test of:',
+        'mpy_ut_call_pass' : 'PASSED:',
+        'mpy_ut_call_fail' : 'FAILED:',
+
+        # App specific area - END
     }
 
-    return loc_dict_prj
+    return loc_mpy_dbg_dict
+
+def loc_app() -> dict:
+
+    r"""
+    This dictionary defines all messages for app functions localized to a
+    specific language.
+
+    :param:
+        -
+
+    :return: dict
+        loc_app_dict: Localization dictionary for app functions. All keys
+            will be copied to app_dict during morPy initialization.
+
+    :example:
+        app_dict["loc"]["app"][KEY]
+    """
+
+    loc_app_dict = {
+
+        # App specific area - BEGIN
+
+        # App specific area - END
+    }
+
+    return loc_app_dict
+
+def loc_app_dbg() -> dict:
+
+    r"""
+    This dictionary defines all messages for debugging app functions localized to a
+    specific language.
+
+    :param:
+        -
+
+    :return: dict
+        loc_app_dbg_dict: Localization dictionary for app functions. All keys
+            will be copied to app_dict during morPy initialization.
+
+    :example:
+        app_dict["loc"]["app"][KEY]
+    """
+
+    loc_app_dbg_dict = {
+
+        # App specific area - BEGIN
+
+        # App specific area - END
+    }
+
+    return loc_app_dbg_dict
