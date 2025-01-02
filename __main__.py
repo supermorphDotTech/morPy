@@ -2,37 +2,6 @@ r"""
 Author: Bastian Neuwirth, https://www.supermorph.tech/
 Date: 02.01.2025
 Version: 1.0.0c
-
-TODO IN PROGRESS
-- Unit tests
-    > mpy_common.py | mpy_common_test.py
-
-TODO Finish multiprocessing with shared memory
-    NEXT STEPS:
-    - debug-messages for process_control wrapper
-    - debug messages for run_parallel
-    - debug-messages, where useful
-TODO Threading orchestrator: 1 for logs, 1 for dequeue, 1 for app_dict
-TODO Interrupt and exit overhaul
-    - provide function to check for interrupt/exit
-    - interrupt when logging: move from mpy_mp to the log decorator
-    - exit option to log decorator
-    - Provide an exit if CRITICAL and dump app_dict and priority queue, offer to pick up on it next restart
-
-TODO Make exit() more dynamic, so it is used instead of sys.exit
-    - Needed i.e. to release the log.db lock and other cleanups
-    - Needed also to release any db lock
-
-TODO chatGPT: make use of the "with" statement
-    > Optimize own classes to be supported by with (i.e. __exit__() methods)
-TODO class/instantiate logging and sqlite3
-TODO class/instantiate excel
-TODO class/instantiate file operations
-TODO Check and complete function signatures
-
-TODO use app_exit and morPy exit accordingly (usually app_exit the exit point for .join() and terminate)
-    > search for sys.exit() and substitute it
-    > search for .exit and evaluate it
 """
 
 import sys
