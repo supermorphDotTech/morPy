@@ -1,10 +1,10 @@
-"""
+r"""
 morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
 Descr.:     This module delivers functions to work with a SQLite database. The
-            main database as defined in prj_dict will be referenced.
+            main database as defined in app_dict will be referenced.
 
 #TODO
 -----------------
@@ -81,67 +81,76 @@ SQLite Functions
     SQLite SUM
 """
 
-from mpy_decorators import metrics
+# TODO make this a class
+# Update how this works (use sets and dicts)
+
+import mpy_fct
+import sys
+import sqlite3
+
+from mpy_decorators import metrics, log
 
 @metrics
-def sqlite3_db_connect(mpy_trace, prj_dict, db_path):
+def sqlite3_db_connect(mpy_trace: dict, app_dict: dict, db_path: str) -> dict:
 
-    """ This function connects to a SQLite database. The database will be
-        created if it does not exist already.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
-        db_path - Path to the db to be adressed or altered
-    :return
-        conn - Connection object or None
+    r"""
+    Establishes a connection to a SQLite database. Creates the database file if it does not exist.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The mpy-specific global dictionary.
+    :param db_path: The path to the database to be addressed or altered.
+
+    :return: dict
+        conn - sqlite3.Connection object if successful
+        error - Error details if the connection fails
+
+    :example:
+        sqlite3_db_connect(mpy_trace, app_dict, '/path/to/db.sqlite')
     """
-
-    import mpy_fct, mpy_msg
-    import sys, sqlite3
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_sqlite3'
     operation = 'sqlite3_db_connect(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Create a log
     # Connecting to SQLite database.
-    log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_db_connect_conn"]}\n'
-                  f'{prj_dict["loc"]["mpy"]["sqlite3_db_connect_Path"]}: {db_path}')
-    mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+    log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["mpy"]["sqlite3_db_connect_conn"]}\n'
+            f'{app_dict["loc"]["mpy"]["sqlite3_db_connect_Path"]}: {db_path}')
 
     conn = None
     try:
         conn = sqlite3.connect(db_path)
 
-        # Create a log
         # SQLite database connected.
-        log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_db_connect_ready"]}\n'
-                      f'conn: {conn}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["sqlite3_db_connect_ready"]}\n'
+                f'conn: {conn}')
 
         return conn
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
 @metrics
-def sqlite3_db_disconnect(mpy_trace, prj_dict, db_path):
+def sqlite3_db_disconnect(mpy_trace: dict, app_dict: dict, db_path: str) -> dict:
 
-    """ This function disconnects a SQLite database.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
-        db_path - Path to the db to be adressed or altered
-    :return
-        -
+    r"""
+    Disconnects a SQLite database.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The mpy-specific global dictionary.
+    :param db_path: The path to the database to be addressed or altered.
+
+    :return: dict
+        status - Success or failure status
+        message - Details about the disconnection process
+
+    :example:
+        sqlite3_db_disconnect(mpy_trace, app_dict, '/path/to/db.sqlite')
     """
-
-    import mpy_fct, mpy_msg
-    import sys, sqlite3
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_sqlite3'
@@ -150,52 +159,52 @@ def sqlite3_db_disconnect(mpy_trace, prj_dict, db_path):
 
     try:
 
-        # Create a log
         # Disconnecting from SQLite database.
-        log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_db_disconnect_discon"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_db_disconnect_path"]}: {db_path}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["sqlite3_db_disconnect_discon"]}\n'
+                f'{app_dict["loc"]["mpy"]["sqlite3_db_disconnect_path"]}: {db_path}')
 
         conn = sqlite3.connect(db_path)
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
     finally:
         try:
             if conn:
                 conn.close()
 
-                # Create a log
                 # SQLite database disconnected.
-                log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_db_disconnect_ready"]}\n'
+                log(mpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["mpy"]["sqlite3_db_disconnect_ready"]}\n'
                               f'conn: {conn}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
 
-        # Error detection
         except Exception as e:
-            log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                          f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+            log(mpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
 @metrics
-def sqlite3_db_statement(mpy_trace, prj_dict, db_path, db_smnt):
+def sqlite3_db_statement(mpy_trace: dict, app_dict: dict, db_path: str, db_smnt: str) -> dict:
 
-    """ This function handles any sqlite3 statement as given to it.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
-        db_path - Path to the db to be adressed or altered
-        db_smnt - The statement to be executed
-    :return - dictionary
-        check - The function ended with no errors
+    r"""
+    Executes any SQLite3 statement provided.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The mpy-specific global dictionary.
+    :param db_path: The path to the database to be addressed or altered.
+    :param db_smnt: The SQLite statement to be executed.
+
+    :return: dict
+        check - Indicates whether the function executed successfully (True/False).
+        result - Query results or details of the operation.
+        error - Error details if the statement fails.
+
+    :example:
+        sqlite3_db_statement(mpy_trace, app_dict, '/path/to/db.sqlite', 'SELECT * FROM table_name')
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_sqlite3'
@@ -206,18 +215,17 @@ def sqlite3_db_statement(mpy_trace, prj_dict, db_path, db_smnt):
     db_smnt = f'{db_smnt}'
     check = False
 
-    # Create a log
     # Executing a SQLite3 statement.
-    log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_db_statement_exec"]}\n'
-                  f'{prj_dict["loc"]["mpy"]["sqlite3_db_statement_db"]}: {db_path}\n'
-                  f'{prj_dict["loc"]["mpy"]["sqlite3_db_statement_smnt"]}: {db_smnt}')
-    mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+    log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["mpy"]["sqlite3_db_statement_exec"]}\n'
+            f'{app_dict["loc"]["mpy"]["sqlite3_db_statement_db"]}: {db_path}\n'
+            f'{app_dict["loc"]["mpy"]["sqlite3_db_statement_smnt"]}: {db_smnt}')
 
     # Execution
     try:
 
         # Connect the database
-        conn = sqlite3_db_connect(mpy_trace, prj_dict, db_path)
+        conn = sqlite3_db_connect(mpy_trace, app_dict, db_path)
 
         # Activate WAL mode to acces the database
         conn.execute('pragma journal_mode=wal;')
@@ -232,66 +240,58 @@ def sqlite3_db_statement(mpy_trace, prj_dict, db_path, db_smnt):
         c.close()
 
         # Disconnect from the database
-        sqlite3_db_disconnect(mpy_trace, prj_dict, db_path)
+        sqlite3_db_disconnect(mpy_trace, app_dict, db_path)
 
-        # Create a log
         # Statement executed.
-        log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_db_statement_ready"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_db_statement_db"]}: {db_path}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'info')
+        log(mpy_trace, app_dict, "info",
+            lambda: f'{app_dict["loc"]["mpy"]["sqlite3_db_statement_ready"]}\n'
+                      f'{app_dict["loc"]["mpy"]["sqlite3_db_statement_db"]}: {db_path}')
 
         check = True
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_db_statement_smnt"]}: {db_smnt}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check
+        }
 
 @metrics
-def sqlite3_tbl_check(mpy_trace, prj_dict, db_path, table_name):
+def sqlite3_tbl_check(mpy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> dict:
 
-    """ This function checks on the existence of a table inside a given SQLite
-        database.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be checked on
-    :return - dictionary
-        check - The function ended with no errors
+    r"""
+    Checks for the existence of a table in a given SQLite database.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The mpy-specific global dictionary.
+    :param db_path: The path to the database to be addressed or altered.
+    :param table_name: The name of the database table to check.
+
+    :return: dict
+        check - Indicates whether the function executed successfully (True/False).
+        exists - Boolean indicating if the table exists in the database.
+        error - Error details if the check fails.
+
+    :example:
+        sqlite3_tbl_check(mpy_trace, app_dict, '/path/to/db.sqlite', 'users_table')
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_sqlite3'
     operation = 'sqlite3_tbl_check(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Apply standard formats
     table_name = f'{table_name}'
     check = False
 
-    # Create a log
     # Checking the existence of a SQLite database table.
-    log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_check_start"]}\n'
-                  f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_check_db"]}: {db_path}\n'
-                  f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_check_tbl"]}: {table_name}')
-    mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+    log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["mpy"]["sqlite3_tbl_check_start"]}\n'
+            f'{app_dict["loc"]["mpy"]["sqlite3_tbl_check_db"]}: {db_path}\n'
+            f'{app_dict["loc"]["mpy"]["sqlite3_tbl_check_tbl"]}: {table_name}')
 
     # Define the execution statement
     exec_statement = f'SELECT count(name) FROM sqlite_master WHERE type=\"table\" AND name=\"{table_name}\"'
@@ -299,7 +299,7 @@ def sqlite3_tbl_check(mpy_trace, prj_dict, db_path, table_name):
     # Execution
     try:
         # Connect the database
-        conn = sqlite3_db_connect(mpy_trace, prj_dict, db_path)
+        conn = sqlite3_db_connect(mpy_trace, app_dict, db_path)
 
         # Activate WAL mode to acces the database
         conn.execute('pragma journal_mode=wal;')
@@ -313,74 +313,67 @@ def sqlite3_tbl_check(mpy_trace, prj_dict, db_path, table_name):
         if c.fetchone()[0] == 1:
             check = True
             # Table exists.
-            msg = prj_dict["sqlite3_tbl_check_tbl_ex"]
+            msg = app_dict["sqlite3_tbl_check_tbl_ex"]
 
         else:
             # Table does not exist.
-            msg = prj_dict["sqlite3_tbl_check_tbl_nex"]
+            msg = app_dict["sqlite3_tbl_check_tbl_nex"]
 
-        # Create a log
-        log_message = (f'{msg}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_check_db"]}: {db_path}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_check_tbl"]}: {table_name}\n'
-                      f'check: {check}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log(mpy_trace, app_dict, "debug",
+                lambda: f'{msg}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_tbl_check_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_tbl_check_tbl"]}: {table_name}\n'
+                    f'check: {check}')
 
         # Close the cursor
         c.close()
 
         # Disconnect from the database
-        sqlite3_db_disconnect(mpy_trace, prj_dict, db_path)
+        sqlite3_db_disconnect(mpy_trace, app_dict, db_path)
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_check_smnt"]}: {exec_statement}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check
+        }
 
 @metrics
-def sqlite3_tbl_create(mpy_trace, prj_dict, db_path, table_name):
+def sqlite3_tbl_create(mpy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> dict:
 
-    """ This function creates a table inside a SQLite database.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be created
-    :return - dictionary
-        check - The function ended with no errors
+    r"""
+    Creates a table in a given SQLite database.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The mpy-specific global dictionary.
+    :param db_path: The path to the database to be addressed or altered.
+    :param table_name: The name of the database table to be created.
+
+    :return: dict
+        check - Indicates whether the function executed successfully (True/False).
+        message - Details about the table creation process.
+        error - Error details if the table creation fails.
+
+    :example:
+        sqlite3_tbl_create(mpy_trace, app_dict, '/path/to/db.sqlite', 'new_table')
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_sqlite3'
     operation = 'sqlite3_tbl_create(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Apply standard formats
     table_name = f'{table_name}'
     check = False
 
-    # Create a log
     # Creating a SQLite database table.
-    log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_create_start"]}\n'
-                  f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_create_db"]}: {db_path}\n'
-                  f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_create_tbl"]}: {table_name}')
-    mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+    log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["mpy"]["sqlite3_tbl_create_start"]}\n'
+            f'{app_dict["loc"]["mpy"]["sqlite3_tbl_create_db"]}: {db_path}\n'
+            f'{app_dict["loc"]["mpy"]["sqlite3_tbl_create_tbl"]}: {table_name}')
 
     # Define the execution statement
     exec_statement = f'CREATE TABLE IF NOT EXISTS {table_name} (ID INTEGER PRIMARY KEY)'
@@ -388,7 +381,7 @@ def sqlite3_tbl_create(mpy_trace, prj_dict, db_path, table_name):
     # Execution
     try:
         # Connect the database
-        conn = sqlite3_db_connect(mpy_trace, prj_dict, db_path)
+        conn = sqlite3_db_connect(mpy_trace, app_dict, db_path)
 
         # Activate WAL mode to acces the database
         conn.execute('pragma journal_mode=wal;')
@@ -399,61 +392,54 @@ def sqlite3_tbl_create(mpy_trace, prj_dict, db_path, table_name):
         # Commit changes to the database
         conn.commit()
 
-        # Create a log
         # SQLite table created.
-        log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_create_ready"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_create_db"]}: {db_path}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_create_tbl"]}: {table_name}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'info')
+        log(mpy_trace, app_dict, "info",
+            lambda: f'{app_dict["loc"]["mpy"]["sqlite3_tbl_create_ready"]}\n'
+                f'{app_dict["loc"]["mpy"]["sqlite3_tbl_create_db"]}: {db_path}\n'
+                f'{app_dict["loc"]["mpy"]["sqlite3_tbl_create_tbl"]}: {table_name}')
 
         # Disconnect from the database
-        sqlite3_db_disconnect(mpy_trace, prj_dict, db_path)
+        sqlite3_db_disconnect(mpy_trace, app_dict, db_path)
 
         check = True
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_create_smnt"]}: {exec_statement}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check
+        }
 
 @metrics
-def sqlite3_tbl_column_add(mpy_trace, prj_dict, db_path, table_name, columns, col_types):
+def sqlite3_tbl_column_add(mpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, col_types: list ) -> dict:
 
-    """ This function inserts a column into a table inside a given SQLite
-        database.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be created
-        columns - List of the columns to be added
-        col_types - List of datatypes for the columns as specified for SQLite
-    :return - dictionary
-        check - The function ended with no errors
+    r"""
+    Adds one or more columns to a table in a given SQLite database.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The mpy-specific global dictionary.
+    :param db_path: The path to the database to be addressed or altered.
+    :param table_name: The name of the database table to be altered.
+    :param columns: List of column names to be added.
+    :param col_types: List of data types for the new columns as specified for SQLite.
+
+    :return: dict
+        check - Indicates whether the function executed successfully (True/False).
+        message - Details about the column addition process.
+        error - Error details if the column addition fails.
+
+    :example:
+        sqlite3_tbl_column_add(mpy_trace, app_dict, '/path/to/db.sqlite', 'table_name', ['new_column1', 'new_column2'], ['TEXT', 'INTEGER'])
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_sqlite3'
     operation = 'sqlite3_tbl_column_add(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Apply standard formats
     table_name = f'{table_name}'
     columns_str = f'{columns}'
     col_types_str = f'{col_types}'.upper()
@@ -462,11 +448,11 @@ def sqlite3_tbl_column_add(mpy_trace, prj_dict, db_path, table_name, columns, co
 
     try:
 
-        # Create a log
-        log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_start"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        # Adding columns to a SQLite database table.
+        log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_start"]}\n'
+                f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
+                f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}')
 
         # Compare items in columns and col_types
         i = 0
@@ -483,13 +469,13 @@ def sqlite3_tbl_column_add(mpy_trace, prj_dict, db_path, table_name, columns, co
             plausible = True
 
             # Check the existence of the table
-            check = sqlite3_tbl_check(mpy_trace, prj_dict, db_path, table_name)
+            check = sqlite3_tbl_check(mpy_trace, app_dict, db_path, table_name)
 
         # Proceed only if table exists and column count is plausible.
         if check:
 
             # Connect the database
-            conn = sqlite3_db_connect(mpy_trace, prj_dict, db_path)
+            conn = sqlite3_db_connect(mpy_trace, app_dict, db_path)
 
             # Activate WAL mode to acces the database
             conn.execute('pragma journal_mode=wal;')
@@ -511,98 +497,80 @@ def sqlite3_tbl_column_add(mpy_trace, prj_dict, db_path, table_name, columns, co
                     # Iterate
                     k += 1
 
-                # Create a log
                 # Columns added to SQLite table.
-                log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_start"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_col"]}: {columns_str}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_datatype"]}: {col_types_str}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'info')
+                log(mpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_start"]}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_col"]}: {columns_str}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_datatype"]}: {col_types_str}')
 
                 # Disconnect from the database
-                sqlite3_db_disconnect(mpy_trace, prj_dict, db_path)
+                sqlite3_db_disconnect(mpy_trace, app_dict, db_path)
 
-                # Return a dictionary
-                return{
-                    'check' : check
-                    }
-
-            # Error detection
             except Exception as e:
-                log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                              f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_smnt"]}: {exec_statement}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+                log(mpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_smnt"]}: {exec_statement}')
 
         # Log and print a denial
         if not check:
-            # Create a log
             # The table does not exist. Columns could not be inserted.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_tbl_nex"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}\n'
-                          f'check: {check}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
+            log(mpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_tbl_nex"]}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}\n'
+                    f'check: {check}')
 
         # Log and print a denial
         if not plausible:
-            # Create a log
             # The number of columns does not match the number of datatypes handed over to the function.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_mismatch"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_col"]}: {columns_str}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_numcol"]}: {i}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_datatype"]}: {col_types_str}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_tbl_column_add_numdatatype"]}: {j}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
+            log(mpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_mismatch"]}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_col"]}: {columns_str}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_numcol"]}: {i}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_datatype"]}: {col_types_str}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_numdatatype"]}: {j}')
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check,
+        'tbl_check' : tbl_check
+        }
 
 @metrics
-def sqlite3_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, cell_data):
+def sqlite3_row_insert(mpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list) -> dict:
 
-    """ This function inserts a row into a table inside a given SQLite
-        database.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be created
-        columns - List with the names of the columns to be written into. You
-                  may reference a number of columns within that list. Number
-                  of columns has to match number of data written to cells.
-        cell_data - Yields the data to be written into the cells. You may
-                    reference a number of cells within that list. Number
-                    of values has to match number of columns adressed.
-    :return - dictionary
-        check - The function ended with no errors
-        row_id - ID of the row inserted
+    r"""
+    Inserts a row into a table in a given SQLite database.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The mpy-specific global dictionary.
+    :param db_path: The path to the database to be addressed or altered.
+    :param table_name: The name of the database table where the row will be inserted.
+    :param columns: List of column names to be written into. The number of columns must match the number of data values.
+    :param cell_data: List of data values to be written into the cells. The number of values must match the number of columns addressed.
+
+    :return: dict
+        check - Indicates whether the function executed successfully (True/False).
+        row_id - ID of the row that was inserted.
+        error - Error details if the row insertion fails.
+
+    :example:
+        sqlite3_row_insert(mpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['value1', 123])
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_sqlite3'
     operation = 'sqlite3_row_insert(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Apply standard formats
     table_name = f'{table_name}'
     check = False
     plausible = False
@@ -632,24 +600,23 @@ def sqlite3_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, cell_d
         # Define the execution statement
         exec_statement = f'INSERT INTO {table_name} ({col_formatted}) VALUES ({dat_formatted})'
 
-        # Create a log
         # Inserting a row into a SQLite database table.
-        log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_start"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_db"]}: {db_path}\n'
-                      f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_tbl"]}: {table_name}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_start"]}\n'
+                      f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_db"]}: {db_path}\n'
+                      f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_tbl"]}: {table_name}')
 
         # Plausibility check for columns and according data.
         if i == j:
             plausible = True
 
-            # Create a log
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_match"]}\n'
-                          f'plausible: {plausible}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            # Number of columns match data.
+            log(mpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_match"]}\n'
+                    f'plausible: {plausible}')
 
             # Check the existence of the table
-            check = sqlite3_tbl_check(mpy_trace, prj_dict, db_path, table_name)
+            check = sqlite3_tbl_check(mpy_trace, app_dict, db_path, table_name)
 
         # Proceed only if table exists and column count is plausible.
         if check:
@@ -657,7 +624,7 @@ def sqlite3_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, cell_d
             # Execution
             try:
                 # Connect the database
-                conn = sqlite3_db_connect(mpy_trace, prj_dict, db_path)
+                conn = sqlite3_db_connect(mpy_trace, app_dict, db_path)
 
                 # Activate WAL mode to acces the database
                 conn.execute('pragma journal_mode=wal;')
@@ -675,95 +642,77 @@ def sqlite3_row_insert(mpy_trace, prj_dict, db_path, table_name, columns, cell_d
                 c.close()
 
                 # Disconnect from the database
-                sqlite3_db_disconnect(mpy_trace, prj_dict, db_path)
+                sqlite3_db_disconnect(mpy_trace, app_dict, db_path)
 
-                # Create a log
                 # Row inserted into SQLite table.
-                log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_ready"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_db"]}: {db_path}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_tbl"]}: {table_name}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_col"]}: {col_formatted}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_data"]}: {dat_formatted}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'info')
+                log(mpy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_ready"]}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_db"]}: {db_path}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_tbl"]}: {table_name}')
 
-                return{
-                    'check' : check , \
-                    'row_id' : row_id
-                    }
-
-            # Error detection
             except Exception as e:
-                log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                              f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_smnt"]}: {exec_statement}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+                log(mpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_smnt"]}: {exec_statement}')
 
         # Log and print a denial
         if not check:
-            # Create a log
             # The table does not exist.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_tblnex"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_db"]}: {db_path}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_tbl"]}: {table_name}\n'
-                          f'check: {check}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
+            log(mpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_tblnex"]}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_tbl"]}: {table_name}\n'
+                    f'check: {check}')
 
         # Log and print a denial
         if not plausible:
-            # Create a log
             # The number of columns does not match the number of values handed to the function.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_mismatch"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_col"]}: {col_formatted}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_numcol"]}: {i}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_val"]}: {dat_formatted}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_insert_numval"]}: {j}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
+            log(mpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_mismatch"]}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_col"]}: {col_formatted}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_numcol"]}: {i}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_numval"]}: {j}')
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check,
+        'row_id' : row_id
+        }
 
 @metrics
-def sqlite3_row_update(mpy_trace, prj_dict, db_path, table_name, columns, cell_data, row_id):
+def sqlite3_row_update(mpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list, row_id: int) -> dict:
 
-    """ This function updates a row of a table inside a given SQLite
-        database. Only addressed columns will be updated.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be created
-        columns - List of the columns to be added
-        cell_data - Yields the data to be written into the cells. You may
-                    reference a number of cells within that list. Number
-                    of values has to match number of columns adressed.
-        row_id - Addresses the ID (first column) of a row
-    :return - dictionary
-        check - The function ended with no errors
+    r"""
+    Updates a row in a table in a given SQLite database. Only the specified columns will be updated.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The mpy-specific global dictionary.
+    :param db_path: The path to the database to be addressed or altered.
+    :param table_name: The name of the database table where the row will be updated.
+    :param columns: List of column names to be updated.
+    :param cell_data: List of data values to be written into the specified columns. The number of values must match the number of columns addressed.
+    :param row_id: The ID (primary key) of the row to be updated.
+
+    :return: dict
+        check - Indicates whether the function executed successfully (True/False).
+        message - Details about the update operation.
+        error - Error details if the update operation fails.
+
+    :example:
+        sqlite3_row_update(mpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], 42)
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_sqlite3'
     operation = 'sqlite3_row_update(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Apply standard formats
     table_name = f'{table_name}'
     check = False
     plausible = False
@@ -795,18 +744,16 @@ def sqlite3_row_update(mpy_trace, prj_dict, db_path, table_name, columns, cell_d
         if i == j:
             plausible = True
 
-            # Create a log
             # Updating a row of a SQLite database table.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_start"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_db"]}: {db_path}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_data"]}: {dat_formatted}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_id"]}: {row_id}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log(mpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_update_start"]}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_id"]}: {row_id}')
 
             # Check the existence of the table
-            check = sqlite3_tbl_check(mpy_trace, prj_dict, db_path, table_name)
+            check = sqlite3_tbl_check(mpy_trace, app_dict, db_path, table_name)
 
         # Proceed only if table exists and column count is plausible.
         if check:
@@ -827,7 +774,7 @@ def sqlite3_row_update(mpy_trace, prj_dict, db_path, table_name, columns, cell_d
                 exec_statement = f'UPDATE {table_name} SET {dat_sets} WHERE ID = {row_id}'
 
                 # Connect the database
-                conn = sqlite3_db_connect(mpy_trace, prj_dict, db_path)
+                conn = sqlite3_db_connect(mpy_trace, app_dict, db_path)
 
                 # Activate WAL mode to acces the database
                 conn.execute('pragma journal_mode=wal;')
@@ -842,96 +789,81 @@ def sqlite3_row_update(mpy_trace, prj_dict, db_path, table_name, columns, cell_d
                 c.close()
 
                 # Disconnect from the database
-                sqlite3_db_disconnect(mpy_trace, prj_dict, db_path)
+                sqlite3_db_disconnect(mpy_trace, app_dict, db_path)
 
-                # Create a log
                 # Updated a row of a SQLite table.
-                log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_ready"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_db"]}: {db_path}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_data"]}: {dat_formatted}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_id"]}: {row_id}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'info')
+                log(mpy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_update_ready"]}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_update_db"]}: {db_path}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_update_id"]}: {row_id}')
 
-                return{
-                    'check' : check , \
-                    'row_id' : row_id
-                    }
-
-            # Error detection
             except Exception as e:
-                log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                              f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_smnt"]}: {exec_statement}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+                log(mpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_update_smnt"]}: {exec_statement}')
 
         # Log and print a denial
         if not check:
-            # Create a log
             # The table does not exist.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_tbl_nex"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_db"]}: {db_path}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
-                          f'check: {check}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
+            log(mpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_update_tbl_nex"]}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
+                    f'check: {check}')
 
         # Log and print a denial
         if not plausible:
-            # Create a log
             # The number of columns does not match the number of values handed to the function.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_mismatch"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_numcol"]}: {i}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_val"]}: {dat_formatted}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_numval"]}: {j}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
+            log(mpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_update_mismatch"]}\n'
+                          f'{app_dict["loc"]["mpy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
+                          f'{app_dict["loc"]["mpy"]["sqlite3_row_update_numcol"]}: {i}\n'
+                          f'{app_dict["loc"]["mpy"]["sqlite3_row_update_numval"]}: {j}')
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check,
+        'row_id' : row_id
+        }
 
 @metrics
-def sqlite3_row_update_where(mpy_trace, prj_dict, db_path, table_name, columns, cell_data, where):
+def sqlite3_row_update_where(mpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list, where: str) -> dict:
 
-    """ This function updates a row of a table inside a given SQLite
-        database. Only addressed columns will be updated.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be created
-        columns - List of the columns to be added
-        cell_data - Yields the data to be written into the cells. You may
-                    reference a number of cells within that list. Number
-                    of values has to match number of columns adressed.
-        where - SQL-Statement to specify the update of the table
-    :return - dictionary
-        check - The function ended with no errors
+    r"""
+    Updates one or more rows in a table in a given SQLite database based on a specified condition.
+    Only the specified columns will be updated.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The mpy-specific global dictionary.
+    :param db_path: The path to the database to be addressed or altered.
+    :param table_name: The name of the database table where the row(s) will be updated.
+    :param columns: List of column names to be updated.
+    :param cell_data: List of data values to be written into the specified columns. The number of values must match the number of columns addressed.
+    :param where: SQL condition to specify which rows will be updated.
+
+    :return: dict
+        check - Indicates whether the function executed successfully (True/False).
+        message - Details about the update operation.
+        error - Error details if the update operation fails.
+
+    :example:
+        sqlite3_row_update_where(mpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], "id = 42 AND status = 'active'"
+        )
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_sqlite3'
     operation = 'sqlite3_row_update_where(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Apply standard formats
     table_name = f'{table_name}'
     where = f'{where}'
     check = False
@@ -964,18 +896,16 @@ def sqlite3_row_update_where(mpy_trace, prj_dict, db_path, table_name, columns, 
         if i == j:
             plausible = True
 
-            # Create a log
             # Updating a row of a SQLite database table.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_start"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_data"]}: {dat_formatted}\n'
-                          f'where: {where}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log(mpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_start"]}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
+                    f'where: {where}')
 
             # Check the existence of the table
-            check = sqlite3_tbl_check(mpy_trace, prj_dict, db_path, table_name)
+            check = sqlite3_tbl_check(mpy_trace, app_dict, db_path, table_name)
 
         if check and plausible:
 
@@ -995,7 +925,7 @@ def sqlite3_row_update_where(mpy_trace, prj_dict, db_path, table_name, columns, 
                 exec_statement = f'UPDATE {table_name} SET {dat_sets} WHERE {where}'
 
                 # Connect the database
-                conn = sqlite3_db_connect(mpy_trace, prj_dict, db_path)
+                conn = sqlite3_db_connect(mpy_trace, app_dict, db_path)
 
                 # Activate WAL mode to acces the database
                 conn.execute('pragma journal_mode=wal;')
@@ -1010,65 +940,46 @@ def sqlite3_row_update_where(mpy_trace, prj_dict, db_path, table_name, columns, 
                 c.close()
 
                 # Disconnect from the database
-                sqlite3_db_disconnect(mpy_trace, prj_dict, db_path)
+                sqlite3_db_disconnect(mpy_trace, app_dict, db_path)
 
-                # Create a log
                 # Updated a row of a SQLite table.
-                log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_ready"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_data"]}: {dat_formatted}\n'
-                              f'where: {where}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'info')
+                log(mpy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_ready"]}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
+                        f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
+                        f'where: {where}')
 
-                return{
-                    'check' : check , \
-                    'where' : where
-                    }
-
-            # Error detection
             except Exception as e:
-                log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                              f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                              f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_smnt"]}: {exec_statement}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+                log(mpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
         # Log and print a denial
         if not check:
-            # Create a log
             # The table does not exist.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_tbl_nex"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
+            log(mpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_tbl_nex"]}\n'
+                          f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
+                          f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
                           f'check: {check}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
 
         # Log and print a denial
         if not plausible:
-            # Create a log
             # The number of columns does not match the number of values handed to the function.
-            log_message = (f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_mismatch"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_numcol"]}: {i}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_val"]}: {dat_formatted}\n'
-                          f'{prj_dict["loc"]["mpy"]["sqlite3_row_update_where_numval"]}: {j}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'denied')
+            log(mpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_mismatch"]}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_numcol"]}: {i}\n'
+                    f'{app_dict["loc"]["mpy"]["sqlite3_row_update_where_numval"]}: {j}')
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check , \
-            'where' : where
-            }
+    return{
+        'mpy_trace' : mpy_trace, \
+        'check' : check , \
+        'where' : where
+        }

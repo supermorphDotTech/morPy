@@ -1,4 +1,4 @@
-"""
+r"""
 Author:     Bastian Neuwirth
 Date:       29.10.2022
 Version:    0.1

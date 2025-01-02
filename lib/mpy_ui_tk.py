@@ -1,4 +1,4 @@
-"""
+r"""
 morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
@@ -14,7 +14,7 @@ Ideen:      - Organisation wie folgt:
                 elmt_load_clock
                 >>> Umsetzung mit Klassen
 
-ToDo:       - GUI Instanz im prj_dict anmelden
+ToDo:       - GUI Instanz im app_dict anmelden
                 > Referenzierung durch Unterprogramme ermöglichen
                 > Bei Error, Critical oder sonstige das Fenster schließen
                 > Bei Exit-Routine schließen
@@ -23,17 +23,19 @@ ToDo:       - GUI Instanz im prj_dict anmelden
             - Fenster schließen funktioniert noch nicht richtig
 """
 
+from mpy_decorators import log
+
 import tkinter as Tk
 from tkinter import *
 from tkinter import ttk
 
-def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
+def tk_progbar_indeterminate(mpy_trace, app_dict, GUI_dict):
 
-    """ This function invokes a window with an indeterminate progress bar
+    r""" This function invokes a window with an indeterminate progress bar
         and status messages.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
+        app_dict - The mpy-specific global dictionary
         GUI_dict - Dictionary holding all needed parameters:
 
             GUI_dict = {'frame_title' : 'TITLE' , \
@@ -46,7 +48,7 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
 
     :return - dictionary
         check - The function ended with no errors and a file was chosen
-        
+
     #TODO
         - Use a decorator
         - Debug
@@ -88,16 +90,16 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
         root.geometry(frame_width + 'x' + frame_height)
         root.title(frame_title)
 
-        """
+        r"""
         YOUR CODE DOWN BELOW
 
         All logs will show up in the status text below the progress bar.
         """
 
         # Open a dialog to select a file
-        init_dir = prj_dict["prj_path"]
+        init_dir = app_dict["main_path"]
         ftypes = (('All Files','*.*'),('Text Files','*.txt'))
-        file = mpy_common.dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title)["sel_file"]
+        file = mpy_common.dialog_sel_file(mpy_trace, app_dict, init_dir, ftypes, title)["sel_file"]
         mpy_fct.testprint(mpy_trace, f'{file}')
 
         status = Label(root, text = file, font = status_font_size)
@@ -105,13 +107,13 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
         status.config(text = file)
 
         # Open a dialog to select a directory
-        init_dir = prj_dict["prj_path"]
-        directory = mpy_common.dialog_sel_dir(mpy_trace, prj_dict, init_dir, title)["sel_dir"]
+        init_dir = app_dict["main_path"]
+        directory = mpy_common.dialog_sel_dir(mpy_trace, app_dict, init_dir, title)["sel_dir"]
         mpy_fct.testprint(mpy_trace, f'{directory}')
 
         status.config(text = directory)
 
-        """
+        r"""
         YOUR CODE UP TOP
 
         The window will be closed once all code is executed.
@@ -125,9 +127,9 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
 
     # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
     finally:
 

@@ -1,4 +1,4 @@
-"""
+r"""
 morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
@@ -8,7 +8,7 @@ Descr.:     This module delivers routines to handle Multithreading and
             multithreading will be utilized. To add tasks to the queue,
             call the priority queue instance with
 
-                [mpy_mt.]mpy_thread_queue(mpy_trace, prj_dict, name, priority, task)
+                [mpy_mt.]mpy_thread_queue(mpy_trace, app_dict, name, priority, task)
 
             A task represents a worker or thread in use. In order to make
             your program multithreading enabled, you need to divide it
@@ -16,389 +16,336 @@ Descr.:     This module delivers routines to handle Multithreading and
             many workers as available to runtime.
 """
 
+import mpy_fct
+import mpy_common
+import sys
 import threading
+import math
+
+from mpy_decorators import log
 from heapq import heappop, heappush
 from itertools import count
 
-def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
+def mpy_thread_queue(mpy_trace: dict, app_dict: dict, name: str, priority: int, task: str) -> dict:
 
-    """ This function handles the task queue (instance 'mpy_mt_priority_queue' of cl_mtPriorityQueue)
-        of this framework. Its main purpose is to provide an easy handling of multithreaded
-        programming in the way, that the developer just needs to fill the queue with tasks
-        and tailor the multithreading parameters to the projects needs. However, when being
-        bound to single threaded execution the queue will just execute sequentially, while
-        prioritizing the tasks.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
-        name - Name of the task/thread.
-        priority - Integer value. Sets the priority of the given task. Lower numbers indicate
-                   a higher priority. Negative integers should be avoided.
-        task - Statement, function or class/module to be run by the thread. A string
-               is expected and will be executed via the exec()-function. The module has
-               got to be referenced (if any) in order to work. Example:
+    r"""
+    Handles the task queue (`mpy_mt_priority_queue` instance of `cl_priority_queue`)
+    for this framework. It simplifies multithreaded programming by allowing the developer
+    to fill the queue with tasks and configure threading parameters. In single-threaded
+    mode, tasks are executed sequentially while still prioritizing based on the queue.
 
-                   task = 'prj_module1.prj_function1([mpy_trace], [prj_dict], [...], [log])'
-    :return - dictionary
-        check - The function ended with no errors
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param name: Name of the task/thread.
+    :param priority: Integer value indicating the task's priority. Lower numbers indicate
+                     higher priority. Avoid using negative integers.
+    :param task: String representing the statement, function, or class/module to be executed
+                 by the thread. This string is executed using the `exec()` function, and
+                 any required module must be properly referenced. Example:
+                     task = 'app_module1.app_function1([mpy_trace], [app_dict], [...], [log])'
+
+    :return: dict
+        mpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+
+    :example:
+        mpy_thread_queue(mpy_trace, app_dict, "Task1", 10, "module.function(args)")
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_mt'
     operation = 'mpy_thread_queue(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Preparing parameters
     check = False
     name = f'{name}'
     task = f'{task}'
-    thr_available = prj_dict["mt_max_threads"]
+    thr_available = app_dict["mt_max_threads"]
 
     try:
 
         # Check for multithreading / Fallback to ST mode
-        if prj_dict["mt_enabled"]:
-
+        if app_dict["mt_enabled"]:
             # Enqueue a new task
             try:
-
                 # Check for the priority and correct it, if necessary.
-                priority = prio_correction(mpy_trace, prj_dict, priority, task)["priority"]
+                priority = prio_correction(mpy_trace, app_dict, priority, task)["priority"]
 
-                # Create a log
                 # Enqueing task.
-                log_message = (f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_enqueue"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_task"]}: {task}\n'
-                              f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_priority"]}: {priority}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+                log(mpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["mpy"]["mpy_thread_queue_enqueue"]}\n'
+                        f'{app_dict["loc"]["mpy"]["mpy_thread_queue_task"]}: {task}\n'
+                        f'{app_dict["loc"]["mpy"]["mpy_thread_queue_priority"]}: {priority}')
 
-                prj_dict["mpy_mt_priority_queue"].enqueue(mpy_trace, prj_dict, name, priority, task)
+                app_dict["mpy_mt_priority_queue"].enqueue(mpy_trace, app_dict, name, priority, task)
 
-            # Error detection
             except Exception as e:
-                log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                              f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                              f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_enqueue_err"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_task"]}: {task}\n'
-                              f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_priority"]}: {priority}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+                log(mpy_trace, app_dict, "critical",
+                lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
             # Start a thread, if there are threads available. If all threads are already in use, skip
             # this step as the threads will keep pulling tasks.
             try:
 
-                # Create a log
                 # Checking threads availability.
-                log_message = (f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_available"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_max"]}: {prj_dict["mt_max_threads"]}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+                log(mpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_available"]}\n'
+                        f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
 
                 # Check for available threads by counting the listed thread ID's and compare them
                 # to the maximum amount of threads available.
-                if prj_dict["mt_threads_id_lst"]:
-
-                    if len(prj_dict["mt_threads_id_lst"]) < thr_available:
+                if app_dict["mt_threads_id_lst"]:
+                    if len(app_dict["mt_threads_id_lst"]) < thr_available:
 
                         # Start a thread.
-                        worker = cl_thread(mpy_trace, prj_dict)
+                        worker = cl_thread(mpy_trace, app_dict)
                         worker.start()
 
                         # Append worker to a list of threads. It is mostly used to join threads later.
-                        prj_dict["mpy_workers_running"].append(worker)
+                        app_dict["mpy_workers_running"].append(worker)
 
-                        # Create a log
                         # Task successfully enqueued. Thread created.
-                        log_message = (f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_enqueue_done"]}\n'
-                                      f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_used"]}: {len(prj_dict["mt_threads_id_lst"])}\n'
-                                      f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_max"]}: {prj_dict["mt_max_threads"]}')
-                        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+                        log(mpy_trace, app_dict, "debug",
+                        lambda: f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_enqueue_done"]}\n'
+                                f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
+                                f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
 
                     else:
-
-                        # Create a log
                         # No free thread available. Skipping thread invoke.
-                        log_message = (f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_thread_skip"]}\n'
-                                      f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_used"]}: {len(prj_dict["mt_threads_id_lst"])}\n'
-                                      f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_max"]}: {prj_dict["mt_max_threads"]}')
-                        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+                        log(mpy_trace, app_dict, "debug",
+                        lambda: f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_thread_skip"]}\n'
+                                f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
+                                f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
 
                 else:
-
                     # Start a thread.
-                    worker = cl_thread(mpy_trace, prj_dict)
+                    worker = cl_thread(mpy_trace, app_dict)
                     worker.start()
 
                     # Append worker to a list of threads. It is mostly used to join threads later.
-                    prj_dict["mpy_workers_running"].append(worker)
+                    app_dict["mpy_workers_running"].append(worker)
 
-                    # Create a log
                     # New Thread ID list created. Task successfully enqueued.
-                    log_message = (f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_enq_new_done"]}\n'
-                                  f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_used"]}: {len(prj_dict["mt_threads_id_lst"])}\n'
-                                  f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_max"]}: {prj_dict["mt_max_threads"]}')
-                    mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+                    log(mpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_enq_new_done"]}\n'
+                            f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
+                            f'{app_dict["loc"]["mpy"]["mpy_thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
 
                 check = True
 
-            # Error detection
             except Exception as e:
-                log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                              f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                              f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_thread_err"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_task"]}: {task}\n'
-                              f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_priority"]}: {priority}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+                log(mpy_trace, app_dict, "critical",
+                lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
         # Run fallback mode - single threaded
         else:
-
-            exec(thread_imports(mpy_trace, prj_dict, task)["imp_order"])
+            exec(thread_imports(mpy_trace, app_dict, task)["imp_order"])
             exec(task)
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                      f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_thread_err"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_task"]}: {task}\n'
-                      f'{prj_dict["loc"]["mpy"]["mpy_thread_queue_priority"]}: {priority}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check
+        }
 
-        # Garbage collection
-        gc.collect()
+def mpy_threads_joinall(mpy_trace: dict, app_dict: dict) -> dict:
 
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
+    r"""
+    Waits for all threads to complete execution before resuming code execution.
 
-def mpy_threads_joinall(mpy_trace, prj_dict):
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
 
-    """ This function stops execution of the code until all threads have finished their work.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
-    :return - dictionary
-        check - The function ended with no errors
+    :return: dict
+        mpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+
+    :example:
+        mpy_threads_joinall(mpy_trace, app_dict)
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_mt'
     operation = 'mpy_threads_joinall(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Preparing parameters
     check = False
 
     try:
-
-        # Create a log
         # Waiting for all threads to finish up their work.
-        log_message = (f'{prj_dict["loc"]["mpy"]["mpy_threads_joinall_start"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["mpy_threads_joinall_eval"]}: {prj_dict["mpy_workers_running"]}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["mpy"]["mpy_threads_joinall_start"]}\n'
+                      f'{app_dict["loc"]["mpy"]["mpy_threads_joinall_eval"]}: {app_dict["mpy_workers_running"]}')
 
-        for thread in prj_dict["mpy_workers_running"]:
-
+        for thread in app_dict["mpy_workers_running"]:
             thread.join()
 
         # Clear the list of invoked threads
-        prj_dict["mpy_workers_running"] = []
+        app_dict["mpy_workers_running"] = []
 
-        # Create a log
         # All threads/tasks finished.
-        log_message = (f'{prj_dict["loc"]["mpy"]["mpy_threads_joinall_end"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["mpy_threads_joinall_eval"]}: {prj_dict["mpy_workers_running"]}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["mpy"]["mpy_threads_joinall_end"]}\n'
+                f'{app_dict["loc"]["mpy"]["mpy_threads_joinall_eval"]}: {app_dict["mpy_workers_running"]}')
 
         check = True
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check
+        }
 
-        # Garbage collection
-        gc.collect()
+def mpy_mt_abort(mpy_trace: dict, app_dict: dict) -> dict:
 
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
+    r"""
+    Aborts all pending tasks. The priority queue remains intact, allowing new
+    threads to potentially pick up the aborted tasks.
 
-def mpy_mt_abort(mpy_trace, prj_dict):
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
 
-    """ This function aborts all pending tasks. However, the priority queue still exists and new threads
-        would eventually pick up the aborted tasks.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
-    :return - dictionary
-        check - The function ended with no errors
+    :return: dict
+        mpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+
+    :example:
+        mpy_mt_abort(mpy_trace, app_dict)
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_mt'
     operation = 'mpy_mt_abort(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Preparing parameters
     check = False
 
     try:
-
-        # Create a log
         # Waiting for all threads to finish up their work.
-        log_message = prj_dict["mpy_mt_abort_start"]
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["mpy_mt_abort_start"]}')
 
         # Set the threads exit flag
-        prj_dict["mpy_mt_exit"] = True
+        app_dict["mpy_mt_exit"] = True
 
         # Wait for all threads to finish up
-        mpy_threads_joinall(mpy_trace, prj_dict)
+        mpy_threads_joinall(mpy_trace, app_dict)
 
         # Reset the threads exit flag
-        prj_dict["mpy_mt_exit"] = False
+        app_dict["mpy_mt_exit"] = False
 
         check = True
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check
+        }
 
-        # Garbage collection
-        gc.collect()
+class cl_priority_queue(object):
 
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
-
-class cl_mtPriorityQueue(object):
-
-    """ This class defines the globally used queue of this framework. It is possible
-        to make use of queue nesting by instanciating another PriorityQueue with a
-        different name. The workforce amongst all nested PriorityQueues may be divided
-        accordingly and can vary from project to project. However, the main instance
-        used throughout this framework should not be tempered with.
-    :param
-        -
-    :return
-        -
+    r"""
+    Defines the globally used priority queue for this framework. Supports queue
+    nesting by instantiating additional `PriorityQueue` objects with unique names.
+    Workforce distribution among nested queues can vary based on application needs.
+    However, the main instance used throughout this framework should not be altered.
     """
 
-    def __init__(self, mpy_trace, prj_dict, name):
+    def __init__(self, mpy_trace: dict, app_dict: dict, name: str) -> None:
 
-        """ This method initializes basic parameters of the PriorityQueue. This
-            queue will fetch from the highest priority set available and return the
-            oldest task. The highest priority is determined by the lowest integer.
-        :param
-            mpy_trace - operation credentials and tracing
-            prj_dict - morPy global dictionary
-            name - Define the name of the PriorityQueue Instance
-        :return
-            -
+        r"""
+        Initializes the basic parameters of the PriorityQueue. Tasks are fetched
+        from the highest priority set available, with the highest priority determined
+        by the lowest integer. Tasks within the same priority level are returned in
+        the order they were added (FIFO).
+
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param name: Name of the PriorityQueue instance.
+
+        :return: None
+
+        :example:
+            queue = cl_priority_queue(mpy_trace, app_dict, "MainQueue")
         """
-
-        import mpy_fct, mpy_msg
-        import sys, gc
 
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy_mt'
-        operation = 'cl_mtPriorityQueue.__init__(~)'
+        operation = 'cl_priority_queue.__init__(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        # Preparing parameters
         name = f'{name}'
 
         try:
-
             # Define the attributes of the class
             self.name = name
             self.elements = []
             self.counter = count()
 
             # Create a reference to the priority queue
-            prj_dict["mpy_mt_priority_queue"] = self
+            app_dict["mpy_mt_priority_queue"] = self
 
-            # Create a log
             # Priority queue initialized.
-            log_message = (f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_init_done"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_name"]}: {self.name}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'init')
+            log(mpy_trace, app_dict, "init",
+            lambda: f'{app_dict["loc"]["mpy"]["cl_priority_queue_init_done"]}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_name"]}: {self.name}')
 
-        # Error detection
         except Exception as e:
-            log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                          f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_name"]}: {self.name}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+            log(mpy_trace, app_dict, "critical",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-        finally:
+    def enqueue(self, mpy_trace: dict, app_dict: dict, name: str, priority: int, task: str) -> dict:
 
-            # Garbage collection
-            del mpy_trace
-            gc.collect()
+        r"""
+        Adds items/tasks to the `cl_priority_queue`.
 
-    def enqueue(self, mpy_trace, prj_dict, name, priority, task):
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param name: Name of the task/thread.
+        :param priority: Integer value indicating the task's priority. Lower numbers indicate
+                         higher priority. Avoid using negative integers.
+        :param task: String representing the statement, function, or class/module to be executed
+                     by the thread. This string is executed using the `exec()` function.
 
-        """ This method adds items/tasks to the cl_mtPriorityQueue.
-        :param
-            mpy_trace - operation credentials and tracing
-            prj_dict - morPy global dictionary
-            name - Name of the task/thread.
-            priority - Integer value. Sets the priority of the given task. Lower numbers indicate
-                       a higher priority. Negative integers should be avoided.
-            task - Statement, function or class/module to be run by the thread. A string
-                   is expected and will be executed via the exec()-function.
-        :return - dictionary
-            check - The function ended with no errors
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
+
+        :example:
+            queue.enqueue(mpy_trace, app_dict, "Task1", 10, "module.function(args)")
         """
-
-        import mpy_fct, mpy_msg
-        import sys, gc
 
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy_mt'
-        operation = 'cl_mtPriorityQueue.enqueue(~)'
+        operation = 'cl_priority_queue.enqueue(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        # Preparing parameters
         check = False
         name = f'{name}'
         task = f'{task}'
 
         try:
-
-            # Create a log
             # Pushing task to priority queue.
-            log_message = (f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_enqueue_start"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_name"]}: {self.name}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_enqueue_priority"]}: {priority}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_enqueue_task"]}: {task}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_start"]}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_name"]}: {self.name}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_priority"]}: {priority}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_task"]}: {task}')
 
             # Define the task to be queued
             task_qed = (name, -priority, next(self.counter), task)
@@ -408,56 +355,48 @@ class cl_mtPriorityQueue(object):
 
             check = True
 
-        # Error detection
         except Exception as e:
-            log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                          f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_name"]}: {self.name}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_enqueue_priority"]}: {priority}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_enqueue_task"]}: {task}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
-    
-        finally:
-    
-            # Garbage collection
-            gc.collect()
-    
-            # Return a dictionary
-            return{
-                'mpy_trace' : mpy_trace, \
-                'check' : check
-                }
+            log(mpy_trace, app_dict, "critical",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    def dequeue(self, mpy_trace, prj_dict):
+        return{
+            'mpy_trace' : mpy_trace,
+            'check' : check
+            }
 
-        """ This method pops a task from the cl_mtPriorityQueue and returns it for execution.
-        :param
-            mpy_trace - operation credentials and tracing
-            prj_dict - morPy global dictionary
-        :return - dictionary
-            check - The function ended with no errors
-            task_dqed - List element of the dequeued task to execute next
-                        [0] name
-                        [1] priority
-                        [2] counter
-                        [3] task
+    def dequeue(self, mpy_trace: dict, app_dict: dict) -> dict:
+
+        r"""
+        Pops a task from the `cl_priority_queue` and returns it for execution.
+
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
+            task_dqed: List element of the dequeued task to execute next:
+                [0] name - Name of the task/thread.
+                [1] priority - Priority of the task (lower numbers indicate higher priority).
+                [2] counter - Internal counter to ensure FIFO order for tasks with the same priority.
+                [3] task - The task statement/function to be executed.
+
+        :example:
+            dequeued_task = queue.dequeue(mpy_trace, app_dict)
         """
-
-        import mpy_fct, mpy_msg
-        import sys, gc
 
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy_mt'
-        operation = 'cl_mtPriorityQueue.dequeue(~)'
+        operation = 'cl_priority_queue.dequeue(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        # Preparing parameters
         check = False
 
         try:
 
             # Wait for an interrupt to end
-            while prj_dict["mpy_interrupt"] == True:
+            while app_dict["global"]["mpy"]["mpy_interrupt"] == True:
                 pass
 
             # Return the highest priority and oldest task from priority queue
@@ -475,106 +414,92 @@ class cl_mtPriorityQueue(object):
             # Retrieve the fourth element of the queue indicating the actual task
             task = task_dqed[3]
 
-            # Create a log
             # Pushing task to priority queue.
-            log_message = (f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_dequeue_start"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_name"]}: {self.name}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_dequeue_name"]}: {name}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_dequeue_priority"]}: {priority}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_dequeue_cnt"]}: {counter}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_dequeue_task"]}: {task}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["cl_priority_queue_dequeue_start"]}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_name"]}: {self.name}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_dequeue_name"]}: {name}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_dequeue_priority"]}: {priority}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_dequeue_cnt"]}: {counter}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_dequeue_task"]}: {task}')
 
             check = False
 
-        # Error detection
         except Exception as e:
-            log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                          f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_mtPriorityQueue_name"]}: {self.name}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+            log(mpy_trace, app_dict, "critical",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-        finally:
-    
-            # Garbage collection
-            gc.collect()
-    
-            # Return a dictionary
-            return{
-                'mpy_trace' : mpy_trace, \
-                'check' : check, \
-                'task_dqed' : task_dqed
-                }
+        return{
+            'mpy_trace' : mpy_trace,
+            'check' : check,
+            'task_dqed' : task_dqed
+            }
 
-def mt_init(mpy_trace, prj_dict):
+def mt_init(mpy_trace: dict, app_dict: dict) -> dict:
 
-    """ This function is needed to initialize multi threading (MT). If MT is disabled,
-        the entire program is meant to fall back to a sequential program - therefore
-        it is suitable for single threaded (ST) runtime execution. If MT is enabled,
-        this functions determines all relevant parameters such as the amount of threads
-        to run on. For further parameterization and details, see the mpy_param.py
-        module.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
-    :return - dictionary
-        check - The function ended with no errors
+    r"""
+    Initializes multi-threading (MT) for the application. If MT is disabled,
+    the program defaults to single-threaded (ST) execution. This function
+    determines all relevant parameters, such as the number of threads to run.
+    For additional parameterization and details, see the `mpy_param.py` module.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+
+    :return: dict
+        mpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+
+    :example:
+        mt_init(mpy_trace, app_dict)
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc, math
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_mt'
     operation = 'mt_init(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Preparing parameters
     check = False
-    sys_threads = prj_dict["sys"]["threads"] # Total threads available to the system
+    sys_threads = app_dict["sys"]["threads"] # Total threads available to the system
 
     try:
-
         # Initialize threading exit flag
-        prj_dict["mpy_mt_exit"] = False
+        app_dict["mpy_mt_exit"] = False
 
         # Initialize total thread counter to be used as a unique task ID
-        prj_dict["mpy_mt_tasks_cnt"] = 0
+        app_dict["mpy_mt_tasks_cnt"] = 0
 
         # Initialize list for running workers
-        prj_dict["mpy_workers_running"] = []
+        app_dict["mpy_workers_running"] = []
 
         # Initialize the interrupt flag
-        prj_dict["mpy_interrupt"] = False
+        app_dict["global"]["mpy"]["mpy_interrupt"] = False
 
         # Evaluate, if MT is enabled
-        if prj_dict["conf"]["mt_enabled"]:
+        if app_dict["conf"]["mt_enabled"]:
 
             # Determine the maximum thread count available for runtime
             # Absolute determination
-            if prj_dict["conf"]["mt_max_threads_set_abs"]:
-
-                max_threads = prj_dict["conf"]["mt_max_threads_cnt_abs"]
+            if app_dict["conf"]["mt_max_threads_set_abs"]:
+                max_threads = app_dict["conf"]["mt_max_threads_cnt_abs"]
 
             # Determine the maximum thread count available for runtime
             # Relative determination
             else:
 
-                max_threads = sys_threads * prj_dict["conf"]["mt_max_threads_cnt_abs"]
+                max_threads = sys_threads * app_dict["conf"]["mt_max_threads_cnt_abs"]
 
                 # Round down
-                if prj_dict["conf"]["mt_max_threads_rel_floor"]:
-
+                if app_dict["conf"]["mt_max_threads_rel_floor"]:
                     max_threads = math.floor(max_threads)
-
                 # Round up
                 else:
-
                     max_threads = math.ceil(max_threads)
 
             # Log preparation.
             # Multithreading enabled.
-            mt_init_message = f'{prj_dict["loc"]["mpy"]["mt_init_done"]} {prj_dict["loc"]["mpy"]["mt_init_enabled_yes"]}'
+            mt_init_message = f'{app_dict["loc"]["mpy"]["mt_init_done"]} {app_dict["loc"]["mpy"]["mt_init_enabled_yes"]}'
 
         # Fallback to ST, if MT is disabled
         else:
@@ -583,71 +508,60 @@ def mt_init(mpy_trace, prj_dict):
 
             # Log preparation.
             # Multithreading disabled. Fallback to single threaded mode.
-            mt_init_message = f'{prj_dict["loc"]["mpy"]["mt_init_done"]} {prj_dict["loc"]["mpy"]["mt_init_enabled_no"]}'
+            mt_init_message = f'{app_dict["loc"]["mpy"]["mt_init_done"]} {app_dict["loc"]["mpy"]["mt_init_enabled_no"]}'
 
         # Correct the maximum thread count, if architecturally there are less available.
         if sys_threads < max_threads:
 
             max_threads = sys_threads
 
-        # Set the maximum thread count for runtime in prj_dict
-        prj_dict["mt_max_threads"] = max_threads
+        # Set the maximum thread count for runtime in app_dict
+        app_dict["mt_max_threads"] = max_threads
 
         # Create an empty list of thread IDs
-        prj_dict["mt_threads_id_lst"] = []
+        app_dict["mt_threads_id_lst"] = []
 
-        # Create a log
         # Multithreading initialized.
-        log_message = (f'{mt_init_message}\n'
-                      f'{prj_dict["loc"]["mpy"]["mt_init_thr_available"]}: {sys_threads}\n'
-                      f'{prj_dict["loc"]["mpy"]["mt_init_thr_max"]}: {max_threads}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        log(mpy_trace, app_dict, "debug",
+        lambda: f'{mt_init_message}\n'
+                f'{app_dict["loc"]["mpy"]["mt_init_thr_available"]}: {sys_threads}\n'
+                f'{app_dict["loc"]["mpy"]["mt_init_thr_max"]}: {max_threads}')
 
         # Initialize and create the queue instance for this frameworks runtime
-        cl_mtPriorityQueue(mpy_trace, prj_dict, 'mpy_mtPriorityQueue')
+        cl_priority_queue(mpy_trace, app_dict, 'mpy_mtPriorityQueue')
 
         check = True
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check
-            }
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check
+        }
 
 class cl_thread(threading.Thread):
 
-    """ This class is a subclass of the Thread class. Therefore all methods of the
-        threading module may be used with this class, although it is handled by
-        this framework independently, anyway.
-    :param
-        -
-    :return
-        -
+    r"""
+    A subclass of the `threading.Thread` class. This class supports all methods
+    of the `threading` module while being managed independently by this framework.
     """
 
-    def __init__(self, mpy_trace, prj_dict):
+    def __init__(self, mpy_trace: dict, app_dict: dict) -> None:
 
-        """ This method initializes basic paramters of a cl_thread instance.
-        :param
-            mpy_trace - operation credentials and tracing
-            prj_dict - morPy global dictionary
-        :return
-            -
+        r"""
+        Initializes the basic parameters of a `cl_thread` instance.
+
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+
+        :return: None
+
+        :example:
+            thread_instance = cl_thread(mpy_trace, app_dict)
         """
-
-        import mpy_fct, mpy_msg
-        import sys, gc
 
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy_mt'
@@ -655,21 +569,19 @@ class cl_thread(threading.Thread):
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
         try:
-
-            # Create a log
             # A worker thread is being created.
-            log_message = prj_dict["cl_thread_init_start"]
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["cl_thread_init_start"]}')
 
             # Define the attributes of the class
-            self.ID = thread_id(mpy_trace, prj_dict)["thread_id"]
+            self.ID = thread_id(mpy_trace, app_dict)["thread_id"]
             self.name = 'VOID'
             self.trace = mpy_trace
-            self.prj_dict = prj_dict
+            self.app_dict = app_dict
             self.log = mpy_trace["log_enable"]
 
             # Increment the task counter
-            prj_dict["mpy_mt_tasks_cnt"] += 1
+            app_dict["mpy_mt_tasks_cnt"] += 1
 
             # Invoke an instance of threading.Thread
             threading.Thread.__init__(self)
@@ -677,37 +589,31 @@ class cl_thread(threading.Thread):
             # Lock the thread
             self.lock = threading.Lock()
 
-            # Create a log
             # Worker thread created. ID reserved.
-            log_message = (f'{prj_dict["loc"]["mpy"]["cl_thread_init_done"]}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_thread_id"]}: {self.ID}\n'
-                          f'{prj_dict["loc"]["mpy"]["cl_thread_lock"]}: {self.lock}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["cl_thread_init_done"]}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_thread_id"]}: {self.ID}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_thread_lock"]}: {self.lock}')
 
-        # Error detection
         except Exception as e:
-            log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                          f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+            log(mpy_trace, app_dict, "critical",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-        finally:
+    def run(self) -> dict:
 
-            # Garbage collection
-            del mpy_trace
-            gc.collect()
+        r"""
+        Executes tasks handed to the thread. Continually fetches tasks from the
+        priority queue until it is empty.
 
-    def run(self):
+        :param: None
 
-        """ This method runs a task handed to the thread. It will continually fetch
-            tasks until the priority queue is empty
-        :param
-            -
-        :return - dictionary
-            check - The function ended with no errors
+        :return: dict
+            check: Indicates whether the function executed successfully (True/False).
+
+        :example:
+            thread_instance.run()
         """
-
-        import mpy_fct, mpy_msg
-        import sys, gc
 
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy_mt'
@@ -715,32 +621,29 @@ class cl_thread(threading.Thread):
         mpy_trace = mpy_fct.tracing(module, operation, self.trace)
         log_enable = mpy_trace["log_enable"]
 
-        # Preparing parameters
         check = False
         task_ID = -1
         task = 'VOID'
 
         try:
-
             # Acquire a thread lock - reserve a worker for the task
             self.lock.acquire()
 
-            # Create a log
             # A task is starting. Thread has been locked.
-            log_message = (f'{self.prj_dict["cl_thread_run_start"]}\n'
-                          f'ID: {self.ID}\n'
-                          f'{self.prj_dict["cl_thread_lock"]}: {self.lock}')
-            mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
+            log(self.mpy_trace, self.app_dict, "debug",
+            lambda: f'{self.app_dict["cl_thread_run_start"]}\n'
+                    f'ID: {self.ID}\n'
+                    f'{self.app_dict["cl_thread_lock"]}: {self.lock}')
 
             # Fetch a task as long as the queue is not empty.
-            while len(self.prj_dict["mpy_mt_priority_queue"].elements) > 0 and \
-                not self.prj_dict["mpy_mt_exit"]:
+            while len(self.app_dict["mpy_mt_priority_queue"].elements) > 0 and \
+                not self.app_dict["mpy_mt_exit"]:
 
                 # Wait for an interrupt before fetching a task
-                while self.prj_dict["mpy_interrupt"]:
+                while self.app_dict["global"]["mpy"]["mpy_interrupt"]:
                     pass
 
-                task_dqed = self.prj_dict["mpy_mt_priority_queue"].dequeue(mpy_trace, self.prj_dict)["task_dqed"]
+                task_dqed = self.app_dict["mpy_mt_priority_queue"].dequeue(mpy_trace, self.app_dict)["task_dqed"]
 
                 # Fetching the name of the task to identify the thread with it.
                 self.name = task_dqed[0]
@@ -755,33 +658,31 @@ class cl_thread(threading.Thread):
                 mpy_trace["log_enable"] = False
 
                 # Exchange the traceback of the task from mpy_trace to mpy_trace
-                task = mpy_msg.log_regex_replace(mpy_trace, self.prj_dict, task, 'mpy_trace', 'mpy_trace')
+                task = mpy_msg.log_regex_replace(mpy_trace, self.app_dict, task, 'mpy_trace', 'mpy_trace')
 
-                # Exchange the prj_dict reference of the task
-                task = mpy_msg.log_regex_replace(mpy_trace, self.prj_dict, task, 'prj_dict', 'self.prj_dict')
+                # Exchange the app_dict reference of the task
+                task = mpy_msg.log_regex_replace(mpy_trace, self.app_dict, task, 'app_dict', 'self.app_dict')
 
                 # Exchange the log reference of the task
-                task = mpy_msg.log_regex_replace(mpy_trace, self.prj_dict, task, 'log', 'self.log')
+                task = mpy_msg.log_regex_replace(mpy_trace, self.app_dict, task, 'log', 'self.log')
 
                 # Reset logging for the next segment
                 mpy_trace["log_enable"] = log_enable
 
                 # Count the tasks invoked during runtime
-                task_ID = self.prj_dict["mpy_mt_tasks_cnt"] + 1
+                task_ID = self.app_dict["mpy_mt_tasks_cnt"] + 1
 
-                # Create a log
                 # Fetched a new task. Thread renamed with the task name.
-                log_message = (f'{self.prj_dict["cl_thread_run_task_fetched"]}\n'
-                              f'ID: {self.ID}\n'
-                              f'{self.prj_dict["cl_thread_name"]}: {self.name}\n'
-                              f'{self.prj_dict["cl_thread_prio"]}: {task_dqed[1]}\n'
-                              f'{self.prj_dict["cl_thread_run_tasks_total"]}: {task_ID}\n'
-                              f'{self.prj_dict["cl_thread_run_task"]}: {task}')
-                mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
-
+                log(mpy_trace, app_dict, "debug",
+                lambda: f'{self.app_dict["cl_thread_run_task_fetched"]}\n'
+                        f'ID: {self.ID}\n'
+                        f'{self.app_dict["cl_thread_name"]}: {self.name}\n'
+                        f'{self.app_dict["cl_thread_prio"]}: {task_dqed[1]}\n'
+                        f'{self.app_dict["cl_thread_run_tasks_total"]}: {task_ID}\n'
+                        f'{self.app_dict["cl_thread_run_task"]}: {task}')
 
                 # Import a module, if necessary for execution
-                imp_eval = thread_imports(mpy_trace, self.prj_dict, task)
+                imp_eval = thread_imports(mpy_trace, self.app_dict, task)
 
                 # Evaluate the necessity to import a module
                 imp_true = imp_eval["imp_true"]
@@ -791,89 +692,72 @@ class cl_thread(threading.Thread):
                     imp_order = imp_eval["imp_order"]
                     exec(imp_order)
 
-                    # Create a log
                     # Modules were imported.
-                    log_message = (f'{self.prj_dict["cl_thread_run_modules"]}\n'
-                                  f'ID: {self.ID}\n'
-                                  f'{self.prj_dict["cl_thread_name"]}: {self.name}\n'
-                                  f'imp_true: {imp_true}\n'
-                                  f'imp_order: {imp_order}')
-                    mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
+                    log(mpy_trace, app_dict, "debug",
+                    lambda: f'{self.app_dict["cl_thread_run_modules"]}\n'
+                            f'ID: {self.ID}\n'
+                            f'{self.app_dict["cl_thread_name"]}: {self.name}\n'
+                            f'imp_true: {imp_true}\n'
+                            f'imp_order: {imp_order}')
 
                 else:
-
-                    # Create a log
                     # Checked for modules to be imported.
-                    log_message = (f'{self.prj_dict["cl_thread_run_nomodules"]}\n'
+                    log(mpy_trace, app_dict, "debug",
+                    lambda: f'{self.app_dict["cl_thread_run_nomodules"]}\n'
                                   f'ID: {self.ID}\n'
-                                  f'{self.prj_dict["cl_thread_name"]}: {self.name}\n'
+                                  f'{self.app_dict["cl_thread_name"]}: {self.name}\n'
                                   f'imp_true: {imp_true}')
-                    mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
 
                 # Execute the task
                 exec(task)
 
             # Clear the thread ID from the regarding list for another task to get started (if any).
-            self.prj_dict["mt_threads_id_lst"].remove(self.ID)
+            self.app_dict["mt_threads_id_lst"].remove(self.ID)
 
             # Release the thread lock - set the worker available again
             self.lock.release()
 
-            # Create a log
             # Task ended.
-            log_message = (f'{self.prj_dict["cl_thread_run_end"]}\n'
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{self.app_dict["cl_thread_run_end"]}\n'
                           f'ID: {self.ID}\n'
-                          f'{self.prj_dict["cl_thread_name"]}: {self.name}')
-            mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'debug')
+                          f'{self.app_dict["cl_thread_name"]}: {self.name}')
 
             check = True
 
-        # Error detection
         except Exception as e:
+            log(mpy_trace, app_dict, "critical",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-            log_message = (f'{self.prj_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                          f'{self.prj_dict["err_excp"]}: {e}\n'
-                          f'{self.prj_dict["cl_thread_id"]}: {self.ID}\n'
-                          f'{self.prj_dict["cl_thread_name"]}: {self.name}\n'
-                          f'{self.prj_dict["cl_thread_run_task_id"]}: {task_ID}\n'
-                          f'{self.prj_dict["cl_thread_run_task"]}: {task}')
-            mpy_msg.log(mpy_trace, self.prj_dict, log_message, 'critical')
-    
-        finally:
-    
-            # Garbage collection
-            gc.collect()
-    
-            # Return a dictionary
-            return{
-                'mpy_trace' : mpy_trace, \
-                'check' : check
-                }
+        return{
+            'mpy_trace' : mpy_trace,
+            'check' : check
+            }
 
-def prio_correction(mpy_trace, prj_dict, priority, task):
+def prio_correction(mpy_trace: dict, app_dict: dict, priority: int, task: str) -> dict:
 
-    """ This function checks the plausibility of given task prioirities. Any priority smaller
-        than 10 will be set to 10, except for morPy pre-configured modules. The morPy modules
-        are trusted to handled priorities from 0 to 9.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
-        priority - Integer value. Sets the priority of the given task. Lower numbers indicate
-                   a higher priority. Negative integers should be avoided.
-        task - Statement, function or class/module to be run by the thread. A string
-               is expected and will be executed via the exec()-function. The module has
-               got to be referenced (if any) in order to work. Example:
+    r"""
+    Checks the plausibility of given task priorities. Any priority smaller than
+    10 will be set to 10, except for morPy pre-configured modules, which handle
+    priorities from 0 to 9.
 
-                   task = 'prj_module1.prj_function1([mpy_trace], [prj_dict], [...], [log])'
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param priority: Integer value indicating the priority of the given task.
+                     Lower numbers indicate higher priority. Negative integers should be avoided.
+    :param task: String representing the statement, function, or class/module to be executed
+                 by the thread. This string is executed using the `exec()` function.
+                 Example:
+                     task = 'app_module1.app_function1([mpy_trace], [app_dict], [...], [log])'
 
-    :return - dictionary
-        check - The function ended with no errors
-        priority - Integer value. Sets the priority of the given task. Lower numbers indicate
-                   a higher priority. Negative integers should be avoided.
+    :return: dict
+        check: Indicates whether the function executed successfully (True/False).
+        priority: Corrected integer value for the task's priority.
+
+    :example:
+        result = prio_correction(mpy_trace, app_dict, 5, "module.function(args)")
     """
-
-    import mpy_fct, mpy_msg, mpy_common
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_mt'
@@ -888,9 +772,8 @@ def prio_correction(mpy_trace, prj_dict, priority, task):
     prio_module_lst = ('mpy_msg')
 
     try:
-
         # Split the task and extract the module
-        task_split = mpy_common.regex_split(mpy_trace, prj_dict, task, '\.')
+        task_split = mpy_common.regex_split(mpy_trace, app_dict, task, r'.')
         module = task_split[0]
 
         for mod in prio_module_lst:
@@ -907,170 +790,152 @@ def prio_correction(mpy_trace, prj_dict, priority, task):
 
                 priority = 10
 
-                # Create a log
                 # The priority of a task has been corrected.
-                log_message = (f'{prj_dict["loc"]["mpy"]["prio_correction_warn"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["prio_correction_prio_in"]}: {prio_in}\n'
-                              f'{prj_dict["loc"]["mpy"]["prio_correction_prio_out"]}: {priority}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'warning')
+                log(mpy_trace, app_dict, "warning",
+                lambda: f'{app_dict["loc"]["mpy"]["prio_correction_warn"]}\n'
+                        f'{app_dict["loc"]["mpy"]["prio_correction_prio_in"]}: {prio_in}\n'
+                        f'{app_dict["loc"]["mpy"]["prio_correction_prio_out"]}: {priority}')
 
             else:
-
                 if prio_in < 0:
 
                     priority = 0
 
-                    # Create a log
                     # The priority of a morPy-task has been corrected.
-                    log_message = (f'{prj_dict["loc"]["mpy"]["prio_correction_err"]}\n'
-                                  f'{prj_dict["loc"]["mpy"]["prio_correction_prio_in"]}: {prio_in}\n'
-                                  f'{prj_dict["loc"]["mpy"]["prio_correction_prio_out"]}: {priority}')
-                    mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+                    log(mpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["mpy"]["prio_correction_err"]}\n'
+                            f'{app_dict["loc"]["mpy"]["prio_correction_prio_in"]}: {prio_in}\n'
+                            f'{app_dict["loc"]["mpy"]["prio_correction_prio_out"]}: {priority}')
 
         check = True
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check,
+        'priority' : priority
+        }
 
-        # Garbage collection
-        gc.collect()
+def thread_id(mpy_trace: dict, app_dict: dict) -> dict:
 
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check, \
-            'priority' : priority
-            }
+    r"""
+    Determines the ID of the calling thread. The ID is an integer value, where
+    the highest possible value corresponds to the maximum threads available.
+    Unlike the thread name, the ID is set automatically and does not represent
+    the architectural thread ID determined by the operating system.
 
-def thread_id(mpy_trace, prj_dict):
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
 
-    """ This function is called by a thread to determine its own ID. The ID is an integer
-        value and the highest possible value corresponds to the maximum threads available.
-        Other than the name of the thread, the ID is set automatically and does not necessarily
-        represent the architectural thread ID determined by the operating system.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
-    :return - dictionary
-        check - The function ended with no errors
-        thread_id - The ID of the newly created thread
+    :return: dict
+        check: Indicates whether the function executed successfully (True/False).
+        thread_id: The ID of the calling thread.
+
+    :example:
+        result = thread_id(mpy_trace, app_dict)
     """
-
-    import mpy_fct, mpy_msg
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_mt'
     operation = 'thread_id(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Preparing parameters
     check = False
-    max_threads = prj_dict["mt_max_threads"]
+    max_threads = app_dict["mt_max_threads"]
     thread_id = 0
     threads_used = 0
 
     try:
-
-        # Create a log
         # Reserving an ID for a new thread/task.
-        log_message = (f'{prj_dict["loc"]["mpy"]["thread_id_init"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["mt_init_thr_max"]}: {max_threads}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["mpy"]["thread_id_init"]}\n'
+                f'{app_dict["loc"]["mpy"]["mt_init_thr_max"]}: {max_threads}')
 
         # Check, if a list of threads exists. If not, thread_id = 0.
-        if prj_dict["mt_threads_id_lst"]:
+        if app_dict["mt_threads_id_lst"]:
 
             # Get the amount of actively used threads
-            threads_used = len(prj_dict["mt_threads_id_lst"])
+            threads_used = len(app_dict["mt_threads_id_lst"])
 
             # Sort the list of taken thread IDs
-            prj_dict["mt_threads_id_lst"].sort()
-            
+            app_dict["mt_threads_id_lst"].sort()
+
             i = 0
-            
+
             # Check, if the actual ID is already reserved
-            for reserved_id in prj_dict["mt_threads_id_lst"]:
-                
+            for reserved_id in app_dict["mt_threads_id_lst"]:
+
                 # Check, if a thread ID "reserved_id - 1" exists. If not, free thread ID number is found.
-                if reserved_id - prj_dict["mt_threads_id_lst"][i-1] > 1:
+                if reserved_id - app_dict["mt_threads_id_lst"][i-1] > 1:
                     thread_id = reserved_id - 1
                     break
                 else:
                     i += 1
                     pass
-                
+
             # No gap in the thread ID list found. Adding 1 to the last reserved thread ID.
             else: thread_id = reserved_id + 1
-                
-            # Thread ID available. Exit loop and reserve ID for thread/task.
-            prj_dict["mt_threads_id_lst"].append(thread_id)
 
-            if thread_id > prj_dict["mt_max_threads"]:
+            # Thread ID available. Exit loop and reserve ID for thread/task.
+            app_dict["mt_threads_id_lst"].append(thread_id)
+
+            if thread_id > app_dict["mt_max_threads"]:
 
                 # Raise an error, if the thread ID is greater than the maximum threads utilized.
                 # Overflow in thread ID list. ID exceeds maximum threads utilized.
-                log_message = (f'{prj_dict["loc"]["mpy"]["thread_id_err"]}\n'
-                              f'{prj_dict["loc"]["mpy"]["mt_init_thr_max"]}: {max_threads}\n'
-                              f'{prj_dict["loc"]["mpy"]["mt_init_thr_available"]}: {max_threads - threads_used}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
+                log(mpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["mpy"]["thread_id_err"]}\n'
+                        f'{app_dict["loc"]["mpy"]["mt_init_thr_max"]}: {max_threads}\n'
+                        f'{app_dict["loc"]["mpy"]["mt_init_thr_available"]}: {max_threads - threads_used}')
 
         else:
-            
-            prj_dict["mt_threads_id_lst"].append(thread_id)
+            app_dict["mt_threads_id_lst"].append(thread_id)
 
         # Create a log
         # Reserved an ID for a new thread/task.
-        log_message = (f'{prj_dict["loc"]["mpy"]["thread_id_done"]}\n'
-                      f'{prj_dict["loc"]["mpy"]["mt_init_thr_max"]}: {max_threads}\n'
-                      f'{prj_dict["loc"]["mpy"]["mt_init_thr_available"]}: {max_threads - threads_used}\n'
-                      f'{prj_dict["loc"]["mpy"]["cl_thread_id"]}: {thread_id}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+        log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["mpy"]["thread_id_done"]}\n'
+                f'{app_dict["loc"]["mpy"]["mt_init_thr_max"]}: {max_threads}\n'
+                f'{app_dict["loc"]["mpy"]["mt_init_thr_available"]}: {max_threads - threads_used}\n'
+                f'{app_dict["loc"]["mpy"]["cl_thread_id"]}: {thread_id}')
 
         check = True
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check,
+        'thread_id' : thread_id
+        }
 
-        # Garbage collection
-        gc.collect()
+def thread_imports(mpy_trace: dict, app_dict: dict, task: str) -> dict:
 
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check, \
-            'thread_id' : thread_id
-            }
+    r"""
+    Determines whether a module needs to be imported when starting a task within
+    a thread, using regular expressions.
 
-def thread_imports(mpy_trace, prj_dict, task):
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param task: String representing the statement, function, or class/module to be run
+                 by the thread. This string is executed using the `exec()` function.
 
-    """ This function uses regular expressions to figure out whether
-        a module needs to be imported or not when starting a task within
-        a thread.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
-        task - Statement, function or class/module to be run by the thread. A string
-               is expected and will be executed via the exec()-function.
-    :return - dictionary
-        check - The function ended with no errors
-        imp_true - True, if a module was found and needs to be imported.
-        imp_order - The statement which will be executed by the thread. It includes
-                    an order to import a module or an empty string.
+    :return: dict
+        check: Indicates whether the function executed successfully (True/False).
+        imp_true: Boolean indicating if a module needs to be imported.
+        imp_order: Statement to be executed by the thread, including the import
+                   order or an empty string if no import is required.
+
+    :example:
+        result = thread_imports(mpy_trace, app_dict, "module.function(args)")
     """
-
-    import mpy_fct, mpy_msg, mpy_common
-    import sys, gc
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_mt'
@@ -1083,25 +948,22 @@ def thread_imports(mpy_trace, prj_dict, task):
     imp_order = ''
 
     try:
-
         split_test = task.find('.')
 
         # Only search for module imports, if a '.' was found in the task
         if split_test >= 0:
 
             # Split the task and extract the module
-            task_split = mpy_common.regex_split(mpy_trace, prj_dict, task, '\.')
+            task_split = mpy_common.regex_split(mpy_trace, app_dict, task, r'.')
             module = task_split[0]
 
-            # Create a log
             # Task split to identify module imports.
-            log_message = (f'{prj_dict["loc"]["mpy"]["thread_imports_start"]}\n'
-                          f'module: {module}')
-            mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["thread_imports_start"]}\n'
+                    f'module: {module}')
 
             # Evaluate the existence of the extracted module and create a statement
             try:
-
                 # Create import order
                 imp_order = f'import {module}'
 
@@ -1111,42 +973,32 @@ def thread_imports(mpy_trace, prj_dict, task):
                 # Set module import true if it was found
                 imp_true = True
 
-                # Create a log
                 # The calling thread imported a module.
-                log_message = (f'{prj_dict["loc"]["mpy"]["thread_imports_yes"]}\n'
-                              f'module: {module}\n'
-                              f'imp_order: {imp_order}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+                log(mpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["mpy"]["thread_imports_yes"]}\n'
+                        f'module: {module}\n'
+                        f'imp_order: {imp_order}')
 
             # Overwrite the import order, if the module was not found
             except ImportError or ModuleNotFoundError:
 
                 imp_order = ''
 
-                # Create a log
                 # No module got imported by the calling thread.
-                log_message = (f'{prj_dict["loc"]["mpy"]["thread_imports_no"]}\n'
-                              f'imp_order: {imp_order}')
-                mpy_msg.log(mpy_trace, prj_dict, log_message, 'debug')
+                log(mpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["mpy"]["thread_imports_no"]}\n'
+                        f'imp_order: {imp_order}')
 
         check = True
 
-    # Error detection
     except Exception as e:
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
-                      f'task: {task}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'critical')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'mpy_trace' : mpy_trace, \
-            'check' : check, \
-            'imp_true' : imp_true, \
-            'imp_order' : imp_order
-            }
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check,
+        'imp_true' : imp_true,
+        'imp_order' : imp_order
+        }

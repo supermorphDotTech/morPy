@@ -1,25 +1,161 @@
-"""
+r"""
 Author:     Bastian Neuwirth
 Date:       12.08.2023
 Version:    0.1
-Descr.:     This module links all routines and classes of the morPy framework.
-            Linking provides the following advantages:
-                - Shortens the code needed to adress a function
-                - Framework is easier to understand, since all functions are
-                  collected here
-                - Only one module mpy.py needs to be adressed (imported) in
-                  the code of the project
-                - Only functions intended to be used are provided here
+Descr.:     This module is the interface to the morPy framework.
+    TODO Finish formatting in morPy standard
 """
 
-def decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding):
+import mpy_bulk_ops
+import mpy_common
+import mpy_csv
+import mpy_fct
+import mpy_mt
+import mpy_ui_tk
+import mpy_wscraper
+import mpy_xl
+import sys
 
-    """ This function decodes different types of data and returns
+from mpy_decorators import log
+
+def cl_priority_queue(mpy_trace: dict, app_dict: dict, name: str=None):
+
+    r"""
+    This class delivers a priority queue solution. Any task may be enqueued.
+    When dequeueing, the highest priority task (lowest number) is dequeued
+    first. In case there is more than one, the oldest is dequeued.
+
+    :param mpy_trace: Operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param name: Name or description of the instance
+
+    :example:
+        from functools import partial
+        # Create queue instance
+        queue = mpy.cl_priority_queue(mpy_trace, app_dict, name="example_queue")
+        # Add a task to the queue
+        queue.enqueue(mpy_trace, app_dict, priority=25, task=partial(task, mpy_trace, app_dict))
+        # Fetch a task and run it
+        task = queue.dequeue(mpy_trace, app_dict)['task']
+        task()
+    """
+
+    try:
+        return mpy_common.cl_priority_queue(mpy_trace, app_dict, name)
+    except Exception as e:
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'cl_priority_queue(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+def cl_progress(mpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None):
+
+    r"""
+    This class instanciates a progress counter. If ticks, total or counter
+    are floats, a progress of 100 % may not be displayed.
+
+    :param mpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param description: Describe, what is being processed (i.e. file path or calculation)
+    :param total: Mandatory - The total count for completion
+    :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
+        10.7% progress exceeded the exact progress will be logged.
+
+    .update()
+        Method to update current progress and log progress if tick is passed.
+
+        :return .update(): dict
+            mpy_trace: Operation credentials and tracing
+            check: Indicates whether the function ended without errors
+            prog_rel: Relative progress, float between 0 and 1
+            message: Message generated. None, if no tick was hit.
+
+    :example:
+        progress = cl_progress(mpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)
+        progress.update(mpy_trace, app_dict, current=current_count)
+    """
+
+    try:
+        return mpy_common.cl_progress(mpy_trace, app_dict, description, total, ticks)
+    except Exception as e:
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'cl_progress(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str, delimiter: str, print_csv_dict: bool) -> dict:
+
+    r"""
+    This function reads a csv file and returns a dictionary of
+    dictionaries. The header row, first row of data and delimiter
+    is determined automatically.
+
+    :param mpy_trace: Operation credentials and tracing
+    :param app_dict: morPy global dictionary containing app configurations
+    :param src_file_path: Path to the csv file.
+    :param delimiter: Delimiters used in the csv. None = Auto detection
+    :param print_csv_dict: If true, the csv_dict will be printed to console. Should only
+        be used for debugging with small example csv files. May take very long to complete.
+
+    :return: dict
+        mpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
+        csv_dict: Dictionary containing all tags. The line numbers of data are
+            the keys of the parent dictionary, and the csv header consists of
+            the keys of every sub-dictionary.
+            Pattern:
+                {DATA1 :
+                     delimiter : [str]
+                     header : [tuple] (header(1), header(2), ...)
+                     columns : [int] header columns
+                     rows : [int] number of rows in data
+                     ROW1 : [dict]
+                         {header(1) : data(1, 1),
+                          header(2) : data(2, 1),
+                          ...}
+                     ROW2 : [dict]
+                         {header(1) : data(1, 2),
+                         header(2) : data(2, 2),
+                                 ...}
+                 DATA2 :
+                     ...
+                 }
+
+    :example:
+        src_file_path = 'C:\myfile.csv'
+        delimiter = '' # Delimiter auto detection
+        print_csv_dict = True # Print data tables to console
+        csv_dict = mpy_csv.csv_read(mpy_trace, app_dict, src_file_path, delimiter, print_csv_dict=False)
+    """
+
+    try:
+        return mpy_csv.csv_read(mpy_trace, app_dict, src_file_path, delimiter, print_csv_dict)
+    except Exception as e:
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'csv_read(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encoding: str) -> dict:
+
+    r""" This function decodes different types of data and returns
         a plain text to work with in python. The return result behaves
         like using the open(file, 'r') method.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         src_input - Any kind of data to be decoded. Binary expected. Example:
                     src_input = open(src_file, 'rb')
         encoding - String that defines encoding. Leave empty to auto detect. Examples:
@@ -32,26 +168,23 @@ def decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.decode_to_plain_text(mpy_trace, prj_dict, src_input, encoding)
-    # Error detection
+        return mpy_common.decode_to_plain_text(mpy_trace, app_dict, src_input, encoding)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'decode_to_plain_text(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title):
+def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str, ftypes: str, title: str) -> dict:
 
-    """ This function opens a dialog for the user to select a file.
+    r""" This function opens a dialog for the user to select a file.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         init_dir - The directory in which the dialog will initially be opened
         ftypes - This tuple of 2-tuples specifies, which filetypes will be
                 displayed by the dialog box, e.g.
@@ -64,56 +197,58 @@ def dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.dialog_sel_file(mpy_trace, prj_dict, init_dir, ftypes, title)
-    # Error detection
+        return mpy_common.dialog_sel_file(mpy_trace, app_dict, init_dir, ftypes, title)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'dialog_sel_file(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def dialog_sel_dir(mpy_trace, prj_dict, init_dir, title):
+def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str, title: str) -> dict:
 
-    """ This function opens a dialog for the user to select a directory.
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
-        init_dir - The directory in which the dialog will initially be opened
-        title - Title of the open directory dialog
-    :return - dictionary
-        check - The function ended with no errors and a file was chosen
-        sel_dir - Path of the selected directory
-        mpy_trace - [dictionary] operation credentials and tracing
+    r"""
+    This function opens a dialog for the user to select a directory.
+
+    :param mpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param init_dir: The directory in which the dialog will initially be opened
+    :param title: Title of the open directory dialog
+
+    :return: dict
+        mpy_trace: [dictionary] operation credentials and tracing
+        check: The function ended with no errors and a file was chosen
+        sel_dir: Path of the selected directory
+        dir_selected: True, if directory was selected. False, if canceled.
+
+    :example:
+        init_dir = app_dict["sys"]["homedir"]
+        title = 'Select a file...'
+        sel_dir = dialog_sel_dir(mpy_trace, app_dict, init_dir, title)
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.dialog_sel_dir(mpy_trace, prj_dict, init_dir, title)
-    # Error detection
+        return mpy_common.dialog_sel_dir(mpy_trace, app_dict, init_dir, title)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'dialog_sel_dir(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm):
+def fso_copy_file(mpy_trace, app_dict, source, dest, ovwr_perm):
 
-    """ This function is used to copy a single file from source to destination.
+    r""" This function is used to copy a single file from source to destination.
         A file check is already included and will be performed.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         source - Complete path to the source file including the file extension
         dest - Complete path to the destination file including the file extension
         ovwr_perm - If TRUE, the destination file may be overwritten.
@@ -125,27 +260,24 @@ def fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.fso_copy_file(mpy_trace, prj_dict, source, dest, ovwr_perm)
-    # Error detection
+        return mpy_common.fso_copy_file(mpy_trace, app_dict, source, dest, ovwr_perm)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'fso_copy_file(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def fso_create_dir(mpy_trace, prj_dict, mk_dir):
+def fso_create_dir(mpy_trace, app_dict, mk_dir):
 
-    """ This function creates a directory as well as it's parents
+    r""" This function creates a directory as well as it's parents
         recursively.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         mk_dir - Path to the directory/tree to be created
     :return - dictionary
         check - The function ended with no errors
@@ -153,27 +285,24 @@ def fso_create_dir(mpy_trace, prj_dict, mk_dir):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.fso_create_dir(mpy_trace, prj_dict, mk_dir)
-    # Error detection
+        return mpy_common.fso_create_dir(mpy_trace, app_dict, mk_dir)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'fso_create_dir(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def fso_delete_dir(mpy_trace, prj_dict, del_dir):
+def fso_delete_dir(mpy_trace, app_dict, del_dir):
 
-    """ This function is used to delete an entire directory including it's
+    r""" This function is used to delete an entire directory including it's
         contents. A directory check is already included and will be performed.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         del_dir - Path to the directory to be deleted
     :return - dictionary
         check - The function ended with no errors
@@ -181,27 +310,26 @@ def fso_delete_dir(mpy_trace, prj_dict, del_dir):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.fso_delete_dir(mpy_trace, prj_dict, del_dir)
-    # Error detection
+        return mpy_common.fso_delete_dir(mpy_trace, app_dict, del_dir)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'fso_delete_dir(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def fso_delete_file(mpy_trace, prj_dict, del_file):
+def fso_delete_file(mpy_trace, app_dict, del_file):
 
-    """ This function is used to delete a file. A path check is
-        already included and will be performed.
+    r"""
+    This function is used to delete a file. A path check is
+    already included and will be performed.
+
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         del_file - Path to the directory to be deleted
 
     :return - dictionary
@@ -210,26 +338,23 @@ def fso_delete_file(mpy_trace, prj_dict, del_file):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.fso_delete_file(mpy_trace, prj_dict, del_file)
-    # Error detection
+        return mpy_common.fso_delete_file(mpy_trace, app_dict, del_file)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'fso_delete_file(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def fso_walk(mpy_trace, prj_dict, path, depth):
+def fso_walk(mpy_trace, app_dict, path, depth):
 
-    """ This function returns the contents of a directory.
+    r""" This function returns the contents of a directory.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         path - Path to be analyzed
         depth - Limits the depth to be analyzed
                 -1 - No Limit
@@ -249,26 +374,77 @@ def fso_walk(mpy_trace, prj_dict, path, depth):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.fso_walk(mpy_trace, prj_dict, path, depth)
-    # Error detection
+        return mpy_common.fso_walk(mpy_trace, app_dict, path, depth)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'fso_walk(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def regex_findall(mpy_trace, prj_dict, search_obj, pattern):
+def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
 
-    """ This function searches for regular expression in any given object and returns a list of found expressions.'
+    r"""
+    This function enqueues a task in the morPy multiprocessing queue. The task is a
+    tuple, that demands the positional arguments (func, mpy_trace, app_dict, *args, **kwargs).
+
+    :param task: Tuple of a callable, *args and **kwargs
+    :param priority: Integer representing task priority (lower is higher priority)
+    :param autocorrect: If False, priority can be smaller than zero. Priority
+        smaller zero is reserved for the morPy Core. However, it is a devs choice
+        to make.
+
+    :return: process_qed: If True, process was queued successfully. If False, an error occurred.
+
+    :example:
+        from mpy import process_q
+        message = "Gimme 5"
+        def gimme_5(mpy_trace, app_dict, message):
+            print(message)
+            return message
+        a_number = (gimme_5, mpy_trace, app_dict, message) # Tuple of a callable, *args and **kwargs
+        enqueued = process_q(task=a_number, priority=20) #
+        if not enqueued:
+            print("No, thank you sir!")
+    """
+
+    process_qed = False
+
+    try:
+        mpy_trace = task[1]
+        app_dict = task[2]
+        try:
+            app_dict["proc"]["mpy"]["process_q"].enqueue(
+                mpy_trace, app_dict, priority=priority, task=task, autocorrect=autocorrect
+            )
+
+            process_qed = True
+
+        except Exception as e:
+            # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+            module = 'mpy'
+            operation = 'process_q(~)'
+            mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+            log(mpy_trace, app_dict, "critical",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+    except:
+        raise RuntimeError
+
+    finally:
+        return process_qed
+
+def regex_findall(mpy_trace, app_dict, search_obj, pattern):
+
+    r""" This function searches for regular expression in any given object and returns a list of found expressions.'
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         search_obj - Any given object to search in for a regular expression (will be converted to a string)
         pattern - The regular expression to search for
     :return - list
@@ -276,26 +452,23 @@ def regex_findall(mpy_trace, prj_dict, search_obj, pattern):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.regex_findall(mpy_trace, prj_dict, search_obj, pattern)
-    # Error detection
+        return mpy_common.regex_findall(mpy_trace, app_dict, search_obj, pattern)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'regex_findall(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def regex_find1st(mpy_trace, prj_dict, search_obj, pattern):
+def regex_find1st(mpy_trace, app_dict, search_obj, pattern):
 
-    """ This function searches for regular expression in any given object and returns the first match.'
+    r""" This function searches for regular expression in any given object and returns the first match.'
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         search_obj - Any given object to search in for a regular expression (will be converted to a string)
         pattern - The regular expression to search for
 
@@ -304,26 +477,23 @@ def regex_find1st(mpy_trace, prj_dict, search_obj, pattern):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.regex_find1st(mpy_trace, prj_dict, search_obj, pattern)
-    # Error detection
+        return mpy_common.regex_find1st(mpy_trace, app_dict, search_obj, pattern)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'regex_find1st(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def regex_split(mpy_trace, prj_dict, search_obj, delimiter):
+def regex_split(mpy_trace, app_dict, search_obj, delimiter):
 
-    """ This function splits an object into a list by a given delimiter.
+    r""" This function splits an object into a list by a given delimiter.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         search_obj - Any given object to search in for a regular expression (will be converted to a string)
         delimiter - The character or string used to split the search_obj into a list. Have
                     in mind, that special characters may need a backslash preceding them (e.g. '\.' to use
@@ -333,26 +503,23 @@ def regex_split(mpy_trace, prj_dict, search_obj, delimiter):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.regex_split(mpy_trace, prj_dict, search_obj, delimiter)
-    # Error detection
+        return mpy_common.regex_split(mpy_trace, app_dict, search_obj, delimiter)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'regex_split(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
+def regex_replace(mpy_trace, app_dict, search_obj, search_for, replace_by):
 
-    """ This function substitutes characters or strings in an input object.
+    r""" This function substitutes characters or strings in an input object.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         search_obj - Any given object to search in for a regular expression (will be converted to a string)
         search_for - The character or string to be replaced
         replace_by - The character or string to substitute
@@ -362,23 +529,20 @@ def regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.regex_replace(mpy_trace, prj_dict, search_obj, search_for, replace_by)
-    # Error detection
+        return mpy_common.regex_replace(mpy_trace, app_dict, search_obj, search_for, replace_by)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'regex_replace(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
+def regex_remove_special(mpy_trace, app_dict, inp_string, spec_lst):
 
-    """ This function removes special characters of a given string and instead inserts
+    r""" This function removes special characters of a given string and instead inserts
         any character if defined. The spec_lst is a list consiting of tuples
         consisting of special characters and what they are supposed to get exchanged
         with. Using a blank list will invoke a standard list where specials will be
@@ -388,7 +552,7 @@ def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
         any valid regular expression instead of the special character.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         inp_string - The string to be altered
         spec_lst - List consisting of 2-tuples as a definition of which special character
                    is to be replaced by which [(special1,replacement1),...]. Set the
@@ -398,27 +562,24 @@ def regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.regex_remove_special(mpy_trace, prj_dict, inp_string, spec_lst)
-    # Error detection
+        return mpy_common.regex_remove_special(mpy_trace, app_dict, inp_string, spec_lst)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'regex_remove_special(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def textfile_write(mpy_trace, prj_dict, filepath, content):
+def textfile_write(mpy_trace, app_dict, filepath, content):
 
-    """ This function appends any textfile and creates it, if there
+    r""" This function appends any textfile and creates it, if there
         is no such file.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         filepath - Path to the textfile including its name and filetype
         content - Something that will be printed as a string.
 
@@ -427,23 +588,20 @@ def textfile_write(mpy_trace, prj_dict, filepath, content):
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.textfile_write(mpy_trace, prj_dict, filepath, content)
-    # Error detection
+        return mpy_common.textfile_write(mpy_trace, app_dict, filepath, content)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'textfile_write(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
 def testprint(mpy_trace, input):
 
-    """ This function prints any value given. It is intended to be used for debugging.
+    r""" This function prints any value given. It is intended to be used for debugging.
     :param
         mpy_trace - operation credentials and tracing
         input - Something that will be printed as a string.
@@ -451,39 +609,35 @@ def testprint(mpy_trace, input):
         -
     """
 
-    import mpy_common
     return mpy_common.testprint(mpy_trace, input)
 
-def wait_for_input(mpy_trace, prj_dict, msg_text):
+def wait_for_input(mpy_trace, app_dict, msg_text):
 
-    """ This function makes the program wait until a user input was made.
+    r""" This function makes the program wait until a user input was made.
         The user input can be returned to the calling module.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         msg_text - The text to be displayed before user input
     :return
         usr_input - Returns the input of the user
     """
 
     try:
-        import sys, mpy_common
-        return mpy_common.wait_for_input(mpy_trace, prj_dict, msg_text)
-    # Error detection
+        return mpy_common.wait_for_input(mpy_trace, app_dict, msg_text)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'wait_for_input(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
 def datetime_now(mpy_trace):
 
-    """ This function reads the current date and time and returns formatted
+    r""" This function reads the current date and time and returns formatted
         stamps.
     :param
         mpy_trace - operation credentials and tracing
@@ -498,13 +652,11 @@ def datetime_now(mpy_trace):
         loggingstamp - Date- and timestamp for logging YYYMMDD_hhmmss as a string.
     """
 
-    import mpy_fct
-
     return mpy_fct.datetime_now(mpy_trace)
 
 def runtime(mpy_trace, in_ref_time):
 
-    """ This function calculates the actual runtime and returns it.
+    r""" This function calculates the actual runtime and returns it.
     :param
         mpy_trace - operation credentials and tracing
         in_ref_time - Value of the reference time to calculate the actual runtime
@@ -518,7 +670,7 @@ def runtime(mpy_trace, in_ref_time):
 
 def sysinfo(mpy_trace):
 
-    """ This function returns various informations about the hardware and operating system.
+    r""" This function returns various informations about the hardware and operating system.
     :param
         mpy_trace - operation credentials and tracing
     :return - dictionary
@@ -527,7 +679,8 @@ def sysinfo(mpy_trace):
         version - Major and subversions of the operating system.
         arch - Architecture of the operating system.
         processor - Processor running the code.
-        threads - Total threads available to the machine.
+        logical_cpus - Amount of processes, that could run in parallel.
+        sys_memory_bytes - Physical system memory in bytes
         username - Returns the username.
         homedir - Returns the home directory.
         hostname - Returns the host name.
@@ -539,7 +692,7 @@ def sysinfo(mpy_trace):
 
 def pathtool(mpy_trace, in_path):
 
-    """ This function takes a string and converts it to a path. Additionally,
+    r""" This function takes a string and converts it to a path. Additionally,
         it returns path components and checks.
     :param
         mpy_trace - operation credentials and tracing
@@ -562,7 +715,7 @@ def pathtool(mpy_trace, in_path):
 
 def path_join(mpy_trace, path_parts, file_extension):
 
-    """ This function joins components of a tuple to an OS path.
+    r""" This function joins components of a tuple to an OS path.
     :param
         mpy_trace - operation credentials and tracing
         path_parts - Tuple of parts to be joined. Exact order is critical. Examples:
@@ -582,7 +735,7 @@ def path_join(mpy_trace, path_parts, file_extension):
 
 def perfinfo(mpy_trace):
 
-    """ This function returns performance metrics.
+    r""" This function returns performance metrics.
     :param
         mpy_trace - operation credentials and tracing
     :return - dictionary
@@ -604,22 +757,22 @@ def perfinfo(mpy_trace):
 
     return mpy_fct.perfinfo(mpy_trace)
 
-def prj_dict_to_string(prj_dict):
+def app_dict_to_string(app_dict):
 
-    """ This function prints the entire project dictionary in Terminal.
+    r""" This function prints the entire app dictionary in Terminal.
     :param
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
     :return
         -
     """
 
     import mpy_fct
 
-    return mpy_fct.prj_dict_to_string(prj_dict)
+    return mpy_fct.app_dict_to_string(app_dict)
 
 def tracing(module, operation, mpy_trace):
 
-    """ This function formats the trace to any given operation. This function is
+    r""" This function formats the trace to any given operation. This function is
         necessary to alter the mpy_trace as a pass down rather than pointing to the
         same mpy_trace passed down by the calling operation. If mpy_trace is to altered
         in any way (i.e. 'log_enable') it needs to be done after calling this function.
@@ -636,45 +789,17 @@ def tracing(module, operation, mpy_trace):
 
     return mpy_fct.tracing(module, operation, mpy_trace)
 
-def log(mpy_trace, prj_dict, log_message, level):
+def mpy_thread_queue(mpy_trace, app_dict, name, priority, task):
 
-    """ This function writes an event to a specified file and/or prints it out
-        according to it's severity (level).
-    :param
-        mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
-        log_message - The message to be logged
-        level - Severity: debug/info/warning/error/critical/denied
-    :return
-        -
-    """
-
-    try:
-        import mpy_msg, sys
-        return mpy_msg.log(mpy_trace, prj_dict, log_message, level)
-    # Error detection
-    except Exception as e:
-        import mpy_fct
-        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-        module = 'mpy'
-        operation = 'log(~)'
-        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        mpy_msg.log(mpy_trace, prj_dict, log_message, 'error')
-
-def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
-
-    """ This function handles the task queue (instance 'mpy_mt_priority_queue' of cl_mtPriorityQueue)
+    r""" This function handles the task queue (instance 'mpy_mt_priority_queue' of cl_mtPriorityQueue)
         of this framework. Its main purpose is to provide an easy handling of multithreaded
         programming in the way, that the developer just needs to fill the queue with tasks
-        and tailor the multithreading parameters to the projects needs. However, when being
+        and tailor the multithreading parameters to the apps needs. However, when being
         bound to single threaded execution the queue will just execute sequentially, while
         prioritizing the tasks.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         name - Name of the task/thread.
         priority - Integer value. Sets the priority of the given task. Lower numbers indicate
                    a higher priority. Negative integers should be avoided.
@@ -682,83 +807,74 @@ def mpy_thread_queue(mpy_trace, prj_dict, name, priority, task):
                is expected and will be executed via the exec()-function. The module has
                got to be referenced (if any) in order to work. Example:
 
-                   task = 'prj_module1.prj_function1([mpy_trace], [prj_dict], [...], [log])'
+                   task = 'app_module1.app_function1([mpy_trace], [app_dict], [...], [log])'
     :return - dictionary
         check - The function ended with no errors
     """
 
     try:
-        import sys, mpy_mt
-        return mpy_mt.mpy_thread_queue(mpy_trace, prj_dict, name, priority, task)
-    # Error detection
+        return mpy_mt.mpy_thread_queue(mpy_trace, app_dict, name, priority, task)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'mpy_thread_queue(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def mpy_threads_joinall(mpy_trace, prj_dict):
+def mpy_threads_joinall(mpy_trace, app_dict):
 
-    """ This function stops execution of the code until all threads have finished their work.
+    r""" This function stops execution of the code until all threads have finished their work.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
     :return - dictionary
         check - The function ended with no errors
     """
 
     try:
-        import sys, mpy_mt
-        return mpy_mt.mpy_threads_joinall(mpy_trace, prj_dict)
-    # Error detection
+        return mpy_mt.mpy_threads_joinall(mpy_trace, app_dict)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'mpy_threads_joinall(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def mpy_mt_abort(mpy_trace, prj_dict):
+def mpy_mt_abort(mpy_trace, app_dict):
 
-    """ This function aborts all pending tasks. However, the priority queue still exists and new threads
+    r""" This function aborts all pending tasks. However, the priority queue still exists and new threads
         would eventually pick up the aborted tasks.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
     :return - dictionary
         check - The function ended with no errors
     """
 
     try:
-        import sys, mpy_mt
-        return mpy_mt.mpy_mt_abort(mpy_trace, prj_dict)
-    # Error detection
+        return mpy_mt.mpy_mt_abort(mpy_trace, app_dict)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'mpy_mt_abort(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
+def cl_read(mpy_trace, app_dict, wb_path, wb_sht, cells, dat, vba):
 
-    """ This function reads the cells of MS Excel workbooks.
+    r""" This function reads the cells of MS Excel workbooks.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         wb_path - Path to the MS Excel workbook
         wb_sht - Name of the sheet, to copy cells from
         cells - The cell or range of cells to read from. Two datatypes
@@ -783,113 +899,101 @@ def cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba):
     """
 
     try:
-        import sys, mpy_xl
-        return mpy_xl.cl_read(mpy_trace, prj_dict, wb_path, wb_sht, cells, dat, vba)
-    # Error detection
+        return mpy_xl.cl_read(mpy_trace, app_dict, wb_path, wb_sht, cells, dat, vba)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'cl_read(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def wb_close(mpy_trace, prj_dict, wb_path):
+def wb_close(mpy_trace, app_dict, wb_path):
 
-    """ This function closes an MS Excel workbook. It is advisory to
+    r""" This function closes an MS Excel workbook. It is advisory to
         only use the morPy functions to open and close a workbook, since a
         wb_close routine is implemented for various cases (i.e. Exceptions).
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         wb_path - Path to the MS Excel workbook
     :return - dictionary
         check - The function ended with no errors
     """
 
     try:
-        import sys, mpy_xl
-        return mpy_xl.wb_close(mpy_trace, prj_dict, wb_path)
-    # Error detection
+        return mpy_xl.wb_close(mpy_trace, app_dict, wb_path)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'wb_close(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def wb_close_all(mpy_trace, prj_dict):
+def wb_close_all(mpy_trace, app_dict):
 
-    """ This function closes all MS Excel workbooks opened by this project. It is
+    r""" This function closes all MS Excel workbooks opened by this app. It is
         advisory to only use the morPy functions to open and close a workbook, since
         a wb_close routine is implemented for various cases (i.e. Exceptions).
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
     :return - dictionary
         check - The function ended with no errors
     """
 
     try:
-        import sys, mpy_xl
-        return mpy_xl.wb_close_all(mpy_trace, prj_dict)
-    # Error detection
+        return mpy_xl.wb_close_all(mpy_trace, app_dict)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'wb_close_all(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def wb_create(mpy_trace, prj_dict, xl_path):
+def wb_create(mpy_trace, app_dict, xl_path):
 
-    """ This function creates a new empty excel workbook at a path handed
+    r""" This function creates a new empty excel workbook at a path handed
         to this function.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
     :return - dictionary
         check - The function ended with no errors
     """
 
     try:
-        import sys, mpy_xl
-        return mpy_xl.wb_create(mpy_trace, prj_dict, xl_path)
-    # Error detection
+        return mpy_xl.wb_create(mpy_trace, app_dict, xl_path)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'wb_create(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
+def wb_load(mpy_trace, app_dict, wb_path, dat, vba):
 
-    """ This function connects to an MS Excel workbook. It is advisory to
+    r""" This function connects to an MS Excel workbook. It is advisory to
         only use the morPy functions to open and close a workbook, since a
         wb_close routine is implemented for various cases (i.e. Exceptions).
         The workbook path will be connected to the object in RAM by creating
         a key in a dedicated dictionary as shown:
-        >   prj_dict["mpy_xl_loaded_wb_lst"] = {wb_path : wb_obj}
+        >   app_dict["mpy_xl_loaded_wb_lst"] = {wb_path : wb_obj}
         This way a once opened Excel workbook may not be adressed twice.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         wb_path - Path to the MS Excel workbook
         dat - True means cells with formulae will only be represented by
             their calculated values. Notice that you need to close the
@@ -908,29 +1012,26 @@ def wb_load(mpy_trace, prj_dict, wb_path, dat, vba):
     """
 
     try:
-        import sys, mpy_xl
-        return mpy_xl.wb_load(mpy_trace, prj_dict, wb_path, dat, vba)
-    # Error detection
+        return mpy_xl.wb_load(mpy_trace, app_dict, wb_path, dat, vba)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'wb_load(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl):
+def wb_tbl_attributes(mpy_trace, app_dict, wb_path, tbl):
 
-    """ This function retrieves all attributes of an MS Excel table. To achieve
+    r""" This function retrieves all attributes of an MS Excel table. To achieve
         it, the function openpyxl module will be called. If you are fine with
         only the most basic paramters of an MS Excel table, use wb_tbl_inquiry
         instead.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         wb_path - Path to the MS Excel workbook
         tbl - Name of the table to be analyzed
     :return - dictionary
@@ -940,27 +1041,24 @@ def wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl):
     """
 
     try:
-        import sys, mpy_xl
-        return mpy_xl.wb_tbl_attributes(mpy_trace, prj_dict, wb_path, tbl)
-    # Error detection
+        return mpy_xl.wb_tbl_attributes(mpy_trace, app_dict, wb_path, tbl)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'wb_tbl_attributes(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def wb_tbl_inquiry(mpy_trace, prj_dict, wb_path):
+def wb_tbl_inquiry(mpy_trace, app_dict, wb_path):
 
-    """ This function inquires all tables of a worksheet. The result is a
+    r""" This function inquires all tables of a worksheet. The result is a
         dictionary containing a number of datatypes.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         wb_path - Path to the MS Excel workbook
     :return - dictionary
         check - The function ended with no errors
@@ -972,27 +1070,24 @@ def wb_tbl_inquiry(mpy_trace, prj_dict, wb_path):
     """
 
     try:
-        import sys, mpy_xl
-        return mpy_xl.wb_tbl_inquiry(mpy_trace, prj_dict, wb_path)
-    # Error detection
+        return mpy_xl.wb_tbl_inquiry(mpy_trace, app_dict, wb_path)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'wb_tbl_inquiry(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
+def tk_progbar_indeterminate(mpy_trace, app_dict, GUI_dict):
 
-    """ This function invokes a window with an indeterminate progress bar
+    r""" This function invokes a window with an indeterminate progress bar
         and status messages.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
+        app_dict - The mpy-specific global dictionary
         GUI_dict - Dictionary holding all needed parameters:
 
             GUI_dict = {'frame_title' : 'TITLE' , \
@@ -1008,23 +1103,20 @@ def tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict):
     """
 
     try:
-        import sys, mpy_ui_tk
-        return mpy_ui_tk.tk_progbar_indeterminate(mpy_trace, prj_dict, GUI_dict)
-    # Error detection
+        return mpy_ui_tk.tk_progbar_indeterminate(mpy_trace, app_dict, GUI_dict)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'tk_progbar_indeterminate(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, overwrite):
+def find_replace_saveas(mpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite):
 
-    """ This function finds and replaces strings in a readable object
+    r""" This function finds and replaces strings in a readable object
         line by line. This may be text or csv files, but even strings
         would be converted so they are read line by line. This function
         does not repeat, but it's easy to iterate it. Once every line
@@ -1032,7 +1124,7 @@ def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, o
         will be saved including all changes.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - morPy global dictionary
+        app_dict - morPy global dictionary
         search_obj - Any given object to search in for regular
                      expressions.
         replace_tpl - Tuple of tuples. Includes every tuple of regular
@@ -1047,27 +1139,24 @@ def find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, o
     """
 
     try:
-        import sys, mpy_bulk_ops
-        return mpy_bulk_ops.find_replace_saveas(mpy_trace, prj_dict, search_obj, replace_tpl, save_as, overwrite)
-    # Error detection
+        return mpy_bulk_ops.find_replace_saveas(mpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'find_replace_saveas(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-def web_request(mpy_trace, prj_dict, URL, req_dict):
+def web_request(mpy_trace, app_dict, URL, req_dict):
 
-    """ This function connects to an URL and delivers the responses requested. Data
+    r""" This function connects to an URL and delivers the responses requested. Data
         of spreadsheets and other media may be extracted with this method.
     :param
         mpy_trace - operation credentials and tracing
-        prj_dict - The mpy-specific global dictionary
+        app_dict - The mpy-specific global dictionary
         URL - Link to the webpage
         req_dict - Dictionary to determine which responses are requested. It
                    is fine to only address the requests needed. THis is the
@@ -1100,16 +1189,13 @@ def web_request(mpy_trace, prj_dict, URL, req_dict):
     """
 
     try:
-        import sys, mpy_wscraper
-        return mpy_wscraper.web_request(mpy_trace, prj_dict, URL, req_dict)
-    # Error detection
+        return mpy_wscraper.web_request(mpy_trace, app_dict, URL, req_dict)
     except Exception as e:
-        import mpy_fct
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'dialog_sel_file(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-        log_message = (f'{prj_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                      f'{prj_dict["loc"]["mpy"]["err_excp"]}: {e}')
-        log(mpy_trace, prj_dict, log_message, 'error')
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
