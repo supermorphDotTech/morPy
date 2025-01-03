@@ -8,7 +8,7 @@ Multiprocessing aided Python framework with integrated logging to database. Be t
 Feel free to comment, share and support this project.  
 Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with me.
 
-# v1.0.0c - Table of contents
+# v1.0.0c - Table of contents <a name="toc"></a>
 
 `1.` [Requirements and Dependencies](#requirements)  
 `1.1` [Microsoft Windows](#win-software)  
@@ -28,9 +28,9 @@ Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with
 `6.1` [Setup Dependency Visualization (Microsoft Windows)](#dep-vis-win)  
 `6.2` [Visualize Dependencies (Microsoft Windows)](#dep-vis-win-run)
 
-# Requirements and Dependencies[](#)
+# Requirements and Dependencies <a name="requirements"></a>
 
-## Software - Microsoft Windows[](#)
+## Software - Microsoft Windows [⇧](#toc) <a name="win-software"></a>
 
 | Depency | Requirements |
 | --- | --- |
@@ -45,11 +45,11 @@ Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with
     3.2. Install Dependencies  
     3.3. Copy Packages to Virtual Environment
 
-## Virtual Environment[](#)
+## Virtual Environment [⇧](#toc) <a name="win-venv"></a>
 
 *Compare with [freeCodeCamp.org](https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/)*
 
-### Basic Setup[](#)
+### Basic Setup [⇧](#toc) <a name="win-basic-setup"></a>
 
 1.  Run PowerShell
 2.  Navigate to `pip.exe`  
@@ -95,7 +95,7 @@ python -m venv .venv-win
 
 If an error occurs indicating `python<version> was not recognized as a cmdlet`, it is likely, that Python was not installed with the option "Add python.exe to PATH".
 
-### Install Dependencies[](#)
+### Install Dependencies [⇧](#toc) <a name="win-dependencies"></a>
 
 1.  Navigate to the root folder of the Python project (if not still there), i.e.
 
@@ -141,7 +141,7 @@ pip install ultradict
 pip install ultraimport
 ```
 
-### Copy Packages to Virtual Environment[](#)
+### Copy Packages to Virtual Environment [⇧](#toc) <a name="win-copy-packages"></a>
 
 *Manual installation of* `tcl` *and* `tk` *in the virtual environment. This needed, as tcl does not install correctly, otherwise.*
 
@@ -167,7 +167,7 @@ $env:PythonProject\.venv-win\Lib\site-packages\Tcl
 
 *Create the* `tcl` *subfolder if it does not exist.*
 
-# Versioning - α.β.γλ[](#)
+# Versioning - α.β.γλ [⇧](#toc) <a name="versioning"></a>
 
 | Symbol | Description |
 | --- | --- |
@@ -176,17 +176,19 @@ $env:PythonProject\.venv-win\Lib\site-packages\Tcl
 | γ   | Bugfix Version.  <br>Full downward compatibility. |
 | λ   | Version status.  <br>*None*: Release version  <br>*a*: Alpha version with minor bugs for public testing.  <br>*b*: Beta version with potential showstopper bugs for internal testing.  <br>*c*: Gamma version. Development. Not presentable to public. |
 
-# Parallelization[](#)
+# Parallelization [⇧](#toc) <a name="parallelization"></a>
 
 The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends. The process ID "0" is always reserved for the orchestration process. It will take care of logging and is reserved for tasks with a priority in between 0 and 10 (smaller numbers for higher priority). All app tasks will automatically receive a higher number (lower priority) than morPy reserved tasks. In case a priority is corrected, a warning will be raised.
 
 This is merely an example, of how parallelization may look like. There is still freedom to change how exactly the app is orchestrated (i.e. by setting a limit of maximum concurrent processes in `.\lib\mpy_conf.py`).
 
+\[![EN-morPy-parallelization-scheme-v1.0.0-darkmode.png](:/35c0349395ae4a8cacc19ee76ba2e342)\]: #
+
 ![EN-morPy-parallelization-scheme-v1 0 0-darkmode](https://github.com/user-attachments/assets/4f460193-7a01-4c78-a501-16b99aea747b)
 
-# Shared App Dictionary[](#)
+# Shared App Dictionary [⇧](#toc) <a name="shared-app-dict"></a>
 
-## Introduction[](#)
+## Introduction [⇧](#toc) <a name="shared-app-dict-intro"></a>
 
 At the heart of the morPy framework a program wide dictionary is available. Within this dictionary, all morPy functions and classes store their data to be used either globally, process-, thread, or task-wide. This dictionary is further divided into dictionaries to avoid naming conflicts and provide a categorization to potentially organize data in a streamlined way. Nested dictionaries were divided into `app` and `mpy`, whereas the latter is reserved for the morPy framework.
 
@@ -204,9 +206,9 @@ Developer created sub-dictionaries may mirror this way of dictionary creation, i
 app_dict["run"]["add_data"] = cl_mpy_dict(name="app_dict[run][add_data]")
 ```
 
-## Navigating the App Dictionary[](#)
+## Navigating the App Dictionary [⇧](#toc) <a name="shared-app-dict-nav"></a>
 
-### Categorization & Sub-Dictionaries[](#)
+### Categorization & Sub-Dictionaries [⇧](#toc) <a name="shared-app-dict-nav-cat"></a>
 
 ***Relevant dictionaries for developers to be utilized and altered will be marked `dev` in the descriptions.***
 
@@ -343,7 +345,7 @@ app_dict["proc"]["app"]["Pn"]
 - `normal`
 - sd-lvl-3 app thread specific data storage
 
-### App Dictionary Map[](#)
+### App Dictionary Map [⇧](#toc) <a name="shared-app-dict-map"></a>
 
 *See Abbreviations for further explanations.*  
 Pn ... Process with ID 'n'  
@@ -438,7 +440,7 @@ app_dict = [dict]{
 }
 ```
 
-# Abbreviations[](#)
+# Abbreviations [⇧](#toc) <a name="abbreviations"></a>
 
 | **Abbreviation** | **Description** |
 | --- | --- |
@@ -449,11 +451,11 @@ app_dict = [dict]{
 | "key" | Generic key of a Python dictionary |
 | val | Generic value or variable |
 
-# Dependency Visualization[](#)
+# Dependency Visualization [⇧](#toc) <a name="dep-vis"></a>
 
 For dependency visualization `pydeps` is used, which itself requires `graphviz` for the actual visualization.
 
-## Setup Dependency Visualization (Microsoft Windows)[](#)
+## Setup Dependency Visualization (Microsoft Windows) [⇧](#toc) <a name="dep-vis-win"></a>
 
 **! You need winget installed !**  
 (alternatively install the packages manually, that would outherwise require winget)
@@ -506,7 +508,7 @@ winget install graphviz
 [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Graphviz\bin", [System.EnvironmentVariableTarget]::User)
 ```
 
-## Visualize Dependencies (Microsoft Windows)[](#)
+## Visualize Dependencies (Microsoft Windows) [⇧](#toc) <a name="dep-vis-win-run"></a>
 
 1.  Setup the path to the Python project as an environment variable (for this PowerShell session only), i.e.
 
