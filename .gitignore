@@ -1,0 +1,17 @@
+# Ensure .gitignore is Tracked
+git add .gitignore
+git commit -m "Add .gitignore to ignore __pycache__ directories"
+
+# Ignore Python cache directories
+__pycache__/
+
+# Ignore private directories
+log/
+res/
+.*/
+
+# Removing Already Tracked __pycache__ Directories: If __pycache__ directories were previously committed to the repository
+git rm -r --cached .
+git add .
+git commit -m "Remove __pycache__ directories from repository"
+
