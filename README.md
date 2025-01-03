@@ -345,7 +345,7 @@ app_dict["proc"]["app"]["Pn"]
 
 ### App Dictionary Map [⇧](#toc) <a name="shared-app-dict-map"></a>
 
-*See Abbreviations for further explanations.*  
+*See [Abbreviations](#abbreviations) for further explanations.*  
 Pn ... Process with ID 'n'  
 Tm ... Thread with ID 'm'
 
