@@ -13,3 +13,6 @@ res/
 *.pyc
 *.pyo
 *.pyd
+
+# Ignore virtual environments
+.venv*/
