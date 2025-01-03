@@ -56,7 +56,10 @@ class cl_attr_guard:
                 for key, value in messages.items():
                     self.loc.update({key: value})
         except Exception as e:
-            print(f'CRITICAL {self._name}._init_conf(): {e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}._init_conf(): Failed to initialize UltraDict.\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
 
     def __get__(self, instance, owner):
         return self._value
@@ -136,7 +139,10 @@ class cl_mpy_dict(dict):
             self._init_loc()
 
         except Exception as e:
-            print(f'CRITICAL {self._name}.__init__(): Failed to initialize UltraDict. {e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}.__init__(): Failed to initialize UltraDict.\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
             sys.exit()
 
     def _init_conf(self):
@@ -168,7 +174,10 @@ class cl_mpy_dict(dict):
                 for key, value in messages.items():
                     self.loc.update({key : value})
         except Exception as e:
-            print(f'CRITICAL {self._name}._init_conf(): {e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}._init_conf(): Failed to initialize UltraDict.\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
 
     def _set_access(self, _access='normal'):
         try:
@@ -178,14 +187,20 @@ class cl_mpy_dict(dict):
                 _access = 'normal'
             self._access = _access
         except Exception as e:
-            print(f'CRITICAL {self._name}._set_access()\n{e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}._set_access():\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
 
     def _init_loc(self):
         # Define access level restrictions
         try:
             self._loc_msg()
         except Exception as e:
-            print(f'CRITICAL {self._name}._init_loc(): {e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}._init_loc():\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
 
     def _loc_msg(self):
         try:
@@ -293,7 +308,10 @@ class cl_mpy_dict(dict):
                     f'{self.loc["cl_mpy_dict_key"]}:'
                 )
         except Exception as e:
-            print(f'CRITICAL {self._name}._loc_msg(): {e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}._loc_msg():\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
 
     def _update_self(self, _access=None, localization_force=False):
         # Allow for reinitialization without data loss.
@@ -479,6 +497,7 @@ class cl_mpy_dict_root(UltraDict):
 
             # Initialize the UltraDict super class
             super().__init__(*args, **kwargs)
+            self._name = self.name
 
             # Initialize localization and app configuration
             self._init_conf()
@@ -494,7 +513,24 @@ class cl_mpy_dict_root(UltraDict):
                 sys.exit()
 
         except Exception as e:
-            raise RuntimeError(f'CRITICAL {self._name}.__init__(): Failed to initialize UltraDict.\n{e}')
+            msg = (f'CRITICAL {self._name}.__init__(): Failed to initialize UltraDict.\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n')
+            ###################################
+            # TODO remove textfile dump
+            try:
+                from multiprocessing import current_process
+                import pathlib
+                process = current_process()
+                filename = process.name
+                filepath = pathlib.Path(f'Z://{filename}.log')
+
+                with open(filepath, 'a') as ap:
+                    ap.write(f'{msg}\n{6*"#"} END OF LOG {6*"#"}\n\n')
+            except:
+                pass
+            ###################################
+
+            raise RuntimeError(msg)
             sys.exit()
 
     def _init_conf(self):
@@ -526,7 +562,10 @@ class cl_mpy_dict_root(UltraDict):
                 for key, value in messages.items():
                     self.loc.update({key : value})
         except Exception as e:
-            print(f'CRITICAL {self._name}._init_conf(): {e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}._init_conf(): Failed to initialize UltraDict.\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
 
     def _set_access(self, _access='normal'):
         try:
@@ -536,14 +575,20 @@ class cl_mpy_dict_root(UltraDict):
                 _access = 'normal'
             self._access = _access
         except Exception as e:
-            print(f'CRITICAL {self._name}._set_access()\n{e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}._set_access():\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
 
     def _init_loc(self):
         # Define access level restrictions
         try:
             self._loc_msg()
         except Exception as e:
-            print(f'CRITICAL {self._name}._init_loc(): {e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}._init_loc():\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
 
     def _loc_msg(self):
         try:
@@ -651,7 +696,10 @@ class cl_mpy_dict_root(UltraDict):
                     f'{self.loc["cl_mpy_dict_key"]}:'
                 )
         except Exception as e:
-            print(f'CRITICAL {self._name}._loc_msg(): {e}')
+            raise RuntimeError(
+                f'CRITICAL {self._name}._loc_msg():\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
 
     def _update_self(self, _access=None, localization_force=False):
         lock = self._get_lock()
@@ -692,6 +740,7 @@ class cl_mpy_dict_root(UltraDict):
         if not isinstance(key, str):
             # Keys must be strings.
             raise TypeError(f'{self.loc["cl_mpy_dict_key_str"]}:')
+        # TODO make verbose warning for regular dict (can't be shared)
         if self._access == 'tightened':
             msg = f'{self.msg__setitem__} {key}'
             if key not in super_class.keys():
@@ -748,15 +797,6 @@ class cl_mpy_dict_root(UltraDict):
             raise PermissionError(msg)
         else:
             with lock:
-                # TODO clean up
-                # # Iterate over all items and unlink if they are UltraDict instances
-                # for key, item in list(super_class.data.items()):
-                #     if isinstance(item, UltraDict):
-                #         try:
-                #             item.close(unlink=True)
-                #         except Exception as e:
-                #             raise RuntimeError(f'{self.loc["cl_mpy_dict_err_unlink"]}: {key}')
-                # Clear the dictionary
                 super_class.clear()
 
     def pop(self, key, default=None):
@@ -769,17 +809,6 @@ class cl_mpy_dict_root(UltraDict):
             raise PermissionError(msg)
         else:
             with lock:
-                # TODO clean up
-                # # Retrieve the item before popping
-                # item = super_class.data.get(key, default)
-                #
-                # # If the item is an instance of UltraDict, unlink it
-                # if isinstance(item, UltraDict):
-                #     try:
-                #         item.close(unlink=True)
-                #     except Exception as e:
-                #         raise RuntimeError(f'{self.loc["cl_mpy_dict_err_unlink"]}: {key}')
-
                 return super_class.pop(key, default)
 
     def popitem(self):
@@ -795,15 +824,6 @@ class cl_mpy_dict_root(UltraDict):
         else:
             with lock:
                 key, item = super_class.popitem()
-
-                # TODO clean up
-                # # If the item is an instance of UltraDict, unlink it
-                # if isinstance(item, UltraDict):
-                #     try:
-                #         item.close(unlink=True)
-                #     except Exception as e:
-                #         raise RuntimeError(f'{self.loc["cl_mpy_dict_err_unlink"]}: {key}')
-
                 return key, item
 
     def update(self, *args, **kwargs):
