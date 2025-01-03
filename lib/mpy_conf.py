@@ -80,7 +80,7 @@ def parameters(start_time=None):
     # Store the initialized system parameters relevant to a developer in a text file.
     # This is for checking initialized app_dict prior to app execution.
     # Called by: mpy_init.mpy_ref(~)
-    mpy_ref_create = True
+    mpy_ref_create = False
 
     # Enable logging to database.
     # Called by: mpy_msg.log(~)
@@ -239,6 +239,8 @@ def parameters(start_time=None):
 
     # Path to the logfile folder
     log_path = pathlib.Path(os.path.join(f'{main_path}', 'log'))
+    # Create the path, if not existing.
+    os.makedirs(log_path, exist_ok=True)
 
     # Path to the database holding all logs.
     log_db_path = pathlib.Path(os.path.join(f'{main_path}', 'log', 'log.db'))
@@ -248,12 +250,16 @@ def parameters(start_time=None):
 
     # Path to the modules folder
     app_files_path = pathlib.Path(os.path.join(f'{main_path}', 'data'))
+    # Create the path, if not existing.
+    os.makedirs(app_files_path, exist_ok=True)
 
     # Path to the main database of the app
     main_db_path = pathlib.Path(os.path.join(f'{main_path}', 'db', 'main.db'))
 
     # Path to the developed app
     app_path = pathlib.Path(os.path.join(f'{main_path}', 'app'))
+    # Create the path, if not existing.
+    os.makedirs(app_path, exist_ok=True)
 
     return{
         'language' : language,
