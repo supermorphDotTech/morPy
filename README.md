@@ -166,7 +166,6 @@ The parallelization in morPy is done utilizing an orchestration process with whi
 
 ![EN-morPy-parallelization-scheme-v1 0 0-darkmode](https://github.com/user-attachments/assets/4f460193-7a01-4c78-a501-16b99aea747b)
 
-
 # Shared App Dictionary
 
 ## Introduction
@@ -175,14 +174,14 @@ At the heart of the morPy framework a program wide dictionary is available. With
 
 The `app_dict` is an instanciated custom subclass of the Python `dict`-class. For details on the sub-class `cl_mpy_dict` see it's own section. The pattern of instanciating such dictionary is
 
-```
+```Python
 app_dict = cl_mpy_dict(name="app_dict", access="locked")
 app_dict._update_self(access="tightened")
 ```
 
 Developer created sub-dictionaries may mirror this way of dictionary creation, integrating it into the `app_dict`.
 
-```
+```Python
 # Examplary dev dictionary nesting
 app_dict["run"]["add_data"] = cl_mpy_dict(name="app_dict[run][add_data]")
 ```
@@ -198,35 +197,35 @@ Sub-dictionaries are hardened by specifiying the access type, to streamline the 
 `locked` - dictionary is in lockdown and can not be altered in any way.
 An asterisk as in `*tightened` indicates, that the access type is circumvented by morPy core functionalities. Nested dictionaries not mentioned explicitly (comapare with "App Dictionary Map") always are of access type `normal`.
 
-```
+```Python
 app_dict
 ```
 
 - `tightened`
 - Globally shared root dictionary
 
-```
+```Python
 app_dict["loc"]
 ```
 
 - `locked`
 - sd-lvl-1 root for Localization
 
-```
+```Python
 app_dict["loc"]["mpy"]
 ```
 
 - `locked`
 - Localization sd-lvl-2: morPy only
 
-```
+```Python
 app_dict["loc"]["mpy_dbg"]
 ```
 
 - `locked`
 - Localization sd-lvl-2: morPy unit tests and general debugging only
 
-```
+```Python
 app_dict["loc"]["app"]
 ```
 
@@ -234,7 +233,7 @@ app_dict["loc"]["app"]
 - `locked`
 - Localization sd-lvl-2: app specific only
 
-```
+```Python
 app_dict["loc"]["app_dbg"]
 ```
 
@@ -242,7 +241,7 @@ app_dict["loc"]["app_dbg"]
 - `locked`
 - Localization sd-lvl-2: app specific debugging only
 
-```
+```Python
 app_dict["conf"]
 ```
 
@@ -250,35 +249,35 @@ app_dict["conf"]
 - `locked`
 - sd-lvl-1 reserved for configuration and settings for runtime (see mpy_conf.py for the initialized configuration)
 
-```
+```Python
 app_dict["sys"]
 ```
 
 - `locked`
 - sd-lvl-1 reserved for host, system and network information
 
-```
+```Python
 app_dict["run"]
 ```
 
 - `tightened`
 - sd-lvl-1 reserved for runtime and metrics information
 
-```
+```Python
 app_dict["global"]
 ```
 
 - `tightened`
 - sd-lvl-1 root for global data storage
 
-```
+```Python
 app_dict["global"]["mpy"]
 ```
 
 - `normal`
 - sd-lvl-2 morPy core global data storage
 
-```
+```Python
 app_dict["global"]["app"]
 ```
 
@@ -286,14 +285,14 @@ app_dict["global"]["app"]
 - `normal`
 - sd-lvl-2 app global data storage
 
-```
+```Python
 app_dict["proc"]
 ```
 
 - `tightened`
 - sd-lvl-1 root for process and thread specific data storage
 
-```
+```Python
 app_dict["proc"]["mpy"]
 ```
 
@@ -301,14 +300,14 @@ app_dict["proc"]["mpy"]
 - sd-lvl-2 morPy core process specific data storage
 - Even though this dictionary tightened, the nested process specific dictionaries are created by the multiprocessing priority queue and deleted at process exit.
 
-```
+```Python
 app_dict["proc"]["mpy"]["Pn"]
 ```
 
 - `normal`
 - sd-lvl-3 morPy core thread specific data storage
 
-```
+```Python
 app_dict["proc"]["app"]
 ```
 
@@ -317,7 +316,7 @@ app_dict["proc"]["app"]
 - sd-lvl-2 app process specific data storage
 - Even though this dictionary tightened, the nested process specific dictionaries are created by the multiprocessing priority queue and deleted at process exit.
 
-```
+```Python
 app_dict["proc"]["app"]["Pn"]
 ```
 
@@ -331,7 +330,7 @@ app_dict["proc"]["app"]["Pn"]
 Pn ... Process with ID 'n'
 Tm ... Thread with ID 'm'
 
-```
+```Python
 app_dict = [dict]{
     "loc" : [dict]{ # See ..\loc\
         "mpy" : [dict]{"key" : val,...}
