@@ -116,6 +116,10 @@ pip install atomics
 pip install ultradict
 ```
 
+```PowerShell
+pip install ultraimport
+```
+
 ### Copy Packages to Virtual Environment
 
 *Manual installation of* `tcl` *and* `tk` *in the virtual environment. This needed, as tcl does not install correctly, otherwise.*
