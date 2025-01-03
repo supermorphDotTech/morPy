@@ -1,8 +1,9 @@
 # Ignore Python cache directories
 __pycache__/
 
-# Ignore other
+# Ignore other and temporary data
 .idea/
+initialized_app_dict.txt
 
 # Ignore log and resource directories
 log/
