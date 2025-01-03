@@ -6,7 +6,10 @@ Author:     Bastian Neuwirth
 Descr.:     Module of generally useful functions.
 """
 
-import mpy_fct
+import lib.mpy_fct as mpy_fct
+
+from lib.mpy_decorators import metrics, log, log_no_q
+
 import sys
 import chardet
 import io
@@ -15,7 +18,6 @@ import os
 import os.path
 import re
 
-from mpy_decorators import metrics, log, log_no_q
 from tkinter import Tk
 from tkinter import filedialog
 from heapq import heappush, heappop
@@ -144,7 +146,7 @@ class cl_priority_queue:
         :param mpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         :param priority: Integer representing task priority (lower is higher priority)
-        :param task: Tuple of a callable, *args and **kwargs
+        :param task: Tuple of a callable, *args and **kwargs (func, *args, **kwargs)
         :param autocorrect: If False, priority can be smaller than zero. Priority
             smaller zero is reserved for the morPy Core.
         :param is_process: If True, task is run in a new process (not by morPy orchestrator)

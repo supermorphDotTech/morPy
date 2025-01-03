@@ -7,9 +7,10 @@ Descr.:     This module includes operations used to massively repeat/automize
             workflows.
 """
 
-import mpy_fct
-import mpy_common
-from mpy_decorators import metrics, log
+import lib.mpy_fct as mpy_fct
+import lib.mpy_common as mpy_common
+from lib.mpy_decorators import metrics, log
+
 import sys
 
 @metrics

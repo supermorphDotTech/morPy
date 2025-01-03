@@ -2,13 +2,13 @@
 __pycache__/
 
 # Ignore other
-.git/
 .idea/
 
-# Ignore private directories
+# Ignore log and resource directories
 log/
 res/
-.*/
+
+# Ignore compiled Python files
 *.pyc
 *.pyo
 *.pyd

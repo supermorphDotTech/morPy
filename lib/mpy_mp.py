@@ -6,12 +6,13 @@ Author:     Bastian Neuwirth
 Descr.:     Multiprocessing functionality for morPy.
 """
 
-import mpy_fct
+import lib.mpy_fct as mpy_fct
+from lib.mpy_decorators import metrics, log, log_no_q
+from lib.mpy_dict import cl_mpy_dict_root
+
+
 import sys
 import time
-
-from mpy_decorators import metrics, log, log_no_q
-from mpy_dict import cl_mpy_dict_root
 from multiprocessing import Process
 from functools import partial
 
@@ -793,13 +794,13 @@ def spawn(task: list):
     try:
         # Rebuild the app_dict by reference (shared memory), after spawning
         # a process.
+        # TODO solve app_dict sharing
         from lib.mpy_init import mpy_dict_build
         from lib.mpy_init import mpy_dict_finalize
         app_dict = mpy_dict_build(task[1])
         mpy_dict_finalize(task[1], app_dict)
 
         task[2] = app_dict
-        print(f'>>> app_dict generated {task[1]["process_id"]}: {app_dict}')
         run = partial(*task,)
         run()
 
@@ -939,7 +940,7 @@ def join_processes(mpy_trace: dict, app_dict: dict) -> dict:
         while waiting_for_processes:
             pid = None
 
-            for p_id, p_name in app_dict["proc"]["mpy"]["proc_refs"]:
+            for p_id, p_name in app_dict["proc"]["mpy"]["proc_refs"].items():
                 # Omit race condition if references are removed asynchronous
                 if p_id in app_dict["proc"]["mpy"]["proc_refs"].keys():
                     # Joining processes.
@@ -957,7 +958,7 @@ def join_processes(mpy_trace: dict, app_dict: dict) -> dict:
             if not pid:
                 waiting_for_processes = False
 
-        # Clean up process references, if it still existing
+        # Clean up process references, if still existing
         if active_children == 0 and p_id in app_dict["proc"]["mpy"]["proc_refs"].keys():
             app_dict["proc"]["mpy"]["proc_refs"] = {}
 

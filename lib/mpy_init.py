@@ -370,6 +370,7 @@ def mpy_dict_finalize(mpy_trace: dict, init_dict: dict):
     :example:
         mpy_init.mpy_dict_finalize(mpy_trace, init_dict)
     """
+
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_init'
     operation = 'mpy_dict_finalize(~)'

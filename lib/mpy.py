@@ -6,17 +6,17 @@ Descr.:     This module is the interface to the morPy framework.
     TODO Finish formatting in morPy standard
 """
 
-import mpy_bulk_ops
-import mpy_common
-import mpy_csv
-import mpy_fct
-import mpy_mt
-import mpy_ui_tk
-import mpy_wscraper
-import mpy_xl
-import sys
+import lib.mpy_bulk_ops as mpy_bulk_ops
+import lib.mpy_common as mpy_common
+import lib.mpy_csv as mpy_csv
+import lib.mpy_fct as mpy_fct
+import lib.mpy_mt as mpy_mt
+import lib.mpy_ui_tk as mpy_ui_tk
+import lib.mpy_wscraper as mpy_wscraper
+import lib.mpy_xl as mpy_xl
+from lib.mpy_decorators import log
 
-from mpy_decorators import log
+import sys
 
 def cl_priority_queue(mpy_trace: dict, app_dict: dict, name: str=None):
 
