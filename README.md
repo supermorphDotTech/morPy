@@ -165,3 +165,268 @@ $env:PythonProject\.venv-win\Lib\site-packages\Tcl
 The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends. The process ID "0" is always reserved for the orchestration process. It will take care of logging and is reserved for tasks with a priority in between 0 and 10 (smaller numbers for higher priority). All project tasks will automatically receive a higher number (lower priority) than morPy reserved tasks. In case a priority is corrected, a warning will be raised.
 
 ![EN-morPy-parallelization-scheme-v1 0 0-darkmode](https://github.com/user-attachments/assets/4f460193-7a01-4c78-a501-16b99aea747b)
+
+
+# Shared App Dictionary
+
+## Introduction
+
+At the heart of the morPy framework a program wide dictionary is available. Within this dictionary, all morPy functions and classes store their data to be used either globally, process-, thread, or task-wide. This dictionary is further divided into dictionaries to avoid naming conflicts and provide a categorization to potentially organize data in a streamlined way. Sub-dictionaries ere divided into `app` and `mpy`, whereas the latter is reserved for the morPy framework.
+
+The `app_dict` is an instanciated custom subclass of the Python `dict`-class. For details on the sub-class `cl_mpy_dict` see it's own section. The pattern of instanciating such dictionary is
+
+```
+app_dict = cl_mpy_dict(name="app_dict", access="locked")
+app_dict._update_self(access="tightened")
+```
+
+Developer created sub-dictionaries may mirror this way of dictionary creation, integrating it into the `app_dict`.
+
+```
+# Examplary dev dictionary nesting
+app_dict["run"]["add_data"] = cl_mpy_dict(name="app_dict[run][add_data]")
+```
+
+## Mapping the App Dictionary
+
+### Categorization & Sub-Dictionaries
+
+Relevant dictionaries for developers to be utilized and altered will be marked `dev` in the descriptions.
+Sub-dictionaries are hardened by specifiying the access type, to streamline the utilization of `app_dict` as designed. The access types are
+`normal` - works like any Python dictionary
+`tightened` - keys can not be added to or removed from the dict. Values may be altered, however.
+`locked` - dictionary is in lockdown and can not be altered in any way.
+An asterisk as in `*tightened` indicates, that the access type is circumvented by morPy core functionalities. Nested dictionaries not mentioned explicitly (comapare with "App Dictionary Map") always are of access type `normal`.
+
+```
+app_dict
+```
+
+- `tightened`
+- Globally shared root dictionary
+
+```
+app_dict["loc"]
+```
+
+- `locked`
+- sd-lvl-1 root for Localization
+
+```
+app_dict["loc"]["mpy"]
+```
+
+- `locked`
+- Localization sd-lvl-2: morPy only
+
+```
+app_dict["loc"]["mpy_dbg"]
+```
+
+- `locked`
+- Localization sd-lvl-2: morPy unit tests and general debugging only
+
+```
+app_dict["loc"]["app"]
+```
+
+- `dev`
+- `locked`
+- Localization sd-lvl-2: app specific only
+
+```
+app_dict["loc"]["app_dbg"]
+```
+
+- `dev`
+- `locked`
+- Localization sd-lvl-2: app specific debugging only
+
+```
+app_dict["conf"]
+```
+
+- `dev`
+- `locked`
+- sd-lvl-1 reserved for configuration and settings for runtime (see mpy_conf.py for the initialized configuration)
+
+```
+app_dict["sys"]
+```
+
+- `locked`
+- sd-lvl-1 reserved for host, system and network information
+
+```
+app_dict["run"]
+```
+
+- `tightened`
+- sd-lvl-1 reserved for runtime and metrics information
+
+```
+app_dict["global"]
+```
+
+- `tightened`
+- sd-lvl-1 root for global data storage
+
+```
+app_dict["global"]["mpy"]
+```
+
+- `normal`
+- sd-lvl-2 morPy core global data storage
+
+```
+app_dict["global"]["app"]
+```
+
+- `dev`
+- `normal`
+- sd-lvl-2 app global data storage
+
+```
+app_dict["proc"]
+```
+
+- `tightened`
+- sd-lvl-1 root for process and thread specific data storage
+
+```
+app_dict["proc"]["mpy"]
+```
+
+- `*tightened`
+- sd-lvl-2 morPy core process specific data storage
+- Even though this dictionary tightened, the nested process specific dictionaries are created by the multiprocessing priority queue and deleted at process exit.
+
+```
+app_dict["proc"]["mpy"]["Pn"]
+```
+
+- `normal`
+- sd-lvl-3 morPy core thread specific data storage
+
+```
+app_dict["proc"]["app"]
+```
+
+- `dev`
+- `*tightened`
+- sd-lvl-2 app process specific data storage
+- Even though this dictionary tightened, the nested process specific dictionaries are created by the multiprocessing priority queue and deleted at process exit.
+
+```
+app_dict["proc"]["app"]["Pn"]
+```
+
+- `dev`
+- `normal`
+- sd-lvl-3 app thread specific data storage
+
+### App Dictionary Map
+
+*See Abbreviations for further explanations.*
+Pn ... Process with ID 'n'
+Tm ... Thread with ID 'm'
+
+```
+app_dict = [dict]{
+    "loc" : [dict]{ # See ..\loc\
+        "mpy" : [dict]{"key" : val,...}
+        "mpy_dbg" : [dict]{"key" : val,...}
+        "app" : [dict]{"key" : val,...}
+        "app_dbg" : [dict]{"key" : val,...}
+    }
+    "conf" : [dict]{
+    }
+    "sys" : [dict]{
+        "mproc" : [dict]{
+            "procs_available" : [int] n
+        }
+        "mthread" : [dict]{
+            "threads_available" : [int] m
+        }
+    }
+    "run" : [dict]{
+        "m.op" : [dict]{"key" : val,...}
+        "key" : val,...
+    }
+	"global" [dict]{
+		"mpy" : [dict]{
+            "m.op" : [dict]{"key" : val,...}
+            "key" : val,...
+		}
+		"app" : [dict]{
+            "m.op" : [dict]{"key" : val,...}
+            "key" : val,...
+		}
+	}
+    "proc" : [dict]{
+        "mpy" : [dict]{
+            "P0" : [dict]{
+                "T0" : [dict]{
+                    "m.op" : [dict]{"key" : val,...}
+                    "key" : val,...
+                }
+                "Tm" : [dict]{
+                    "m.op" : [dict]{"key" : val,...}
+                    "key" : val,...
+                }
+                "m.op" : [dict]{"key" : val,...}
+                "key" : val,...
+            }
+            "Pn" [dict]{
+                "T0" : [dict]{
+                    "m.op" : [dict]{"key" : val,...}
+                    "key" : val,...
+                }
+                "Tm" : [dict]{
+                    "m.op" : [dict]{"key" : val,...}
+                    "key" : val,...
+                }
+                "m.op" : [dict]{"key" : val,...}
+                "key" : val,...
+            }
+        }
+        "app" : [dict]{
+            "P0" : [dict]{
+                "T0" : [dict]{
+                    "m.op" : [dict]{"key" : val,...}
+                    "key" : val,...
+                }
+                "Tm" : [dict]{
+                    "m.op" : [dict]{"key" : val,...}
+                    "key" : val,...
+                }
+                "m.op" : [dict]{"key" : val,...}
+                "key" : val,...
+            }
+            "Pn" [dict]{
+                "T0" : [dict]{
+                    "m.op" : [dict]{"key" : val,...}
+                    "key" : val,...
+                }
+                "Tm" : [dict]{
+                    "m.op" : [dict]{"key" : val,...}
+                    "key" : val,...
+                }
+                "m.op" : [dict]{"key" : val,...}
+                "key" : val,...
+            }
+        }
+    }
+}
+```
+
+# Abbreviations
+
+| **Abbreviation** | **Description** |
+| --- | --- |
+| dict | Python dictionary object |
+| sdict | Python dictionary object - sub-dictionary |
+| sd-lvl-n | Python dictionary object - sub-dictionary at level n relative to the root dictionary |
+| m.op | Operation identifier string (module.operation) |
+| "key" | Generic key of a Python dictionary |
+| val | Generic value or variable |
