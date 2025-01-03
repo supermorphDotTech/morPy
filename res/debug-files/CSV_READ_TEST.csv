@@ -1,0 +1,31 @@
+@ORIGINAL SECTION
+"Source","Overview Position","Model","Unit","Tag Comment","Alarm Priority - original","Alarm Priority - modified","Tag Mark Color - original","Tag Mark Color - modified","Detection","User","Purpose","Consequence","Time-to-respond","Guidance","Auto Clear","Monitoring Denied User","Monitoring Denied User Group","Acknowledgement Denied User","Acknowledgement Denied User Group","Manual Reset Permitted User","Manual Reset Permitted User Group","Manual Reset Denied User","Manual Reset Denied User Group","Alarm Group","Shelving","Alarm Setpoint - low limit","Alarm Setpoint - high limit","Alarm Setpoint - master","Target of Module-based Engineering","AppID"
+"12PI369_1TCC813.HH","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USD-I16","sec","PI369>5,99 &V76A Ein","Logging","Logging","Red","","Enable","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","0","120","","No","(NONE)"
+"12PI369_1WX552.HH","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USD-I16","bar","PI369       ","Logging","Logging","Red","","Enable","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","(NONE)","-1","7","","No","(NONE)"
+dgjg
+
+fgj
+@SECTION WITH COMMAS AT THE END
+@SUDDEN CHANGE OF DATA TABLE
+"Source","Overview Position","Model"
+"12PI391_1TCC812.HH","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USD-I16",
+"12PI391A1_1C222.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP",
+"12PI391A2_7Y184.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNI",
+"12PI391A_1TCC284.HH","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USD-I16",
+"12PI391A_4C392.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP",
+"12R0304_4C6106.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP",
+"12R03_4_4C5105.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP",
+"12R03_4_4C5116.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP",
+"Source","Overview Position","Model","Unit","Tag Comment"
+"12R03_4C4335.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP","(None)","R03 Druck   Reg.>0,3bar"
+"12R03_4C4505.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP","(None)","R03 1min vorende k.Hpeak"
+"12R04_4C4336.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP","(None)","R04 Druck   Reg.>0,3bar"
+"12R04_4C4515.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP","(None)","R04 1min vorende k.Hpeak"
+"12TI321_4C4476.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP","(None)","TI321-Grad.<0,4K/2min Ku"
+"12TI321_4VF06.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:R03_R04","USG-ANNP","(None)","Alarm Zeit-³berschr."
+"12PI145_1_1C3146.ALM","CENTUM:ALD-SWH:B500:02_DRUCKLUFTSYST:DRUCKLUFT_FEUCHT","USG-ANNI","(None)","PI145-PI161<0,2 bar"
+"@","fdhdshyad","
+gfjxfk6t
+
+
+
