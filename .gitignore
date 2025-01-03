@@ -1,6 +1,10 @@
 # Ignore Python cache directories
 __pycache__/
 
+# Ignore other
+.git/
+.idea/
+
 # Ignore private directories
 log/
 res/
