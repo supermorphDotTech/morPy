@@ -9,3 +9,6 @@ __pycache__/
 log/
 res/
 .*/
+*.pyc
+*.pyo
+*.pyd
