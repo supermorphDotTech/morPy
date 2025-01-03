@@ -10,46 +10,52 @@ Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with
 
 # v1.0.0c - Table of contents <a name="toc"></a>
 
-`1.` [Requirements and Dependencies](#requirements)  
-`1.1` [Microsoft Windows](#win-software)  
-`1.1.1` [Virtual Environment](#win-venv)  
-`1.1.1.1` [Basic Setup](#win-basic-setup)  
-`1.1.1.2` [Install Dependencies](#win-dependencies)  
-`1.1.1.3` [Copy Packages to Virtual Environment](#win-copy-packages)  
-`2.` [Versioning - α.β.γλ](#versioning)  
-`3.` [Parallelization](#parallelization)  
-`4.` [Shared App Dictionary](#shared-app-dict)  
-`4.1` [Introduction](#shared-app-dict-intro)  
-`4.2` [Navigating the App Dictionary](#shared-app-dict-nav)  
-`4.2.1` [Categorization & Sub-Dictionaries](#shared-app-dict-nav-cat)  
-`4.2.2` [App Dictionary Map](#shared-app-dict-map)  
-`5.` [Abbreviations](#abbreviations)  
-`6.` [Dependency Visualization](#dep-vis)  
-`6.1` [Setup Dependency Visualization (Microsoft Windows)](#dep-vis-win)  
-`6.2` [Visualize Dependencies (Microsoft Windows)](#dep-vis-win-run)
+`1.` [Requirements and Dependencies](#requirements) <br>
+`1.1` [Microsoft Windows](#win-software) <br>
+`1.1.1` [Software Requirements](#win-software-req) <br>
+`1.1.1` [Setup Guidance](#win-setup-guide) <br>
+`1.1.1` [Virtual Environment](#win-venv) <br>
+`1.1.1.1` [Basic Setup](#win-basic-setup) <br>
+`1.1.1.2` [Install Dependencies](#win-dependencies) <br>
+`1.1.1.3` [Copy Packages to Virtual Environment](#win-copy-packages) <br>
+`2.` [Versioning - α.β.γλ](#versioning) <br>
+`3.` [Parallelization](#parallelization) <br>
+`4.` [Shared App Dictionary](#shared-app-dict) <br>
+`4.1` [Introduction](#shared-app-dict-intro) <br>
+`4.2` [Navigating the App Dictionary](#shared-app-dict-nav) <br>
+`4.2.1` [Categorization & Sub-Dictionaries](#shared-app-dict-nav-cat) <br>
+`4.2.2` [App Dictionary Map](#shared-app-dict-map) <br>
+`5.` [Abbreviations](#abbreviations) <br>
+`6.` [Dependency Visualization](#dep-vis) <br>
+`6.1` [Setup Dependency Visualization (Microsoft Windows)](#dep-vis-win) <br>
+`6.2` [Visualize Dependencies (Microsoft Windows)](#dep-vis-win-run) <br>
 
 # Requirements and Dependencies <a name="requirements"></a>
 
-## Software - Microsoft Windows [⇧](#toc) <a name="win-software"></a>
+## Microsoft Windows [⇧](#toc) <a name="win-software"></a>
+
+### Software Requirements [⇧](#toc) <a name="win-software-req"></a>
 
 | Depency | Requirements |
 | --- | --- |
 | Python | [Python 3.10.11](https://www.python.org/downloads/release/python-31011/) |
 | UltraDict | [Microsoft Visual C++ BuildTools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) |
 
-1.  Install Python with the option "Add python.exe to PATH" enabled.
-2.  Install Microsoft Visual C++ BuildTools
-    2.1. Select "Desctopdevelopment with C++"
-3.  Install a virtual environment in your project path (see below)  
-    3.1. Basic Setup  
-    3.2. Install Dependencies  
-    3.3. Copy Packages to Virtual Environment
+### Setup Guidance [⇧](#toc) <a name="win-setup-guide"></a>
 
-## Virtual Environment [⇧](#toc) <a name="win-venv"></a>
+`1.` Install Python with the option "Add python.exe to PATH" enabled.<br>
+`2.` Install Microsoft Visual C++ BuildTools<br>
+`2.1.` Select "Desktopdevelopment with C++"<br>
+`3.` Install a virtual environment in your project path (see below)<br>
+`3.1.` [Basic Setup](#win-basic-setup)<br>
+`3.2.` [Install Dependencies](#win-dependencies)<br>
+`3.3.` [Copy Packages to Virtual Environment](#win-copy-packages)<br>
+
+### Virtual Environment [⇧](#toc) <a name="win-venv"></a>
 
 *Compare with [freeCodeCamp.org](https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/)*
 
-### Basic Setup [⇧](#toc) <a name="win-basic-setup"></a>
+#### Basic Setup [⇧](#toc) <a name="win-basic-setup"></a>
 
 1.  Run PowerShell
 2.  Navigate to `pip.exe`  
@@ -95,7 +101,7 @@ python -m venv .venv-win
 
 If an error occurs indicating `python<version> was not recognized as a cmdlet`, it is likely, that Python was not installed with the option "Add python.exe to PATH".
 
-### Install Dependencies [⇧](#toc) <a name="win-dependencies"></a>
+#### Install Dependencies [⇧](#toc) <a name="win-dependencies"></a>
 
 1.  Navigate to the root folder of the Python project (if not still there), i.e.
 
@@ -141,7 +147,7 @@ pip install ultradict
 pip install ultraimport
 ```
 
-### Copy Packages to Virtual Environment [⇧](#toc) <a name="win-copy-packages"></a>
+#### Copy Packages to Virtual Environment [⇧](#toc) <a name="win-copy-packages"></a>
 
 *Manual installation of* `tcl` *and* `tk` *in the virtual environment. This needed, as tcl does not install correctly, otherwise.*
 
