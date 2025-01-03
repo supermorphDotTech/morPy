@@ -1,20 +1,36 @@
-[![supermorph_PixelSnake_logo_v001](https://github.com/user-attachments/assets/0e92f76c-67db-4ff6-8e58-9ab77a9a6e8e)](https://www.supermorph.tech/)
-<br><br><br>
-![supermorph_morPy_github_v001](https://github.com/user-attachments/assets/51fd6975-d4cd-4123-b708-552e8fee9c1a)
-
+[<img src="https://github.com/user-attachments/assets/0e92f76c-67db-4ff6-8e58-9ab77a9a6e8e" alt="supermorph_PixelSnake_logo_v001" width="812" height="182" class="jop-noMdConv">](https://www.supermorph.tech/)  
+<br/><br/><br/><br/><img src="https://github.com/user-attachments/assets/51fd6975-d4cd-4123-b708-552e8fee9c1a" alt="supermorph_morPy_github_v001" width="812" height="364" class="jop-noMdConv">
 
 More solutions. More insights. morPy.
 
 Multiprocessing aided Python framework with integrated logging to database. Be the master of your app by analyzing runtime. Enjoy the comfort of runtime documentation ready for use in validated environments.
 
-Feel free to comment, share and support this project.
+Feel free to comment, share and support this project.  
 Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with me.
 
-# Requirements and Dependencies
+# v1.0.0c - Table of contents
 
-## Software
+`1.` [Requirements and Dependencies](#requirements)  
+`1.1` [Microsoft Windows](#win-software)  
+`1.1.1` [Virtual Environment](#win-venv)  
+`1.1.1.1` [Basic Setup](#win-basic-setup)  
+`1.1.1.2` [Install Dependencies](#win-dependencies)  
+`1.1.1.3` [Copy Packages to Virtual Environment](#win-copy-packages)  
+`2.` [Versioning - α.β.γλ](#versioning)  
+`3.` [Parallelization](#parallelization)  
+`4.` [Shared App Dictionary](#shared-app-dict)  
+`4.1` [Introduction](#shared-app-dict-intro)  
+`4.2` [Navigating the App Dictionary](#shared-app-dict-nav)  
+`4.2.1` [Categorization & Sub-Dictionaries](#shared-app-dict-nav-cat)  
+`4.2.2` [App Dictionary Map](#shared-app-dict-map)  
+`5.` [Abbreviations](#abbreviations)  
+`6.` [Dependency Visualization](#dep-vis)  
+`6.1` [Setup Dependency Visualization (Microsoft Windows)](#dep-vis-win)  
+`6.2` [Visualize Dependencies (Microsoft Windows)](#dep-vis-win-run)
 
-### morPy v1.0.0c - Microsoft Windows
+# Requirements and Dependencies[](#)
+
+## Software - Microsoft Windows[](#)
 
 | Depency | Requirements |
 | --- | --- |
@@ -23,17 +39,17 @@ Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with
 
 1.  Install Python with the option "Add python.exe to PATH" enabled.
 2.  Install Microsoft Visual C++ BuildTools
-	1. 1  Select "Desctopdevelopment with C++"
-3. Install a virtual environment in your project path (see below)
-	3.1.  Basic Setup
-	3.2.  Install Dependencies
-    3.3.  Copy Packages to Virtual Environment
+    1.  1 Select "Desctopdevelopment with C++"
+3.  Install a virtual environment in your project path (see below)  
+    3.1. Basic Setup  
+    3.2. Install Dependencies  
+    3.3. Copy Packages to Virtual Environment
 
-## Virtual Environment (MS Windows)
+## Virtual Environment[](#)
 
 *Compare with [freeCodeCamp.org](https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/)*
 
-### Basic Setup
+### Basic Setup[](#)
 
 1.  Run PowerShell
 2.  Navigate to `pip.exe`  
@@ -79,7 +95,7 @@ python -m venv .venv-win
 
 If an error occurs indicating `python<version> was not recognized as a cmdlet`, it is likely, that Python was not installed with the option "Add python.exe to PATH".
 
-### Install Dependencies
+### Install Dependencies[](#)
 
 1.  Navigate to the root folder of the Python project (if not still there), i.e.
 
@@ -125,7 +141,7 @@ pip install ultradict
 pip install ultraimport
 ```
 
-### Copy Packages to Virtual Environment
+### Copy Packages to Virtual Environment[](#)
 
 *Manual installation of* `tcl` *and* `tk` *in the virtual environment. This needed, as tcl does not install correctly, otherwise.*
 
@@ -151,7 +167,7 @@ $env:PythonProject\.venv-win\Lib\site-packages\Tcl
 
 *Create the* `tcl` *subfolder if it does not exist.*
 
-# Versioning - α.β.γλ
+# Versioning - α.β.γλ[](#)
 
 | Symbol | Description |
 | --- | --- |
@@ -160,19 +176,21 @@ $env:PythonProject\.venv-win\Lib\site-packages\Tcl
 | γ   | Bugfix Version.  <br>Full downward compatibility. |
 | λ   | Version status.  <br>*None*: Release version  <br>*a*: Alpha version with minor bugs for public testing.  <br>*b*: Beta version with potential showstopper bugs for internal testing.  <br>*c*: Gamma version. Development. Not presentable to public. |
 
-# Parallelization
+# Parallelization[](#)
 
-The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends. The process ID "0" is always reserved for the orchestration process. It will take care of logging and is reserved for tasks with a priority in between 0 and 10 (smaller numbers for higher priority). All project tasks will automatically receive a higher number (lower priority) than morPy reserved tasks. In case a priority is corrected, a warning will be raised.
+The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends. The process ID "0" is always reserved for the orchestration process. It will take care of logging and is reserved for tasks with a priority in between 0 and 10 (smaller numbers for higher priority). All app tasks will automatically receive a higher number (lower priority) than morPy reserved tasks. In case a priority is corrected, a warning will be raised.
+
+This is merely an example, of how parallelization may look like. There is still freedom to change how exactly the app is orchestrated (i.e. by setting a limit of maximum concurrent processes in `.\lib\mpy_conf.py`).
 
 ![EN-morPy-parallelization-scheme-v1 0 0-darkmode](https://github.com/user-attachments/assets/4f460193-7a01-4c78-a501-16b99aea747b)
 
-# Shared App Dictionary
+# Shared App Dictionary[](#)
 
-## Introduction
+## Introduction[](#)
 
-At the heart of the morPy framework a program wide dictionary is available. Within this dictionary, all morPy functions and classes store their data to be used either globally, process-, thread, or task-wide. This dictionary is further divided into dictionaries to avoid naming conflicts and provide a categorization to potentially organize data in a streamlined way. Sub-dictionaries ere divided into `app` and `mpy`, whereas the latter is reserved for the morPy framework.
+At the heart of the morPy framework a program wide dictionary is available. Within this dictionary, all morPy functions and classes store their data to be used either globally, process-, thread, or task-wide. This dictionary is further divided into dictionaries to avoid naming conflicts and provide a categorization to potentially organize data in a streamlined way. Nested dictionaries were divided into `app` and `mpy`, whereas the latter is reserved for the morPy framework.
 
-The `app_dict` is an instanciated custom subclass of the Python `dict`-class. For details on the sub-class `cl_mpy_dict` see it's own section. The pattern of instanciating such dictionary is
+The `app_dict` is an instanciated custom subclass of the Python `dict`\-class. For details on the sub-class `cl_mpy_dict` see it's own section. The pattern of instanciating such dictionary is
 
 ```Python
 app_dict = cl_mpy_dict(name="app_dict", access="locked")
@@ -186,15 +204,16 @@ Developer created sub-dictionaries may mirror this way of dictionary creation, i
 app_dict["run"]["add_data"] = cl_mpy_dict(name="app_dict[run][add_data]")
 ```
 
-## Mapping the App Dictionary
+## Navigating the App Dictionary[](#)
 
-### Categorization & Sub-Dictionaries
+### Categorization & Sub-Dictionaries[](#)
 
-Relevant dictionaries for developers to be utilized and altered will be marked `dev` in the descriptions.
-Sub-dictionaries are hardened by specifiying the access type, to streamline the utilization of `app_dict` as designed. The access types are
-`normal` - works like any Python dictionary
-`tightened` - keys can not be added to or removed from the dict. Values may be altered, however.
-`locked` - dictionary is in lockdown and can not be altered in any way.
+***Relevant dictionaries for developers to be utilized and altered will be marked `dev` in the descriptions.***
+
+Sub-dictionaries are hardened by specifiying the access type, to streamline the utilization of `app_dict` as designed. The access types are  
+`normal` - works like any Python dictionary  
+`tightened` - keys can not be added to or removed from the dict. Values may be altered, however.  
+`locked` - dictionary is in lockdown and can not be altered in any way.  
 An asterisk as in `*tightened` indicates, that the access type is circumvented by morPy core functionalities. Nested dictionaries not mentioned explicitly (comapare with "App Dictionary Map") always are of access type `normal`.
 
 ```Python
@@ -324,10 +343,10 @@ app_dict["proc"]["app"]["Pn"]
 - `normal`
 - sd-lvl-3 app thread specific data storage
 
-### App Dictionary Map
+### App Dictionary Map[](#)
 
-*See Abbreviations for further explanations.*
-Pn ... Process with ID 'n'
+*See Abbreviations for further explanations.*  
+Pn ... Process with ID 'n'  
 Tm ... Thread with ID 'm'
 
 ```Python
@@ -352,16 +371,16 @@ app_dict = [dict]{
         "m.op" : [dict]{"key" : val,...}
         "key" : val,...
     }
-	"global" [dict]{
-		"mpy" : [dict]{
+    "global" [dict]{
+        "mpy" : [dict]{
             "m.op" : [dict]{"key" : val,...}
             "key" : val,...
-		}
-		"app" : [dict]{
+        }
+        "app" : [dict]{
             "m.op" : [dict]{"key" : val,...}
             "key" : val,...
-		}
-	}
+        }
+    }
     "proc" : [dict]{
         "mpy" : [dict]{
             "P0" : [dict]{
@@ -419,7 +438,7 @@ app_dict = [dict]{
 }
 ```
 
-# Abbreviations
+# Abbreviations[](#)
 
 | **Abbreviation** | **Description** |
 | --- | --- |
@@ -429,3 +448,95 @@ app_dict = [dict]{
 | m.op | Operation identifier string (module.operation) |
 | "key" | Generic key of a Python dictionary |
 | val | Generic value or variable |
+
+# Dependency Visualization[](#)
+
+For dependency visualization `pydeps` is used, which itself requires `graphviz` for the actual visualization.
+
+## Setup Dependency Visualization (Microsoft Windows)[](#)
+
+**! You need winget installed !**  
+(alternatively install the packages manually, that would outherwise require winget)
+
+1.  Setup the path to the Python project as an environment variable (for this PowerShell session only), i.e.
+
+```PowerShell
+#Only if $env:PythonProject is not defined yet
+$env:PythonProject = "C:\Projects\morPy"
+```
+
+2.  Navigate to the root folder of the Python project (if not still there), i.e.
+
+```PowerShell
+#Only if $env:PythonProject is not defined yet
+cd $env:PythonProject
+```
+
+3.  Activate the virtual environment:
+
+```PowerShell
+& "$env:PythonProject\.venv-win\scripts\activate.ps1"
+```
+
+4.  Run the following pip installations one by one:
+
+```PowerShell
+pip install pydeps
+```
+
+```PowerShell
+pip install graphviz
+```
+
+5.  Install `graphviz` with winget.
+
+```PowerShell
+winget install graphviz
+```
+
+6.  Add environment variables in order to make the "dot"-command from `graphviz` available to `pydeps`. You may have to start a new PowerShell session for the changes to take effect.
+
+```PowerShell
+#For all users (needs admin privileges)
+[System.Environment]::SetEnvironmentVariable("Path", $([System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";C:\Program Files\Graphviz\bin"), [System.EnvironmentVariableTarget]::Machine)
+```
+
+```PowerShell
+#For the current user
+[System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Graphviz\bin", [System.EnvironmentVariableTarget]::User)
+```
+
+## Visualize Dependencies (Microsoft Windows)[](#)
+
+1.  Setup the path to the Python project as an environment variable (for this PowerShell session only), i.e.
+
+```PowerShell
+#Only if $env:PythonProject is not defined yet
+$env:PythonProject = "C:\Projects\morPy"
+```
+
+2.  Navigate to the root folder of the Python project (if not still there), i.e.
+
+```PowerShell
+#Only if $env:PythonProject is not defined yet
+cd $env:PythonProject
+```
+
+3.  Activate the virtual environment:
+
+```PowerShell
+& "$env:PythonProject\.venv-win\scripts\activate.ps1"
+```
+
+4.  Run `pydeps` for morPy.
+
+```PowerShell
+pydeps --cluster --rankdir "LR" --include-missing ".\"
+```
+
+5.  To visualize cyclic imports, run
+
+```PowerShell
+#Visualize cyclic imports
+ pydeps --cluster --rankdir "LR" --include-missing --show-cycles ".\"
+```
