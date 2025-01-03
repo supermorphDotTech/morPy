@@ -39,7 +39,7 @@ Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with
 
 1.  Install Python with the option "Add python.exe to PATH" enabled.
 2.  Install Microsoft Visual C++ BuildTools
-    1.  1 Select "Desctopdevelopment with C++"
+    2.1. Select "Desctopdevelopment with C++"
 3.  Install a virtual environment in your project path (see below)  
     3.1. Basic Setup  
     3.2. Install Dependencies  
