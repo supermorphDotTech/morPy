@@ -182,8 +182,6 @@ The parallelization in morPy is done utilizing an orchestration process with whi
 
 This is merely an example, of how parallelization may look like. There is still freedom to change how exactly the app is orchestrated (i.e. by setting a limit of maximum concurrent processes in `.\lib\mpy_conf.py`).
 
-\[![EN-morPy-parallelization-scheme-v1.0.0-darkmode.png](:/35c0349395ae4a8cacc19ee76ba2e342)\]: #
-
 ![EN-morPy-parallelization-scheme-v1 0 0-darkmode](https://github.com/user-attachments/assets/4f460193-7a01-4c78-a501-16b99aea747b)
 
 # Shared App Dictionary [⇧](#toc) <a name="shared-app-dict"></a>
