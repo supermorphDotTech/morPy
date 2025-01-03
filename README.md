@@ -12,7 +12,6 @@ Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with
 
 # Requirements and Dependencies
 
-
 ## Software
 
 ### morPy v1.0.0c - Microsoft Windows
@@ -20,9 +19,15 @@ Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with
 | Depency | Requirements |
 | --- | --- |
 | Python | [Python 3.10.11](https://www.python.org/downloads/release/python-31011/) |
-| UltraDict | [Microsoft Visual C++ BuildTools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (Install Desktopdevelopment with C++) |
+| UltraDict | [Microsoft Visual C++ BuildTools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) |
 
 1.  Install Python with the option "Add python.exe to PATH" enabled.
+2.  Install Microsoft Visual C++ BuildTools
+	1. 1  Select "Desctopdevelopment with C++"
+3. Install a virtual environment in your project path (see below)
+	3.1.  Basic Setup
+	3.2.  Install Dependencies
+    3.3.  Copy Packages to Virtual Environment
 
 ## Virtual Environment (MS Windows)
 
