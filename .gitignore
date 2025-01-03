@@ -1,3 +1,7 @@
+git rm -r --cached .
+git add .
+git commit -m "Remove __pycache__ directories from repository"
+
 # Ignore Python cache directories
 __pycache__/
 
