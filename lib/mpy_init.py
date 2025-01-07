@@ -343,7 +343,7 @@ def mpy_dict_build(mpy_trace: dict, create: bool=False):
 
         init_dict["global"]["mpy"]["logs_generate"] = cl_mpy_dict_root(
             name="app_dict[global][mpy][logs_generate]",
-            create=create
+            create=create,
         )
 
     # Error detection

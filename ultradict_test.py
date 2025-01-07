@@ -1,4 +1,5 @@
 import sys
+import time
 
 from multiprocessing import Process, current_process, active_children
 from functools import partial
@@ -11,14 +12,24 @@ def u_dict_build(create: bool=False):
     app_dict = UltraDict(
         name="app_dict",
         create=create,
-        shared_lock=True
+        shared_lock=True,
+        buffer_size=1_000_000,
+        full_dump_size=1_000_000,
+        auto_unlink=False
     )
+    # app_dict = {}
 
     app_dict["nested_udict"] = UltraDict(
-        name="app_dict[conf]",
+        name="nested_udict",
         create=create,
-        shared_lock=True
+        shared_lock=True,
+        buffer_size=1_000_000,
+        full_dump_size=1_000_000,
+        auto_unlink=False
     )
+    # app_dict["nested_udict"] = {}
+
+    app_dict["nested_dict"] = {}
 
     return app_dict
 
@@ -32,7 +43,7 @@ def parallel_task(app_dict):
         process = current_process()
 
         i = 0
-        total = 10**2
+        total = 10**3
         tmp_val = 0
 
         # Hold on until all processes are ready
@@ -43,7 +54,6 @@ def parallel_task(app_dict):
             i += 1
             # Read and write app_dict and nested dictionaries
             with app_dict.lock:
-                app_dict["test_count"] += 1
                 # app_dict["nested_udict"].update({f'{app_dict["test_count"]}' : process.name})
 
                 #### DEBUG BLOCK BELOW ####
@@ -53,8 +63,7 @@ def parallel_task(app_dict):
                 # app_dict["test_count"] += 1
                 #### DEBUG BLOCK ABOVE ####
 
-                with app_dict["nested_udict"].lock:
-                    app_dict["nested_udict"][app_dict["test_count"]] = process.name
+                app_dict["test_count"] += 1
 
                 #### DEBUG BLOCK BELOW ####
                 # print(f'AFTER: {process.name} => {app_dict["nested_udict"].name} => {app_dict}')
@@ -62,7 +71,10 @@ def parallel_task(app_dict):
                 # app_dict['nested_udict'].print_status()
                 #### DEBUG BLOCK ABOVE ####
 
-            print(f'{app_dict["test_count"]} :: {process.name}')
+            with app_dict["nested_udict"].lock:
+                app_dict["nested_udict"]["test_count"] += 1
+
+            print(f'{app_dict["test_count"]} :: {app_dict["nested_udict"]["test_count"]} :: {process.name}')
             while tmp_val < total:
                 tmp_val = (sqrt(sqrt(i)*i) / i) + tmp_val**2
 
@@ -71,11 +83,15 @@ def parallel_task(app_dict):
 
 def spawn_wrapper(task):
     """ Wrapper for the task tuple / wrapped by the spawned process"""
-    app_dict = u_dict_build() # Rebuild UltraDict with create=False
 
-    task[1] = app_dict # Reassign app_dict to the process
-    run = partial(*task,) # Wrap the task
-    run()
+    app_dict = u_dict_build()
+
+    # Introduce sleep time to wait for shared memory
+    # time.sleep(0.1)
+
+    task = [task[0], app_dict] # Reassign app_dict to the process
+    func, *args = task
+    result = func(*args)
 
 if __name__ == '__main__':
     # Build the app_dict
@@ -86,13 +102,15 @@ if __name__ == '__main__':
 
     # Some value in shared memory
     app_dict["test_count"] = 0
+    app_dict["nested_udict"]["test_count"] = 0
 
-    task = [parallel_task, app_dict]
+    task = [parallel_task,]
 
     i = 0
-    j = 10 # Processes to be started
+    j = 50 # Processes to be started
     processes = []
     while i < j:
+        # TODO mitigate in main
         p = Process(target=partial(spawn_wrapper, task))
         p.start()
         processes.append(p)

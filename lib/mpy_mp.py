@@ -519,6 +519,7 @@ class cl_orchestrator:
                         if priority == -20:
                             time.sleep(0.02)  # 0.02 seconds = 20 milliseconds
                 else:
+                    # Sleep if heap is empty
                     time.sleep(0.05)  # 0.05 seconds = 50 milliseconds
 
                 # Evaluate if spawned processes need to end. As long as the app is running in
@@ -652,17 +653,6 @@ def run_parallel(mpy_trace: dict, app_dict: dict, task: list=None, priority=None
                     id_err_dict = True
                 else:
                     id_check = True
-                    # Add process specific dictionaries to app_dict
-                    app_dict["proc"]["mpy"]._update_self(_access="normal")
-                    app_dict["proc"]["mpy"][f'P{process_id}'] = cl_mpy_dict_root(
-                        name=f'app_dict[proc][mpy][P{process_id}]', create=True
-                    )
-
-                    app_dict["proc"]["app"]._update_self(_access="normal")
-                    app_dict["proc"]["app"][f'P{process_id}'] = cl_mpy_dict_root(
-                        name=f'app_dict[proc][app][P{process_id}]', create=True
-                    )
-                    app_dict["proc"]["app"]._update_self(_access="tightened")
 
                 # Process ID determined.
                 log_no_q(mpy_trace, app_dict, "debug",
@@ -684,6 +674,9 @@ def run_parallel(mpy_trace: dict, app_dict: dict, task: list=None, priority=None
                 task[1].update({"process_id" : process_id})
                 task[1].update({"thread_id" : 0})
                 task[1].update({"task_id" : app_dict["proc"]["mpy"]["task_counter"]})
+
+                # Remove app_dict from the task to prevent pickling external to UltraDict
+                task[2] = {}
 
                 # Run the task
                 if task is not None:
@@ -795,14 +788,48 @@ def spawn(task: list):
         # Rebuild the app_dict by reference (shared memory), after spawning
         # a process.
         # TODO solve app_dict sharing
-        from lib.mpy_init import mpy_dict_build
-        from lib.mpy_init import mpy_dict_finalize
+        # from lib.mpy_init import mpy_dict_build
+        # from lib.mpy_init import mpy_dict_finalize
+
+        from lib.mpy_dict import cl_mpy_dict, cl_mpy_dict_root
+
+        # Link to shared memory
+        app_dict = cl_mpy_dict_root(
+            name="app_dict",
+            create=False,
+        )
+
+        # Add process specific dictionaries to app_dict
+        app_dict["proc"]["mpy"]._update_self(_access="normal")
+        app_dict["proc"]["app"]._update_self(_access="normal")
+
+        app_dict["proc"]["mpy"][f'P{process_id}'] = cl_mpy_dict_root(
+            name=f'app_dict[proc][mpy][P{process_id}]',
+            create=True,
+        )
+        app_dict["proc"]["mpy"][f'P{process_id}']["T0"] = cl_mpy_dict_root(
+            name=f'app_dict[proc][mpy][P{process_id}][T0]',
+            create=True,
+        )
+        app_dict["proc"]["app"][f'P{process_id}'] = cl_mpy_dict_root(
+            name=f'app_dict[proc][app][P{process_id}]',
+            create=True,
+        )
+        app_dict["proc"]["app"][f'P{process_id}']["T0"] = cl_mpy_dict_root(
+            name=f'app_dict[proc][app][P{process_id}][T0]',
+            create=True,
+        )
+
+        app_dict["proc"]["mpy"]._update_self(_access="tightened")
+        app_dict["proc"]["app"]._update_self(_access="tightened")
+
+
         app_dict = mpy_dict_build(task[1])
         mpy_dict_finalize(task[1], app_dict)
 
         task[2] = app_dict
-        run = partial(*task,)
-        run()
+        func, *args = task
+        result = func(*args)
 
     except Exception as e:
         print(f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'

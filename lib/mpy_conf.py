@@ -5,6 +5,8 @@ https://github.com/supermorphDotTech
 Author:     Bastian Neuwirth
 Descr.:     This module yields all basic parameters of the morPy fork. The
             parameters are meant to be tempered with.
+
+TODO remake paramters() as settings() and provide as json
 """
 
 def parameters(start_time=None):

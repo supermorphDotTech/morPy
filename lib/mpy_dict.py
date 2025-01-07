@@ -88,8 +88,7 @@ class cl_mpy_dict(dict):
     to tighten or lock the dictionaries, restricting modifications.
     """
 
-    def __init__(self, *args, name: str='Instance of cl_mpy_dict', access: str='normal',
-                 create: bool=False, recurse_register=None, **kwargs):
+    def __init__(self, *args, name: str='Instance of cl_mpy_dict', access: str='normal'):
 
         r"""
         :param name: Name of the dictionary for tracing
@@ -97,10 +96,6 @@ class cl_mpy_dict(dict):
             'normal' (default) - works like any Python dictionary
             'tightened' - Keys may not be altered (no delete or add)
             'locked' - Keys and values are locked, changes are prohibited entirely
-        :param create: If True, a (nested) dictionary is created. Otherwise, purely
-            references to the UltraDict.
-        :param recurse_register: If not None, recursion is activated for UltraDict. Expects
-            the recurse_register of the root UltraDict.
 
         :return:
             -
@@ -491,6 +486,10 @@ class cl_mpy_dict_root(UltraDict):
             self.create = kwargs.setdefault('create', create)
             self.shared_lock = kwargs.setdefault('shared_lock', True)
             self.recurse = kwargs.setdefault('recurse', False)
+            self.shared_lock = kwargs.setdefault('shared_lock', True)
+            self.buffer_size = kwargs.setdefault('buffer_size', 1_000_000)
+            self.full_dump_size = kwargs.setdefault('full_dump_size', 1_000_000)
+            self.auto_unlink = kwargs.setdefault('shared_lock', False)
             # self.recurse_register = kwargs.setdefault('recurse_register', name)
             # self.serializer = kwargs.setdefault('serializer', dill)
             # self.auto_unlink = kwargs.setdefault('auto_unlink', False)
