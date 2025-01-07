@@ -8,7 +8,7 @@ Descr.:     Multiprocessing functionality for morPy.
 
 import lib.mpy_fct as mpy_fct
 from lib.mpy_decorators import metrics, log, log_no_q
-from lib.mpy_dict import cl_mpy_dict_root
+from lib.mpy_dict import cl_mpy_dict_ultra
 
 
 import sys
@@ -597,7 +597,7 @@ def run_parallel(mpy_trace: dict, app_dict: dict, task: list=None, priority=None
                 f'priority: {priority}\n'
                 f'task_sys_id: {task_sys_id}')
 
-        from lib.mpy_dict import cl_mpy_dict_root
+        from lib.mpy_dict import cl_mpy_dict_ultra
 
         # Fetch the maximum processes to be utilized by morPy
         processes_max = app_dict["proc"]["mpy"]["cl_orchestrator"].processes_max
@@ -791,10 +791,10 @@ def spawn(task: list):
         # from lib.mpy_init import mpy_dict_build
         # from lib.mpy_init import mpy_dict_finalize
 
-        from lib.mpy_dict import cl_mpy_dict, cl_mpy_dict_root
+        from lib.mpy_dict import cl_mpy_dict, cl_mpy_dict_ultra
 
         # Link to shared memory
-        app_dict = cl_mpy_dict_root(
+        app_dict = cl_mpy_dict_ultra(
             name="app_dict",
             create=False,
         )
@@ -803,26 +803,25 @@ def spawn(task: list):
         app_dict["proc"]["mpy"]._update_self(_access="normal")
         app_dict["proc"]["app"]._update_self(_access="normal")
 
-        app_dict["proc"]["mpy"][f'P{process_id}'] = cl_mpy_dict_root(
+        app_dict["proc"]["mpy"][f'P{process_id}'] = cl_mpy_dict_ultra(
             name=f'app_dict[proc][mpy][P{process_id}]',
             create=True,
         )
-        app_dict["proc"]["mpy"][f'P{process_id}']["T0"] = cl_mpy_dict_root(
+        app_dict["proc"]["mpy"][f'P{process_id}']["T0"] = cl_mpy_dict_ultra(
             name=f'app_dict[proc][mpy][P{process_id}][T0]',
             create=True,
         )
-        app_dict["proc"]["app"][f'P{process_id}'] = cl_mpy_dict_root(
+        app_dict["proc"]["app"][f'P{process_id}'] = cl_mpy_dict_ultra(
             name=f'app_dict[proc][app][P{process_id}]',
             create=True,
         )
-        app_dict["proc"]["app"][f'P{process_id}']["T0"] = cl_mpy_dict_root(
+        app_dict["proc"]["app"][f'P{process_id}']["T0"] = cl_mpy_dict_ultra(
             name=f'app_dict[proc][app][P{process_id}][T0]',
             create=True,
         )
 
         app_dict["proc"]["mpy"]._update_self(_access="tightened")
         app_dict["proc"]["app"]._update_self(_access="tightened")
-
 
         app_dict = mpy_dict_build(task[1])
         mpy_dict_finalize(task[1], app_dict)

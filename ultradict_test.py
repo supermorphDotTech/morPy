@@ -54,22 +54,7 @@ def parallel_task(app_dict):
             i += 1
             # Read and write app_dict and nested dictionaries
             with app_dict.lock:
-                # app_dict["nested_udict"].update({f'{app_dict["test_count"]}' : process.name})
-
-                #### DEBUG BLOCK BELOW ####
-                # print(f'BEFORE: {process.name} => {app_dict["nested_udict"].name} => {app_dict}')
-                # app_dict.print_status()
-                # app_dict['nested_udict'].print_status()
-                # app_dict["test_count"] += 1
-                #### DEBUG BLOCK ABOVE ####
-
                 app_dict["test_count"] += 1
-
-                #### DEBUG BLOCK BELOW ####
-                # print(f'AFTER: {process.name} => {app_dict["nested_udict"].name} => {app_dict}')
-                # app_dict.print_status()
-                # app_dict['nested_udict'].print_status()
-                #### DEBUG BLOCK ABOVE ####
 
             with app_dict["nested_udict"].lock:
                 app_dict["nested_udict"]["test_count"] += 1
@@ -85,9 +70,6 @@ def spawn_wrapper(task):
     """ Wrapper for the task tuple / wrapped by the spawned process"""
 
     app_dict = u_dict_build()
-
-    # Introduce sleep time to wait for shared memory
-    # time.sleep(0.1)
 
     task = [task[0], app_dict] # Reassign app_dict to the process
     func, *args = task

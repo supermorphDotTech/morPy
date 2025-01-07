@@ -421,7 +421,7 @@ class cl_mpy_dict(dict):
         else:
             return super().setdefault(key, default)
 
-class cl_mpy_dict_root(UltraDict):
+class cl_mpy_dict_ultra(UltraDict):
 
     r"""
 	This is the dictionary class for the morPy framework and provides all key functions
@@ -455,10 +455,10 @@ class cl_mpy_dict_root(UltraDict):
             -
 
         :example 1: Create a root dictionary
-            app_dict = cl_mpy_dict_root(create=True)
+            app_dict = cl_mpy_dict_ultra(create=True)
 
         :example 2: Create a nested dictionary
-            app_dict["global"]["app"]["my_dict"] = cl_mpy_dict_root(
+            app_dict["global"]["app"]["my_dict"] = cl_mpy_dict_ultra(
                 name = app_dict[global][app][my_dict],
                 access="tightened"
             )
@@ -479,7 +479,6 @@ class cl_mpy_dict_root(UltraDict):
 
             # Inherit from UltraDict
             # TODO This is only MS Windows compatible yet
-            # alteration in super().__init__()
 
             # Pass initialization arguments to UltraDict
             self._name = kwargs.setdefault('name', name)
@@ -487,12 +486,11 @@ class cl_mpy_dict_root(UltraDict):
             self.shared_lock = kwargs.setdefault('shared_lock', True)
             self.recurse = kwargs.setdefault('recurse', False)
             self.shared_lock = kwargs.setdefault('shared_lock', True)
-            self.buffer_size = kwargs.setdefault('buffer_size', 1_000_000)
-            self.full_dump_size = kwargs.setdefault('full_dump_size', 1_000_000)
-            self.auto_unlink = kwargs.setdefault('shared_lock', False)
+            self.buffer_size = kwargs.setdefault('buffer_size', 10_000_000)
+            self.full_dump_size = kwargs.setdefault('full_dump_size', 10_000_000)
+            self.auto_unlink = kwargs.setdefault('auto_unlink', False)
             # self.recurse_register = kwargs.setdefault('recurse_register', name)
             # self.serializer = kwargs.setdefault('serializer', dill)
-            # self.auto_unlink = kwargs.setdefault('auto_unlink', False)
 
             # Initialize the UltraDict super class
             super().__init__(*args, **kwargs)

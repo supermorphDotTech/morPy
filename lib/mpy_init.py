@@ -64,7 +64,6 @@ def init(mpy_trace):
     mpy_trace_init = mpy_fct.tracing(module, operation, mpy_trace)
 
     try:
-
         # ############################################
         # START Single-threaded initialization
         # ############################################
@@ -238,7 +237,7 @@ def mpy_dict_build(mpy_trace: dict, create: bool=False):
         init_dict = mpy_init.mpy_dict_build(mpy_trace, create=True)
     """
 
-    from lib.mpy_dict import cl_mpy_dict, cl_mpy_dict_root
+    from lib.mpy_dict import cl_mpy_dict, cl_mpy_dict_ultra
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_init'
@@ -246,102 +245,102 @@ def mpy_dict_build(mpy_trace: dict, create: bool=False):
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
     try:
-        init_dict = cl_mpy_dict_root(
+        init_dict = cl_mpy_dict_ultra(
             name="app_dict",
             create=create,
         )
 
-        init_dict["conf"] = cl_mpy_dict_root(
+        init_dict["conf"] = cl_mpy_dict_ultra(
             name="app_dict[conf]",
             create=create,
         )
 
-        init_dict["sys"] = cl_mpy_dict_root(
+        init_dict["sys"] = cl_mpy_dict_ultra(
             name="app_dict[sys]",
             create=create,
         )
 
-        init_dict["run"] = cl_mpy_dict_root(
+        init_dict["run"] = cl_mpy_dict_ultra(
             name="app_dict[run]",
             create=create,
         )
 
-        init_dict["global"] = cl_mpy_dict_root(
+        init_dict["global"] = cl_mpy_dict_ultra(
             name="app_dict[global]",
             create=create,
         )
 
-        init_dict["global"]["mpy"] = cl_mpy_dict_root(
+        init_dict["global"]["mpy"] = cl_mpy_dict_ultra(
             name="app_dict[global][mpy]",
             create=create,
         )
 
-        init_dict["global"]["app"] = cl_mpy_dict_root(
+        init_dict["global"]["app"] = cl_mpy_dict_ultra(
             name="app_dict[global][app]",
             create=create,
         )
 
-        init_dict["proc"] = cl_mpy_dict_root(
+        init_dict["proc"] = cl_mpy_dict_ultra(
             name="app_dict[proc]",
             create=create,
         )
 
-        init_dict["proc"]["mpy"] = cl_mpy_dict_root(
+        init_dict["proc"]["mpy"] = cl_mpy_dict_ultra(
             name="app_dict[proc][mpy]",
             create=create,
         )
 
-        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict_root(
+        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict_ultra(
             name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}]',
             create=create,
         )
 
-        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict_root(
+        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict_ultra(
             name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
             create=create,
         )
 
-        init_dict["proc"]["app"] = cl_mpy_dict_root(
+        init_dict["proc"]["app"] = cl_mpy_dict_ultra(
             name="app_dict[proc][app]",
             create=create,
         )
 
-        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict_root(
+        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict_ultra(
             name=f'app_dict[proc][app][P{mpy_trace["process_id"]}]',
             create=create,
         )
 
-        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict_root(
+        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict_ultra(
             name=f'app_dict[proc][app][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
             create=create,
         )
 
-        init_dict["loc"] = cl_mpy_dict_root(
+        init_dict["loc"] = cl_mpy_dict_ultra(
             name="app_dict[loc]",
             create=create,
         )
 
-        init_dict["loc"]["mpy"] = cl_mpy_dict_root(
+        init_dict["loc"]["mpy"] = cl_mpy_dict_ultra(
             name="app_dict[loc][mpy]",
             create=create,
         )
 
-        init_dict["loc"]["mpy_dbg"] = cl_mpy_dict_root(
+        init_dict["loc"]["mpy_dbg"] = cl_mpy_dict_ultra(
             name="app_dict[loc][mpy_dbg]",
             create=create,
         )
 
-        init_dict["loc"]["app"] = cl_mpy_dict_root(
+        init_dict["loc"]["app"] = cl_mpy_dict_ultra(
             name="app_dict[loc][app]",
             create=create,
         )
 
-        init_dict["loc"]["app_dbg"] = cl_mpy_dict_root(
+        init_dict["loc"]["app_dbg"] = cl_mpy_dict_ultra(
             name="app_dict[loc][app_dbg]",
             create=create,
         )
 
-        init_dict["global"]["mpy"]["logs_generate"] = cl_mpy_dict_root(
+        init_dict["global"]["mpy"]["logs_generate"] = cl_mpy_dict_ultra(
             name="app_dict[global][mpy][logs_generate]",
             create=create,
         )
