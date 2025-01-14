@@ -105,6 +105,10 @@ class cl_priority_queue:
             self.counter = 0 # Task counter. Starts at 0, increments by 1
             self.task_lookup = set() # Set for quick task existence check
 
+            # Initialize in single core mode. Orchestrator is initialized afterward.
+            # In single-core mode, skip queue.
+            self._single_core = True
+
             # Set up the global task counter (serves also as the task ID)
             app_dict["proc"]["mpy"]["tasks_created"] = 0
 
@@ -117,6 +121,49 @@ class cl_priority_queue:
                 log_no_q(mpy_trace, app_dict, "debug", log_msg)
             else:
                 log(mpy_trace, app_dict, "debug", log_msg)
+
+            check = True
+
+        except Exception as e:
+            err_msg = (
+                lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{app_dict["loc"]["mpy"]["cl_priority_queue_name"]}: {self.name}'
+            )
+            if self.is_manager:
+                log_no_q(mpy_trace, app_dict, "critical", err_msg)
+            else:
+                log(mpy_trace, app_dict, "critical", err_msg)
+
+        return {
+            'mpy_trace': mpy_trace,
+            'check': check
+        }
+
+    @metrics
+    def _init_mp(self, mpy_trace: dict, app_dict: dict) -> dict:
+
+        r"""
+        Helper method for initialization to ensure @metrics decorator functionality. Multiprocessing
+        component/activation.
+
+        :param mpy_trace: Operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+
+        :return: dict
+            mpy_trace: Operation credentials and tracing
+            check: Indicates whether initialization completed without errors
+        """
+
+        module = 'mpy_common'
+        operation = 'cl_priority_queue._init_mp(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        check = False
+
+        try:
+            # In single-core mode, skip queue
+            self._single_core = False if app_dict["proc"]["mpy"]["cl_orchestrator"].processes_max > 1 else True
 
             check = True
 
@@ -169,66 +216,72 @@ class cl_priority_queue:
 
         try:
             if task:
-                # Check and autocorrect priority
-                if priority < 0 and autocorrect:
-                    # Invalid argument given to process queue. Autocorrected.
-                    log_msg = (
-                        lambda: f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_prio_corr"]}\n'
-                                f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_priority"]}: {priority} to 0'
-                    )
-                    if self.is_manager:
-                        log_no_q(mpy_trace, app_dict, "debug", log_msg)
-                    else:
-                        log(mpy_trace, app_dict, "debug", log_msg)
-
-                    priority = 0
-
-                # Pushing task to priority queue.
-                    log_msg = (
-                        lambda: f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_start"]} {self.name}\n'
-                                f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_priority"]}: {priority}'
-                    )
-                    if self.is_manager:
-                        log_no_q(mpy_trace, app_dict, "debug", log_msg)
-                    else:
-                        log(mpy_trace, app_dict, "debug", log_msg)
-
-                # Increment task counter
-                self.counter += 1
-
-                # Check for incremented task ID
-                new_id = app_dict["proc"]["mpy"]["tasks_created"] + 1
-
-                # Check continuously counted task ID
-                if self.counter == new_id:
-                    task_sys_id = id(task)
-
-                    # Check, if ID already in queue
-                    if task_sys_id in self.task_lookup:
-                        # Task is already enqueued. Referencing in queue.
+                # Omit queuing, if single core mode
+                if self._single_core:
+                    func = task[0]
+                    args = task[1:]
+                    retval = func(*args)
+                else:
+                    # Check and autocorrect process priority
+                    if priority < 0 and autocorrect:
+                        # Invalid argument given to process queue. Autocorrected.
                         log_msg = (
-                            lambda: f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_task_duplicate"]}\n'
-                                    f'Task system ID: {task_sys_id}'
+                            lambda: f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_prio_corr"]}\n'
+                                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_priority"]}: {priority} to 0'
                         )
                         if self.is_manager:
                             log_no_q(mpy_trace, app_dict, "debug", log_msg)
                         else:
                             log(mpy_trace, app_dict, "debug", log_msg)
 
-                    # Push task to queue
-                    task_qed = (priority, self.counter, task_sys_id, task, is_process)
-                    heappush(self.heap, task_qed)
-                    self.task_lookup.add(task_sys_id)
+                        priority = 0
 
-                    # Updating global tasks created last in case an error occurs
-                    app_dict["proc"]["mpy"]["tasks_created"] += 1
-                    mpy_trace["task_id"] = app_dict["proc"]["mpy"]["tasks_created"]
+                    # Pushing task to priority queue.
+                        log_msg = (
+                            lambda: f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_start"]} {self.name}\n'
+                                    f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_priority"]}: {priority}'
+                        )
+                        if self.is_manager:
+                            log_no_q(mpy_trace, app_dict, "debug", log_msg)
+                        else:
+                            log(mpy_trace, app_dict, "debug", log_msg)
 
-                else:
-                    # Task not enqueued. Task ID mismatch or conflict.
-                    raise RuntimeError(f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_id_conflict"]}\nID: {self.counter}<>{mpy_trace["task_id"]}')
+                    # Increment task counter
+                    self.counter += 1
 
-                check = True
+                    # Check for incremented task ID
+                    new_id = app_dict["proc"]["mpy"]["tasks_created"] + 1
+
+                    # Check continuously counted task ID
+                    if self.counter == new_id:
+                        task_sys_id = id(task)
+
+                        # Check, if ID already in queue
+                        if task_sys_id in self.task_lookup:
+                            # Task is already enqueued. Referencing in queue.
+                            log_msg = (
+                                lambda: f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_task_duplicate"]}\n'
+                                        f'Task system ID: {task_sys_id}'
+                            )
+                            if self.is_manager:
+                                log_no_q(mpy_trace, app_dict, "debug", log_msg)
+                            else:
+                                log(mpy_trace, app_dict, "debug", log_msg)
+
+                        # Push task to queue
+                        task_qed = (priority, self.counter, task_sys_id, task, is_process)
+                        heappush(self.heap, task_qed)
+                        self.task_lookup.add(task_sys_id)
+
+                        # Updating global tasks created last in case an error occurs
+                        app_dict["proc"]["mpy"]["tasks_created"] += 1
+                        mpy_trace["task_id"] = app_dict["proc"]["mpy"]["tasks_created"]
+
+                    else:
+                        # Task not enqueued. Task ID mismatch or conflict.
+                        raise RuntimeError(f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_id_conflict"]}\nID: {self.counter}<>{mpy_trace["task_id"]}')
+
+                    check = True
             else:
                 # Task can not be None. Skipping enqueue.
                 log_msg = (

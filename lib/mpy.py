@@ -12,7 +12,8 @@ import lib.mpy_csv as mpy_csv
 import lib.mpy_fct as mpy_fct
 import lib.mpy_mt as mpy_mt
 import lib.mpy_ui_tk as mpy_ui_tk
-import lib.mpy_wscraper as mpy_wscraper
+# import lib.mpy_wscraper as mpy_wscraper
+# TODO fix webscraper
 import lib.mpy_xl as mpy_xl
 from lib.mpy_decorators import log
 

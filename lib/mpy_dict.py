@@ -86,9 +86,29 @@ class cl_mpy_dict(dict):
 
     Instances work like standard Python dictionaries and deliver security features
     to tighten or lock the dictionaries, restricting modifications.
+
+    TODO flat setup of app_dict with a map to imitate nesting
+    TODO set up the map as a tuple of immutables to "share" in memory (more like save in UltraDict without pickling)
+    TODO write a reduced map to the created UltraDict, to only reflect it's own nesting
+    TODO Find a way to keep all maps updated
+
+    MAP:
+    app_dict._mpy_dict_map = ()
+
+    # __setitem__ logic
+    if isinstance(key, dict):
+        branch_update = False # Prepare the flag to signal, whether a branch needs to be updated
+        udict_name = f'app_dict[{key}]'
+        for path in app_dict._mpy_dict_map:
+            if key == path[0]:
+                branch_update = True # Proactive branch update, even if no further nesting, because there is no other comm between UltraDict and app_dict
+                udict_inst = UltraDict(create=False, name=udict_name)
+
+
+        app_dict._mpy_dict_map = ()
     """
 
-    def __init__(self, *args, name: str='Instance of cl_mpy_dict', access: str='normal'):
+    def __init__(self, name: str='Instance of cl_mpy_dict', access: str='normal'):
 
         r"""
         :param name: Name of the dictionary for tracing
@@ -110,6 +130,7 @@ class cl_mpy_dict(dict):
         """
 
         try:
+            super().__init__()
             self._name = name  # Name variable for messages
 
             # Initialize a mock mpy_trace
@@ -133,9 +154,11 @@ class cl_mpy_dict(dict):
             # Initialize localization messages
             self._init_loc()
 
+            self._flat_store = {}
+
         except Exception as e:
             raise RuntimeError(
-                f'CRITICAL {self._name}.__init__(): Failed to initialize UltraDict.\n'
+                f'CRITICAL {self._name}.__init__(): Failed to initialize cl_mpy_dict.\n'
                 f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
             )
             sys.exit()

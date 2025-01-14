@@ -177,12 +177,12 @@ def parameters(start_time=None):
     # Select the way, how the available CPUs are determined. If absolute, an integer
     # value will reflect the maximum number of logical cores to utilize in parallel.
     # Default: False or None
-    processes_count_absolute = False
+    processes_count_absolute = True
 
     # Absolute amount of processes to run parallel. This value will by default not exceed
     # the logical cores available on the system. If None, all CPUs can be utilized.
     # Default: None
-    processes_absolute = None
+    processes_absolute = 1
 
     # Set the relative maximum amount of processes to be utilized, where 1 resembles 100%
     # utilization and 0 resembles 0% utilization. If None, all CPUs can be utilized.
@@ -215,7 +215,7 @@ def parameters(start_time=None):
     # mt_max_threads_set_abs = True in order to have any effect. Have in mind, that
     # your app still needs to utilize these threads by keeping enough tasks in
     # the priority queue.
-    mt_max_threads_cnt_abs = 2
+    mt_max_threads_cnt_abs = 1
 
     # Set the relative maximum amount of threads which shall be utilized, where
     # 1 resembles 100% utilization and 0 resembles 0% utilization. This needs

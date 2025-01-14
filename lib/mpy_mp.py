@@ -10,7 +10,6 @@ import lib.mpy_fct as mpy_fct
 from lib.mpy_decorators import metrics, log, log_no_q
 from lib.mpy_dict import cl_mpy_dict_ultra
 
-
 import sys
 import time
 from multiprocessing import Process
@@ -94,6 +93,9 @@ class cl_orchestrator:
 
         :param mpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
+
+        TODO make compatible with forking/free-threading
+        TODO when made compatible, take care of self._run(), mpy_init.init() and mpy_common.cl_priority_queue._init()
         """
 
         module = 'mpy_mp'
@@ -459,8 +461,9 @@ class cl_orchestrator:
             log(mpy_trace, app_dict, "info",
             lambda: f'{app_dict["loc"]["mpy"]["cl_orchestrator_run_app_start"]}')
 
-            while not self._terminate:
-                self._main_loop(mpy_trace, app_dict)
+            if self.processes_max > 1:
+                while not self._terminate:
+                    self._main_loop(mpy_trace, app_dict)
 
             check = True
 
@@ -604,7 +607,7 @@ def run_parallel(mpy_trace: dict, app_dict: dict, task: list=None, priority=None
 
         if callable(task[0]):
             # Search for available process IDs and stop searching after 2x maximum processes
-            while ((not id_check) and (id_search <= 2 * processes_max)):
+            while (not id_check) and (id_search <= 2 * processes_max):
 
                 id_search += 1
 

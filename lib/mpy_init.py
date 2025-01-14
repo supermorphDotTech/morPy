@@ -69,7 +69,7 @@ def init(mpy_trace):
         # ############################################
 
         # Build the app_dict
-        init_dict = mpy_dict_build(mpy_trace_init, create=True)
+        init_dict = mpy_dict_build(mpy_trace_init)
 
         init_dict["proc"]["mpy"].update({"tasks_created" : mpy_trace_init["task_id"]})
         init_dict["proc"]["mpy"].update({"proc_available" : set()})
@@ -179,7 +179,16 @@ def init(mpy_trace):
             print(init_dict_str)
 
         # Initialize the morPy orchestrator
-        init_dict["proc"]["mpy"].update({"cl_orchestrator" : mpy_mp.cl_orchestrator(mpy_trace_init, init_dict)})
+        init_dict["proc"]["mpy"]["cl_orchestrator"] = mpy_mp.cl_orchestrator(mpy_trace_init, init_dict)
+
+        # Activate priority queue
+        init_dict["proc"]["mpy"]["process_q"]._init_mp(mpy_trace_init, init_dict)
+
+        # Initialize Multiprocessing dictionary
+        if init_dict["proc"]["mpy"]["cl_orchestrator"].processes_max > 1:
+            # TODO finish Multiprocessing dictionary
+            # TODO initialize Multiprocessing dictionary
+            pass
 
         # ############################################
         # END Single-threaded initialization
@@ -221,7 +230,7 @@ def init(mpy_trace):
         mpy_fct.handle_exception_init(e)
         raise
 
-def mpy_dict_build(mpy_trace: dict, create: bool=False):
+def mpy_dict_build(mpy_trace: dict):
 
     r"""
     This function builds the app_dict. This is needed in spawned processes, too
@@ -237,7 +246,7 @@ def mpy_dict_build(mpy_trace: dict, create: bool=False):
         init_dict = mpy_init.mpy_dict_build(mpy_trace, create=True)
     """
 
-    from lib.mpy_dict import cl_mpy_dict, cl_mpy_dict_ultra
+    from lib.mpy_dict import cl_mpy_dict, cl_mpy_dict
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_init'
@@ -245,104 +254,84 @@ def mpy_dict_build(mpy_trace: dict, create: bool=False):
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
     try:
-        init_dict = cl_mpy_dict_ultra(
+        init_dict = cl_mpy_dict(
             name="app_dict",
-            create=create,
         )
 
-        init_dict["conf"] = cl_mpy_dict_ultra(
+        init_dict["conf"] = cl_mpy_dict(
             name="app_dict[conf]",
-            create=create,
         )
 
-        init_dict["sys"] = cl_mpy_dict_ultra(
+        init_dict["sys"] = cl_mpy_dict(
             name="app_dict[sys]",
-            create=create,
         )
 
-        init_dict["run"] = cl_mpy_dict_ultra(
+        init_dict["run"] = cl_mpy_dict(
             name="app_dict[run]",
-            create=create,
         )
 
-        init_dict["global"] = cl_mpy_dict_ultra(
+        init_dict["global"] = cl_mpy_dict(
             name="app_dict[global]",
-            create=create,
         )
 
-        init_dict["global"]["mpy"] = cl_mpy_dict_ultra(
+        init_dict["global"]["mpy"] = cl_mpy_dict(
             name="app_dict[global][mpy]",
-            create=create,
         )
 
-        init_dict["global"]["app"] = cl_mpy_dict_ultra(
+        init_dict["global"]["app"] = cl_mpy_dict(
             name="app_dict[global][app]",
-            create=create,
         )
 
-        init_dict["proc"] = cl_mpy_dict_ultra(
+        init_dict["proc"] = cl_mpy_dict(
             name="app_dict[proc]",
-            create=create,
         )
 
-        init_dict["proc"]["mpy"] = cl_mpy_dict_ultra(
+        init_dict["proc"]["mpy"] = cl_mpy_dict(
             name="app_dict[proc][mpy]",
-            create=create,
         )
 
-        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict_ultra(
+        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict(
             name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}]',
-            create=create,
         )
 
-        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict_ultra(
+        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict(
             name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
-            create=create,
         )
 
-        init_dict["proc"]["app"] = cl_mpy_dict_ultra(
+        init_dict["proc"]["app"] = cl_mpy_dict(
             name="app_dict[proc][app]",
-            create=create,
         )
 
-        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict_ultra(
+        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict(
             name=f'app_dict[proc][app][P{mpy_trace["process_id"]}]',
-            create=create,
         )
 
-        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict_ultra(
+        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict(
             name=f'app_dict[proc][app][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
-            create=create,
         )
 
-        init_dict["loc"] = cl_mpy_dict_ultra(
+        init_dict["loc"] = cl_mpy_dict(
             name="app_dict[loc]",
-            create=create,
         )
 
-        init_dict["loc"]["mpy"] = cl_mpy_dict_ultra(
+        init_dict["loc"]["mpy"] = cl_mpy_dict(
             name="app_dict[loc][mpy]",
-            create=create,
         )
 
-        init_dict["loc"]["mpy_dbg"] = cl_mpy_dict_ultra(
+        init_dict["loc"]["mpy_dbg"] = cl_mpy_dict(
             name="app_dict[loc][mpy_dbg]",
-            create=create,
         )
 
-        init_dict["loc"]["app"] = cl_mpy_dict_ultra(
+        init_dict["loc"]["app"] = cl_mpy_dict(
             name="app_dict[loc][app]",
-            create=create,
         )
 
-        init_dict["loc"]["app_dbg"] = cl_mpy_dict_ultra(
+        init_dict["loc"]["app_dbg"] = cl_mpy_dict(
             name="app_dict[loc][app_dbg]",
-            create=create,
         )
 
-        init_dict["global"]["mpy"]["logs_generate"] = cl_mpy_dict_ultra(
+        init_dict["global"]["mpy"]["logs_generate"] = cl_mpy_dict(
             name="app_dict[global][mpy][logs_generate]",
-            create=create,
         )
 
     # Error detection
