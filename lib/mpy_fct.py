@@ -25,8 +25,7 @@ def privileges_handler(mpy_trace, app_dict):
     :return
         -
 
-    #TODO
-    Finish the module and fix all bugs
+    TODO Finish the module and fix all bugs
     """
 
     import mpy_msg
@@ -109,7 +108,7 @@ def privileges_handler(mpy_trace, app_dict):
 
         # Return a dictionary
         return{
-            'mpy_trace' : mpy_trace, \
+            'mpy_trace' : mpy_trace,
             'check' : check
             }
 
@@ -179,12 +178,12 @@ def datetime_now(mpy_trace):
     loggingstamp = f'{std_year}{std_month}{std_day}_{timestamp}'
 
     return{
-        'datetime_value' : datetime_value , \
-        'date' : date , \
-        'datestamp' : datestamp , \
-        'time' : time , \
-        'timestamp' : timestamp , \
-        'datetimestamp' : datetimestamp , \
+        'datetime_value' : datetime_value ,
+        'date' : date ,
+        'datestamp' : datestamp ,
+        'time' : time ,
+        'timestamp' : timestamp ,
+        'datetimestamp' : datetimestamp ,
         'loggingstamp' : loggingstamp
     }
 
@@ -269,66 +268,62 @@ def sysinfo(mpy_trace):
         'resolution_width' : res_width,
     }
 
-def pathtool(mpy_trace, in_path):
+def pathtool(mpy_trace: dict, in_path):
+    r"""
+    This function takes a string and converts it to a path. Additionally,
+    it returns path components and checks.
 
-    r""" This function takes a string and converts it to a path. Additionally,
-        it returns path components and checks.
-    :param
-        mpy_trace - operation credentials and tracing
-        in_path - Path to be converted
-    :return - dictionary
+    :param mpy_trace: operation credentials and tracing
+    :param in_path: Path to be converted
+
+    :return: dictionary
         out_path - Same as the input, but converted to a path.
-        is_file - The path is a file path.
+        is_file - The path is a file path. File does not need to exist.
         file_exists - The file has been found under the given path.
         file_name - This is the actual file name.
         file_ext - This is the file extension or file type.
-        is_dir - The path is a directory.
+        is_dir - The path is a directory. Directory does not need to exist.
         dir_exists - The directory has been found under the given path.
         dir_name - This is the actual directory name.
         parent_dir - Path of the parent directory.
+
+    :example:
+        file_path = "C:\my_file.txt"
+        file_path = mpy.pathtool(mpy_trace, file_path)["out_path"]
     """
 
-    import pathlib, os.path
+    import pathlib
 
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    # module = 'mpy_fct'
-    # operation = 'makepath(~)'
-    # mpy_trace = tracing(module, operation, mpy_trace)
+    p = pathlib.Path(in_path).resolve()
 
-    out_path    = pathlib.Path(f'{in_path}')
+    # Check if path *exists* on disk
+    path_exists = p.exists()
 
-    if os.path.isfile(in_path):
-        is_file      = os.path.isfile(out_path)
-        file_exists  = os.path.exists(out_path)
-        file_name    = os.path.split(out_path)[1]
-        file_ext     = os.path.splitext(out_path)
-    else:
-        is_file      = os.path.isfile(out_path)
-        file_exists  = os.path.exists(out_path)
-        file_name    = 'VOID'
-        file_ext     = 'VOID'
+    # Heuristic: If path has a suffix (i.e. ".txt"), treat as file.
+    # If no suffix, or p ends with a slash, treat as directory.
+    has_suffix = bool(p.suffix)  # True if something like ".txt", ".xlsx", etc.
 
-    if os.path.isdir(in_path):
-        is_dir       = os.path.isdir(out_path)
-        dir_exists   = os.path.exists(out_path)
-        dir_name     = os.path.split(out_path)[1]
-        parent_dir   = os.path.split(out_path)[0]
-    else:
-        is_dir       = os.path.isdir(out_path)
-        dir_exists   = os.path.exists(out_path)
-        dir_name     = 'VOID'
-        parent_dir   = 'VOID'
+    # Even though p.exists() might be False, we can still treat it as "is_file"
+    # if it has an extension. This is purely a custom rule.
+    is_file = has_suffix
+    is_dir = p.is_dir() if path_exists else (not has_suffix)
+
+    file_name = p.name if is_file else None
+    file_ext = p.suffix if is_file else None
+
+    dir_name = p.name if is_dir else None
+    parent_dir = str(p.parent)
 
     return{
-        'out_path' : out_path, \
-        'is_file' : is_file, \
-        'file_exists' : file_exists, \
-        'file_name' :file_name, \
-        'file_ext' :file_ext[1], \
-        'is_dir' : is_dir, \
-        'dir_exists' : dir_exists, \
-        'dir_name' : dir_name, \
-        'parent_dir' : parent_dir
+        'out_path' : str(p),
+        'is_file' : is_file,
+        'file_exists' : path_exists and is_file,
+        'file_name' :file_name,
+        'file_ext' :file_ext,
+        'is_dir' : is_dir,
+        'dir_exists' : path_exists and is_dir,
+        'dir_name' : dir_name,
+        'parent_dir' : parent_dir,
     }
 
 def path_join(mpy_trace, path_parts, file_extension):
@@ -425,8 +420,8 @@ def perfinfo(mpy_trace):
     # operation = 'perfinfo(~)'
     # mpy_trace = tracing(module, operation, mpy_trace)
 
-#TODO: "cpu_perc_indv" only works on Linux
-#TODO: "cpu_perc_comb" and "cpu_perc_indv" do not work if interval=None
+    #TODO: "cpu_perc_indv" only works on Linux
+    #TODO: "cpu_perc_comb" and "cpu_perc_indv" do not work if interval=None
 
     boot_time       = datetime.fromtimestamp(psutil.boot_time())
 
@@ -443,18 +438,18 @@ def perfinfo(mpy_trace):
     mem_free_MB     = psutil.virtual_memory().free / 1024**2
 
     return{
-        'boot_time' : boot_time, \
-        'cpu_count_phys' : cpu_count_phys, \
-        'cpu_count_log' : cpu_count_log, \
-        'cpu_freq_max' : cpu_freq_max, \
-        'cpu_freq_min' : cpu_freq_min, \
-        'cpu_freq_comb' : cpu_freq_comb, \
-        'cpu_perc_comb' : cpu_perc_comb, \
-        'cpu_perc_indv' : cpu_perc_indv, \
-        'mem_total_MB' : mem_total_MB, \
-        'mem_available_MB' : mem_available_MB, \
-        'mem_used_MB' : mem_used_MB, \
-        'mem_free_MB' : mem_free_MB, \
+        'boot_time' : boot_time,
+        'cpu_count_phys' : cpu_count_phys,
+        'cpu_count_log' : cpu_count_log,
+        'cpu_freq_max' : cpu_freq_max,
+        'cpu_freq_min' : cpu_freq_min,
+        'cpu_freq_comb' : cpu_freq_comb,
+        'cpu_perc_comb' : cpu_perc_comb,
+        'cpu_perc_indv' : cpu_perc_indv,
+        'mem_total_MB' : mem_total_MB,
+        'mem_available_MB' : mem_available_MB,
+        'mem_used_MB' : mem_used_MB,
+        'mem_free_MB' : mem_free_MB,
     }
 
 def app_dict_to_string(app_dict, depth=0):
@@ -593,7 +588,7 @@ def txt_wr(mpy_trace, app_dict, filepath, content):
 
         # Return a dictionary
         return{
-            'mpy_trace' : mpy_trace, \
+            'mpy_trace' : mpy_trace,
             'check' : check
             }
 

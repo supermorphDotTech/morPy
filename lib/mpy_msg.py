@@ -36,69 +36,76 @@ def log(mpy_trace, app_dict, message, level):
     > Preferably auto delete logs based on "no errors occured" per process, task, thread and __main__
     """
 
-    # Wait for an interrupt to end
-    while app_dict["global"]["mpy"]["mpy_interrupt"] == True:
-        pass
+    mpy_trace_eval = None
 
-    # Event handling (counting and formatting)
-    log_event_dict = log_event_handler(app_dict, message, level)
-    level_dict = log_event_dict["level_dict"]
+    try:
+        # Wait for an interrupt to end
+        while app_dict["global"]["mpy"]["mpy_interrupt"] == True:
+            pass
 
-    # The log level will be evaluated as long as logging or prints to console are enabled. The
-    # mpy_trace may be manipulated.
-    if app_dict["conf"]["mpy_msg_print"] or app_dict["conf"]["mpy_log_enable"]:
-        mpy_trace_eval = log_eval(mpy_trace, app_dict, log_event_dict["level"], level_dict)
+        # Event handling (counting and formatting)
+        log_event_dict = log_event_handler(app_dict, message, level)
+        level_dict = log_event_dict["level_dict"]
 
-    # Retrieve a log specific datetimestamp
-    time_lst = mpy_fct.datetime_now(mpy_trace_eval)
-    datetimestamp = time_lst["datetimestamp"]
-    datetime_value = time_lst["datetime_value"]
+        # The log level will be evaluated as long as logging or prints to console are enabled. The
+        # mpy_trace may be manipulated.
+        if app_dict["conf"]["mpy_msg_print"] or app_dict["conf"]["mpy_log_enable"]:
+            mpy_trace_eval = log_eval(mpy_trace, app_dict, log_event_dict["level"], level_dict)
 
-    # Prepare a passthrough dictionary for logging operations
-    log_dict = { \
-                'level' : log_event_dict["level"], \
-                'datetimestamp' : datetimestamp, \
-                'datetime_value' : datetime_value, \
-                'module' : mpy_trace_eval["module"], \
-                'operation' : mpy_trace_eval["operation"], \
-                'tracing' : mpy_trace_eval["tracing"], \
-                'process_id' : mpy_trace_eval["process_id"], \
-                'thread_id' : mpy_trace_eval["thread_id"], \
-                'task_id' : mpy_trace_eval["task_id"], \
-                'message' : message, \
-                'log_msg_complete' : 'VOID', \
-                'log_enable' : mpy_trace_eval["log_enable"] , \
-                'pnt_enable' : mpy_trace_eval["pnt_enable"] , \
-                'interrupt_enable' : mpy_trace_eval["interrupt_enable"]
-                }
+        # Retrieve a log specific datetimestamp
+        time_lst = mpy_fct.datetime_now(mpy_trace_eval)
+        datetimestamp = time_lst["datetimestamp"]
+        datetime_value = time_lst["datetime_value"]
 
-    # Build the complete log message
-    msg = log_msg_builder(app_dict, log_dict)
-    log_dict["log_msg_complete"] = msg
+        # Prepare a passthrough dictionary for logging operations
+        log_dict = {
+            'level' : log_event_dict["level"],
+            'datetimestamp' : datetimestamp,
+            'datetime_value' : datetime_value,
+            'module' : mpy_trace_eval["module"],
+            'operation' : mpy_trace_eval["operation"],
+            'tracing' : mpy_trace_eval["tracing"],
+            'process_id' : mpy_trace_eval["process_id"],
+            'thread_id' : mpy_trace_eval["thread_id"],
+            'task_id' : mpy_trace_eval["task_id"],
+            'message' : message,
+            'log_msg_complete' : None,
+            'log_enable' : mpy_trace_eval["log_enable"] ,
+            'pnt_enable' : mpy_trace_eval["pnt_enable"] ,
+            'interrupt_enable' : mpy_trace_eval["interrupt_enable"]
+        }
 
-    if app_dict["conf"]["mpy_log_enable"] and \
-        log_dict["log_enable"] and \
-        app_dict["conf"]["mpy_log_txt_enable"]:
+        # Build the complete log message
+        msg = log_msg_builder(app_dict, log_dict)
+        log_dict["log_msg_complete"] = msg
 
-        # Write to text file - Fallback if SQLite functionality is broken
-        log_txt(log_dict, app_dict, log_dict)
+        if app_dict["conf"]["mpy_log_enable"] and \
+            log_dict["log_enable"] and \
+            app_dict["conf"]["mpy_log_txt_enable"]:
 
-    if app_dict["conf"]["mpy_log_enable"] and \
-        log_dict["log_enable"] and \
-        app_dict["conf"]["mpy_log_db_enable"]:
+            # Write to text file - Fallback if SQLite functionality is broken
+            log_txt(log_dict, app_dict, log_dict)
 
-        # Write to logging database
-        log_db(log_dict, app_dict, log_dict)
+        if app_dict["conf"]["mpy_log_enable"] and \
+            log_dict["log_enable"] and \
+            app_dict["conf"]["mpy_log_db_enable"]:
 
-    # Print messages according to mpy_param.py
-    if app_dict["conf"]["mpy_msg_print"]:
+            # Write to logging database
+            log_db(log_dict, app_dict, log_dict)
 
-        # Print the events according to their log level
-        mpy_msg_print(mpy_trace, app_dict, log_dict)
+        # Print messages according to mpy_param.py
+        if app_dict["conf"]["mpy_msg_print"]:
 
-    # Clean up
-    del log_dict
-    del mpy_trace
+            # Print the events according to their log level
+            mpy_msg_print(mpy_trace, app_dict, log_dict)
+
+        # Clean up
+        del log_dict
+        del mpy_trace
+
+    except:
+        # Severe morPy logging error.
+        raise RuntimeError(f'{app_dict["loc"]["mpy"]["log_crit_fail"]}')
 
 def log_eval(mpy_trace, app_dict, level, level_dict):
 
@@ -184,14 +191,14 @@ def log_event_handler(app_dict, message, level):
 
     # Log level definition. Dictionary serves the purpose of avoiding a loop over a list.
     level_dict = { \
-                'init' : 'init', \
-                'debug' : 'debug', \
-                'info' : 'info', \
-                'warning' : 'warning', \
-                'denied' : 'denied', \
-                'error' : 'error', \
-                'critical' : 'critical', \
-                'exit' : 'exit', \
+                'init' : 'init',
+                'debug' : 'debug',
+                'info' : 'info',
+                'warning' : 'warning',
+                'denied' : 'denied',
+                'error' : 'error',
+                'critical' : 'critical',
+                'exit' : 'exit',
                 'undefined' : 'undefined' \
                 }
 
@@ -200,7 +207,7 @@ def log_event_handler(app_dict, message, level):
     except: level = 'undefined'
 
     return {
-            'level' : level, \
+            'level' : level,
             'level_dict' : level_dict
             }
 
@@ -699,16 +706,16 @@ def log_db_row_insert(mpy_trace, app_dict, db_path, table_name, columns, log_dic
                 c = conn.cursor()
 
                 # Insert a new row and write to cell(s)
-                c.execute(exec_statement, (\
-                          log_dict["level"].upper(), \
-                          log_dict["process_id"], \
-                          log_dict["thread_id"], \
-                          log_dict["task_id"], \
-                          log_dict["datetime_value"], \
-                          log_dict["module"], \
-                          log_dict["operation"], \
-                          log_dict["tracing"], \
-                          log_dict["message"]) \
+                c.execute(exec_statement, (
+                          log_dict["level"].upper(),
+                          log_dict["process_id"],
+                          log_dict["thread_id"],
+                          log_dict["task_id"],
+                          log_dict["datetime_value"],
+                          log_dict["module"],
+                          log_dict["operation"],
+                          log_dict["tracing"],
+                          log_dict["message"]),
                           )
 
                 # Check for the last ID
@@ -735,7 +742,7 @@ def log_db_row_insert(mpy_trace, app_dict, db_path, table_name, columns, log_dic
             log(mpy_trace, app_dict, message, 'critical')
 
         return{
-            'check' : check , \
+            'check' : check ,
             'row_id' : row_id
             }
 

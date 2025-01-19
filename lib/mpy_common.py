@@ -7,6 +7,7 @@ Descr.:     Module of generally useful functions.
 """
 
 import lib.mpy_fct as mpy_fct
+import lib.mpy_mp as mpy_mp
 
 from lib.mpy_decorators import metrics, log, log_no_q
 
@@ -23,11 +24,14 @@ from tkinter import filedialog
 from heapq import heappush, heappop
 
 class cl_priority_queue:
-
     r"""
     This class delivers a priority queue solution. Any task may be enqueued.
     When dequeueing, the highest priority task (lowest number) is dequeued
     first. In case there is more than one, the oldest is dequeued.
+
+    :param mpy_trace: Operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param name: Name or description of the instance
 
     :example:
         from functools import partial
@@ -41,7 +45,6 @@ class cl_priority_queue:
     """
 
     def __init__(self, mpy_trace: dict, app_dict: dict, name: str=None, is_manager: bool=False) -> None:
-
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
@@ -80,7 +83,6 @@ class cl_priority_queue:
 
     @metrics
     def _init(self, mpy_trace: dict, app_dict: dict, name: str, is_manager: bool=False) -> dict:
-
         r"""
         Helper method for initialization to ensure @metrics decorator functionality.
 
@@ -142,7 +144,6 @@ class cl_priority_queue:
 
     @metrics
     def _init_mp(self, mpy_trace: dict, app_dict: dict) -> dict:
-
         r"""
         Helper method for initialization to ensure @metrics decorator functionality. Multiprocessing
         component/activation.
@@ -186,9 +187,8 @@ class cl_priority_queue:
     @metrics
     def enqueue(self, mpy_trace: dict, app_dict: dict, priority: int=100,
                 task: tuple=None, autocorrect: bool=True, is_process: bool=True) -> dict:
-
         r"""
-        Adds a task to the PriorityQueue with a specified priority.
+        Adds a task to the priority queue.
 
         :param mpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -311,9 +311,8 @@ class cl_priority_queue:
 
     @metrics
     def dequeue(self, mpy_trace: dict, app_dict: dict) -> dict:
-
         r"""
-        Removes and returns the highest priority task from the PriorityQueue.
+        Removes and returns the highest priority task from the priority queue.
 
         :param mpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -402,7 +401,6 @@ class cl_priority_queue:
         }
 
     def task_exists(self, task):
-
         """
         Check if a task already exists in the queue.
 
@@ -417,14 +415,32 @@ class cl_priority_queue:
         return id(task) in self.task_lookup
 
 class cl_progress():
-
     r"""
     This class instantiates a progress counter. If ticks, total or counter
     are floats, progress of 100 % may not be displayed.
+
+    :param mpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param description: Describe, what is being processed (i.e. file path or calculation)
+    :param total: Mandatory - The total count for completion
+    :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
+        10.7% progress exceeded the exact progress will be logged.
+
+    .update()
+        Method to update current progress and log progress if tick is passed.
+
+        :return .update(): dict
+            mpy_trace: Operation credentials and tracing
+            check: Indicates whether the function ended without errors
+            prog_rel: Relative progress, float between 0 and 1
+            message: Message generated. None, if no tick was hit.
+
+    :example:
+        progress = cl_progress(mpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)["prog_rel"]
+        progress.update(mpy_trace, app_dict, current=current_count)
     """
 
     def __init__(self, mpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None) -> None:
-
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
@@ -461,7 +477,6 @@ class cl_progress():
 
     @metrics
     def _init(self, mpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None) -> dict:
-
         r"""
         Helper method for initialization to ensure @metrics decorator usage.
 
@@ -470,7 +485,7 @@ class cl_progress():
         :param description: Describe, what is being processed (i.e. file path or calculation)
         :param total: Mandatory - The total count for completion
         :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
-            10.7% progress exceeded the exact progress will be logged.
+            10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
 
         :return: dict
             mpy_trace: Operation credentials and tracing
@@ -489,15 +504,20 @@ class cl_progress():
 
         try:
             # Null guard and evaluation
+            # TODO localization
             if not total: raise ValueError('Missing total: {total}')
-            if not ticks: raise ValueError('Missing ticks: {ticks}')
-            if ticks > 100: raise ValueError('Mismatching ticks: {ticks} > 100')
 
-            # Assign values to self
+            # Evaluate ticks
+            if not ticks or ticks > 100:
+                self.ticks = 10
+            else:
+                self.ticks = ticks
+
             self.total = total
-            self.ticks = ticks
-            self.ticks_rel = ticks / 100
+            self.ticks_rel = self.ticks / 100
             self.description = f'{description}' if description else ''
+            self.update_counter = 0
+            self.stop_updates = False
 
             # Determine absolute progress ticks
             self._init_ticks(mpy_trace, app_dict)
@@ -574,14 +594,14 @@ class cl_progress():
             }
 
     @metrics
-    def update(self, mpy_trace: dict, app_dict: dict, current: float=0) -> dict:
-
+    def update(self, mpy_trace: dict, app_dict: dict, current: float=None) -> dict:
         r"""
         Method to update current progress and log progress if tick is passed.
 
         :param mpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
-        :param current: Current progress count
+        :param current: Current progress count. If None, each call of this method will add +1
+            to the progress count.
 
         :return: dict
             mpy_trace: Operation credentials and tracing
@@ -590,7 +610,12 @@ class cl_progress():
             message: Message generated. None, if no tick was hit.
 
         :example:
-            instance.update(mpy_trace, app_dict, current=50)
+            tot_cnt = 100
+            tks = 12.5
+            progress = mpy.cl_progress(mpy_trace, app_dict, description='App Progress', total=total_count, ticks=tks)
+
+            curr_cnt = 37
+            progress.update(mpy_trace, app_dict, current=current_count)
         """
 
         # morPy credentials (see mpy_init.init_cred() for all dict keys)
@@ -603,13 +628,22 @@ class cl_progress():
         message = None
 
         try:
-            # Null guard and evaluation
-            # TODO localization
-            if not current: raise ValueError(f'Missing current: {current}')
-            if current > self.total: raise ValueError(f'Current exceeded total: {current} > {self.total}')
+            # Evaluate current progress absolute count
+            if not current:
+                self.update_counter += 1
+                current = self.update_counter
+            elif current > self.update_counter:
+                self.update_counter = current
+
+            if current > self.total:
+                self.stop_updates = True
+
+                # Current progress exceeded total. Progress updates stopped.
+                log(mpy_trace, app_dict, "warning",
+                lambda: f'{app_dict["loc"]["mpy"]["cl_progress_upd_stopped"]}: {current} > {self.total}')
 
             # Factor the current value
-            current_fac = current * self.factor
+            current_fac = self.update_counter * self.factor
 
             # Loop through the absolute ticks, delete them and return the highest tick matched or exceeded
             log_tick = False
@@ -627,7 +661,7 @@ class cl_progress():
                 # Processing DESCRIPTION
                 log(mpy_trace, app_dict, "info",
                 lambda: f'{app_dict["loc"]["mpy"]["cl_progress_proc"]}: {self.description}\n'
-                        f'{prog_abs_short}% ({current} of {self.total})')
+                        f'{prog_abs_short}% ({self.update_counter} of {self.total})')
 
             check = True
 
@@ -657,7 +691,7 @@ def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encodi
     :param encoding: String that defines encoding. Leave empty to auto detect.
 
     :return: dict
-        result: Decoded result. Buffered object that my be used with the
+        result: Decoded result. Buffered object that may be used with the
             readlines() method.
         encoding: String containing the encoding of src_input.
         lines: Number of lines in the file.
@@ -673,7 +707,7 @@ def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encodi
     operation = 'decode_to_plain_text(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    result = 'VOID'
+    result = None
     src_copy = b''
     decode = False
     lines = 0
@@ -684,7 +718,7 @@ def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encodi
         src_copy = src_input.read()
         lines = src_copy.count(b'\n') + 1
 
-        # Auto detect encoding if not provided
+        # Auto-detect encoding if not provided
         if not encoding:
             try:
                 encoding = chardet.detect(src_copy)["encoding"]
@@ -699,7 +733,7 @@ def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encodi
         # Validate provided encoding
         else:
             try:
-                chardet.detect(src_copy)["encoding"]
+                encoding_val = chardet.detect(src_copy)["encoding"]
                 decode = True
 
         #   Not encoded if an exception is raised
@@ -738,7 +772,7 @@ def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encodi
     }
 
 @metrics
-def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str, ftypes: str, title: str) -> dict:
+def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None) -> dict:
 
     r"""
     This function opens a dialog for the user to select a file.
@@ -747,20 +781,20 @@ def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str, ftypes: str,
     :param app_dict: morPy global dictionary
     :param init_dir: The directory in which the dialog will initially be opened
     :param ftypes: This tuple of 2-tuples specifies, which filetypes will be
-        selsectable in the dialog box.
+        selectable in the dialog box.
     :param title: Title of the open file dialog
 
     :return: dict
         mpy_trace: [dictionary] operation credentials and tracing
         check: The function ended with no errors and a file was chosen
-        sel_file: Path of the selected file
+        file_path: Path of the selected file
         file_selected: True, if file was selected. False, if canceled.
 
     :example:
-        init_dir = app_dict["sys"]["homedir"]
+        init_dir = "C:\"
         ftypes = (('PDF','*.pdf'),('Textfile','*.txt'),('All Files','*.*'))
         title = 'Select a file...'
-        sel_file = dialog_sel_file(mpy_trace, app_dict, init_dir, ftypes, title)
+        file_path = mpy.dialog_sel_file(mpy_trace, app_dict, init_dir, ftypes, title)["file_path"]
     """
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -769,28 +803,36 @@ def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str, ftypes: str,
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
     check = False
+    file_path = None
     file_selected = False
 
     try:
+        if not init_dir:
+            init_dir = app_dict["conf"]["main_path"]
+        if not ftypes:
+            ftypes = (f'{app_dict["loc"]["mpy"]["dialog_sel_file_all_files"]}','*.*')
+        if not title:
+            title = f'{app_dict["loc"]["mpy"]["dialog_sel_file_select"]}'
+
         # Invoke the Tkinter root window and withdraw it to force the
         # dialog to be opened in the foreground
         root = Tk()
         root.withdraw()
         root.attributes("-topmost", True)
+        root.iconbitmap(app_dict["conf"]["app_icon"])
 
         # Open the actual dialog in the foreground and store the chosen folder
-        sel_file = filedialog.askopenfilename(
+        file_path = filedialog.askopenfilename(
             parent = root,
             title = f'{title}',
             initialdir = init_dir,
             filetypes = ftypes,
         )
 
-        if not sel_file:
+        if not file_path:
             # No file was chosen by the user.
             log(mpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_file_nosel"]}\n'
-                    f'sel_file: VOID\n'
                     f'{app_dict["loc"]["mpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_file_cancel"]}')
 
         else:
@@ -798,11 +840,11 @@ def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str, ftypes: str,
             # A file was chosen by the user.
             log(mpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_file_asel"]}\n'
-                    f'sel_file: {sel_file}\n'
+                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_path"]}: {file_path}\n'
                     f'{app_dict["loc"]["mpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_file_open"]}')
 
             # Create a path object
-            mpy_fct.pathtool(mpy_trace, sel_file)
+            mpy_fct.pathtool(mpy_trace, file_path)
 
         check = True
 
@@ -814,12 +856,12 @@ def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str, ftypes: str,
     return{
         'mpy_trace' : mpy_trace,
         'check' : check,
-        'sel_file' : sel_file,
+        'file_path' : file_path,
         'file_selected' : file_selected,
         }
 
 @metrics
-def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str, title: str) -> dict:
+def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
 
     r"""
     This function opens a dialog for the user to select a directory.
@@ -832,13 +874,13 @@ def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str, title: str) -
     :return: dict
         mpy_trace: [dictionary] operation credentials and tracing
         check: The function ended with no errors and a file was chosen
-        sel_dir: Path of the selected directory
+        dir_path: Path of the selected directory
         dir_selected: True, if directory was selected. False, if canceled.
 
     :example:
-        init_dir = app_dict["sys"]["homedir"]
-        title = 'Select a file...'
-        sel_dir = dialog_sel_dir(mpy_trace, app_dict, init_dir, title)
+        init_dir = "C:\"
+        title = 'Select a directory...'
+        dir_path = mpy.dialog_sel_dir(mpy_trace, app_dict, init_dir, title)["dir_path"]
     """
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -847,39 +889,44 @@ def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str, title: str) -
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
     check = False
+    dir_path = None
     dir_selected = False
 
     try:
+        if not init_dir:
+            init_dir = app_dict["conf"]["main_path"]
+        if not title:
+            title = f'{app_dict["loc"]["mpy"]["dialog_sel_dir_select"]}'
+
         # Invoke the Tkinter root window and withdraw it to force the
         # dialog to be opened in the foreground
         root = Tk()
         root.withdraw()
+        root.iconbitmap(app_dict["conf"]["app_icon"])
 
         # Open the actual dialog in the foreground and store the chosen folder
-        root.dirname = filedialog.askdirectory(
+        root.dir_name = filedialog.askdirectory(
             parent = root,
             title = f'{title}',
             initialdir = init_dir,
         )
-        sel_dir = root.dirname
+        dir_path = root.dir_name
 
-        if not sel_dir:
+        if not dir_path:
             # No directory was chosen by the user.
             log(mpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_dir_nosel"]}\n'
-                f'sel_dir: VOID\n'
                 f'{app_dict["loc"]["mpy"]["dialog_sel_dir_choice"]}: {app_dict["dialog_sel_dir_cancel"]}')
-
         else:
             dir_selected = True
             # A directory was chosen by the user.
             log(mpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_dir_asel"]}\n'
-                    f'sel_dir: {sel_dir}\n'
+                    f'{app_dict["loc"]["mpy"]["dialog_sel_dir_path"]}: {dir_path}\n'
                     f'{app_dict["loc"]["mpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_dir_open"]}')
 
             # Create a path object
-            mpy_fct.pathtool(mpy_trace, sel_dir)
+            mpy_fct.pathtool(mpy_trace, dir_path)
 
         check = True
 
@@ -891,7 +938,7 @@ def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str, title: str) -
     return{
         'mpy_trace' : mpy_trace,
         'check' : check,
-        'sel_dir' : sel_dir,
+        'dir_path' : dir_path,
         'dir_selected' : dir_selected,
         }
 
@@ -1101,7 +1148,7 @@ def fso_delete_dir(mpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
             log(mpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["mpy"]["fso_delete_dir_notexist"]}\n'
                     f'{app_dict["loc"]["mpy"]["fso_create_dir_directory"]}: {del_dir}\n'
-                    f'{app_dict["loc"]["mpy"]["fso_create_dir_direxist"]}: {dir_exist}')
+                    f'{app_dict["loc"]["mpy"]["fso_delete_dir_direxist"]}: {dir_exist}')
 
         check = True
 
@@ -1272,7 +1319,9 @@ def regex_findall(mpy_trace: dict, app_dict: dict, search_obj: object, pattern: 
         mpy_trace: Operation credentials and tracing.
 
     :example:
-        result = regex_findall(mpy_trace, app_dict, "Find digits 12345", r"\\d+")
+        string = "Find digits 12345"
+        pattern = r"\\d+"
+        result = regex_findall(mpy_trace, app_dict, string, pattern)["result"]
     """
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -1292,8 +1341,8 @@ def regex_findall(mpy_trace: dict, app_dict: dict, search_obj: object, pattern: 
 
     try:
         # Search for the pattern
-        result_match = re.findall(pattern, search_obj)
-        result = result_match.group() if result_match else None
+        result_matches = re.findall(pattern, search_obj)
+        result = result_matches if result_matches else None
 
         # Search completed.
         log(mpy_trace, app_dict, "debug",
@@ -1326,7 +1375,9 @@ def regex_find1st(mpy_trace: dict, app_dict: dict, search_obj: object, pattern: 
         mpy_trace: Operation credentials and tracing.
 
     :example:
-        result = regex_find1st(mpy_trace, app_dict, "Find digits 12345", r"\\d+")
+        string = "Find digits 12345"
+        pattern = r"\\d+"
+        result = regex_find1st(mpy_trace, app_dict, string, pattern)["result"]
     """
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -1395,7 +1446,9 @@ def regex_split(mpy_trace: dict, app_dict: dict, search_obj: object, delimiter: 
         mpy_trace: Operation credentials and tracing.
 
     :example:
-        result = regex_split(mpy_trace, app_dict, "apple.orange.banana", "\\.")
+        string = "apple.orange.banana"
+        split = r"\\."
+        result = regex_split(mpy_trace, app_dict, string, split)["result"]
     """
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -1458,11 +1511,14 @@ def regex_replace(mpy_trace: dict, app_dict: dict, search_obj: object, search_fo
     :param replace_by: The character or string to substitute in place of the matches.
 
     :return: dict
-        result: The modified string with substitutions applied.
         mpy_trace: Operation credentials and tracing.
+        result: The modified string with substitutions applied.
 
     :example:
-        result = regex_replace(mpy_trace, app_dict, "apple.orange.banana", "\\.", "-")
+        string = "apple.orange.banana"
+        search_for = r"\\."
+        replace_by = r"-"
+        result = regex_replace(mpy_trace, app_dict, string, search_for, replace_by)["result"]
     """
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -1545,7 +1601,7 @@ def regex_remove_special(mpy_trace: dict, app_dict: dict, inp_string: str, spec_
         # Define the standard special character removal list. The special characters will
         # later be converted to a raw string with repr(). You may use this list as a
         # guideline of how to define special and replacement characters.
-        spec_lst_std =  [ \
+        spec_lst_std =  [
                         (r' ',r''),
                         (r'¤',r''),
                         (r'¶',r''),
@@ -1724,7 +1780,8 @@ def wait_for_input(mpy_trace: dict, app_dict: dict, msg_text: str) -> dict:
 
     r"""
     Pauses program execution until a user provides input. The input is then
-    returned to the calling module.
+    returned to the calling module. Take note, that the returned user input
+    will always be a string.
 
     :param mpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1735,7 +1792,7 @@ def wait_for_input(mpy_trace: dict, app_dict: dict, msg_text: str) -> dict:
         mpy_trace: Operation credentials and tracing.
 
     :example:
-        result = wait_for_input(mpy_trace, app_dict, "Please enter your name: ")
+        result = wait_for_input(mpy_trace, app_dict, "Please enter your name: ")["usr_input"]
     """
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
@@ -1744,15 +1801,101 @@ def wait_for_input(mpy_trace: dict, app_dict: dict, msg_text: str) -> dict:
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
     check = False
+    usr_input = None
 
     try:
+        # Set global interrupt
+        mpy_mp.interrupt(mpy_trace, app_dict)
+
+        # user input
         usr_input = input(f'{msg_text}\n')
 
-        # A user input has been made.
+        # A user input was made.
         log(mpy_trace, app_dict, "debug",
         lambda: f'{app_dict["loc"]["mpy"]["wait_for_input_compl"]}\n'
-                f'{app_dict["loc"]["mpy"]["wait_for_input_messsage"]}: {msg_text}\n'
+                f'{app_dict["loc"]["mpy"]["wait_for_input_message"]}: {msg_text}\n'
                 f'{app_dict["loc"]["mpy"]["wait_for_input_usr_inp"]}: {usr_input}')
+
+        check = True
+
+    except Exception as e:
+        log(mpy_trace, app_dict, "error",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check,
+        'usr_input' : usr_input
+        }
+
+@metrics
+def wait_for_select(mpy_trace: dict, app_dict: dict, msg_text: str, collection: tuple=None) -> dict:
+
+    r"""
+    Pauses program execution until a user provides input. The input needs to
+    be part of a tuple, otherwise it is repeated or aborted. Take note, that the
+    returned user input will always be a string.
+
+    :param mpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param msg_text: The text to be displayed as a prompt before user input.
+    :param collection: Tuple, that holds all valid user input options. If None,
+        evaluation will be skipped.
+
+    :return: dict
+        usr_input: The input provided by the user.
+        mpy_trace: Operation credentials and tracing.
+
+    :example:
+        msg_text = "Select 1. this or 2. that"
+        collection = (1, 2)
+        result = wait_for_select(mpy_trace, app_dict, msg_text, collection)["usr_input"]
+    """
+
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    module = 'mpy_common'
+    operation = 'wait_for_select(~)'
+    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+    check = False
+    usr_input = None
+
+    try:
+        # Set global interrupt
+        mpy_mp.interrupt(mpy_trace, app_dict)
+
+        # user input
+        usr_input = input(f'{msg_text}\n')
+
+        if collection:
+            # Make collection 'str'
+            collection = tuple(map(str, collection))
+
+            while usr_input not in collection:
+                # Invalid selection. Repeat?
+                rep = (
+                    f'{app_dict["loc"]["mpy"]["wait_for_select_selection_invalid"]}\n'
+                    f'[{app_dict["loc"]["mpy"]["wait_for_select_yes_selector"]}] '
+                    f'{app_dict["loc"]["mpy"]["wait_for_select_yes"]} | '
+                    f'[{app_dict["loc"]["mpy"]["wait_for_select_quit_selector"]}] '
+                    f'{app_dict["loc"]["mpy"]["wait_for_select_quit"]}'
+                )
+                usr_response = input(f'{rep}\n')
+
+                if usr_response == "y":
+                    usr_input = input(f'{msg_text}\n')
+                elif usr_response == "q":
+                    app_dict["proc"]["mpy"]["cl_orchestrator"]._terminate = True
+                    break
+                else:
+                    pass
+
+        # A user input was made.
+        log(mpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["mpy"]["wait_for_select_compl"]}\n'
+                f'{app_dict["loc"]["mpy"]["wait_for_select_message"]}: {msg_text}\n'
+                f'{app_dict["loc"]["mpy"]["wait_for_select_usr_inp"]}: {usr_input}')
 
         check = True
 

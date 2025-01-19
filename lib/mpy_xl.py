@@ -5,1106 +5,1221 @@ https://github.com/supermorphDotTech
 Author:     Bastian Neuwirth
 Descr.:     This module delivers Microsoft Excel specific routines.
 
-WARNING (openpyxl)
-openpyxl does currently not read all possible items in an Excel file so
+NOTES on OpenPyXL:
+OpenPyXL does currently not read all possible items in an Excel file so
 images and charts will be lost from existing files if they are opened
 and saved with the same name.
 NB you must use the English name for a function and function arguments
-must be separated by commas and not other punctuation such as semi-colons.
+must be separated by commas and not other punctuation such as semicolons.
 """
 
-import mpy_fct
-import mpy_common
+import lib.mpy_fct as mpy_fct
+import lib.mpy_common as mpy_common
+from lib.mpy_decorators import metrics, log
+
 import sys
-import openpyxl
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Protection
 import openpyxl.utils.cell
 
-from mpy_decorators import metrics, log
-from openpyxl import Workbook
-from openpyxl import load_workbook
-
-@metrics
-def cl_autof_rd(mpy_trace: dict, app_dict: dict, cells: list) -> dict:
-
+class cl_xl_workbook:
     r"""
-    Converts a list of cells and cell ranges to a dictionary. Overlapping cell
-    ranges/cells will be autoformatted to a single reference.
+    This class constructs an API to an Excel workbook and delivers methods
+    to read from and write to the workbook. It uses OpenPyXL and all those
+    methods can be used on self.wb_obj if a more versatile API is required.
 
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param cells: The cell or range of cells to read from. Accepted formats:
-        - Single cell: ["A1"]
-        - Range of cells: ["A1:ZZ1000", "C3", ...] (letters are not case sensitive).
+    :param mpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param workbook: Path of the workbook
 
-    :return: dict
-        mpy_trace: Operation credentials and tracing.
-        check: Indicates whether the function executed successfully (True/False).
-        cl_dict: Dictionary where cells are keys with empty arguments:
-                 {'cell1': '', 'cell2': '', ...}
+    
 
     :example:
-        cl_autof_rd(mpy_trace, app_dict, ["A1", "B2:C3"])
+        wb = cl_xl_workbook(mpy_trace, app_dict, workbook)
     """
 
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'cl_autof_rd(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+    __slots__ = (
+        "wb_obj",
+        "wb_path",
+        "wb_sheets",
+        "active_sheet",
+        "active_sheet_title",
+        "tables_ranges",
+        "tables_sheets",
+        "file_ext",
+        "files_vbs",
+    )
 
-    check = False
-    cl_invalid = False
-    cl_dict = {}
-    rx_log = True # Logging regex functions only for debugging
+    def __init__(self, mpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
+              data_only: bool=False, keep_vba: bool=True) -> None:
+        r"""
+        In order to get metrics for __init__(), call helper method _init() for
+        the @metrics decorator to work. It relies on the returned
+        {'mpy_trace' : mpy_trace}, which __init__() can not do (needs to be None).
 
-    try:
+        :param mpy_trace: operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+        :param workbook: Path of the workbook
+        :param create: If True and file does not yet exist, will create the workbook.
+        :param data_only: If True, cells with formulae are represented by their calculated values.
+                    Closing and reopening the workbook is required for this to change.
+        :param keep_vba: If True, preserves any Visual Basic elements in the workbook. Only has an effect
+                    on workbooks supporting vba (i.e. xlsm-files). These elements remain immutable. Closing
+                    and reopening the workbook is required to change behaviour.
 
-        # Loop through every list item
-        for cl in cells:
+        :return:
+            -
 
-            # Harmonize cell letters
-            cl = cl.upper()
+        :example:
+            wb_path = "C:\projects\my.xlsx"
+            wb = cl_xl_workbook(mpy_trace, app_dict, wb_path)
+        """
 
-            # Evaluate the type. If a list with 0 or more than 2 items was found, the cell
-            # list is invalid. For 1 item it is a single cell and for 2 items it is a range.
-            pattern = '[a-zA-Z]?[a-zA-Z]{1}[0-9]+'
-            type_cl = mpy_common.regex_findall(mpy_trace, app_dict, cl, pattern, rx_log)
-            type_cl_len = len(type_cl)
+        # morPy credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook.__init__(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-            # The item is a cell
-            if type_cl_len == 1:
+        try:
+            # Use self._init() for initialization
+            check = self._init(mpy_trace, app_dict, workbook, create)["check"]
 
-                # Add the cell to the dictionary
-                cl_dict.update({type_cl[0] : ''})
+            if not check:
+                # Instance construction aborted.
+                raise RuntimeError(f'{app_dict["loc"]["mpy"]["cl_xl_workbook_inst_abort"]}')
 
-                # A single cell was added to the dictionary.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["cl_autof_rd_1cell"]}\n'
-                        f'{app_dict["loc"]["mpy"]["cl_autof_rd_cl"]}: {type_cl[0]}')
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-            # The item is a range
-            elif type_cl_len == 2:
+    @metrics
+    def _init(self, mpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
+              data_only: bool=False, keep_vba: bool=True) -> dict:
+        r"""
+        Helper method for initialization to ensure @metrics decorator usage.
 
-                # Convert the range to a list
-                # 1) Extract columns
-                pattern = '[a-zA-Z]?[a-zA-Z]{1}'
-                rng_col1 = mpy_common.regex_findall(mpy_trace, app_dict, type_cl[0], pattern, rx_log)
-                pattern = '[a-zA-Z]?[a-zA-Z]{1}'
-                rng_col2 = mpy_common.regex_findall(mpy_trace, app_dict, type_cl[1], pattern, rx_log)
+        :param mpy_trace: operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+        :param workbook: Path of the workbook
+        :param create: If True and file does not yet exist, will create the workbook. If file exists, will
+                    open the existing file.
+        :param data_only: If True, cells with formulae are represented by their calculated values.
+                    Closing and reopening the workbook is required for this to change.
+        :param keep_vba: If True, preserves any Visual Basic elements in the workbook. Only has an effect
+                    on workbooks supporting vba (i.e. xlsm-files). These elements remain immutable. Closing
+                    and reopening the workbook is required to change behaviour.
 
-                # Compare columns by string length
-                if len(rng_col1) <= len(rng_col2):
+        :return: dict
+            mpy_trace: Operation credentials and tracing
+            check: Indicates whether the function ended without errors
 
-                    col_from = rng_col1
-                    col_to = rng_col2
+        :example:
+            self._init(mpy_trace, app_dict)
+        """
 
+        # morPy credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook._init(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        check = False
+
+        try:
+            self.wb_path = mpy_fct.pathtool(mpy_trace, workbook)["out_path"]
+            self.wb_sheets = []
+            self.active_sheet = None
+            self.active_sheet_title = ""
+            self.tables_ranges = {}
+            self.tables_sheets = {}
+
+            # Get the file extension in lowercase
+            self.file_ext = mpy_fct.pathtool(mpy_trace, self.wb_path)["file_ext"].lower()
+
+            # Set vba supporting file extensions
+            self.files_vbs = {".xlsm", ".xltm"}
+
+            path_eval = mpy_fct.pathtool(mpy_trace, self.wb_path)
+            file_exists = path_eval["file_exists"]
+
+            if not file_exists:
+                if create:
+                    self._create_workbook(mpy_trace, app_dict)
                 else:
+                    # File does not exist and was not created.
+                    raise LookupError(
+                        f'{app_dict["loc"]["mpy"]["cl_xl_workbook_not_create"]}\n'
+                        f'{app_dict["loc"]["mpy"]["cl_xl_workbook_create"]}: {create}'
+                    )
 
-                    col_from = rng_col2
-                    col_to = rng_col1
+            # Re-evaluate file creation
+            path_eval = mpy_fct.pathtool(mpy_trace, self.wb_path)
+            is_file = path_eval["is_file"]
+            if not is_file:
+                # The path to the workbook is invalid.
+                raise LookupError(
+                    f'{app_dict["loc"]["mpy"]["cl_xl_workbook_path_invalid"]}\n'
+                    f'{app_dict["loc"]["mpy"]["cl_xl_workbook_path"]}: {self.wb_path}'
+                )
 
-                # Extract and enumerate components of columns to loop through them.
-                if len(col_from[0]) == 2:
+            # Evaluate, if file type supports vba
+            if keep_vba and self.file_ext not in self.files_vbs:
+                keep_vba = False
 
-                    pattern = '[A-Z]{1}'
-                    col_from = mpy_common.regex_findall(mpy_trace, app_dict, col_from, pattern, rx_log)
+            # Open the workbook
+            self.wb_obj = load_workbook(self.wb_path, data_only=data_only, keep_vba=keep_vba)
 
-                    # Build the sum of columns from A to col_from for further comparison.
-                    # 64 refers to the unicode value of capital A minus 1.
-                    col_from_sum = abs((int(ord(col_from[0])) - 64) * 26 + (int(ord(col_from[1])) - 64))
+            # Update workbook metadata
+            self._update_meta(mpy_trace, app_dict)
 
-                else:
-
-                    col_from_sum = int(ord(col_from[0])) - 64
-
-                # Extract and enumerate components of columns to loop through them.
-                if len(col_to[0]) == 2:
-
-                    pattern = '[A-Z]{1}'
-                    col_to = mpy_common.regex_findall(mpy_trace, app_dict, col_to, pattern, rx_log)
-
-                    # Build the sum of columns from A to col_to for further comparison.
-                    # 64 refers to the unicode value of capital A minus 1.
-                    col_to_sum = abs((int(ord(col_to[0])) - 64) * 26 + (int(ord(col_to[1])) - 64))
-
-                else:
-
-                    col_to_sum = int(ord(col_to[0])) - 64
-
-                # Temporarily store col_from and col_to for eventual reordering
-                tmp_col_from = col_from
-                tmp_col_from_sum = col_from_sum
-                tmp_col_to = col_to
-                tmp_col_to_sum = col_to_sum
-
-                # Compare columns by the enumerated values and exchange them if necessary
-                if col_from_sum > col_to_sum:
-
-                    col_from = tmp_col_to
-                    col_from_sum = tmp_col_to_sum
-                    col_to = tmp_col_from
-                    col_to_sum = tmp_col_from_sum
-
-                # 2) Extract rows
-                pattern = '[0-9]+'
-                rng_row1 = mpy_common.regex_findall(mpy_trace, app_dict, type_cl[0], pattern, rx_log)
-                pattern = '[0-9]+'
-                rng_row2 = mpy_common.regex_findall(mpy_trace, app_dict, type_cl[1], pattern, rx_log)
-
-                # Make rows integers
-                rng_row1 = int(rng_row1[0])
-                rng_row2 = int(rng_row2[0])
-
-                # Compare rows to which is higher and set start and end of rows for the range
-                if rng_row1 <= rng_row2:
-
-                    row_from = rng_row1
-                    row_to = rng_row2
-
-                else:
-
-                    row_to = rng_row1
-                    row_from = rng_row2
-
-                # Loop through all cells and add them to the dictionary
-                # 1) Loop through columns
-                col_counter = col_from_sum
-
-                while col_counter <= col_to_sum:
-
-                    # Start from the first requested row
-                    row_counter = row_from
-
-                    # 2) Loop through rows
-                    while row_counter <= row_to:
-
-                        # Rebuild the cell
-                        clmn = openpyxl.utils.cell.get_column_letter(col_counter)
-                        cll = f'{clmn}{row_counter}'
-
-                        # Add the cell to the dictionary
-                        cl_dict.update({cll : ''})
-
-                        # Iterate
-                        row_counter += 1
-
-                    # Iterate
-                    col_counter += 1
-
-                # A range of cells was added to the dictionary.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["cl_autof_rd_done"]}\n'
-                        f'{app_dict["loc"]["mpy"]["cl_autof_rd_rng"]}: {openpyxl.utils.cell.get_column_letter(col_from_sum)}){row_from})'
-                        f' : {openpyxl.utils.cell.get_column_letter(col_to_sum)}){row_to}')
-
-            # The item is not a valid cell
-            elif type_cl_len < 1 or type_cl_len > 2:
-
-                cl_invalid = True
-
-                # The cell value is invalid. Autoformatting aborted.
-                log(mpy_trace, app_dict, "warning",
-                lambda: f'{app_dict["loc"]["mpy"]["cl_autof_rd_invalid"]}\n'
-                        f'{app_dict["loc"]["mpy"]["cl_autof_rd_cls"]}: {cells}\n'
-                        f'check: {check}')
-
-        # Evaluate the validity of the dictionary
-        if not cl_invalid:
+            # MS Excel workbook instantiated.
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["cl_xl_workbook_inst"]}'
+                    f'{app_dict["loc"]["mpy"]["cl_xl_workbook_wb"]}: {self.wb_path}')
 
             check = True
 
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check,
-        'cl_dict' : cl_dict
+        return{
+            'mpy_trace' : mpy_trace,
+            'check' : check,
+            }
+
+    @metrics
+    def _create_workbook(self, mpy_trace: dict, app_dict: dict) -> dict:
+        r"""
+        Creates a new, empty Excel workbook at the specified path.
+
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
+
+        :example:
+            self._create_workbook(mpy_trace, app_dict)
+        """
+
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook._create_workbook(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        check = False
+
+        try:
+            wb = Workbook()
+            wb.save(filename=f'{self.wb_path}')
+
+            # MS Excel workbook created.
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["create_workbook_done"]}\n'
+                    f'xl_path: {self.wb_path}')
+
+            check = True
+
+        # Error detection
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+        return {
+            'mpy_trace': mpy_trace,
+            'check': check
         }
 
-@metrics
-def cl_read(mpy_trace: dict, app_dict: dict, wb_path: str, wb_sht: str, cells: list, dat: bool, vba: bool) -> dict:
+    @metrics
+    def _update_meta(self, mpy_trace: dict, app_dict: dict, minimal: bool=False) -> dict:
+        r"""
+        Update which metadata of the workbook. This could be which sheet is active
+        and which sheets there are.
 
-    r"""
-    Reads the cells of MS Excel workbooks.
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param minimal: If True, updates only the attributes that could change
+            without actually writing to the cell (i.e. active_sheet).
 
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param wb_path: Path to the MS Excel workbook.
-    :param wb_sht: Name of the sheet to copy cells from.
-    :param cells: The cell or range of cells to read from. Accepted formats:
-        - Single cell: ["A1"]
-        - Range of cells: ["A1:ZZ1000"] (letters are not case sensitive).
-        This parameter is a list, and you may add multiple items.
-    :param dat: If True, cells with formulae are represented by their calculated values.
-                This setting requires the workbook to be reopened for changes to take effect.
-    :param vba: If True, preserves any Visual Basic elements in the workbook. These elements
-                remain uneditable. This setting requires the workbook to be reopened for changes.
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
 
-    :return: dict
-        mpy_trace: Operation credentials and tracing.
-        check: Indicates whether the function executed successfully (True/False).
-        cl_dict: Dictionary where cells are keys with copied arguments:
-                 {'cell1': 'copied value 1', 'cell2': 'copied value 2', ...}
+        :example:
+            self._update_sheets(mpy_trace, app_dict)
+            print(f'{self.active_sheet_title}')
+            print(f'{self.wb_sheets}')
+        """
 
-    :example:
-        cl_read(mpy_trace, app_dict, "path/to/workbook.xlsx", "Sheet1", ["A1", "B2:C3"], True, False)
-    """
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook._update_meta(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'cl_read(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+        check = False
+        table_range = None
+        table_sheet = None
+        table_list = None
 
-    check = False
-    cl_dict = {}
-    wb_sht_active = False
+        try:
+            # Retrieve the name of the active sheet
+            self.active_sheet = self.wb_obj.active
+            self.active_sheet_title = self.wb_obj.active.title
 
-    try:
+            if not minimal:
+                # Retrieve all sheet names of the workbook
+                self.wb_sheets = self.wb_obj.sheetnames
 
-        # Load the workbook and retrieve all necessary returns
-        wb = wb_load(mpy_trace, app_dict, wb_path, dat, vba)
-        wb_check = wb["check"]
-        wb_obj = wb["wb_obj"]
-        wb_path = wb["wb_path"]
-        wb_sheets = wb["wb_sheets"]
-        sht_active = wb["sht_active"]
+                # Retrieve the tables dictionary and create a dictionary with the table
+                # being the key and the sheet of the workbook being the object
+                for sheet in self.wb_sheets:
+                    # Get all tables of the sheet including the range (List)
+                    table_data = self.wb_obj[sheet].tables.items()
 
-        # Evaluate the availability of the workbook
-        if wb_check:
+                    # Build the dictionaries
+                    for tpl in table_data:
+                        table = tpl[0]
+                        table_range = tpl[1]
 
-            # Look up the active sheet
-            if sht_active == wb_sht:
+                        # Create a list of tables
+                        if not table_list:
+                            table_list = [table]
+                        else:
+                            table_list.append(table)
 
-                sheet_obj = wb_obj.active
-                wb_sht_active = True
+                        # Create a dictionary of tables and ranges
+                        table_range = {table: table_range} if not table_range else table_range.update({table: table_range})
 
-                # The requested sheet is active.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["cl_read_sht_active"]}\n'
-                        f'{app_dict["loc"]["mpy"]["cl_read_file"]}: {wb_path}\n'
-                        f'{app_dict["loc"]["mpy"]["cl_read_sht"]}: {wb_sht}')
+                        # Create a dictionary of tables and sheets
+                        table_sheet = {table: sheet} if not table_sheet else table_sheet.update({table: sheet})
+
+                # Store table ranges table sheets
+                self.tables_ranges = table_range if table_range else {}
+                self.tables_sheets = table_sheet if table_sheet else {}
+
+            check = True
+
+        # Error detection
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+        return {
+            'mpy_trace': mpy_trace,
+            'check': check
+        }
+
+    @metrics
+    def _cell_ref_autoformat(self, mpy_trace: dict, app_dict: dict, cell_range: list) -> dict:
+
+        r"""
+        Converts a list of cells and cell ranges to a dictionary. Overlapping cell
+        ranges/cells will be auto-formatted to a single reference.
+    
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param cell_range: The cell or range of cells to read from. Accepted formats:
+            - Single cell: ["A1"]
+            - Range of cells: ["A1:ZZ1000", "C3", ...] (not case-sensitive).
+    
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
+            cl_dict: Dictionary where cells are keys with empty arguments:
+                     {'cell1': '', 'cell2': '', ...}
+    
+        :example:
+            cl_range = ["A1", "B2:C3"]
+            cl_dict = self._cell_ref_autoformat(mpy_trace, app_dict, cell_range = cl_range)["cl_dict"]
+        """
+    
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook._cell_ref_autoformat(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+    
+        check = False
+        cl_valid = False
+        cl_dict = {}
+    
+        try:
+    
+            # Loop through every list item
+            for cl in cell_range:
+    
+                # Harmonize cell letters
+                cl = cl.upper()
+    
+                # Evaluate the type. If a list with 0 or more than 2 items was found, the cell
+                # list is invalid. For 1 item it is a single cell and for 2 items it is a range.
+                pattern = '[a-zA-Z]?[a-zA-Z]{1}[0-9]+'
+                type_cl = mpy_common.regex_findall(mpy_trace, app_dict, cl, pattern)["result"]
+                type_cl_len = len(type_cl)
+    
+                # The item is a cell
+                if type_cl_len == 1:
+                    # Add the cell to the dictionary
+                    cl_dict.update({type_cl[0] : ''})
+    
+                    # A single cell was added to the dictionary.
+                    log(mpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["mpy"]["cell_ref_autoformat_1cell"]}\n'
+                            f'{app_dict["loc"]["mpy"]["cell_ref_autoformat_cl"]}: {type_cl[0]}')
+
+                    cl_valid = True
+    
+                # The item is a range
+                elif type_cl_len == 2:
+                    # Convert the range to a list
+                    # 1) Extract columns
+                    pattern = '[a-zA-Z]?[a-zA-Z]{1}'
+                    range_col1 = mpy_common.regex_findall(mpy_trace, app_dict, type_cl[0], pattern)["result"]
+                    pattern = '[a-zA-Z]?[a-zA-Z]{1}'
+                    range_col2 = mpy_common.regex_findall(mpy_trace, app_dict, type_cl[1], pattern)["result"]
+    
+                    # Compare columns by string length
+                    if len(range_col1) <= len(range_col2):
+                        col_from = range_col1
+                        col_to = range_col2
+                    else:
+                        col_from = range_col2
+                        col_to = range_col1
+    
+                    # Extract and enumerate components of columns to loop through them.
+                    if len(col_from[0]) == 2:
+                        pattern = '[A-Z]{1}'
+                        col_from = mpy_common.regex_findall(mpy_trace, app_dict, col_from, pattern)["result"]
+    
+                        # Build the sum of columns from A to col_from for further comparison.
+                        # 64 refers to the Unicode value of capital A minus 1.
+                        col_from_sum = abs((int(ord(col_from[0])) - 64) * 26 + (int(ord(col_from[1])) - 64))
+                    else:
+                        col_from_sum = int(ord(col_from[0])) - 64
+    
+                    # Extract and enumerate components of columns to loop through them.
+                    if len(col_to[0]) == 2:
+                        pattern = '[A-Z]{1}'
+                        col_to = mpy_common.regex_findall(mpy_trace, app_dict, col_to, pattern)["result"]
+    
+                        # Build the sum of columns from A to col_to for further comparison.
+                        # 64 refers to the Unicode value of capital A minus 1.
+                        col_to_sum = abs((int(ord(col_to[0])) - 64) * 26 + (int(ord(col_to[1])) - 64))
+                    else:
+                        col_to_sum = int(ord(col_to[0])) - 64
+    
+                    # Temporarily store col_from and col_to for eventual reordering
+                    tmp_col_from = col_from
+                    tmp_col_from_sum = col_from_sum
+                    tmp_col_to = col_to
+                    tmp_col_to_sum = col_to_sum
+    
+                    # Compare columns by the enumerated values and exchange them if necessary
+                    if col_from_sum > col_to_sum:
+                        col_from = tmp_col_to
+                        col_from_sum = tmp_col_to_sum
+                        col_to = tmp_col_from
+                        col_to_sum = tmp_col_from_sum
+    
+                    # 2) Extract rows
+                    pattern = '[0-9]+'
+                    range_row1 = mpy_common.regex_findall(mpy_trace, app_dict, type_cl[0], pattern)["result"]
+                    pattern = '[0-9]+'
+                    range_row2 = mpy_common.regex_findall(mpy_trace, app_dict, type_cl[1], pattern)["result"]
+    
+                    # Make rows integers
+                    range_row1 = int(range_row1[0])
+                    range_row2 = int(range_row2[0])
+    
+                    # Compare rows to which is higher and set start and end of rows for the range
+                    if range_row1 <= range_row2:
+                        row_from = range_row1
+                        row_to = range_row2
+                    else:
+                        row_to = range_row1
+                        row_from = range_row2
+    
+                    # Loop through all cells and add them to the dictionary
+                    # 1) Loop through columns
+                    col_counter = col_from_sum
+    
+                    while col_counter <= col_to_sum:
+                        # Start from the first requested row
+                        row_counter = row_from
+    
+                        # 2) Loop through rows
+                        while row_counter <= row_to:
+                            # Rebuild the cell
+                            clmn = openpyxl.utils.cell.get_column_letter(col_counter)
+                            cll = f'{clmn}{row_counter}'
+    
+                            # Add the cell to the dictionary
+                            cl_dict.update({cll : ''})
+    
+                            # Iterate
+                            row_counter += 1
+    
+                        # Iterate
+                        col_counter += 1
+    
+                    # A range of cells was added to the dictionary.
+                    log(mpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["mpy"]["cell_ref_autoformat_done"]}\n'
+                            f'{app_dict["loc"]["mpy"]["cell_ref_autoformat_rng"]}: '
+                            f'({openpyxl.utils.cell.get_column_letter(col_from_sum)}:{row_from}) - '
+                            f'({openpyxl.utils.cell.get_column_letter(col_to_sum)}:{row_to})')
+
+                    cl_valid = True
+
+                # The item is not a valid cell
+                else:
+                    cl_valid = False
+    
+                    # The cell value is invalid. Autoformatting aborted.
+                    log(mpy_trace, app_dict, "warning",
+                    lambda: f'{app_dict["loc"]["mpy"]["cell_ref_autoformat_invalid"]}\n'
+                            f'{app_dict["loc"]["mpy"]["cell_ref_autoformat_cls"]}: {cell_range}\n'
+                            f'check: {check}')
+    
+            # Evaluate the validity of the dictionary
+            if cl_valid:
+                check = True
+    
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+    
+        return{
+            'mpy_trace' : mpy_trace,
+            'check' : check,
+            'cl_dict' : cl_dict
+            }
+
+    @metrics
+    def save_workbook(self, mpy_trace: dict, app_dict: dict, close_workbook: bool=False) -> dict:
+        r"""
+        Saves the changes to the MS Excel workbook.
+
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param close_workbook: If True, closes the workbook.
+
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
+            wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
+                reference to an instance.
+
+        :example:
+            wb_path = "C:\my.xlsx"
+            wb = cl_xl_workbook(mpy_trace, app_dict, wb_path)
+
+            # Save and close the workbook. Write "None" to the reference "wb".
+            wb = wb.save_workbook(mpy_trace, app_dict, close=True)["wb_obj"]
+            print(f'{wb}')
+        """
+
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook.save_workbook(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        check = False
+        wb_obj_return = self
+
+        try:
+            # Save the workbook
+            self.wb_obj.save(filename=self.wb_path)
+
+            if close_workbook:
+                # Close the workbook
+                wb_obj_return = self.close_workbook(mpy_trace, app_dict)["wb_obj"]
+
+            check = True
+
+        # Error detection
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+        return {
+            'mpy_trace' : mpy_trace,
+            'check' : check,
+            'wb_obj' : wb_obj_return,
+        }
+
+    @metrics
+    def close_workbook(self, mpy_trace: dict, app_dict: dict) -> dict:
+        r"""
+        Closes the MS Excel workbook.
+
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
+            wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
+                reference to an instance.
+
+        :example:
+            wb_path = "C:\my.xlsx"
+            wb = cl_xl_workbook(mpy_trace, app_dict, wb_path)
+
+            # Close the workbook. Write "None" to the reference "wb".
+            wb = wb.close_workbook(mpy_trace, app_dict)["wb_obj"]
+            print(f'{wb}')
+        """
+
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook.close_workbook(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        check = False
+
+        try:
+            # Close the workbook
+            wb_path = self.wb_path
+            self.wb_obj.close()
+
+            # The workbook object was closed.
+            log(mpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["mpy"]["close_workbook_done"]}\n'
+                        f'{app_dict["loc"]["mpy"]["close_workbook_path"]}: {wb_path}')
+
+            check = True
+
+        # Error detection
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+        return {
+            'mpy_trace' : mpy_trace,
+            'check' : check,
+            'wb_obj' : None,
+        }
+
+    @metrics
+    def activate_worksheet(self, mpy_trace: dict, app_dict: dict, worksheet: str) -> dict:
+        r"""
+        Activates a specified worksheet in the workbook. If the sheet is not found,
+        an error is logged.
+
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param worksheet: The name of the worksheet to activate.
+
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
+
+        :example:
+            wb_path = "C:\my.xlsx"
+            wb = cl_xl_workbook(mpy_trace, app_dict, wb_path)
+            w_sht = "Sheet1"
+            wb.activate_worksheet(mpy_trace, app_dict, w_sht)
+        """
+
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook.activate_worksheet(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        check = False
+
+        try:
+            # Check if the requested sheet exists in the workbook
+            if worksheet in self.wb_sheets:
+                # Check for the active sheet
+                self._update_meta(mpy_trace, app_dict, minimal=True)
+
+                if not worksheet == self.active_sheet_title:
+                    # Set the requested sheet as active
+                    self.wb_obj.active = self.wb_obj[worksheet]
+                    # Store active sheet in meta data
+                    self._update_meta(mpy_trace, app_dict, minimal=True)
+
+                    # The worksheet was successfully activated.
+                    log(mpy_trace, app_dict, "debug",
+                        lambda: f'{app_dict["loc"]["mpy"]["activate_worksheet_done"]}\n'
+                                f'{app_dict["loc"]["mpy"]["activate_worksheet_sht"]}: {worksheet}')
+
+                check = True
+            else:
+                # The requested sheet was not found.
+                raise ValueError(
+                    f'{app_dict["loc"]["mpy"]["activate_worksheet_nfnd"]}\n'
+                    f'{app_dict["loc"]["mpy"]["activate_worksheet_file"]}: {self.wb_path}\n'
+                    f'{app_dict["loc"]["mpy"]["activate_worksheet_req_sht"]}: {worksheet}'
+                )
+
+        # Error detection
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+        return {
+            'mpy_trace': mpy_trace,
+            'check': check
+        }
+
+    @metrics
+    def read_cells(self, mpy_trace: dict, app_dict: dict, cell_range: list=None,
+                   cell_styles: bool=False, worksheet: str=None) -> dict:
+
+        r"""
+        Reads the cells of MS Excel workbooks. Overlapping ranges will get auto-formatted
+        to ensure every cell is addressed only once.
+
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param cell_range: The cell or range of cells to read from. Accepted formats:
+            - not case-sensitive
+            - Single cell: ["A1"]
+            - Range of cells: ["A1:ZZ1000"]
+            - Ranges of cells: ["A1:ZZ1000", "c2:fl342"]
+        :param cell_styles: If True, cell styles will be retrieved. If False, get value only.
+        :param worksheet: Name of the worksheet, where the cell is located. If None, the
+            active sheet is addressed.
+
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
+            cl_dict: Dictionary of cell content dictionaries containing values and styles of cells. Following is
+                    an example of a single complete cell write:
+                cl_dict = {
+                    "A1" : {
+                        "value" : "Data in Cell",
+                        "comment" : {
+                            "text" : "This is a comment",
+                            "author" : "Mr. Author Man",
+                        },
+                        "format" : "General",           # Options: General|Number|Currency|Accounting|Date|Time|Percentage
+                                                        # > Fraction|Scientific|Text|custom strings
+                        "font" : {
+                            "name" : "Calibri",
+                            "bold" : True,
+                            "italic" : True,
+                            "vertical align" : None,    # Options: None|superscript|subscript
+                            "underline" : None,         # Options: None|single|double|singleAccounting|doubleAccounting
+                            "strike" : False,
+                            "size" : 14,
+                            "color" : "D1760C",
+                        },
+                        "background" : {
+                            "fill type" : None,         # Options: None|solid|darkGrid|darkTrellis|lightDown|lightGray
+                                                        # > lightGrid|lightHorizontal|lightTrellis|lightUp
+                                                        # > lightVertical|mediumGray
+                            "start color" : "307591",
+                            "end color" : "67CCCC",
+                        },
+                        "border" : {
+                            "edge" : "outline",         # Options: left|right|top|bottom|diagonal|outline
+                                                        # > vertical|horizontal
+                            "style" : None,             # Options: None|dashDot|dashDotDot|dashed|dotted|double|hair|medium
+                                                        # > medium|mediumDashDot|mediumDashDotDot|mediumDashed|slantDashDot
+                                                        # > thick|thin
+                            "color" : "2A7F7F",
+                            "diagonal direction" : 0,   # Options: 0 (no diagonal) | 1 (downwards) | 2 (upwards)
+                        },
+                        "alignment" : {
+                            "horizontal" : "general",   # Options: general|left|center|right|fill|justify|centerContinuous
+                                                        # > distributed
+                            "vertical" : "center",      # Options: top|center|bottom|justify|distributed
+                            "text rotation" : 0,
+                            "wrap text" : False,
+                            "shrink to fit" : False,
+                            "indent" : 0,
+                        },
+                        "protection" : {
+                            "locked" : False,
+                            "hidden" : False,
+                        },
+                    },
+                    "A2" : { ... }
+                }
+
+        :example:
+            wb_path = "C:\my.xlsx"
+            wb = mpy.cl_xl_workbook(mpy_trace, app_dict, wb_path)
+            cl_dict = wb.read_cells(mpy_trace, app_dict, worksheet="Sheet1", cell_range=["A1", "B2:C3"])["cl_dict"]
+            print(f'{cl_dict}')
+        """
+
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook.read_cells(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        check = False
+        cl_dict = {}
+
+        try:
+            # Update metadata of the workbook instance
+            self._update_meta(mpy_trace, app_dict)
+
+            if not cell_range:
+                # Missing cell range. Skipped reading cells.
+                raise ValueError(f'{app_dict["loc"]["mpy"]["read_cells_no_range"]}')
+
+            # Check if sheet is already active
+            if self.active_sheet_title == worksheet:
+                worksheet_obj = self.active_sheet
 
             # Set the requested sheet active
             else:
+                # Check is sheet exists
+                if worksheet in self.wb_sheets:
+                    self.activate_worksheet(mpy_trace, app_dict, worksheet)
+                    worksheet_obj = self.active_sheet
 
-                # The requested sheet exists as part of the workbook
-                if wb_sht in wb_sheets:
-
-                    wb_obj.active = wb_obj[wb_sht]
-                    sheet_obj = wb_obj.active
-                    wb_sht_active = True
-
-                    # Activated requested sheet.
-                    log(mpy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["mpy"]["cl_read_sht_activated"]}\n'
-                            f'{app_dict["loc"]["mpy"]["cl_read_file"]}: {wb_path}\n'
-                            f'{app_dict["loc"]["mpy"]["cl_read_sht"]}: {wb_sht}')
+                elif not worksheet:
+                    worksheet_obj = self.active_sheet
+                    worksheet = self.active_sheet_title
 
                 # The requested sheet was not found
                 else:
-                    # Could not find the requested workbook sheet.
-                    log(mpy_trace, app_dict, "denied",
-                    lambda: f'{app_dict["loc"]["mpy"]["cl_read_nfnd"]}\n'
-                            f'{app_dict["loc"]["mpy"]["cl_read_file"]}: {wb_path}\n'
-                            f'{app_dict["loc"]["mpy"]["cl_read_sht"]}: {wb_sht}\n'
-                            f'{app_dict["loc"]["mpy"]["cl_read_av_shts"]}: {wb_sheets}')
+                    # Could not find the requested worksheet.
+                    raise ValueError(
+                        f'{app_dict["loc"]["mpy"]["read_cells_nfnd"]}\n'
+                        f'{app_dict["loc"]["mpy"]["read_cells_file"]}: {self.wb_path}\n'
+                        f'{app_dict["loc"]["mpy"]["read_cells_sht"]}: {worksheet}\n'
+                        f'{app_dict["loc"]["mpy"]["read_cells_av_shts"]}: {self.wb_sheets}'
+                    )
 
-            # Copy the requested cells
-            if wb_sht_active:
+            # Autoformat cell reference(s)
+            cl_dict = self._cell_ref_autoformat(mpy_trace, app_dict, cell_range)["cl_dict"]
 
-                # Convert wb_sht to a standardized dictionary
-                cl_dict = cl_autof_rd(mpy_trace, app_dict, cells)
+            # Loop through all the cells and read them
+            for cl in cl_dict:
+                cell_obj = worksheet_obj[cl]
 
-                # Loop through all the cells and copy them
-                for cl in cl_dict["cl_dict"]:
-
-                    cl_dict[cl] = sheet_obj[cl].value
-
-                check = True
-
-                # The cells and/or ranges were copied.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["cl_read_copied"]}\n'
-                        f'{app_dict["loc"]["mpy"]["cl_read_file"]}: {wb_path}\n'
-                        f'{app_dict["loc"]["mpy"]["cl_read_sht"]}: {wb_sht}\n'
-                        f'{app_dict["loc"]["mpy"]["cl_read_cls"]}: {cells}')
-
-    # Error detection
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check,
-        'cl_dict' : cl_dict
-        }
-
-@metrics
-def cl_write(mpy_trace: dict, app_dict: dict, wb_path: str) -> dict:
-
-    r"""
-    Writes data into cells of an Excel workbook.
-
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param wb_path: Path to the MS Excel workbook.
-
-    :return: dict
-        check: Indicates whether the function executed successfully (True/False).
-        mpy_trace: Operation credentials and tracing.
-
-    :example:
-        result = cl_write(mpy_trace, app_dict, "path/to/workbook.xlsx")
-
-    TODO: Finish the function
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'cl_write(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-
-    try:
-        # New workbook created.
-        log(mpy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["mpy"]["cl_write_#######"]}\n'
-                f'wb_path: {wb_path}')
-
-        check = True
-
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check
-        }
-
-@metrics
-def sht_edit(mpy_trace: dict, app_dict: dict, wb_path: str, ops_dict: dict) -> dict:
-
-    r"""
-    Edits worksheets of an Excel workbook. Multiple operations can be executed
-    in a single call to this function.
-
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param wb_path: Path to the MS Excel workbook.
-    :param ops_dict: Dictionary of operations to perform on the worksheet.
-                     Only define the keys for the operations to be performed.
-                     Example in order of execution:
-                         {'create_sheet': ('sheet name', [INT]position),
-                          'rename_sheet': ('old_name', 'new_name'),
-                          'duplicate_sheet': ('source sheet', 'target sheet', [INT]position),
-                          'remove_sheet': ('sheet name')}
-
-    :return: dict
-        mpy_trace: Operation credentials and tracing.
-        check: Indicates whether the function executed successfully (True/False).
-
-    :example:
-        sht_edit(mpy_trace, app_dict, "path/to/workbook.xlsx", {'create_sheet': ('NewSheet', 0)})
-
-    #TODO
-        - Finish the function
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'sht_edit(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-    wb_sht_active = False
-    wb_sht = f'{wb_sht}'
-
-    try:
-
-        # Load the workbook and retrieve all necessary returns
-        wb = wb_load(mpy_trace, app_dict, wb_path, False, True)
-        wb_check = wb["check"]
-        wb_obj = wb["wb_obj"]
-        wb_path = wb["wb_path"]
-        wb_sheets = wb["wb_sheets"]
-        cnt_sheets = len(wb_sheets)
-        sht_active = wb["sht_active"]
-
-        # Evaluate the availability of the workbook
-        if wb_check:
-
-            # Evaluate if requested sheet exists as part of the workbook
-            if wb_sht in wb_sheets:
-
-                # The requested workbook sheet was found.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["sht_edit_found"]}\n'
-                        f'wb_sht: {wb_sht}')
-
-            # The requested sheet was not found
-            else:
-                # Could not find the requested workbook sheet.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["sht_edit_nfnd"]}\n'
-                        f'{app_dict["loc"]["mpy"]["sht_edit_file"]}: {wb_path}\n'
-                        f'{app_dict["loc"]["mpy"]["sht_edit_sht"]}: {wb_sht}\n'
-                        f'{app_dict["loc"]["mpy"]["sht_edit_shts"]}: {wb_sheets}')
-
-            # Check for and execute create_sheet
-            if 'create_sheet' in ops_dict:
-                    # Correction of sheet position if exceeding sheet count of the workbook.
-                if ops_dict["create_sheet"](1) > cnt_sheets:
-
-                    sht_pos = cnt_sheets
-
+                if cell_styles:
+                    cl_dict[cl] =  {
+                        "value": cell_obj.value,
+                        "comment": {
+                            "text": cell_obj.comment.text if cell_obj.comment else None,
+                            "author": cell_obj.comment.author if cell_obj.comment else None,
+                        },
+                        "format": cell_obj.number_format,
+                        "font": {
+                            "name": cell_obj.font.name,
+                            "bold": cell_obj.font.bold,
+                            "italic": cell_obj.font.italic,
+                            "vertical align": cell_obj.font.vertAlign,
+                            "underline": cell_obj.font.underline,
+                            "strike": cell_obj.font.strike,
+                            "size": cell_obj.font.sz,
+                            "color": cell_obj.font.color.rgb if cell_obj.font.color else None,
+                        },
+                        "background": {
+                            "fill type": cell_obj.fill.fill_type,
+                            "start color": cell_obj.fill.start_color.rgb if cell_obj.fill.start_color else None,
+                            "end color": cell_obj.fill.end_color.rgb if cell_obj.fill.end_color else None,
+                        },
+                        "border": {
+                            "top": {
+                                "style": cell_obj.border.top.style if cell_obj.border.top else None,
+                                "color": cell_obj.border.top.color.rgb if cell_obj.border.top.color else None,
+                            },
+                            "bottom": {
+                                "style": cell_obj.border.bottom.style if cell_obj.border.bottom else None,
+                                "color": cell_obj.border.bottom.color.rgb if cell_obj.border.bottom.color else None,
+                            },
+                            "left": {
+                                "style": cell_obj.border.left.style if cell_obj.border.left else None,
+                                "color": cell_obj.border.left.color.rgb if cell_obj.border.left.color else None,
+                            },
+                            "right": {
+                                "style": cell_obj.border.right.style if cell_obj.border.right else None,
+                                "color": cell_obj.border.right.color.rgb if cell_obj.border.right.color else None,
+                            },
+                        },
+                        "alignment": {
+                            "horizontal": cell_obj.alignment.horizontal,
+                            "vertical": cell_obj.alignment.vertical,
+                            "text rotation": cell_obj.alignment.textRotation,
+                            "wrap text": cell_obj.alignment.wrapText,
+                            "shrink to fit": cell_obj.alignment.shrinkToFit,
+                            "indent": cell_obj.alignment.indent,
+                        },
+                        "protection": {
+                            "locked": cell_obj.protection.locked,
+                            "hidden": cell_obj.protection.hidden,
+                        },
+                    }
                 else:
+                    cl_dict[cl] =  {
+                        "value": cell_obj.value,
+                    }
 
-                    sht_pos = ops_dict["create_sheet"](1)
-
-                # Evaluate if requested sheet exists as part of the workbook
-                if wb_sht in wb_sheets:
-                    # Operation skipped. The requested worksheet already exists.
-                    log(mpy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["mpy"]["sht_edit_found"]}\n'
-                            f'wb_sht: {wb_sht}')
-
-                # The requested sheet was not found
-                else:
-                # TODO sheet_name =
-                    dummy = 0
-
-                # Workbook sheet created.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["sht_edit_create_sheet_done"]}\n'
-                        f'{app_dict["loc"]["mpy"]["sht_edit_name"]}: {sheet_name}')
-
-            # Check for and execute rename_sheet
-            elif 'rename_sheet' in ops_dict:
-                # Workbook sheet renamed.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["sht_edit_rename_sheet_done"]}\n'
-                        f'{app_dict["loc"]["mpy"]["sht_edit_old_name"]}: {old_name}\n'
-                        f'{app_dict["loc"]["mpy"]["sht_edit_new_name"]}: {new_name}')
-
-            # Check for and execute duplicate_sheet
-            elif 'duplicate_sheet' in ops_dict:
-                # Correction of sheet position if exceeding sheet count of the workbook.
-                if ops_dict["duplicate_sheet"](2) > cnt_sheets:
-                    sht_pos = cnt_sheets
-                else:
-                    sht_pos = ops_dict["duplicate_sheet"](2)
-
-                    # TODO sheet_name =
-                    # TODO dup_name =
-                    dummy = 0
-
-                # Workbook sheet duplicated.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["sht_edit_duplicate_sheet_done"]}\n'
-                        f'{app_dict["loc"]["mpy"]["sht_edit_name"]}: {sheet_name}\n'
-                        f'{app_dict["loc"]["mpy"]["sht_edit_dup_name"]}: {dup_name}')
-
-            # Check for and execute remove_sheet
-            elif 'remove_sheet' in ops_dict:
-                # TODO
-                dummy = 0
-
-    # Error detection
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check
-        }
-
-@metrics
-def wb_close(mpy_trace: dict, app_dict: dict, wb_path: str) -> dict:
-
-    r"""
-    Closes an MS Excel workbook. It is recommended to use morPy functions for
-    opening and closing workbooks to ensure proper handling of various cases,
-    including exceptions.
-
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param wb_path: Path to the MS Excel workbook.
-
-    :return: dict
-        mpy_trace: Operation credentials and tracing.
-        check: Indicates whether the function executed successfully (True/False).
-
-    :example:
-        wb_close(mpy_trace, app_dict, "path/to/workbook.xlsx")
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'wb_close(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-
-    try:
-
-        # Test if a list of workbook objects was created
-        if 'mpy_xl_loaded_wb_lst' in app_dict:
-
-            # Raise an ERROR if the app_dict key exists, but is not a dictionary
-            if not type(app_dict["mpy_xl_loaded_wb_lst"]) is dict:
-                # The dedicated list for MS Excel workbook objects appears to be occupied by
-                # a user variable (type mismatch).
-                log(mpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["mpy"]["wb_close_lst_occupied"]}\n'
-                        f'{app_dict["loc"]["mpy"]["wb_close_lst_type"]}: {type(app_dict["mpy_xl_loaded_wb_lst"])}\n'
-                        f'{app_dict["loc"]["mpy"]["wb_close_lst_content"]}: {app_dict["mpy_xl_loaded_wb_lst"]}')
-
-            # Move along if the app_dict key exists and is a dictionary
-            else:
-
-                # Check if file exists and convert the file path to a path object
-                if mpy_fct.pathtool(mpy_trace, wb_path)["file_exists"]:
-                    wb_path = mpy_fct.pathtool(mpy_trace, wb_path)["out_path"]
-
-                    # Check, if the workbook is an existing object and load it, if available
-                    if wb_path in app_dict["mpy_xl_loaded_wb_lst"]:
-
-                        wb_obj = app_dict["mpy_xl_loaded_wb_lst"][wb_path]
-
-                        # Close the workbook
-                        wb_obj.close()
-
-                        # Remove the wb_obj from the open workbooks dictionary
-                        app_dict["mpy_xl_loaded_wb_lst"].pop(wb_path)
-
-                        # The workbook object was closed.
-                        log(mpy_trace, app_dict, "debug",
-                        lambda: f'{app_dict["loc"]["mpy"]["wb_close_done"]}\n'
-                                f'wb_path: {wb_path}\n'
-                                f'wb_obj: {wb_obj}')
-
-                    # No such workbook object exists
-                    else:
-                        # The workbook object could not be found.
-                        log(mpy_trace, app_dict, "debug",
-                        lambda: f'{app_dict["loc"]["mpy"]["wb_close_nfnd"]}\n'
-                                f'wb_path: {wb_path}\n'
-                                f'{app_dict["loc"]["mpy"]["wb_close_obj_loaded"]}: {app_dict["mpy_xl_loaded_wb_lst"]}')
-
-                # No such file exists
-                else:
-                    # The workbook does not exist.
-                    log(mpy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["mpy"]["wb_close_no_wb"]}\n'
-                            f'wb_path: {wb_path}')
-
-        # No list of workbook objects was created
-        else:
-            # No workbook object list was created. No loaded workbooks could be found and closed.
+            # The worksheet was read from.
             log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["wb_close_no_lst"]}')
-
-        check = True
-
-    # Error detection
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check
-        }
-
-@metrics
-def wb_close(mpy_trace: dict, app_dict: dict, wb_path: str) -> dict:
-
-    r"""
-    Closes an MS Excel workbook. It is recommended to use morPy functions for
-    opening and closing workbooks to ensure proper handling of various cases,
-    including exceptions.
-
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param wb_path: Path to the MS Excel workbook.
-
-    :return: dict
-        mpy_trace: Operation credentials and tracing.
-        check: Indicates whether the function executed successfully (True/False).
-
-    :example:
-        wb_close(mpy_trace, app_dict, "path/to/workbook.xlsx")
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'wb_close_all(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-
-    try:
-
-        # Test if a list of workbook objects was created
-        if 'mpy_xl_loaded_wb_lst' in app_dict:
-            if len(app_dict["mpy_xl_loaded_wb_lst"]) > 0:
-                # Closing all open workbooks. Deleting the list.
-                dyn_msg = app_dict["wb_close_all_cls_del"]
-            else:
-                # Deleting the list.
-                dyn_msg = app_dict["wb_close_all_del"]
-
-            # A workbook object list was found.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["wb_close_all_lst_fnd"]}{dyn_msg}\n'
-                        f'{app_dict["loc"]["mpy"]["wb_close_all_obj_loaded"]}: {app_dict["mpy_xl_loaded_wb_lst"]}')
-
-            # Make a list from the list of loaded workbooks to loop through it
-            wb_list = list(app_dict["mpy_xl_loaded_wb_lst"])
-            i = 0
-
-            # Loop through all workbook objects to close them
-            while app_dict["mpy_xl_loaded_wb_lst"] != {}:
-                # Close a workbook
-                wb_close(mpy_trace, app_dict, wb_list[i])
-                i += 1
+                lambda: f'{app_dict["loc"]["mpy"]["read_cells_read"]}\n'
+                    f'{app_dict["loc"]["mpy"]["read_cells_file"]}: {self.wb_path}\n'
+                    f'{app_dict["loc"]["mpy"]["read_cells_sht"]}: {worksheet}\n'
+                    f'{app_dict["loc"]["mpy"]["read_cells_cls"]}: {cell_range}')
 
             check = True
 
-        else:
-            # No workbooks list has been created. Nothing to be closed.
-            log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["wb_close_all_nothing"]}')
+        # Error detection
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    # Error detection
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+        return{
+            'mpy_trace' : mpy_trace,
+            'check' : check,
+            'cl_dict' : cl_dict
+            }
 
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check
-        }
+    @metrics
+    def write_ranges(self, mpy_trace: dict, app_dict: dict, worksheet: str=None, cell_range: list=None,
+                     cell_writes: list=None, fill_range: bool=False, style_default: bool=False,
+                     save_workbook: bool=True, close_workbook: bool=False) -> dict:
+        r"""
+        Writes data into cells of an Excel workbook. OpenPyXL documentation:
+        https://openpyxl.readthedocs.io/en/stable/api/openpyxl.cell.cell.html#openpyxl.cell.cell.Cell
+        https://openpyxl.readthedocs.io/en/3.1.3/styles.html
 
-@metrics
-def wb_create(mpy_trace: dict, app_dict: dict, xl_path: str) -> dict:
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param worksheet: Name of the worksheet, where the cell is located. If None, the
+            active sheet is addressed.
+        :param cell_range: The cell or range of cells to write. Accepted formats:
+            - not case-sensitive
+            - Single cell: ["A1"]
+            - Range of cells: ["A1:ZZ1000"]
+            - Ranges of cells: ["A1:ZZ1000", "c2:fl342"]
+        :param cell_writes: List of cell content dictionaries to be written consecutively. If the list is shorter
+            than the amount of cells in the range, it will stop writing to cells and finish the operation. The
+            dictionaries do not need to contain all possible keys, only assign the cell attributes/values needed.
+            See example for a display of usage. Following is an example of a single complete cell write:
+                cl_list = [
+                    {"value" : "Data in Cell",
+                    "comment" : {
+                        "text" : "This is a comment",
+                        "author" : "Mr. Author Man",
+                    },
+                    "format" : "General",           # Options: General|Number|Currency|Accounting|Date|Time|Percentage
+                                                    # > Fraction|Scientific|Text|custom strings
+                    "font" : {
+                        "name" : "Calibri",
+                        "bold" : True,
+                        "italic" : True,
+                        "vertical align" : None,    # Options: None|superscript|subscript
+                        "underline" : None,         # Options: None|single|double|singleAccounting|doubleAccounting
+                        "strike" : False,
+                        "size" : 14,
+                        "color" : "D1760C",
+                    },
+                    "background" : {
+                        "fill type" : None,         # Options: None|solid|darkGrid|darkTrellis|lightDown|lightGray
+                                                    # > lightGrid|lightHorizontal|lightTrellis|lightUp
+                                                    # > lightVertical|mediumGray
+                        "start color" : "307591",
+                        "end color" : "67CCCC",
+                    },
+                    "border" : {
+                        "edge" : "outline",         # Options: left|right|top|bottom|diagonal|outline
+                                                    # > vertical|horizontal
+                        "style" : None,             # Options: None|dashDot|dashDotDot|dashed|dotted|double|hair|medium
+                                                    # > medium|mediumDashDot|mediumDashDotDot|mediumDashed|slantDashDot
+                                                    # > thick|thin
+                        "color" : "2A7F7F",
+                        "diagonal direction" : 0,   # Options: 0 (no diagonal) | 1 (downwards) | 2 (upwards)
+                    },
+                    "alignment" : {
+                        "horizontal" : "general",   # Options: general|left|center|right|fill|justify|centerContinuous
+                                                    # > distributed
+                        "vertical" : "center",      # Options: top|center|bottom|justify|distributed
+                        "text rotation" : 0,
+                        "wrap text" : False,
+                        "shrink to fit" : False,
+                        "indent" : 0,
+                    },
+                    "protection" : {
+                        "locked" : False,
+                        "hidden" : False,
+                    },
+                },
+                { ... }]
+        :param fill_range: If True and if the cell_writes list is shorter than the amount
+            of cells in the range, it will continue writing the values from beginning until the end
+            of the range.
+        :param style_default: If True, styles/attributes of cells will be reset to default. If False,
+            the styles/attributes of the original cell will be preserved.
+        :param save_workbook: If True, saves the workbook after the changes.
+        :param close_workbook: If True, closes the workbook.
 
-    r"""
-    Creates a new, empty Excel workbook at the specified path.
+        :return: dict
+            check: Indicates whether the function executed successfully (True/False).
+            mpy_trace: Operation credentials and tracing.
+            wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
+                reference to an instance.
 
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param xl_path: String or path object specifying the location of the workbook to be created.
+        :example:
+            w_sh = "Sheet1"
+            cl_rng = ["A1:A10"]
+            cell_writes = []
+            cell_writes.append(
+                {"value": "Example"}
+            )
+            cell_writes.append({
+                "value" : r"=1+2",
+                "font" : {
+                    "color" : "D1760C",
+                    },
+            })
+            wb = wb.write_cells(mpy_trace, app_dict, worksheet=w_sh, cell_range=cl_rng, cell_writes=cell_writes
+                                save_workbook=True, close_workbook=True)["wb_obj"]
+        """
 
-    :return: dict
-        mpy_trace: Operation credentials and tracing.
-        check: Indicates whether the function executed successfully (True/False).
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'write_ranges(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    :example:
-        wb_create(mpy_trace, app_dict, "path/to/new_workbook.xlsx")
-    """
+        check = False
+        wb_obj_return = self
 
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'wb_create(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-
-    try:
-
-        wb = Workbook()
-        wb.save(filename = f'{xl_path}')
-
-        # New workbook created.
-        log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["mpy"]["wb_create_done"]}\n'
-                      f'xl_path: {xl_path}')
-
-        check = True
-
-    # Error detection
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check
-        }
-
-@metrics
-def wb_load(mpy_trace: dict, app_dict: dict, wb_path: str, dat: bool, vba: bool) -> dict:
-
-    r"""
-    Connects to an MS Excel workbook. It is recommended to use morPy functions
-    to open and close workbooks to ensure proper handling of various cases,
-    including exceptions. The workbook path is linked to the object in RAM by
-    creating a key in a dedicated dictionary, as shown:
-        >   app_dict["mpy_xl_loaded_wb_lst"] = {wb_path: wb_obj}
-    This ensures that an opened Excel workbook is not addressed twice.
-
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param wb_path: Path to the MS Excel workbook.
-    :param dat: If True, cells with formulae are represented by their calculated values.
-                Closing and reopening the workbook is required for this behavior to change.
-    :param vba: If True, preserves any Visual Basic elements in the workbook. These elements
-                remain uneditable. Closing and reopening the workbook is required for this behavior to change.
-
-    :return: dict
-        mpy_trace: Operation credentials and tracing.
-        check: Indicates whether the function executed successfully (True/False).
-        wb_obj: The workbook object that was loaded.
-        wb_path: Path-object to the MS Excel workbook.
-        wb_sheets: List of the sheets in the loaded workbook.
-        sht_active: Name of the active sheet after opening the workbook.
-
-    :example:
-        wb_load(mpy_trace, app_dict, "path/to/workbook.xlsx", True, False)
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'wb_load(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    path_dct = mpy_fct.pathtool(mpy_trace, wb_path)
-    wb_path = path_dct["out_path"]
-    check = False
-    wb_obj = 'VOID'
-    wb_sheets = 'VOID'
-    sht_active = 'VOID'
-
-    try:
-
-        # Create a list of workbook objects, if it does not yet exist
-        if not 'mpy_xl_loaded_wb_lst' in app_dict:
-            app_dict["mpy_xl_loaded_wb_lst"] = {}
-
-        # Raise an ERROR if the app_dict key exists, but is not a dictionary
-        elif not type(app_dict["mpy_xl_loaded_wb_lst"]) is dict:
-                # The dedicated list for MS Excel workbook objects appears to be occupied by a user variable.
-                log(mpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["mpy"]["wb_load_wblst_mismatch"]}\n'
-                        f'type(app_dict[\"mpy_xl_loaded_wb_lst\"]): {type(app_dict["mpy_xl_loaded_wb_lst"])}\n'
-                        f'app_dict[\"mpy_xl_loaded_wb_lst\"]: {app_dict["mpy_xl_loaded_wb_lst"]}')
-
-        # Test if the workbook path is an existing file
-        if path_dct["file_exists"]:
-            if wb_path in app_dict["mpy_xl_loaded_wb_lst"]:
-                # The workbook is already a loaded object. No action required.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["wb_load_wb_exists"]}\n'
-                        f'{app_dict["loc"]["mpy"]["wb_load_path"]}: {wb_path}\n'
-                        f'{app_dict["loc"]["mpy"]["wb_load_obj"]}: {app_dict["mpy_xl_loaded_wb_lst"][wb_path]}')
-
-                # Fetch the workbook
-                wb_obj = app_dict["mpy_xl_loaded_wb_lst"][wb_path]
-
+        try:
+            if not worksheet:
+                self._update_meta(mpy_trace, app_dict, minimal=True)
+                worksheet_obj = self.active_sheet
+                sht_check = True
             else:
+                sht_check = self.activate_worksheet(mpy_trace, app_dict, worksheet)["check"]
+                worksheet_obj = self.active_sheet
+                
+            if cell_range and sht_check:
+                cl_dict = self._cell_ref_autoformat(mpy_trace, app_dict, cell_range=cell_range)["cl_dict"]
+                cell_keys = list(cl_dict.keys())
+                write_count = len(cell_writes)
 
-                # Load the workbook
-                wb_obj = load_workbook(wb_path, data_only=dat, keep_vba=vba)
+                for i, cell_key in enumerate(cell_keys):
+                    cell_obj = worksheet_obj[cell_key]
+                    write_data = cell_writes[i % write_count] if fill_range else cell_writes[i] if i < write_count else None
 
-                # Connect the filepath to the object
-                app_dict["mpy_xl_loaded_wb_lst"][wb_path] = wb_obj
+                    # Finish cell writes conditionally
+                    if not write_data:
+                        break
 
-                # MS Excel workbook loaded.
-                log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["wb_load_wb_loaded"]}\n'
-                        f'{app_dict["loc"]["mpy"]["wb_load_path"]}: {wb_path}')
+                    # Reset styles if requested
+                    if style_default:
+                        cell_obj.style = 'Normal'
 
-            # Retrieve the name of the active sheet
-            sht_active = app_dict["mpy_xl_loaded_wb_lst"][wb_path].active.title
+                    # Get cell styles to be merged with cell_writes
+                    cell_data = self.read_cells(mpy_trace, app_dict, cell_range=[cell_key],
+                                                    worksheet=self.active_sheet_title)
 
-            # Retrieve all sheetnames of the workbook
-            wb_sheets = app_dict["mpy_xl_loaded_wb_lst"][wb_path].sheetnames
+                    if not cell_data["check"]:
+                        continue
+
+                    # Merge current styles with the ones provided in write_data
+
+                    current_styles = cell_data["cl_dict"]  # e.g. {"A2": {"value":..., "font":...}}
+                    cell_styles = current_styles.get(cell_key, {})  # e.g. {"value":..., "font":...}
+
+                    # Merge in any new style info from write_data
+                    for style_key, style_val in write_data.items():
+                        if style_key in cell_styles and isinstance(style_val, dict):
+                            # Merge with existing dictionary (e.g. "font", "alignment", "border")
+                            cell_styles[style_key].update(style_val)
+                        else:
+                            # Overwrite or add a new key (e.g. "value")
+                            cell_styles[style_key] = style_val
+
+                    # Apply to the real cell:
+                    if "value" in cell_styles:
+                        cell_obj.value = cell_styles["value"]
+                    if "comment" in cell_styles and cell_styles["comment"]:
+                        from openpyxl.comments import Comment
+                        cell_obj.comment = Comment(
+                            text=cell_styles["comment"].get("text", ""),
+                            author=cell_styles["comment"].get("author", ""),
+                        )
+                    if "font" in cell_styles:
+                        cell_obj.font = Font(**cell_styles["font"])
+                    if "background" in cell_styles:
+                        cell_obj.fill = PatternFill(
+                            fill_type=cell_styles["background"]["fill type"],
+                            start_color=cell_styles["background"]["start color"],
+                            end_color=cell_styles["background"]["end color"],
+                        )
+                    if "alignment" in cell_styles:
+                        cell_obj.alignment = Alignment(**cell_styles["alignment"])
+                    if "protection" in cell_styles:
+                        cell_obj.protection = Protection(**cell_styles["protection"])
+
+            elif not cell_range:
+                # Missing cell range. Skipped writing to cells.
+                raise ValueError(f'{app_dict["loc"]["mpy"]["write_cells_no_range"]}')
+
+            # Cells written to.
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["write_cells_done"]}\n'
+                    f'{app_dict["loc"]["mpy"]["write_cells_range"]}: {cell_range}')
+
+            if save_workbook:
+                wb_obj_return = self.save_workbook(mpy_trace, app_dict, close_workbook=close_workbook)["wb_obj"]
 
             check = True
 
-        else:
-            # The file does not exist.
-            log(mpy_trace, app_dict, "denied",
-            lambda: f'{app_dict["loc"]["mpy"]["wb_load_no_file"]}\n'
-                    f'{app_dict["loc"]["mpy"]["wb_load_path"]}: {wb_path}\n'
-                    f'file_exists: {path_dct["file_exists"]}\n'
-                    f'file_name: {path_dct["file_name"]}\n'
-                    f'dir_exists: {path_dct["dir_exists"]}\n'
-                    f'dir_name: {path_dct["dir_name"]}')
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check,
-        'wb_obj' : wb_obj,
-        'wb_path' : wb_path,
-        'wb_sheets' : wb_sheets,
-        'sht_active' : sht_active
+        return {
+            'mpy_trace' : mpy_trace,
+            'check' : check,
+            'wb_obj' : wb_obj_return,
         }
 
-@metrics
-def wb_tbl_attributes(mpy_trace: dict, app_dict: dict, wb_path: str, tbl: str) -> dict:
+    @metrics
+    def get_table_attributes(self, mpy_trace: dict, app_dict: dict, table: str) -> dict:
+        r"""
+        Retrieves all attributes of an MS Excel table. OpenPyXL documentation:
+        https://openpyxl.readthedocs.io/en/stable/api/openpyxl.worksheet.table.html#openpyxl.worksheet.table.Table
 
-    r"""
-    Retrieves all attributes of an MS Excel table. This function uses the
-    openpyxl module to gather detailed table attributes. For basic parameters
-    of an MS Excel table, consider using `wb_tbl_inquiry` instead.
+        :param mpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param table: Name of the table to be analyzed.
 
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param wb_path: Path to the MS Excel workbook.
-    :param tbl: Name of the table to be analyzed.
+        :return: dict
+            mpy_trace: Operation credentials and tracing.
+            check: Indicates whether the function executed successfully (True/False).
+            table_attr: List of the table's attributes.
 
-    :return: dict
-        mpy_trace: Operation credentials and tracing.
-        check: Indicates whether the function executed successfully (True/False).
-        wb_obj: The workbook object that was loaded.
-        tbl_attr: List of the table's attributes.
+        :example:
+            wb_path = "C:\my.xlsx"
+            wb = mpy.cl_xl_workbook(mpy_trace, app_dict, wb_path)
+            table_attr = wb.get_table_attributes(mpy_trace, app_dict, "Table1")["table_attr"]
+        """
 
-    :example:
-        wb_tbl_attributes(mpy_trace, app_dict, "path/to/workbook.xlsx", "Table1")
-    """
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy_xl'
+        operation = 'cl_xl_workbook.get_table_attributes(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'wb_tbl_attributes(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+        check = False
+        table_attr = None
 
-    check = False
-    wb_path = mpy_fct.pathtool(mpy_trace, wb_path)["out_path"]
-    wb_obj = 'VOID'
-    tbl_attr = 'VOID'
+        try:
+            # Update metadata of the workbook instance
+            self._update_meta(mpy_trace, app_dict, minimal=True)
 
-    try:
-        # Load the workbook and inquire for tables
-        wb = wb_tbl_inquiry(mpy_trace, app_dict, wb_path)
+            # Inquire the according worksheet of the table
+            worksheet = self.tables_sheets[table]
 
-        # Retrieve the workbook object
-        wb_obj = app_dict["mpy_xl_loaded_wb_lst"][wb_path]
+            # Get all values of the table
+            table_data = self.wb_obj[worksheet].tables.values()
+            table_data = openpyxl_table_data_dict(mpy_trace, app_dict, table_data, table)
+            table_attr = table_data["table_attr"]
 
-        # Inquire the according worksheet of the table
-        rtrn = wb["tbl_sht"]
-        sht = rtrn[tbl]
+            # Retrieved all values of an MS Excel table.
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["get_table_attributes_retr"]}\n'
+                    f'{app_dict["loc"]["mpy"]["get_table_attributes_path"]}: {self.wb_path}\n'
+                    f'{app_dict["loc"]["mpy"]["get_table_attributes_sheet"]}: {worksheet}\n'
+                    f'{app_dict["loc"]["mpy"]["get_table_attributes_table"]}: {table}')
 
-        # Get all values of an MS Excel table
-        datb_temp = wb_obj[sht].tables.values()
-        datb_temp = opyxl_tbl_datb_dict(mpy_trace, app_dict, datb_temp, tbl)
-        tbl_attr = datb_temp["tbl_attr"]
+            check = True
 
-        # Retrieved all values of an MS Excel table.
-        log(mpy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["mpy"]["wb_tbl_attributes_retr"]}\n'
-                f'{app_dict["loc"]["mpy"]["wb_tbl_attributes_path"]}: {wb_path}\n'
-                f'{app_dict["loc"]["mpy"]["wb_tbl_attributes_sheet"]}: {sht}\n'
-                f'{app_dict["loc"]["mpy"]["wb_tbl_attributes_tbl"]}: {tbl}')
+        except Exception as e:
+            log(mpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-        check = True
-
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check,
-        'wb_obj' : wb_obj,
-        'tbl_attr' : tbl_attr
-        }
+        return{
+            'mpy_trace' : mpy_trace,
+            'check' : check,
+            'table_attr' : table_attr,
+            }
 
 @metrics
-def wb_tbl_inquiry(mpy_trace: dict, app_dict: dict, wb_path: str) -> dict:
+def openpyxl_table_data_dict(mpy_trace: dict, app_dict: dict, table_data: object, table: str) -> dict:
 
     r"""
-    Inquires all tables in a worksheet and returns a dictionary with details
-    about the tables and their attributes.
-
-    :param mpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param wb_path: Path to the MS Excel workbook.
-
-    :return: dict
-        mpy_trace: Operation credentials and tracing.
-        check: Indicates whether the function executed successfully (True/False).
-        wb_obj: The workbook object that was loaded.
-        wb_sheets: List of the sheets in the loaded workbook.
-        tbl_lst: List of tables in the entire workbook.
-        tbl_rng: List of tuples of tables and their ranges.
-        tbl_sht: List of tuples of tables and the sheets they are on.
-
-    :example:
-        wb_tbl_inquiry(mpy_trace, app_dict, "path/to/workbook.xlsx")
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_xl'
-    operation = 'wb_tbl_inquiry(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-    wb_path = mpy_fct.pathtool(mpy_trace, wb_path)["out_path"]
-    wb_obj = 'VOID'
-    void_dict = {'VOID' : 'VOID'}
-    tbl_rng = void_dict
-    tbl_sht = void_dict
-    void_list = ["VOID"]
-    wb_sheets = ["VOID"]
-    tbl_lst = void_list
-    dat = False
-    vba = False
-
-    try:
-
-        # Load the workbook
-        wb = wb_load(mpy_trace, app_dict, wb_path, dat, vba)
-
-        # Retrieve the workbook object
-        wb_obj = app_dict["mpy_xl_loaded_wb_lst"][wb_path]
-
-        # Retrieve all sheet names of the workbook
-        wb_sheets = wb["wb_sheets"]
-
-        # Retrieve the tables dictionary and create a dictionary with the table
-        # being the key and the sheet of the workbook being the object
-        for sht in wb_sheets:
-
-            # Get all tables of the sheet "sht" including the range (List)
-            tbl_tmp = wb_obj[sht].tables.items()
-
-            # Build the dictionaries
-            for index, tuple in enumerate(tbl_tmp):
-
-                # Extract table and range from the List of tuples
-                tbl = tuple[0]
-                rng = tuple[1]
-
-                # Create a list of tables
-                if tbl_lst == void_list:
-                    tbl_lst = [tbl]
-                else:
-                    tbl_lst.append(tbl)
-
-                # Create a dictionary of tables and ranges
-                if tbl_rng == void_dict:
-                    tbl_rng = {tbl : rng}
-                else:
-                    tbl_rng.update({tbl : rng})
-
-                # Create a dictionary of tables and sheets
-                if tbl_sht == void_dict:
-                    tbl_sht = {tbl : sht}
-                else:
-                    tbl_sht.update({tbl : sht})
-
-        # Retrieved all tables of a workbook.
-        log(mpy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["mpy"]["wb_tbl_inquiry_retr"]}\n'
-                f'{app_dict["loc"]["mpy"]["wb_tbl_inquiry_Path"]}: {wb_path}\n\n'
-                f'{app_dict["loc"]["mpy"]["wb_tbl_inquiry_tbl_wksh"]}:\n{tbl_sht}\n\n'
-                f'{app_dict["loc"]["mpy"]["wb_tbl_inquiry_tbl_rng"]}:\n{tbl_rng}')
-
-        check = True
-
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check,
-        'wb_obj' : wb_obj,
-        'wb_sheets' : wb_sheets,
-        'tbl_lst' : tbl_lst,
-        'tbl_rng' : tbl_rng,
-        'tbl_sht' : tbl_sht
-        }
-
-@metrics
-def opyxl_tbl_datb_dict(mpy_trace: dict, app_dict: dict, datb: object, tbl: str) -> dict:
-
-    r"""
-    Converts the interface of an openpyxl databook into a dictionary containing
+    Converts the interface of an OpenPyXL data book into a dictionary containing
     all attributes of the specified table. This function is a helper and is
-    typically called by `wb_tbl_inquiry` for ease of coding.
+    typically called by `get_all_tables_attributes` to improve on the OpenPyXL
+    API.
 
     :param mpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
-    :param datb: The databook object as generated by openpyxl.
-    :param tbl: Name of the table to be analyzed.
+    :param table_data: The data book object as generated by OpenPyXL.
+    :param table: Name of the table to be analyzed.
 
     :return: dict
         mpy_trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
-        tbl_attr: List containing all attributes of the openpyxl databook.
+        table_attr: List containing all attributes of the OpenPyXL databook.
 
     :example:
-        opyxl_tbl_datb_dict(mpy_trace, app_dict, databook_obj, "Table1")
+        openpyxl_table_data_dict(mpy_trace, app_dict, databook_obj, "Table1")
     """
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)
     module = 'mpy_xl'
-    operation = 'tbl_opyxl_datb_dict(~)'
+    operation = 'table_opyxl_datb_dict(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
     check = False
-    datb = f'{datb}'
+    table_data = f'{table_data}'
+    table_item = ""
+    table_attr = []
 
     try:
-        # Search for regular expressions in the databook to extract only the
+        # Search for regular expressions in the data book to extract only the
         # relevant Part.
 
         # 1. Purge all whitespace characters to make regex easier and more precise
-        datb = mpy_common.regex_replace(mpy_trace, app_dict, datb, '\s', '')
+        table_data = mpy_common.regex_replace(mpy_trace, app_dict, table_data, '\s', '')
 
-        # 2. Split the databook into a list of distinct table attributes
+        # 2. Split the data-book into a list of distinct table attributes
         delimiter = '<openpyxl.worksheet.table.Tableobject>'
-        datb_list = mpy_common.regex_split(mpy_trace, app_dict, datb, delimiter)
+        table_data_list = mpy_common.regex_split(mpy_trace, app_dict, table_data, delimiter)
 
         # 3. Iterate through the list in search for the table and delete
         # elements not associated with it
-        pattern = f'\'{tbl}\''
+        pattern = f'\'{table}\''
 
-        for item in datb_list:
+        for table_item in table_data_list:
 
-            result = mpy_common.regex_find1st(mpy_trace, app_dict, item, pattern)
+            result = mpy_common.regex_find1st(mpy_trace, app_dict, table_item, pattern)
 
             if result:
                 break
 
         # 4. Replace the comma at the end of the string, if there is any
-        item = mpy_common.regex_replace(mpy_trace, app_dict, item, ',$', '')
+        table_item = mpy_common.regex_replace(mpy_trace, app_dict, table_item, ',$', '')
 
         # 5. Add the first delimiter and reinsert some spaces for compatibility
-        # with Openpyxl
-        item = f'<openpyxl.worksheet.table.Tableobject>{item}'
-        item = mpy_common.regex_replace(mpy_trace, app_dict, item, 'object>', ' object>')
+        # with OpenPyXL
+        table_item = f'<openpyxl.worksheet.table.Tableobject>{table_item}'
+        table_item = mpy_common.regex_replace(mpy_trace, app_dict, table_item, 'object>', ' object>')
 
         # 6. Split the string into different sections
-        tbl_attr = mpy_common.regex_split(mpy_trace, app_dict, item, ',')
+        table_attr = mpy_common.regex_split(mpy_trace, app_dict, table_item, ',')
 
-        # Converted an openpyxl databook into a list specific to the attributes of the MS Excel table.
+        # Converted an OpenPyXL data-book into a list specific to the attributes of the MS Excel table.
         log(mpy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["mpy"]["opyxl_tbl_datb_dict_conv"]}\n'
-                f'{app_dict["loc"]["mpy"]["opyxl_tbl_datb_dict_tbl"]}: {tbl}\n'
-                f'{app_dict["loc"]["mpy"]["opyxl_tbl_datb_dict_attr"]}:\n{tbl_attr}')
+        lambda: f'{app_dict["loc"]["mpy"]["openpyxl_table_data_dict_conv"]}\n'
+                f'{app_dict["loc"]["mpy"]["openpyxl_table_data_dict_tbl"]}: {table}\n'
+                f'{app_dict["loc"]["mpy"]["openpyxl_table_data_dict_attr"]}:\n{table_attr}')
 
         check = True
 
@@ -1116,5 +1231,5 @@ def opyxl_tbl_datb_dict(mpy_trace: dict, app_dict: dict, datb: object, tbl: str)
         return{
             'mpy_trace' : mpy_trace,
             'check' : check,
-            'tbl_attr' : tbl_attr
+            'table_attr' : table_attr
             }

@@ -10,10 +10,10 @@ Annotations:
     #FIXME
 """
 
-import mpy
+import lib.mpy as mpy
 import sys
 
-from mpy_decorators import metrics, log
+from lib.mpy_decorators import metrics, log
 
 @metrics
 def template(mpy_trace: dict, app_dict: dict) -> dict:
@@ -44,7 +44,7 @@ def template(mpy_trace: dict, app_dict: dict) -> dict:
 
     try:
         # LOCALIZED_MESSAGE
-        log(mpy_trace, app_dict, "debug",
+        log(mpy_trace, app_dict, "info",
         lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
 
         # TODO: MY CODE
@@ -170,7 +170,7 @@ class cl_template:
         try:
             # TODO: MY CLASS METHOD
             # LOCALIZED_MESSAGE
-            log(mpy_trace, app_dict, "debug",
+            log(mpy_trace, app_dict, "info",
             lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
 
             check = True

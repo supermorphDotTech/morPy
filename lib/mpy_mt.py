@@ -575,7 +575,7 @@ class cl_thread(threading.Thread):
 
             # Define the attributes of the class
             self.ID = thread_id(mpy_trace, app_dict)["thread_id"]
-            self.name = 'VOID'
+            self.name = None
             self.trace = mpy_trace
             self.app_dict = app_dict
             self.log = mpy_trace["log_enable"]
@@ -623,7 +623,7 @@ class cl_thread(threading.Thread):
 
         check = False
         task_ID = -1
-        task = 'VOID'
+        task = None
 
         try:
             # Acquire a thread lock - reserve a worker for the task

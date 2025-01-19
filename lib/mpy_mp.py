@@ -4,6 +4,9 @@ https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
 Descr.:     Multiprocessing functionality for morPy.
+
+TODO provide a general purpose lock
+    > Find a way to lock file objects and dirs
 """
 
 import lib.mpy_fct as mpy_fct
@@ -404,9 +407,9 @@ class cl_orchestrator:
         check = False
 
         try:
-            from app_init import _init
-            from app_run import _run
-            from app_exit import _exit
+            from app.app_init import _init
+            from app.app_run import _run
+            from app.app_exit import _exit
 
             app_init_return = _init(mpy_trace, app_dict)["app_init_return"]
             app_run_return = _run(mpy_trace, app_dict, app_init_return)["app_run_return"]
@@ -441,8 +444,7 @@ class cl_orchestrator:
         # TODO Find out, why mpy_trace["process_id"] is changed after exit of run_parallel()
         # The enforced deepcopy mpy_fct.tracing() is a workaround.
         mpy_trace_app = mpy_fct.tracing(module, operation, mpy_trace)
-        mpy_trace = mpy_fct.tracing("", "", mpy_trace_app)
-
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
         check = False
 
@@ -458,6 +460,7 @@ class cl_orchestrator:
                 mpy_trace, app_dict, priority=-1, task=app_task, autocorrect=False
             )
 
+            # App starting.
             log(mpy_trace, app_dict, "info",
             lambda: f'{app_dict["loc"]["mpy"]["cl_orchestrator_run_app_start"]}')
 
@@ -549,7 +552,7 @@ def run_parallel(mpy_trace: dict, app_dict: dict, task: list=None, priority=None
 
     r"""
     TODO description correction
-    TODO provide task wrapper to release processes
+    TODO provide task wrapper to release processes (write to registers)
         app_dict["proc"]["mpy"]["processes_available"]
         app_dict["proc"]["mpy"]["processes_busy"]
 
@@ -791,10 +794,12 @@ def spawn(task: list):
         # Rebuild the app_dict by reference (shared memory), after spawning
         # a process.
         # TODO solve app_dict sharing
-        # from lib.mpy_init import mpy_dict_build
-        # from lib.mpy_init import mpy_dict_finalize
+        from lib.mpy_init import mpy_dict_build
+        from lib.mpy_init import mpy_dict_finalize
 
         from lib.mpy_dict import cl_mpy_dict, cl_mpy_dict_ultra
+
+        process_id = task[1]["process_id"]
 
         # Link to shared memory
         app_dict = cl_mpy_dict_ultra(
@@ -990,6 +995,48 @@ def join_processes(mpy_trace: dict, app_dict: dict) -> dict:
         # Clean up process references, if still existing
         if active_children == 0 and p_id in app_dict["proc"]["mpy"]["proc_refs"].keys():
             app_dict["proc"]["mpy"]["proc_refs"] = {}
+
+    except Exception as e:
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+    finally:
+        return {
+            'mpy_trace': mpy_trace,
+            'check': check,
+        }
+
+@metrics
+def interrupt(mpy_trace: dict, app_dict: dict) -> dict:
+
+    r"""
+    This function sets a global interrupt flag. Processes and threads
+    will halt once they pass (the most recurring) morPy functions.
+
+    :param mpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+
+    :return: dict
+        mpy_trace: Operation credentials and tracing
+        check: Indicates if the task was dequeued successfully
+
+    :example:
+        mpy_mp.interrupt(mpy_trace, app_dict)
+
+
+    TODO finish this function
+    """
+
+    module = 'mpy_mp'
+    operation = 'interrupt(~)'
+    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+    check = False
+
+    try:
+        # TODO finish
+        pass
 
     except Exception as e:
         log(mpy_trace, app_dict, "critical",

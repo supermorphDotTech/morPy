@@ -136,6 +136,10 @@ pip install openpyxl
 ```
 
 ```PowerShell
+pip install defusedxml
+```
+
+```PowerShell
 pip install atomics
 ```
 

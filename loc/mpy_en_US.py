@@ -166,6 +166,9 @@ def loc_mpy() -> dict:
             "cl_mpy_dict_err_unlink" : "Error unlinking UltraDict instance",
         },
 
+        # mpy_msg.py - log(~)
+        'log_crit_fail': 'Severe morPy logging error.',
+
         # mpy_msg.py - log_msg_builder(~)
         'log_msg_builder_trace' : 'Trace',
         'log_msg_builder_process_id' : 'Process',
@@ -226,6 +229,9 @@ def loc_mpy() -> dict:
         'dialog_sel_file_cancel' : 'Cancel',
         'dialog_sel_file_asel' : 'A file was chosen by the user.',
         'dialog_sel_file_open' : 'Open',
+        'dialog_sel_file_all_files' : 'All Files',
+        'dialog_sel_file_select' : 'Select a File',
+        'dialog_sel_file_path' : 'Path',
 
         # mpy_common.py - dialog_sel_dir(~)
         'dialog_sel_dir_nosel' : 'No directory was chosen by the user.',
@@ -233,6 +239,8 @@ def loc_mpy() -> dict:
         'dialog_sel_dir_cancel' : 'Cancel',
         'dialog_sel_dir_asel' : 'A directory was chosen by the user.',
         'dialog_sel_dir_open' : 'Open',
+        'dialog_sel_dir_select' : 'Select a Directory',
+        'dialog_sel_dir_path' : 'Path',
 
         # mpy_common.py - fso_copy_file(~)
         'fso_copy_file_source' : 'Source',
@@ -250,7 +258,7 @@ def loc_mpy() -> dict:
 
         # mpy_common.py - fso_delete_dir(~)
         'fso_delete_dir_directory' : 'Directory',
-        'fso_create_dir_direxist' : 'Directory exists',
+        'fso_delete_dir_direxist' : 'Directory exists',
         'fso_delete_dir_deleted' : 'The directory has been deleted.',
         'fso_delete_dir_notexist' : 'The directory does not exist.',
 
@@ -266,6 +274,7 @@ def loc_mpy() -> dict:
         'fso_walk_path_notexist' : 'The directory does not exist.',
 
         # mpy_common.py - print_progress(~)
+        'cl_progress_upd_stopped' : 'Current progress exceeded total. Progress updates stopped.',
         'cl_progress_proc' : 'Processing',
 
         # mpy_common.py - regex_findall(~)
@@ -308,8 +317,18 @@ def loc_mpy() -> dict:
 
         # mpy_common.py - wait_for_input(~)
         'wait_for_input_compl' : 'A user input was made.',
-        'wait_for_input_messsage' : 'Message',
+        'wait_for_input_message' : 'Message',
         'wait_for_input_usr_inp' : 'User input',
+
+        # mpy_common.py - wait_for_select(~)
+        'wait_for_select_compl' : 'A user input was made.',
+        'wait_for_select_message' : 'Message',
+        'wait_for_select_usr_inp' : 'User input',
+        "wait_for_select_yes_selector": "y",
+        "wait_for_select_yes": "yes",
+        "wait_for_select_quit_selector": "q",
+        "wait_for_select_quit": "quit",
+        "wait_for_select_selection_invalid": "Invalid selection. Repeat?",
 
         # mpy_csv.py - csv_read(~)
         'csv_read_start' : 'Started processing CSV-file.',
@@ -321,6 +340,19 @@ def loc_mpy() -> dict:
         'csv_read_file_path' : 'File path',
         'csv_read_no_return' : 'Delimiters could not be determined or data is corrupted. No return dictionary created.',
 
+        # mpy_csv.py - csv_dict_to_excel(~)
+        'csv_dict_to_excel_prog_fail' : 'Missing row count in csv_dict. Skipping progress logging.',
+        'csv_dict_to_excel_xl_ovwr': 'MS Excel file exists. Overwritten.',
+        'csv_dict_to_excel_path': 'File Path',
+        'csv_dict_to_excel_ovwr': 'Overwrite',
+        'csv_dict_to_excel_xl_novwr': 'MS Excel file exists. Operation skipped.',
+        'csv_dict_to_excel_missing_xl': 'Missing path to MS Excel file. Operation skipped.',
+        'csv_dict_to_excel_inval_xl': 'Invalid path to MS Excel file. Operation skipped.',
+        'csv_dict_to_excel_missing_data': 'Missing data book from csv file. operation skipped.',
+        'csv_dict_to_excel_data': 'csv_dict',
+        'csv_dict_to_excel_start' : 'Writing data to MS Excel file.',
+        'csv_dict_to_excel_prog_descr' : 'Writing CSV to Excel',
+
         # mpy_exit.py - exit(~)
         'mpy_exit_msg_done' : 'App exited.',
         'mpy_exit_msg_started' : 'Started',
@@ -330,85 +362,74 @@ def loc_mpy() -> dict:
         'mpy_exit_msg_events' : 'Events',
         'mpy_exit_msg_total' : 'Total',
 
-        # mpy_xl.py - cl_autof_rd(~)
-        'cl_autof_rd_1cell' : 'A single cell was added to the dictionary.',
-        'cl_autof_rd_cl' : 'Cell',
-        'cl_autof_rd_done' : 'A range of cells was added to the dictionary.',
-        'cl_autof_rd_rng' : 'Range',
-        'cl_autof_rd_invalid' : 'The cell value is invalid. Autoformatting aborted.',
-        'cl_autof_rd_cls' : 'Cells',
+        # mpy_xl.py - cl_xl_workbook._init(~)
+        'cl_xl_workbook_inst': 'MS Excel workbook instantiated.',
+        'cl_xl_workbook_wb': 'Workbook',
+        'cl_xl_workbook_path_invalid': 'The path to the workbook is invalid.',
+        'cl_xl_workbook_path': 'Path',
+        'cl_xl_workbook_inst_abort': 'Instance construction aborted.',
+        'cl_xl_workbook_not_create': 'File does not exist and was not created.',
+        'cl_xl_workbook_create': 'Create',
 
-        # mpy_xl.py - cl_read(~)
-        'cl_read_sht_active' : 'The requested sheet is active.',
-        'cl_read_file' : 'File',
-        'cl_read_sht' : 'Sheet',
-        'cl_read_sht_activated' : 'Activated requested sheet.',
-        'cl_read_nfnd' : 'Could not find the requested workbook sheet.',
-        'cl_read_av_shts' : 'Available Sheets',
-        'cl_read_copied' : 'The cells and/or ranges were copied.',
-        'cl_read_cls' : 'Cells',
-        'cl_read_dat' : 'Data only',
+        # mpy_xl.py - cl_xl_workbook._create_workbook(~)
+        'create_workbook_done': 'MS Excel workbook created.',
 
-        # mpy_xl.py - sht_edit(~)
-        'sht_edit_found' : 'The requested workbook sheet was found.',
-        'sht_edit_nfnd' : 'Could not find the requested workbook sheet.',
-        'sht_edit_file' : 'File',
-        'sht_edit_sht' : 'Sheet',
-        'sht_edit_name' : 'Sheet Name',
-        'sht_edit_old_name' : 'Old Sheet Name',
-        'sht_edit_new_name' : 'New Sheet Name',
-        'sht_edit_position' : 'Worksheet Position',
-        'sht_edit_dup_name' : 'Duplicate Name',
-        'sht_edit_shts' : 'Sheets in Workbook',
-        'sht_edit_create_sheet_done' : 'Workbook sheet created.',
-        'sht_edit_rename_sheet_done' : 'Workbook sheet renamed.',
-        'sht_edit_duplicate_sheet_done' : 'Workbook sheet duplicated.',
+        # mpy_xl.py - cl_xl_workbook._cell_ref_autoformat(~)
+        'cell_ref_autoformat_1cell' : 'A single cell was added to the dictionary.',
+        'cell_ref_autoformat_cl' : 'Cell',
+        'cell_ref_autoformat_done' : 'A range of cells was added to the dictionary.',
+        'cell_ref_autoformat_rng' : 'Range',
+        'cell_ref_autoformat_invalid' : 'The cell value is invalid. Autoformatting aborted.',
+        'cell_ref_autoformat_cls' : 'Cells',
 
-        # mpy_xl.py - wb_close(~)
-        'wb_close_lst_occupied' : 'The dedicated list for MS Excel workbook objects appears to be occupied by a user variable (type mismatch: dictionary expected).',
-        'wb_close_lst_type' : 'Object Type',
-        'wb_close_lst_content' : 'Object',
-        'wb_close_done' : 'The workbook object was closed.',
-        'wb_close_nfnd' : 'The workbook object could not be found.',
-        'wb_close_obj_loaded' : 'Objects loaded',
-        'wb_close_no_wb' : 'The workbook does not exist.',
-        'wb_close_no_lst' : 'No workbook object list was created. No loaded workbooks could be found and closed.',
+        # mpy_xl.py - cl_xl_workbook.close_workbook(~)
+        'close_workbook_done': 'The workbook object was closed.',
+        'close_workbook_path': 'Path',
 
-        # mpy_xl.py - wb_close_all(~)
-        'wb_close_all_cls_del' : 'Closing all open workbooks. Deleting the list.',
-        'wb_close_all_del' : 'Deleting the list.',
-        'wb_close_all_lst_fnd' : 'A workbook object list was found. ',
-        'wb_close_all_obj_loaded' : 'Objects loaded',
-        'wb_close_all_nothing' : 'No workbooks list has been created. Nothing to be closed.',
+        # mpy_xl.py - cl_xl_workbook.activate_worksheet(~)
+        'activate_worksheet_done': 'The worksheet was successfully activated.',
+        'activate_worksheet_nfnd': 'The requested sheet was not found.',
+        'activate_worksheet_file': 'Workbook',
+        'activate_worksheet_req_sht': 'Sheet requested',
 
-        # mpy_xl.py - wb_create(~)
-        'wb_create_done' : 'New workbook created.',
+        # mpy_xl.py - cl_xl_workbook.read_cells(~)
+        'read_cells_file' : 'File',
+        'read_cells_sht' : 'Sheet',
+        'read_cells_nfnd' : 'Could not find the requested worksheet.',
+        'read_cells_av_shts' : 'Available Sheets',
+        'read_cells_read' : 'The worksheet was read from.',
+        'read_cells_cls' : 'Cells',
+        'read_cells_no_range' : 'Missing cell range. Skipped reading cells.',
 
-        # mpy_xl.py - wb_load(~)
-        'wb_load_wblst_mismatch' : 'The dedicated list for MS Excel workbook objects appears to be occupied by a user variable.',
-        'wb_load_wb_exists' : 'The workbook is already a loaded object. No action required.',
-        'wb_load_path' : 'Path',
-        'wb_load_obj' : 'Object',
-        'wb_load_wb_loaded' : 'MS Excel workbook loaded.',
-        'wb_load_no_file' : 'The file does not exist.',
-        'wb_load_dat' : 'Data only',
+        # mpy_xl.py - cl_xl_workbook.write_cells(~)
+        'write_cells_done': 'Cells written to.',
+        'write_cells_range': 'Range',
 
-        # mpy_xl.py - wb_tbl_attributes(~)
-        'wb_tbl_attributes_retr' : 'Retrieved all values of an MS Excel table.',
-        'wb_tbl_attributes_path' : 'Path',
-        'wb_tbl_attributes_sheet' : 'Sheet',
-        'wb_tbl_attributes_tbl' : 'Table',
+        # mpy_xl.py - cl_xl_workbook.edit_worksheet(~)
+        'edit_worksheet_found' : 'The requested worksheet was found.',
+        'edit_worksheet_nfnd' : 'Could not find the requested worksheet.',
+        'edit_worksheet_file' : 'File',
+        'edit_worksheet_sht' : 'Sheet',
+        'edit_worksheet_name' : 'Sheet Name',
+        'edit_worksheet_old_name' : 'Old Sheet Name',
+        'edit_worksheet_new_name' : 'New Sheet Name',
+        'edit_worksheet_position' : 'Worksheet Position',
+        'edit_worksheet_dup_name' : 'Duplicate Name',
+        'edit_worksheet_shts' : 'Sheets in Workbook',
+        'edit_worksheet_create_sheet_done' : 'Worksheet created.',
+        'edit_worksheet_rename_sheet_done' : 'Worksheet renamed.',
+        'edit_worksheet_duplicate_sheet_done' : 'Worksheet duplicated.',
 
-        # mpy_xl.py - wb_tbl_inquiry(~)
-        'wb_tbl_inquiry_retr' : 'Retrieved all tables of a workbook.',
-        'wb_tbl_inquiry_Path' : 'Path',
-        'wb_tbl_inquiry_tbl_wksh' : 'Tables and worksheets',
-        'wb_tbl_inquiry_tbl_rng' : 'Tables and ranges',
+        # mpy_xl.py - cl_xl_workbook.get_table_attributes(~)
+        'get_table_attributes_retr' : 'Retrieved all values of an MS Excel table.',
+        'get_table_attributes_path' : 'Path',
+        'get_table_attributes_sheet' : 'Sheet',
+        'get_table_attributes_tbl' : 'Table',
 
-        # mpy_xl.py - opyxl_tbl_datb_dict(~)
-        'opyxl_tbl_datb_dict_conv' : 'Converted an openpyxl databook into a list specific to the attributes of the MS Excel table.',
-        'opyxl_tbl_datb_dict_tbl' : 'Table',
-        'opyxl_tbl_datb_dict_attr' : 'Attributes',
+        # mpy_xl.py - openpyxl_table_data_dict(~)
+        'openpyxl_table_data_dict_conv' : 'Converted an openpyxl data-book into a list specific to the attributes of the MS Excel table.',
+        'openpyxl_table_data_dict_tbl' : 'Table',
+        'openpyxl_table_data_dict_attr' : 'Attributes',
 
         # mpy_sqlite3.py - sqlite3_db_connect(~)
         'sqlite3_db_connect_conn' : 'Connecting to SQLite database.',
@@ -672,10 +693,6 @@ def loc_mpy_dbg() -> dict:
         'dbg_mpy_xl_start' : 'Start debugging of the mpy_xl.py module.',
         'dbg_mpy_xl_end' : 'Debugging of mpy_xl.py finished.',
 
-        # debug.py - dbg_mpy_wscraper(~)
-        'dbg_mpy_wscraper_start' : 'Start debugging of the mpy_wscraper.py module.',
-        'dbg_mpy_wscraper_end' : 'Debugging of mpy_wscraper.py finished.',
-
         # debug.py - dummy_process_list_append(~)
         'dummy_process_list_append_start' : 'Start appending to a list. Simple benchmark.\nItems total',
         'dummy_process_list_append_dict_conn' : 'Testing global dictionary connection. This number is supposed to always increment by 1.',
@@ -717,6 +734,21 @@ def loc_app() -> dict:
     loc_app_dict = {
 
         # App specific area - BEGIN
+
+        "app_run_choose_program" : "What do you want to do?",
+        "app_run_option1_tag_eval" : "Evaluate Tag Comments",
+        "app_run_option2_alm_mngmt" : "Alarm Management (under construction)",
+        "app_run_critical" : "Something during the selection went wrong.",
+
+        "program_tag_eval_run" : "Running tag evaluation.",
+        "program_tag_eval_tag" : "Tag",
+        "program_tag_eval_csv_select" : "Choose a csv file for tag evaluation.",
+        "program_tag_eval_gr24char" : "Tag comment shortened to 24 characters.",
+        "program_tag_eval_gr24_orig" : "Original tag comment",
+        "program_tag_eval_gr24_new" : "New tag comment",
+
+        "comment_prefix_warn" : "Tag comment prefix evaluation skipped. Source format not compatible.",
+        "comment_prefix_str" : "Source",
 
         # App specific area - END
     }

@@ -115,13 +115,13 @@ def parameters(start_time=None):
     # These log levels may still be printed to console.
     # Called by: throughout mpy_msg operations
     # Default: ["debug"]
-    mpy_log_lvl_nolog = []
+    mpy_log_lvl_nolog = ["debug"]
 
     # List object to exclude certain log levels from being printed to ui or console.
     # These log levels may still be logged to DB or text file.
     # Called by: mpy_msg.mpy_msg_print(~)
     # Default: ["debug"]
-    mpy_log_lvl_noprint = []
+    mpy_log_lvl_noprint = ["debug", "warning"]
 
     # List object to have certain log levels raise an interrupt. This will also freeze
     # running threads and processes and eventually abort the program (depending on
@@ -208,7 +208,7 @@ def parameters(start_time=None):
     # an integer value greater than 1 for mt_max_threads_cnt_abs. Ultimately,
     # if the relative determination is chosen, an absolute maximum thread count
     # will be determined during initialization and mt_max_threads will
-    # always be adressed after initialization.
+    # always be addressed after initialization.
     mt_max_threads_set_abs = True
 
     # Set the absolute maximum amount of threads which shall be utilized. This needs
@@ -232,9 +232,6 @@ def parameters(start_time=None):
     r"""
 >>> PATHS <<<
     """
-
-    # System specific character or string used to divide folders in a path
-    path_divider = os.sep
 
     # Path to the app folder
     main_path = pathlib.Path(__file__).parent.parent.resolve()
@@ -262,6 +259,9 @@ def parameters(start_time=None):
     app_path = pathlib.Path(os.path.join(f'{main_path}', 'app'))
     # Create the path, if not existing.
     os.makedirs(app_path, exist_ok=True)
+
+    # Path to the app icon
+    app_icon = pathlib.Path(os.path.join(f'{main_path}', 'res', 'icons', 'smph.ico'))
 
     return{
         'language' : language,
@@ -293,7 +293,6 @@ def parameters(start_time=None):
         'mt_max_threads_cnt_abs' : mt_max_threads_cnt_abs,
         'mt_max_threads_cnt_rel' : mt_max_threads_cnt_rel,
         'mt_max_threads_rel_floor' : mt_max_threads_rel_floor,
-        'path_divider' : f'{path_divider}',
         'main_path' : main_path,
         'log_path' : log_path,
         'log_db_path' : log_db_path,
@@ -301,4 +300,5 @@ def parameters(start_time=None):
         'app_files_path' : app_files_path,
         'main_db_path' : main_db_path,
         'app_path' : app_path,
+        'app_icon' : app_icon,
     }

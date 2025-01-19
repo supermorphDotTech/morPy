@@ -34,14 +34,6 @@ def _exit(mpy_trace: dict=None, app_dict: dict=None):
         # TODO implement a timeout, as all tasks should be finished at this point anyway
         # mpy_mt.mpy_threads_joinall(mpy_trace, app_dict)
 
-        # Evaluate the usage of mpy_xl
-        if 'mpy_xl_loaded_wb_lst' in app_dict:
-
-            import mpy_xl
-
-            # Clean up RAM: Close all MS Excel Workbooks
-            mpy_xl.wb_close_all(mpy_trace, app_dict)
-
         # Retrieve exit time and date
         datetime_exit = mpy_fct.datetime_now(mpy_trace)
 

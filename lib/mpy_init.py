@@ -77,7 +77,7 @@ def init(mpy_trace):
         init_dict["proc"]["mpy"].update({"proc_refs" : []})
 
         # Initialize the global interrupt flag
-        init_dict["global"]["mpy"].update({"mpy_interrupt" : False})
+        init_dict["global"]["mpy"]["mpy_interrupt"] = False
 
         # Set an initialization complete flag
         init_dict["run"]["init_complete"] = False
