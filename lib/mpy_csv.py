@@ -229,6 +229,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
     r"""
     This function takes da dictionary as provided by csv_read() and saves it as an MS Excel file.
     The csv_dict however may be evaluated and processed prior to executing csv_dict_to_excel().
+    The file will be saved automatically, but closing the workbook is optional.
 
     :param mpy_trace: Operation credentials and tracing
     :param app_dict: morPy global dictionary containing app configurations

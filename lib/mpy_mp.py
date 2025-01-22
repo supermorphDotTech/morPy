@@ -19,15 +19,17 @@ from multiprocessing import Process
 from functools import partial
 
 class cl_orchestrator:
-
     r"""
     TODO implement memory management
     Class of morPy orchestrators.
     """
 
     def __init__(self, mpy_trace: dict, app_dict: dict) -> None:
-
         r"""
+        In order to get metrics for __init__(), call helper method _init() for
+        the @metrics decorator to work. It relies on the returned
+        {'mpy_trace' : mpy_trace}, which __init__() can not do (needs to be None).
+
         :param mpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         """
@@ -48,7 +50,6 @@ class cl_orchestrator:
 
     @metrics
     def _init(self, mpy_trace: dict, app_dict: dict) -> dict:
-
         r"""
         Initialization helper method for parallel processing setup.
 
@@ -90,7 +91,6 @@ class cl_orchestrator:
 
     @metrics
     def _init_processes(self, mpy_trace: dict, app_dict: dict) -> dict:
-
         r"""
         Get the maximum amount of processes to handle and prepare app_dict.
 
@@ -210,7 +210,6 @@ class cl_orchestrator:
 
     @metrics
     def _init_memory(self, mpy_trace: dict, app_dict: dict) -> dict:
-
         r"""
         Set the maximum amount of memory to be utilized.
 
@@ -309,7 +308,6 @@ class cl_orchestrator:
 
     @metrics
     def _init_app_dict(self, mpy_trace: dict, app_dict: dict) -> dict:
-
         r"""
         Prepare nested dictionaries and store data in app_dict.
 
@@ -360,7 +358,6 @@ class cl_orchestrator:
 
     @metrics
     def _init_run(self, mpy_trace: dict, app_dict: dict):
-
         r"""
         Setup attributes for cyclical orchestrator _run.
 
@@ -392,7 +389,6 @@ class cl_orchestrator:
 
     @metrics
     def _app_run(self, mpy_trace: dict, app_dict: dict):
-
         r"""
         Sequential app init, run and exit routine.
 
@@ -431,7 +427,6 @@ class cl_orchestrator:
 
     @metrics
     def _run(self, mpy_trace: dict, app_dict: dict):
-
         r"""
         Routine of the morPy orchestrator. Cyclic program.
 
@@ -483,7 +478,6 @@ class cl_orchestrator:
 
     @metrics
     def _main_loop(self, mpy_trace: dict, app_dict: dict) -> dict:
-
         r"""
         Function
 
@@ -549,7 +543,6 @@ class cl_orchestrator:
 
 @metrics
 def run_parallel(mpy_trace: dict, app_dict: dict, task: list=None, priority=None, task_sys_id=None) -> dict:
-
     r"""
     TODO description correction
     TODO provide task wrapper to release processes (write to registers)
@@ -772,7 +765,6 @@ def run_parallel(mpy_trace: dict, app_dict: dict, task: list=None, priority=None
         }
 
 def spawn(task: list):
-
     r"""
     TODO Function
 
@@ -844,7 +836,6 @@ def spawn(task: list):
 
 @metrics
 def watcher(mpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=False) -> dict:
-
     r"""
     TODO Function 
 
@@ -937,7 +928,6 @@ def watcher(mpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=Fal
 
 @metrics
 def join_processes(mpy_trace: dict, app_dict: dict) -> dict:
-
     r"""
     Function
 
@@ -953,6 +943,8 @@ def join_processes(mpy_trace: dict, app_dict: dict) -> dict:
 
 
     TODO add .join() to API and allow for custom settings
+    TODO do not wait for orchestrator
+    TODO find solution for 2-core mode
     """
 
     import mpy_fct
@@ -1009,7 +1001,6 @@ def join_processes(mpy_trace: dict, app_dict: dict) -> dict:
 
 @metrics
 def interrupt(mpy_trace: dict, app_dict: dict) -> dict:
-
     r"""
     This function sets a global interrupt flag. Processes and threads
     will halt once they pass (the most recurring) morPy functions.

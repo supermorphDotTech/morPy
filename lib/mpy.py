@@ -93,6 +93,7 @@ def cl_progress(mpy_trace: dict, app_dict: dict, description: str=None, total: f
 
             :return: dict
                 prog_rel: Relative progress, float between 0 and 1
+                prog_abs: Absolute progress, float between 0.00 and 100.00
                 message: Message generated. None, if no tick was hit.
 
     :example:
@@ -434,6 +435,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
     r"""
     This function takes da dictionary as provided by csv_read() and saves it as an MS Excel file.
     The csv_dict however may be evaluated and processed prior to executing csv_dict_to_excel().
+    The file will be saved automatically, but closing the workbook is optional.
 
     :param mpy_trace: Operation credentials and tracing
     :param app_dict: morPy global dictionary containing app configurations
@@ -559,7 +561,7 @@ def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes:
     """
 
     try:
-        return mpy_common.dialog_sel_file(mpy_trace, app_dict, init_dir, ftypes, title)
+        return mpy_ui_tk.dialog_sel_file(mpy_trace, app_dict, init_dir, ftypes, title)
     except Exception as e:
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
@@ -593,7 +595,7 @@ def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str=None, title: s
     """
 
     try:
-        return mpy_common.dialog_sel_dir(mpy_trace, app_dict, init_dir, title)
+        return mpy_ui_tk.dialog_sel_dir(mpy_trace, app_dict, init_dir, title)
     except Exception as e:
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
@@ -774,10 +776,13 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
     """
 
     process_qed = False
+    mpy_trace = None
+    app_dict = None
 
     try:
         mpy_trace = task[1]
         app_dict = task[2]
+
         try:
             app_dict["proc"]["mpy"]["process_q"].enqueue(
                 mpy_trace, app_dict, priority=priority, task=task, autocorrect=autocorrect
@@ -795,8 +800,16 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
-    except:
-        raise RuntimeError
+    except Exception as e:
+        if app_dict:
+            raise ValueError(f'{app_dict["loc"]["mpy"]["ValueError"]}\n'
+                             f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                             f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}'
+                             )
+        else:
+            raise ValueError('A function got an argument of correct type but improper value.\n'
+                             f'mpy_trace: {True if mpy_trace else False}\n'
+                             f'app_dict: False')
 
     finally:
         return process_qed

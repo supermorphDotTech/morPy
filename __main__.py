@@ -7,6 +7,8 @@ TODO IN PROGRESS
 - Unit tests
     > mpy_common.py | mpy_common_test.py
 
+TODO improve error handling to be specific, rather than excessive/graceful
+
 TODO Finish multiprocessing with shared memory
     NEXT STEPS:
     - debug-messages for process_control wrapper

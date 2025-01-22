@@ -19,8 +19,6 @@ import os
 import os.path
 import re
 
-from tkinter import Tk
-from tkinter import filedialog
 from heapq import heappush, heappop
 
 class cl_priority_queue:
@@ -607,6 +605,7 @@ class cl_progress():
             mpy_trace: Operation credentials and tracing
             check: Indicates whether the function ended without errors
             prog_rel: Relative progress, float between 0 and 1
+            prog_abs: Absolute progress, float between 0.00 and 100.00
             message: Message generated. None, if no tick was hit.
 
         :example:
@@ -625,6 +624,7 @@ class cl_progress():
 
         check = False
         prog_rel = None
+        prog_abs_short = None
         message = None
 
         try:
@@ -674,6 +674,7 @@ class cl_progress():
             'mpy_trace' : mpy_trace,
             'check' : check,
             'prog_rel' : prog_rel,
+            'prog_abs' : prog_abs_short,
             'message' : message
             }
 
@@ -770,177 +771,6 @@ def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encodi
         'encoding': encoding,
         'lines': lines,
     }
-
-@metrics
-def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None) -> dict:
-
-    r"""
-    This function opens a dialog for the user to select a file.
-
-    :param mpy_trace: operation credentials and tracing
-    :param app_dict: morPy global dictionary
-    :param init_dir: The directory in which the dialog will initially be opened
-    :param ftypes: This tuple of 2-tuples specifies, which filetypes will be
-        selectable in the dialog box.
-    :param title: Title of the open file dialog
-
-    :return: dict
-        mpy_trace: [dictionary] operation credentials and tracing
-        check: The function ended with no errors and a file was chosen
-        file_path: Path of the selected file
-        file_selected: True, if file was selected. False, if canceled.
-
-    :example:
-        init_dir = "C:\"
-        ftypes = (('PDF','*.pdf'),('Textfile','*.txt'),('All Files','*.*'))
-        title = 'Select a file...'
-        file_path = mpy.dialog_sel_file(mpy_trace, app_dict, init_dir, ftypes, title)["file_path"]
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_common'
-    operation = 'dialog_sel_file(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-    file_path = None
-    file_selected = False
-
-    try:
-        if not init_dir:
-            init_dir = app_dict["conf"]["main_path"]
-        if not ftypes:
-            ftypes = (f'{app_dict["loc"]["mpy"]["dialog_sel_file_all_files"]}','*.*')
-        if not title:
-            title = f'{app_dict["loc"]["mpy"]["dialog_sel_file_select"]}'
-
-        # Invoke the Tkinter root window and withdraw it to force the
-        # dialog to be opened in the foreground
-        root = Tk()
-        root.withdraw()
-        root.attributes("-topmost", True)
-        root.iconbitmap(app_dict["conf"]["app_icon"])
-
-        # Open the actual dialog in the foreground and store the chosen folder
-        file_path = filedialog.askopenfilename(
-            parent = root,
-            title = f'{title}',
-            initialdir = init_dir,
-            filetypes = ftypes,
-        )
-
-        if not file_path:
-            # No file was chosen by the user.
-            log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_file_nosel"]}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_file_cancel"]}')
-
-        else:
-            file_selected = True
-            # A file was chosen by the user.
-            log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_file_asel"]}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_path"]}: {file_path}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_file_open"]}')
-
-            # Create a path object
-            mpy_fct.pathtool(mpy_trace, file_path)
-
-        check = True
-
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check,
-        'file_path' : file_path,
-        'file_selected' : file_selected,
-        }
-
-@metrics
-def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
-
-    r"""
-    This function opens a dialog for the user to select a directory.
-
-    :param mpy_trace: operation credentials and tracing
-    :param app_dict: morPy global dictionary
-    :param init_dir: The directory in which the dialog will initially be opened
-    :param title: Title of the open directory dialog
-
-    :return: dict
-        mpy_trace: [dictionary] operation credentials and tracing
-        check: The function ended with no errors and a file was chosen
-        dir_path: Path of the selected directory
-        dir_selected: True, if directory was selected. False, if canceled.
-
-    :example:
-        init_dir = "C:\"
-        title = 'Select a directory...'
-        dir_path = mpy.dialog_sel_dir(mpy_trace, app_dict, init_dir, title)["dir_path"]
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_common'
-    operation = 'dialog_sel_dir(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-    dir_path = None
-    dir_selected = False
-
-    try:
-        if not init_dir:
-            init_dir = app_dict["conf"]["main_path"]
-        if not title:
-            title = f'{app_dict["loc"]["mpy"]["dialog_sel_dir_select"]}'
-
-        # Invoke the Tkinter root window and withdraw it to force the
-        # dialog to be opened in the foreground
-        root = Tk()
-        root.withdraw()
-        root.iconbitmap(app_dict["conf"]["app_icon"])
-
-        # Open the actual dialog in the foreground and store the chosen folder
-        root.dir_name = filedialog.askdirectory(
-            parent = root,
-            title = f'{title}',
-            initialdir = init_dir,
-        )
-        dir_path = root.dir_name
-
-        if not dir_path:
-            # No directory was chosen by the user.
-            log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_dir_nosel"]}\n'
-                f'{app_dict["loc"]["mpy"]["dialog_sel_dir_choice"]}: {app_dict["dialog_sel_dir_cancel"]}')
-        else:
-            dir_selected = True
-            # A directory was chosen by the user.
-            log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_dir_asel"]}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_dir_path"]}: {dir_path}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_dir_open"]}')
-
-            # Create a path object
-            mpy_fct.pathtool(mpy_trace, dir_path)
-
-        check = True
-
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check,
-        'dir_path' : dir_path,
-        'dir_selected' : dir_selected,
-        }
 
 @metrics
 def fso_copy_file(mpy_trace: dict, app_dict: dict, source: str, dest: str, ovwr_perm: bool) -> dict:

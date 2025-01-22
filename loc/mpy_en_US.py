@@ -40,7 +40,7 @@ def loc_mpy() -> dict:
 
         # morPy specific area - BEGIN
 
-        # ERRORS
+        # ERRORS - Common vocabulary
         'err_line' : 'Line',
         'err_excp' : 'Exception',
         'priority' : 'priority',
@@ -48,6 +48,38 @@ def loc_mpy() -> dict:
         'process' : 'process',
         'thread' : 'thread',
         'task' : 'task',
+
+        # ERRORS - Built-in error types
+        'AssertionError' : 'Assertion failed.',
+        'AttributeError' : 'Attribute assignment or reference failed.',
+        'EOFError' : 'End of file.',
+        'FloatingPointError' : 'Floating point operation failed.',
+        'GeneratorExit' : 'Generator close() method failed.',
+        'ImportError' : 'Imported module can not be found.',
+        'IndexError' : 'Index of sequence is out of range.',
+        'KeyError' : 'Key not found.',
+        'KeyboardInterrupt' : 'Keyboard interrupt by user.',
+        'MemoryError' : 'Out of memory.',
+        'NameError' : 'Variable addressed not found.',
+        'NotImplementedError' : 'Class is in development.',
+        'OSError' : 'A system related error occurred.',
+        'OverflowError' : 'Result of arithmetic operation too big to be represented.',
+        'ReferenceError' : 'A weak reference proxy is used to access a garbage collected referent.',
+        'RuntimeError' : 'A non-specific error occurred.',
+        'StopIteration' : 'No further item can be returned by the next() iterator.',
+        'SyntaxError' : 'The parser encountered a syntax error.',
+        'IndentationError' : 'Incorrect indentation encountered.',
+        'TabError' : 'Indentation consists of inconsistent tabs and spaces.',
+        'SystemError' : 'The interpreter detected an internal error.',
+        'SystemExit' : 'The operation sys.exit() encountered an error.',
+        'TypeError' : 'A function or operation is applied to an object of an incorrect type.',
+        'UnboundLocalError' : 'A reference is made to a local variable in a function or method, but no value has been bound to that variable.',
+        'UnicodeError' : 'A Unicode-related encoding or decoding error occurred.',
+        'UnicodeEncodeError' : 'A Unicode-related error occurred during encoding.',
+        'UnicodeDecodeError' : 'A Unicode-related error occurred during decoding.',
+        'UnicodeTranslateError' : 'A Unicode-related error occurred during translation.',
+        'ValueError' : 'A function got an argument of correct type but improper value.',
+        'ZeroDivisionError' : 'The second operand of a division or module operation is zero.',
 
         # mpy_init.py - init(~)
         'events_total_descr' : 'Total number of logged events.',
@@ -222,6 +254,11 @@ def loc_mpy() -> dict:
         'decode_to_plain_text_to' : 'to plain text.',
         'decode_to_plain_text_msg' : 'Message',
         'decode_to_plain_text_not' : 'The Input is not encoded or not supported. No action taken.',
+
+        # mpy_common.py - progress_2bars_console._init(~)
+        'progress_2bars_console_prog': 'Progress',
+        'progress_2bars_console_curr': 'Current Step',
+        'progress_2bars_console_curr': 'Current Step',
 
         # mpy_common.py - dialog_sel_file(~)
         'dialog_sel_file_nosel' : 'No file was chosen by the user.',
