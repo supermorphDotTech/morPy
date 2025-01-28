@@ -255,10 +255,14 @@ def loc_mpy() -> dict:
         'decode_to_plain_text_msg' : 'Message',
         'decode_to_plain_text_not' : 'The Input is not encoded or not supported. No action taken.',
 
-        # mpy_common.py - progress_2bars_console._init(~)
-        'progress_2bars_console_prog': 'Progress',
-        'progress_2bars_console_curr': 'Current Step',
-        'progress_2bars_console_curr': 'Current Step',
+        # mpy_common.py - cl_progress_gui._init(~)
+        'cl_progress_gui_prog': 'Progress',
+        'cl_progress_gui_overall': 'Overall Progress',
+        'cl_progress_gui_curr': 'Current Stage',
+        'cl_progress_gui_abort': 'Abort',
+        'cl_progress_gui_close': 'Close',
+        'cl_progress_gui_done': 'All operations finished successfully.',
+        'cl_progress_gui_start_work_thread_err' : 'Exception in the worker thread.',
 
         # mpy_common.py - dialog_sel_file(~)
         'dialog_sel_file_nosel' : 'No file was chosen by the user.',

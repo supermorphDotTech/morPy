@@ -1031,8 +1031,8 @@ def interrupt(mpy_trace: dict, app_dict: dict) -> dict:
 
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+            lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
     finally:
         return {

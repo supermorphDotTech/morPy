@@ -31,6 +31,29 @@ class cl_priority_queue:
     :param app_dict: morPy global dictionary containing app configurations
     :param name: Name or description of the instance
 
+    :methods:
+        .enqueue(mpy_trace: dict, app_dict: dict, priority: int=100, task: tuple=None, autocorrect: bool=True,
+            is_process: bool=True)
+            Adds a task to the priority queue.
+
+            :param priority: Integer representing task priority (lower is higher priority)
+            :param task: Tuple of a callable, *args and **kwargs (func, *args, **kwargs)
+            :param autocorrect: If False, priority can be smaller than zero. Priority
+                smaller zero is reserved for the morPy Core.
+            :param is_process: If True, task is run in a new process (not by morPy orchestrator)
+
+        .dequeue(mpy_trace: dict, app_dict: dict)
+            Removes and returns the highest priority task from the priority queue.
+
+            :return: dict
+                priority: Integer representing task priority (lower is higher priority)
+                counter: Number of the task when enqueued
+                task_id : Continuously incremented task ID (counter).
+                task_sys_id : ID of the task determined by Python core
+                task: The dequeued task list
+                task_callable: The dequeued task callable
+                is_process: If True, task is run in a new process (not by morPy orchestrator)
+
     :example:
         from functools import partial
         # Create queue instance
@@ -53,6 +76,8 @@ class cl_priority_queue:
         :param name: Name or description of the instance
         :param is_manager: If True, priority queue is worked on as a manger. Intended
             for morPy orchestrator only.
+
+        :return: self
 
         :example:
             queue = cl_priority_queue(mpy_trace, app_dict, name="example_queue")
@@ -424,12 +449,10 @@ class cl_progress():
     :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
         10.7% progress exceeded the exact progress will be logged.
 
-    .update()
+    .update(mpy_trace: dict, app_dict: dict, current: float=None)
         Method to update current progress and log progress if tick is passed.
 
-        :return .update(): dict
-            mpy_trace: Operation credentials and tracing
-            check: Indicates whether the function ended without errors
+        :return: dict
             prog_rel: Relative progress, float between 0 and 1
             message: Message generated. None, if no tick was hit.
 
@@ -547,6 +570,8 @@ class cl_progress():
 
         :example:
             self._init_ticks(mpy_trace, app_dict)
+
+        TODO mark progress log as verbose
         """
 
         # morPy credentials (see mpy_init.init_cred() for all dict keys)
@@ -599,7 +624,7 @@ class cl_progress():
         :param mpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         :param current: Current progress count. If None, each call of this method will add +1
-            to the progress count.
+            to the progress count. Defaults to None.
 
         :return: dict
             mpy_trace: Operation credentials and tracing
@@ -614,7 +639,7 @@ class cl_progress():
             progress = mpy.cl_progress(mpy_trace, app_dict, description='App Progress', total=total_count, ticks=tks)
 
             curr_cnt = 37
-            progress.update(mpy_trace, app_dict, current=current_count)
+            progress.update(mpy_trace, app_dict, current=curr_cnt)
         """
 
         # morPy credentials (see mpy_init.init_cred() for all dict keys)

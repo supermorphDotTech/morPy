@@ -509,8 +509,7 @@ def tracing(module, operation, mpy_trace, clone=True, process_id=None):
     :param process_id: Adjust the process ID of the trace. Intended to be used by morPy
         orchestrator only.
 
-    :return
-        mpy_trace_passdown - operation credentials and tracing
+    :return mpy_trace_passdown: operation credentials and tracing
     """
 
     # Deepcopy the mpy_trace dictionary. Any change in either dictionary is not reflected
@@ -582,38 +581,34 @@ def txt_wr(mpy_trace, app_dict, filepath, content):
                 f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
     finally:
-
-        # Garbage collection
-        gc.collect()
-
         # Return a dictionary
         return{
             'mpy_trace' : mpy_trace,
             'check' : check
             }
 
-def handle_exception_main(e, mpy_init_check, app_dict=None):
+def handle_exception_main(e, init=False, app_dict=None):
     r"""
     Handle any exception outside the scope of mpy_msg.py
     """
     import mpy_msg
 
-    if mpy_init_check and app_dict is not None:
+    if init and app_dict is not None:
         message = (f'{app_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                        f'{app_dict["err_excp"]}: {e}')
         mpy_msg.log('__main__', app_dict, message, 'critical')
-    elif not mpy_init_check:
+    elif not init:
         # Fallback logging in case the app dictionary or logging fails
         logging.critical(f'Module: __main__\n'
                          f'Line: {sys.exc_info()[-1].tb_lineno}\n'
                          f'CRITICAL Exception: {e}\n'
                          f'morPy initialization failed!')
-    elif mpy_init_check and app_dict is None:
+    elif init and app_dict is None:
         # Fallback logging in case the app dictionary or logging fails
         logging.critical(f'Module: __main__\n'
                          f'Line: {sys.exc_info()[-1].tb_lineno}\n'
                          f'CRITICAL Exception: {e}\n'
-                         f'morPy execution failed!')
+                         f'Missing app_dict - morPy execution failed!')
 
     # Quit the program
     sys.exit()

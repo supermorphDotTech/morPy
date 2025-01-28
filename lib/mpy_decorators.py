@@ -7,6 +7,7 @@ Descr.:     This module yields all decorators to be used with the morPy framewor
 """
 
 import sys
+import time
 
 from functools import wraps, partial
 
@@ -128,69 +129,67 @@ def metrics(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
 
-        try:
-            if func is not None:
-                # Extract function arguments
-                # Respect "self", if object is a method
-                # TODO make it work for methods / when "self" is passed as arg[0]
-                # TODO make the evaluation for mpy_trace and app_dict more elegant and robust
+        perf_mode = None
+        enable_metrics = False
+        mpy_trace = None
+        app_dict = None
+        len_args = len(args)
 
-                # Extract function arguments
-                mpy_args_check = False
-                enable = False
-                try:
-                    mpy_trace = args[0]
-                    app_dict = args[1]
-                    if mpy_trace["process_id"] and mpy_trace["tracing"]:
-                        mpy_args_check = True
-                except:
-                    mpy_trace = args[1]
-                    app_dict = args[2]
-                    mpy_args_check = True
+        # Skip metrics, if arguments mpy_trace or app_dict are missing
+        if len_args < 2:
+            raise IndexError("Missing arguments mpy_trace and/or app_dict!")
+        else:
+            # Assume the first arg might be `self` if not a dict
+            offset = 0
+            if len_args > 0 and not isinstance(args[0], dict):
+                # Probably a bound method; skip `self`
+                offset = 1
 
-                if mpy_args_check and mpy_trace is not None and app_dict is not None and not hasattr(func, '__wrapped__'):
-                    enable = app_dict.get("conf", {}).get("mpy_metrics_enable", False)
-                    perfmode = app_dict.get("conf", {}).get("mpy_metrics_perfmode", False)
+            # Attempt to extract mpy_trace & app_dict from positional args
+            try:
+                mpy_trace = args[offset]
+                app_dict = args[offset + 1]
 
-                # Perform metrics if switched on
-                if enable:
-                    import time
+                # Now we decide if metrics are enabled
+                # (only if we found both mpy_trace and app_dict)
+                if isinstance(mpy_trace, dict) and isinstance(app_dict, dict):
+                    enable_metrics = app_dict.get("conf", {}).get("mpy_metrics_enable", False)
+                    perf_mode = app_dict.get("conf", {}).get("mpy_metrics_perfmode", False)
 
-                    # Measure the runtime and call a function
+            except (IndexError, TypeError):
+                # If we still don't have them, leave them as None
+                pass
+
+            try:
+                if enable_metrics:
                     start_time = time.perf_counter()
                     retval = func(*args, **kwargs)
                     end_time = time.perf_counter()
                     run_time = end_time - start_time
 
-                    # Metrics collection in performance Mode
-                    if perfmode:
+                    # Performance Mode vs. Full Mode
+                    if perf_mode:
                         metrics_perf(mpy_trace, run_time)
-
-                    # Metrics collection in full mode
                     else:
-                        metrics_full(retval, run_time)
-
-                # If metrics are disabled, execute the function normally
+                        metrics_full(mpy_trace, run_time)
                 else:
                     retval = func(*args, **kwargs)
 
-            else:
-                retval = None
+            except AttributeError as e:
+                # If we actually got our tracing info, log a CRITICAL error
+                if isinstance(mpy_trace, dict) and isinstance(app_dict, dict):
+                    module = 'mpy_decorators'
+                    operation = 'metrics.wrapper(~)'
+                    mpy_trace_metrics = mpy_fct.tracing(module, operation, mpy_trace)
+                    log(mpy_trace_metrics, app_dict, "critical",
+                        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                else:
+                    # fallback handler if no tracing
+                    mpy_fct.handle_exception_decorator(f'{e}\nmpy_trace: {mpy_trace}\n*args: {args}\n**kwargs: {kwargs}')
 
-        except Exception as e:
-            if mpy_args_check and mpy_trace is not None and app_dict is not None:
-                module = 'mpy_decorators'
-                operation = 'metrics.wrapper(~)'
-                mpy_trace_metrics = mpy_fct.tracing(module, operation, mpy_trace)
-                log(mpy_trace_metrics, app_dict, "critical",
-                lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-            else:
-                mpy_fct.handle_exception_decorator(e)
-
-            # Quit the program
-            sys.exit()
+                # Quit the program
+                sys.exit(1)
 
         return retval
 

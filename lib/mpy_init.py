@@ -237,9 +237,8 @@ def mpy_dict_build(mpy_trace: dict):
     to successfully link the nested dictionaries.
 
     :param mpy_trace: operation credentials and tracing
-    :param init_dict: Dictionary holding all initialized data (init of app_dict)
 
-    :return:
+    :return: dict-like
         init_dict
 
     :example:
@@ -253,86 +252,174 @@ def mpy_dict_build(mpy_trace: dict):
     operation = 'mpy_dict_build(~)'
     mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
+    # Check for GIL and decide for an app_dict structure.
+    gil = has_gil(mpy_trace)
+    init_dict = None
+
     try:
-        init_dict = cl_mpy_dict(
-            name="app_dict",
-        )
+        # With GIL, use a flat app_dict referencing UltraDict instances and mask it as nested.
+        # TODO finish "nested-but-flat" implementation
+        if gil:
+            init_dict = cl_mpy_dict(
+                name="app_dict",
+            )
 
-        init_dict["conf"] = cl_mpy_dict(
-            name="app_dict[conf]",
-        )
+            init_dict["conf"] = cl_mpy_dict(
+                name="app_dict[conf]",
+            )
 
-        init_dict["sys"] = cl_mpy_dict(
-            name="app_dict[sys]",
-        )
+            init_dict["sys"] = cl_mpy_dict(
+                name="app_dict[sys]",
+            )
 
-        init_dict["run"] = cl_mpy_dict(
-            name="app_dict[run]",
-        )
+            init_dict["run"] = cl_mpy_dict(
+                name="app_dict[run]",
+            )
 
-        init_dict["global"] = cl_mpy_dict(
-            name="app_dict[global]",
-        )
+            init_dict["global"] = cl_mpy_dict(
+                name="app_dict[global]",
+            )
 
-        init_dict["global"]["mpy"] = cl_mpy_dict(
-            name="app_dict[global][mpy]",
-        )
+            init_dict["global"]["mpy"] = cl_mpy_dict(
+                name="app_dict[global][mpy]",
+            )
 
-        init_dict["global"]["app"] = cl_mpy_dict(
-            name="app_dict[global][app]",
-        )
+            init_dict["global"]["app"] = cl_mpy_dict(
+                name="app_dict[global][app]",
+            )
 
-        init_dict["proc"] = cl_mpy_dict(
-            name="app_dict[proc]",
-        )
+            init_dict["proc"] = cl_mpy_dict(
+                name="app_dict[proc]",
+            )
 
-        init_dict["proc"]["mpy"] = cl_mpy_dict(
-            name="app_dict[proc][mpy]",
-        )
+            init_dict["proc"]["mpy"] = cl_mpy_dict(
+                name="app_dict[proc][mpy]",
+            )
 
-        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict(
-            name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}]',
-        )
+            init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict(
+                name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}]',
+            )
 
-        init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict(
-            name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
-        )
+            init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict(
+                name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
+            )
 
-        init_dict["proc"]["app"] = cl_mpy_dict(
-            name="app_dict[proc][app]",
-        )
+            init_dict["proc"]["app"] = cl_mpy_dict(
+                name="app_dict[proc][app]",
+            )
 
-        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict(
-            name=f'app_dict[proc][app][P{mpy_trace["process_id"]}]',
-        )
+            init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict(
+                name=f'app_dict[proc][app][P{mpy_trace["process_id"]}]',
+            )
 
-        init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict(
-            name=f'app_dict[proc][app][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
-        )
+            init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict(
+                name=f'app_dict[proc][app][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
+            )
 
-        init_dict["loc"] = cl_mpy_dict(
-            name="app_dict[loc]",
-        )
+            init_dict["loc"] = cl_mpy_dict(
+                name="app_dict[loc]",
+            )
 
-        init_dict["loc"]["mpy"] = cl_mpy_dict(
-            name="app_dict[loc][mpy]",
-        )
+            init_dict["loc"]["mpy"] = cl_mpy_dict(
+                name="app_dict[loc][mpy]",
+            )
 
-        init_dict["loc"]["mpy_dbg"] = cl_mpy_dict(
-            name="app_dict[loc][mpy_dbg]",
-        )
+            init_dict["loc"]["mpy_dbg"] = cl_mpy_dict(
+                name="app_dict[loc][mpy_dbg]",
+            )
 
-        init_dict["loc"]["app"] = cl_mpy_dict(
-            name="app_dict[loc][app]",
-        )
+            init_dict["loc"]["app"] = cl_mpy_dict(
+                name="app_dict[loc][app]",
+            )
 
-        init_dict["loc"]["app_dbg"] = cl_mpy_dict(
-            name="app_dict[loc][app_dbg]",
-        )
+            init_dict["loc"]["app_dbg"] = cl_mpy_dict(
+                name="app_dict[loc][app_dbg]",
+            )
 
-        init_dict["global"]["mpy"]["logs_generate"] = cl_mpy_dict(
-            name="app_dict[global][mpy][logs_generate]",
-        )
+            init_dict["global"]["mpy"]["logs_generate"] = cl_mpy_dict(
+                name="app_dict[global][mpy][logs_generate]",
+            )
+        # Without GIL, allow for true nesting
+        else:
+            init_dict = cl_mpy_dict(
+                name="app_dict",
+            )
+
+            init_dict["conf"] = cl_mpy_dict(
+                name="app_dict[conf]",
+            )
+
+            init_dict["sys"] = cl_mpy_dict(
+                name="app_dict[sys]",
+            )
+
+            init_dict["run"] = cl_mpy_dict(
+                name="app_dict[run]",
+            )
+
+            init_dict["global"] = cl_mpy_dict(
+                name="app_dict[global]",
+            )
+
+            init_dict["global"]["mpy"] = cl_mpy_dict(
+                name="app_dict[global][mpy]",
+            )
+
+            init_dict["global"]["app"] = cl_mpy_dict(
+                name="app_dict[global][app]",
+            )
+
+            init_dict["proc"] = cl_mpy_dict(
+                name="app_dict[proc]",
+            )
+
+            init_dict["proc"]["mpy"] = cl_mpy_dict(
+                name="app_dict[proc][mpy]",
+            )
+
+            init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict(
+                name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}]',
+            )
+
+            init_dict["proc"]["mpy"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict(
+                name=f'app_dict[proc][mpy][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
+            )
+
+            init_dict["proc"]["app"] = cl_mpy_dict(
+                name="app_dict[proc][app]",
+            )
+
+            init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'] = cl_mpy_dict(
+                name=f'app_dict[proc][app][P{mpy_trace["process_id"]}]',
+            )
+
+            init_dict["proc"]["app"][f'P{mpy_trace["process_id"]}'][f'T{mpy_trace["thread_id"]}'] = cl_mpy_dict(
+                name=f'app_dict[proc][app][P{mpy_trace["process_id"]}][T{mpy_trace["thread_id"]}]',
+            )
+
+            init_dict["loc"] = cl_mpy_dict(
+                name="app_dict[loc]",
+            )
+
+            init_dict["loc"]["mpy"] = cl_mpy_dict(
+                name="app_dict[loc][mpy]",
+            )
+
+            init_dict["loc"]["mpy_dbg"] = cl_mpy_dict(
+                name="app_dict[loc][mpy_dbg]",
+            )
+
+            init_dict["loc"]["app"] = cl_mpy_dict(
+                name="app_dict[loc][app]",
+            )
+
+            init_dict["loc"]["app_dbg"] = cl_mpy_dict(
+                name="app_dict[loc][app_dbg]",
+            )
+
+            init_dict["global"]["mpy"]["logs_generate"] = cl_mpy_dict(
+                name="app_dict[global][mpy][logs_generate]",
+            )
 
     # Error detection
     except Exception as e:
@@ -469,3 +556,69 @@ def mpy_ref(mpy_trace: dict, init_dict: dict, init_dict_str: str):
         log_no_q(mpy_trace, init_dict, "error",
         lambda: f'{init_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{init_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+def has_gil(mpy_trace: dict) -> dict:
+    r"""
+    Return True if we detect a standard GIL-based Python runtime on a 'typical' operating system.
+    Return False if we suspect a 'no-gil' or 'free-threading' build on Linux/macOS/Windows, or if
+    we detect certain alternative Pythons. This is *heuristic* and not a guaranteed official check.
+
+    :param mpy_trace: operation credentials and tracing information
+
+    :return: bool
+
+    :example:
+        gil = mpy_init.has_gil(mpy_trace)
+    """
+
+    module = 'mpy_init'
+    operation = 'has_gil(~)'
+    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+    try:
+        # 1) Check if 'nogil' or 'free-threading' is in the version string
+        version_str = sys.version.lower()
+        if "nogil" in version_str or "free threading" in version_str:
+            # If we see "nogil"/"free threading", we assume *no GIL*:
+            return False
+
+        # 2) Check the Python implementation
+        #    - "cpython" typically has GIL,
+        #      but might be a special "nogil" fork (handled above).
+        #    - "ironpython" doesn't have GIL in the same way,
+        #    - "jython" uses JVM threads, etc.
+        impl = sys.implementation.name.lower()
+        if impl != "cpython":
+            # e.g. PyPy also has a GIL but implemented differently,
+            # or IronPython does not use GIL in the same sense
+            # Decide what to do based on your needs:
+            # - Return True if you want to treat PyPy as GIL-based
+            # - Return False for other interpreters, etc.
+            # For simplicity, let's assume any non-CPython is "no GIL"
+            # or "unknown GIL" scenario:
+            return False
+
+        # 3) Check the OS platform, if expectation of no-GIL forks on certain OS
+        current_os = sys.platform.lower()
+        # Examples:
+        #   - 'linux' or 'linux2'
+        #   - 'darwin' for macOS
+        #   - 'win32' or 'cygwin'
+        #   - 'aix', 'freebsd', etc.
+
+        # If you specifically want to detect "no-GIL on Linux only," for instance:
+        # (But we've already returned False if we see "nogil" in the version.)
+
+        # Optionally, do something like:
+        # if current_os.startswith("linux"):
+        #     # e.g., maybe check other environment variables or file paths
+        #     # that you know only exist for your no-GIL builds
+
+        # 4) If nothing triggered a "False", assume standard CPython with GIL
+
+        return True
+
+    except Exception as e:
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')

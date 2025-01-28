@@ -260,8 +260,11 @@ def parameters(start_time=None):
     # Create the path, if not existing.
     os.makedirs(app_path, exist_ok=True)
 
-    # Path to the app icon
+    # Set the app icon
     app_icon = pathlib.Path(os.path.join(f'{main_path}', 'res', 'icons', 'smph.ico'))
+
+    # Set the GUI background
+    app_banner = pathlib.Path(os.path.join(f'{main_path}', 'res', 'banners', 'smph.png'))
 
     return{
         'language' : language,
@@ -301,4 +304,5 @@ def parameters(start_time=None):
         'main_db_path' : main_db_path,
         'app_path' : app_path,
         'app_icon' : app_icon,
+        'app_banner' : app_banner,
     }

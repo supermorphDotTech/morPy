@@ -5,7 +5,7 @@ https://github.com/supermorphDotTech
 Author:     Bastian Neuwirth
 Descr.:     This module delivers functions to debug, warn and log any operations
             executed within the morPy framework. At the same time it processes
-            all kinds of messaging, whther it be via console or ui.
+            all kinds of messaging, whether it be via console or ui.
 """
 
 import mpy_fct
@@ -33,7 +33,7 @@ def log(mpy_trace, app_dict, message, level):
 
     #TODO
     Implement a mechanism to keep logfile size in check
-    > Preferably auto delete logs based on "no errors occured" per process, task, thread and __main__
+    > Preferably auto delete logs based on "no errors occurred" per process, task, thread and __main__
     """
 
     mpy_trace_eval = None
@@ -165,7 +165,7 @@ def log_eval(mpy_trace, app_dict, level, level_dict):
             mpy_trace_eval["interrupt_enable"] = True
             break
 
-    # Count occurences per log level. Count only if relevant regarding app parameters.
+    # Count occurrences per log level. Count only if relevant regarding app parameters.
     # (see mpy_param.py to alter behaviour)
     if log_enable or pnt_enable:
 
@@ -229,9 +229,6 @@ def log_interrupt(mpy_trace, app_dict):
 
     import mpy_fct
 
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    # module = 'mpy_msg'
-    # operation = 'log_interrupt(~)'
     mpy_trace = mpy_fct.tracing(mpy_trace["module"], mpy_trace["operation"], mpy_trace)
     mpy_trace["log_enable"] = False
 

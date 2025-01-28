@@ -31,11 +31,15 @@ def cl_priority_queue(mpy_trace: dict, app_dict: dict, name: str=None):
     :param name: Name or description of the instance
 
     :methods:
-        .enqueue(mpy_trace: dict, app_dict: dict, priority: int=100, task: tuple=None)
-
+        .enqueue(mpy_trace: dict, app_dict: dict, priority: int=100, task: tuple=None, autocorrect: bool=True,
+            is_process: bool=True)
             Adds a task to the priority queue.
+
             :param priority: Integer representing task priority (lower is higher priority)
             :param task: Tuple of a callable, *args and **kwargs (func, *args, **kwargs)
+            :param autocorrect: If False, priority can be smaller than zero. Priority
+                smaller zero is reserved for the morPy Core.
+            :param is_process: If True, task is run in a new process (not by morPy orchestrator)
 
         .dequeue(mpy_trace: dict, app_dict: dict)
             Removes and returns the highest priority task from the priority queue.
@@ -53,11 +57,11 @@ def cl_priority_queue(mpy_trace: dict, app_dict: dict, name: str=None):
         from functools import partial
         # Create queue instance
         queue = mpy.cl_priority_queue(mpy_trace, app_dict, name="example_queue")
-        # Add a task
+        # Add a task to the queue
         queue.enqueue(mpy_trace, app_dict, priority=25, task=partial(task, mpy_trace, app_dict))
         # Fetch a task and run it
         task = queue.dequeue(mpy_trace, app_dict)['task']
-        retval = task()
+        task()
     """
 
     try:
@@ -82,27 +86,17 @@ def cl_progress(mpy_trace: dict, app_dict: dict, description: str=None, total: f
     :param description: Describe, what is being processed (i.e. file path or calculation)
     :param total: Mandatory - The total count for completion
     :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
-        10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
+        10.7% progress exceeded the exact progress will be logged.
 
-    :methods:
-        .update(mpy_trace: dict, app_dict: dict, current: float=0)
+    .update(mpy_trace: dict, app_dict: dict, current: float=None)
+        Method to update current progress and log progress if tick is passed.
 
-            Method to update current progress and log progress if tick is passed.
-            :param current: Current progress count. If None, each call of this method will add +1
-                to the progress count.
-
-            :return: dict
-                prog_rel: Relative progress, float between 0 and 1
-                prog_abs: Absolute progress, float between 0.00 and 100.00
-                message: Message generated. None, if no tick was hit.
+        :return: dict
+            prog_rel: Relative progress, float between 0 and 1
+            message: Message generated. None, if no tick was hit.
 
     :example:
-        tot_cnt = 100
-        tks = 12.5
-        progress = mpy.cl_progress(mpy_trace, app_dict, description='App Progress',
-            total=total_count, ticks=tks)
-
-        curr_cnt = 37
+        progress = cl_progress(mpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)["prog_rel"]
         progress.update(mpy_trace, app_dict, current=current_count)
     """
 
@@ -112,6 +106,148 @@ def cl_progress(mpy_trace: dict, app_dict: dict, description: str=None, total: f
         # Define operation credentials (see mpy_init.init_cred() for all dict keys)
         module = 'mpy'
         operation = 'cl_progress(~)'
+        mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+        log(mpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+def cl_progress_gui(mpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
+                 frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
+                 headline_font_size: int = 10, description_stage: str=None, description_font_size: int=10,
+                 font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
+                 auto_close: bool = False, work=None):
+    r"""
+    A progress tracking GUI using tkinter to visualize the progress of a background task. The GUI can
+    be adjusted with the arguments during construction.
+
+    :param mpy_trace: Operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param frame_title: Window frame title as shown in the title bar.
+    :param frame_width: Frame width in pixels.
+                        Defaults to 800.
+    :param frame_height: Frame height in pixels.
+                         Defaults to a value depending on which widgets are displayed.
+    :param headline_total: Descriptive name for the overall progress.
+                           Defaults to morPy localization.
+    :param headline_stage: Descriptive name for the actual stage.
+                          Defaults to morPy localization.
+    :param headline_font_size: Font size for both, overall and stage descriptive names.
+                               Defaults to 10.
+    :param description_stage: Description or status. Should be written whenever there is a progress update. Will
+                             not be shown if None at construction.
+                             Defaults to None.
+    :param description_font_size: Font size for description/status.
+                                  Defaults to 10.
+    :param font: Font to be used in the GUI, except for the title bar and console widget.
+                 Defaults to "Arial".
+    :param stages: Sum of stages until complete. Will not show progress bar for overall progress if equal to 1.
+                  Defaults to 1.
+    :param max_per_stage: This is the maximum value of the stage progress. Set it to 0 to turn off the stage progress.
+                         It represents the maximum value the stage progress will reach until 100%, which is
+                         determined by which value you choose to increment the progress with (defaults to 1 per
+                         increment). A value of 10 for example amounts to 10% per increment.
+                         Defaults to 0.
+    :param console: If True, will reroute console output to GUI.
+                    Defaults to False.
+    :param auto_close: If True, window automatically closes at 100%. If False, user must click "Close".
+                       Defaults to False.
+    :param work: A callable (e.g. functools.partial()). Will run in a new thread.
+
+    :methods:
+        .run(mpy_trace: dict, app_dict: dict)
+            Start the GUI main loop.
+
+        .update_progress(mpy_trace: dict, app_dict: dict, current: float = None, max_per_stage: int = None)
+            Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
+            switch button text to "Close" and stop console redirection.
+
+            :param current: Current progress count. If None, each call of this method will add +1
+                to the progress count. Defaults to None.
+            :param max_per_stage: If the current stage to be finished has got a different amount of increments than the former
+                                 stage, this value needs to be set when starting a new stage.
+
+                                 This is the maximum value of the stage progress. Set it to 0 to turn off the stage progress.
+                                 It represents the maximum value the stage progress will reach until 100%, which is
+                                 determined by which value you choose to increment the progress with (defaults to 1 per
+                                 increment). A value of 10 for example amounts to 10% per increment.
+                                 Defaults to 0.
+
+        .update_text(mpy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
+                    description_stage: str = None)
+            Update the headline texts or description at runtime.
+
+            :param headline_total: If not None, sets the overall progress headline text.
+            :param headline_stage: If not None, sets the stage progress headline text.
+            :param description_stage: If not None, sets the description text beneath the stage headline.
+
+    :example:
+        from functools import partial
+        import time
+
+        # Define a function or method to be progress tracked. It will be executed in a new thread, because
+        # tkinter needs to run in main thread. The argument "gui" will be referenced automatically by the
+        # GUI, no explicit assignment is needed.
+        def my_func(mpy_trace, app_dict, gui=None):
+            outer_loop_count = 2 # Amount stages, i.e. folders to walk
+            inner_loop_count = 10 # Increments in the stage, i.e. files modified
+
+            if gui:
+                gui.update_text(headline_total=f'My Demo')
+
+            # Loop to demo amount of stages
+            for i in range(outer_loop_count):
+                # Update Headline for overall progress
+                if gui:
+                    gui.update_text(headline_stage=f'Stage {i}')
+                    gui.update_progress(current=0, max_per_stage=10) # Setup stage progress, "max_per_stage" may be dynamic
+
+                time.sleep(.5) # Wait time, so progress can be viewed (mocking execution time)
+
+                # Loop to demo stage progression
+                for j in range(1, inner_loop_count + 1):
+                    time.sleep(.2) # Wait time, so progress can be viewed (mocking execution time)
+
+                    # Update progress and text for actual stage
+                    if gui:
+                        gui.update_text(description_stage=f'This describes progress no. {j} of the stage.')
+                        gui.update_progress(mpy_trace, app_dict)
+
+        if name == "__main__":
+            # Run function with GUI. For full customization during construction see the
+            # cl_progress_gui.__init__() description.
+
+            # In this example the outer and inner loop stop values are set two times manually. However, you may
+            # want to set it only a single time and point to these, but that depends on the use case.
+            outer_loop_count = 2 # same as the value set in my_func()
+            inner_loop_count = 10 # same as the value set in my_func()
+
+            # Define a callable to be progress tracked
+            work = partial(my_func, mpy_trace, app_dict)
+
+            # Construct the GUI
+            progress = mpy.cl_progress_gui(mpy_trace: dict, app_dict,
+                frame_title="My Demo Progress GUI",
+                description_stage="Generic Progress stage",
+                stages=outer_loop_count,
+                max_per_stage=inner_loop_count,
+                work=work)
+
+            # Start GUI in main thread and run "work" in separate thread
+            progress.run(mpy_trace, app_dict)
+    """
+
+    try:
+        return mpy_ui_tk.cl_progress_gui(mpy_trace, app_dict, frame_title=frame_title, frame_width=frame_width,
+                frame_height=frame_height, headline_total=headline_total, headline_stage=headline_stage,
+                headline_font_size=headline_font_size, description_stage=description_stage,
+                description_font_size=description_font_size, font=font, stages=stages,
+                max_per_stage=max_per_stage, console=console, auto_close=auto_close, work=work,
+            )
+    except Exception as e:
+        # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+        module = 'mpy'
+        operation = 'cl_progress_gui(~)'
         mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
 
         log(mpy_trace, app_dict, "critical",

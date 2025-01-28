@@ -8,13 +8,25 @@ Descr.:     DESCRIPTION
 
 import mpy
 import mpy_mp
+import lib.mpy_fct as mpy_fct
 import app_init
-import sys
-
 from mpy_decorators import metrics, log
 from mpy import cl_progress
-from math import sqrt
+import lib.mpy_common as mpy_common
 
+
+import sys
+import time
+
+from math import sqrt
+from functools import partial
+
+import queue
+import threading
+import traceback
+import tkinter as tk
+from tkinter import ttk
+from PIL import Image, ImageTk
 
 @metrics
 def _run( mpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
@@ -45,21 +57,34 @@ def _run( mpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
     mpy_trace = mpy.tracing(module, operation, mpy_trace)
 
     check = False
-
     app_run_return = {}
 
     try:
-        # TODO my code
-
         log(mpy_trace, app_dict, "info",
         lambda: f'Starting {module}.{operation}')
-        task = (arbitrary_parallel_task, mpy_trace, app_dict)
+        task = partial(arbitrary_parallel_task, mpy_trace, app_dict, gui=None)
 
-        counter = 0
-        while counter < 4:
-            counter += 1
-            mpy.process_q(task=task, priority=100)
-            # new_process(mpy_trace, app_dict, counter)
+        progress = mpy.cl_progress_gui(mpy_trace, app_dict,
+            frame_title="Progress Demo",
+            stages=2,
+            headline_stage="Stage 1",
+            description_stage="Currently at 0",
+            max_per_stage=10**2,
+            console=True,
+            work=task  # run in a background thread
+        )
+
+        progress.run(mpy_trace, app_dict)
+
+        # # Progress GUI test
+        # GUI_progress_example(mpy_trace, app_dict)
+
+        # # Multiprocessing test
+        # counter = 0
+        # runs = 4
+        # while counter < runs:
+        #     counter += 1
+        #     mpy.process_q(task=task, priority=100)
 
         log(mpy_trace, app_dict, "info",
         lambda: f'Finished {module}.{operation}')
@@ -130,7 +155,7 @@ def new_process(mpy_trace: dict, app_dict: dict, counter: int=0) -> dict:
         }
 
 @metrics
-def arbitrary_parallel_task(mpy_trace, app_dict):
+def arbitrary_parallel_task(mpy_trace, app_dict, gui=None):
 
     r"""
     This function runs the entire app using user input to specify
@@ -159,22 +184,25 @@ def arbitrary_parallel_task(mpy_trace, app_dict):
             raise RuntimeError
 
         i = 0
-        total = 10**5
+        total = 10**2
         tmp_val = 0
         lst = []
 
-        progress = cl_progress(mpy_trace, app_dict,
-            description=f'P{mpy_trace["process_id"]} App Progress',
-            total=total,
-            ticks=25)
+        for stage in range(1, 3):
+            i = 0
+            while i < total:
+                i += 1
+                while tmp_val < total:
+                    tmp_val = (sqrt(sqrt(i)*i) / i) + tmp_val**2
+                lst.append(i)
+                # print(f'Progress {i} / {total} :: {tmp_val}')
+                if gui:
+                    gui.update_text(mpy_trace, app_dict, description_stage=f'Currently at {i}')
+                    gui.update_progress(mpy_trace, app_dict, current=i)
 
-        while i < total:
-            i += 1
-            while tmp_val < total:
-                tmp_val = (sqrt(sqrt(i)*i) / i) + tmp_val**2
-            lst.append(i)
-            # print(f'Progress {i} / {total} :: {tmp_val}')
-            progress.update(mpy_trace, app_dict, current=i)
+            # Start new stage
+            gui.update_text(mpy_trace, app_dict, headline_stage="Stage 2", description_stage=f'Currently at 0')
+            gui.update_progress(mpy_trace, app_dict, current=0)
 
         # Writing to app_dict for shared memory test
         app_dict["global"]["app"]["parallel_finished"] = True
