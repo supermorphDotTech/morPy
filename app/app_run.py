@@ -76,16 +76,6 @@ def _run( mpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
 
         progress.run(mpy_trace, app_dict)
 
-        # # Progress GUI test
-        # GUI_progress_example(mpy_trace, app_dict)
-
-        # # Multiprocessing test
-        # counter = 0
-        # runs = 4
-        # while counter < runs:
-        #     counter += 1
-        #     mpy.process_q(task=task, priority=100)
-
         log(mpy_trace, app_dict, "info",
         lambda: f'Finished {module}.{operation}')
 

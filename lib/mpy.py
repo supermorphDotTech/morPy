@@ -114,7 +114,7 @@ def cl_progress(mpy_trace: dict, app_dict: dict, description: str=None, total: f
 
 def cl_progress_gui(mpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
                  frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
-                 headline_font_size: int = 10, description_stage: str=None, description_font_size: int=10,
+                 headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
                  font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
                  auto_close: bool = False, work=None):
     r"""
@@ -138,7 +138,7 @@ def cl_progress_gui(mpy_trace: dict, app_dict: dict, frame_title: str = None, fr
                              not be shown if None at construction.
                              Defaults to None.
     :param description_font_size: Font size for description/status.
-                                  Defaults to 10.
+                                  Defaults to 8.
     :param font: Font to be used in the GUI, except for the title bar and console widget.
                  Defaults to "Arial".
     :param stages: Sum of stages until complete. Will not show progress bar for overall progress if equal to 1.
@@ -226,7 +226,7 @@ def cl_progress_gui(mpy_trace: dict, app_dict: dict, frame_title: str = None, fr
             work = partial(my_func, mpy_trace, app_dict)
 
             # Construct the GUI
-            progress = mpy.cl_progress_gui(mpy_trace: dict, app_dict,
+            progress = mpy.cl_progress_gui(mpy_trace, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Generic Progress stage",
                 stages=outer_loop_count,

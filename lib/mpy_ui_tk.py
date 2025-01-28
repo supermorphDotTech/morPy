@@ -23,177 +23,6 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-@metrics
-def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None) -> dict:
-
-    r"""
-    This function opens a dialog for the user to select a file.
-
-    :param mpy_trace: operation credentials and tracing
-    :param app_dict: morPy global dictionary
-    :param init_dir: The directory in which the dialog will initially be opened
-    :param ftypes: This tuple of 2-tuples specifies, which filetypes will be
-        selectable in the dialog box.
-    :param title: Title of the open file dialog
-
-    :return: dict
-        mpy_trace: operation credentials and tracing
-        check: The function ended with no errors and a file was chosen
-        file_path: Path of the selected file
-        file_selected: True, if file was selected. False, if canceled.
-
-    :example:
-        init_dir = "C:\"
-        ftypes = (('PDF','*.pdf'),('Textfile','*.txt'),('All Files','*.*'))
-        title = 'Select a file...'
-        file_path = mpy.dialog_sel_file(mpy_trace, app_dict, init_dir, ftypes, title)["file_path"]
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_ui_tk'
-    operation = 'dialog_sel_file(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-    file_path = None
-    file_selected = False
-
-    try:
-        if not init_dir:
-            init_dir = app_dict["conf"]["main_path"]
-        if not ftypes:
-            ftypes = (f'{app_dict["loc"]["mpy"]["dialog_sel_file_all_files"]}','*.*')
-        if not title:
-            title = f'{app_dict["loc"]["mpy"]["dialog_sel_file_select"]}'
-
-        # Invoke the Tkinter root window and withdraw it to force the
-        # dialog to be opened in the foreground
-        root = tk.Tk()
-        root.withdraw()
-        root.attributes("-topmost", True)
-        root.iconbitmap(app_dict["conf"]["app_icon"])
-
-        # Open the actual dialog in the foreground and store the chosen folder
-        file_path = filedialog.askopenfilename(
-            parent = root,
-            title = f'{title}',
-            initialdir = init_dir,
-            filetypes = ftypes,
-        )
-
-        if not file_path:
-            # No file was chosen by the user.
-            log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_file_nosel"]}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_file_cancel"]}')
-
-        else:
-            file_selected = True
-            # A file was chosen by the user.
-            log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_file_asel"]}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_path"]}: {file_path}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_file_open"]}')
-
-            # Create a path object
-            mpy_fct.pathtool(mpy_trace, file_path)
-
-        check = True
-
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check,
-        'file_path' : file_path,
-        'file_selected' : file_selected,
-        }
-
-@metrics
-def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
-
-    r"""
-    This function opens a dialog for the user to select a directory.
-
-    :param mpy_trace: operation credentials and tracing
-    :param app_dict: morPy global dictionary
-    :param init_dir: The directory in which the dialog will initially be opened
-    :param title: Title of the open directory dialog
-
-    :return: dict
-        mpy_trace: operation credentials and tracing
-        check: The function ended with no errors and a file was chosen
-        dir_path: Path of the selected directory
-        dir_selected: True, if directory was selected. False, if canceled.
-
-    :example:
-        init_dir = "C:\"
-        title = 'Select a directory...'
-        dir_path = mpy.dialog_sel_dir(mpy_trace, app_dict, init_dir, title)["dir_path"]
-    """
-
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_ui_tk'
-    operation = 'dialog_sel_dir(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
-
-    check = False
-    dir_path = None
-    dir_selected = False
-
-    try:
-        if not init_dir:
-            init_dir = app_dict["conf"]["main_path"]
-        if not title:
-            title = f'{app_dict["loc"]["mpy"]["dialog_sel_dir_select"]}'
-
-        # Invoke the Tkinter root window and withdraw it to force the
-        # dialog to be opened in the foreground
-        root = tk.Tk()
-        root.withdraw()
-        root.iconbitmap(app_dict["conf"]["app_icon"])
-
-        # Open the actual dialog in the foreground and store the chosen folder
-        root.dir_name = filedialog.askdirectory(
-            parent = root,
-            title = f'{title}',
-            initialdir = init_dir,
-        )
-        dir_path = root.dir_name
-
-        if not dir_path:
-            # No directory was chosen by the user.
-            log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_dir_nosel"]}\n'
-                f'{app_dict["loc"]["mpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_dir_cancel"]}')
-        else:
-            dir_selected = True
-            # A directory was chosen by the user.
-            log(mpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_dir_asel"]}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_dir_path"]}: {dir_path}\n'
-                    f'{app_dict["loc"]["mpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_dir_open"]}')
-
-            # Create a path object
-            mpy_fct.pathtool(mpy_trace, dir_path)
-
-        check = True
-
-    except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
-
-    return{
-        'mpy_trace' : mpy_trace,
-        'check' : check,
-        'dir_path' : dir_path,
-        'dir_selected' : dir_selected,
-        }
-
 class cl_progress_gui:
     r"""
     A progress tracking GUI using tkinter to visualize the progress of a background task. The GUI can
@@ -304,7 +133,7 @@ class cl_progress_gui:
             work = partial(my_func, mpy_trace, app_dict)
 
             # Construct the GUI
-            progress = mpy.cl_progress_gui(mpy_trace: dict, app_dict,
+            progress = mpy.cl_progress_gui(mpy_trace, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Generic Progress stage",
                 stages=outer_loop_count,
@@ -317,7 +146,7 @@ class cl_progress_gui:
 
     def __init__(self, mpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
                  frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
-                 headline_font_size: int = 10, description_stage: str=None, description_font_size: int=10,
+                 headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
                  font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
                  auto_close: bool = False, work=None):
         r"""
@@ -349,7 +178,7 @@ class cl_progress_gui:
     @metrics
     def _init(self, mpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
               frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
-              headline_font_size: int = 10, description_stage: str=None, description_font_size: int=10,
+              headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
               font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
               auto_close: bool = False, work=None):
         r"""
@@ -372,7 +201,7 @@ class cl_progress_gui:
                                  not be shown if None at construction.
                                  Defaults to None.
         :param description_font_size: Font size for description/status.
-                                      Defaults to 10.
+                                      Defaults to 8.
         :param font: Font to be used in the GUI, except for the title bar and console widget.
                      Defaults to "Arial".
         :param stages: Sum of stages until complete. Will not show progress bar for overall progress if equal to 1.
@@ -442,8 +271,8 @@ class cl_progress_gui:
             # Calculate factors for frame height
             if self.frame_height == 0:
                 frame_height_sizing = True
-                height_factor_headlines = round(75 * self.headline_font_size / 10)
-                height_factor_description = round(75 * self.description_font_size / 10)
+                height_factor_headlines = round(50 * self.headline_font_size / 10)
+                height_factor_description = round(50 * self.description_font_size / 10)
 
             if self.stages > 1:
                 self.overall_progress_on = True
@@ -613,12 +442,12 @@ class cl_progress_gui:
                     text=self.headline_stage,
                     font=(self.font, self.headline_font_size)
                 )
-                self.stage_headline_label.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="nse")
+                self.stage_headline_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="nse")
 
                 # stage percentage
                 self.stage_label_var = tk.StringVar(value="0.00%")
                 self.stage_label = tk.Label(self.root, textvariable=self.stage_label_var, width=6)
-                self.stage_label.grid(row=1, column=1, padx=0, pady=(10, 0), sticky="nsw")
+                self.stage_label.grid(row=1, column=1, padx=0, pady=(5, 0), sticky="nsw")
 
                 # stage progress bar
                 self.stage_progress = ttk.Progressbar(
@@ -646,18 +475,18 @@ class cl_progress_gui:
                     text=self.description_stage,
                     font=(self.font, self.description_font_size)
                 )
-                self.stage_description_label.grid(row=2, column=0, columnspan=3, padx=10, pady=(10, 0), sticky="nsew")
+                self.stage_description_label.grid(row=2, column=0, columnspan=3, padx=10, pady=(5, 5), sticky="nsw")
 
             # Console widget
             if self.console_on:
                 # Console text
                 self.console_output = tk.Text(self.root, height=10, wrap="word")
-                self.console_output.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+                self.console_output.grid(row=3, column=0, columnspan=3, padx=10, pady=5, sticky="nsew")
                 self.console_output.configure(bg="black", fg="white")
 
                 # Create a vertical Scrollbar
                 self.console_scrollbar = tk.Scrollbar(self.root, orient="vertical", command=self.console_output.yview)
-                self.console_scrollbar.grid(row=3, column=3, sticky="ns", padx=(0, 10), pady=10)
+                self.console_scrollbar.grid(row=3, column=3, sticky="ns", padx=(0, 10), pady=5)
                 self.console_output["yscrollcommand"] = self.console_scrollbar.set
             else:
                 self.console_output = None
@@ -937,21 +766,8 @@ class cl_progress_gui:
 
                     # If stage hits 100%, increment the stage count, reset stage bar
                     if stage_abs and stage_abs >= 100.0:
+                        reset_stage_progress = True
                         self.stages_finished += 1
-                        if self.stages_finished < self.stages:
-                            # Reset stage progress
-                            self.stage_progress_tracker._init(
-                                mpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage,
-                                ticks=.01
-                            )
-                            self.stage_progress_tracker.current = 0.0
-                            if self.stage_progress is not None:
-                                self.stage_progress["value"] = 0.0
-                            if self.stage_label_var is not None:
-                                self.stage_label_var.set("0.00%")
-                        else:
-                            # If all stages are finished, mark as done
-                            self.done = True
 
                 # 2) Overall fraction
                 if self.overall_progress_on:
@@ -976,6 +792,21 @@ class cl_progress_gui:
                         else:
                             self.button_text.set(self.button_text_close)
                             self._stop_console_redirection(mpy_trace, app_dict)
+
+                # 3) Reset stage progress last to avoid lag in between update of stage and overall progress.
+                if self.stage_progress_on and reset_stage_progress:
+                    self.stage_progress_tracker._init(
+                        mpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage,
+                        ticks=.01
+                    )
+                    if self.stages_finished < self.stages:
+                        if self.stage_progress is not None:
+                            self.stage_progress["value"] = 0.0
+                        if self.stage_label_var is not None:
+                            self.stage_label_var.set("0.00%")
+                    else:
+                        # If all stages are finished, mark as done
+                        self.done = True
 
             check = True
 
@@ -1224,4 +1055,175 @@ class cl_progress_gui:
             "mpy_trace" : mpy_trace,
             "check" : check,
             "console_output" : console_text,
+        }
+
+@metrics
+def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None) -> dict:
+
+    r"""
+    This function opens a dialog for the user to select a file.
+
+    :param mpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param init_dir: The directory in which the dialog will initially be opened
+    :param ftypes: This tuple of 2-tuples specifies, which filetypes will be
+        selectable in the dialog box.
+    :param title: Title of the open file dialog
+
+    :return: dict
+        mpy_trace: operation credentials and tracing
+        check: The function ended with no errors and a file was chosen
+        file_path: Path of the selected file
+        file_selected: True, if file was selected. False, if canceled.
+
+    :example:
+        init_dir = "C:\"
+        ftypes = (('PDF','*.pdf'),('Textfile','*.txt'),('All Files','*.*'))
+        title = 'Select a file...'
+        file_path = mpy.dialog_sel_file(mpy_trace, app_dict, init_dir, ftypes, title)["file_path"]
+    """
+
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    module = 'mpy_ui_tk'
+    operation = 'dialog_sel_file(~)'
+    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+    check = False
+    file_path = None
+    file_selected = False
+
+    try:
+        if not init_dir:
+            init_dir = app_dict["conf"]["main_path"]
+        if not ftypes:
+            ftypes = (f'{app_dict["loc"]["mpy"]["dialog_sel_file_all_files"]}','*.*')
+        if not title:
+            title = f'{app_dict["loc"]["mpy"]["dialog_sel_file_select"]}'
+
+        # Invoke the Tkinter root window and withdraw it to force the
+        # dialog to be opened in the foreground
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+        root.iconbitmap(app_dict["conf"]["app_icon"])
+
+        # Open the actual dialog in the foreground and store the chosen folder
+        file_path = filedialog.askopenfilename(
+            parent = root,
+            title = f'{title}',
+            initialdir = init_dir,
+            filetypes = ftypes,
+        )
+
+        if not file_path:
+            # No file was chosen by the user.
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_file_nosel"]}\n'
+                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_file_cancel"]}')
+
+        else:
+            file_selected = True
+            # A file was chosen by the user.
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_file_asel"]}\n'
+                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_path"]}: {file_path}\n'
+                    f'{app_dict["loc"]["mpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_file_open"]}')
+
+            # Create a path object
+            mpy_fct.pathtool(mpy_trace, file_path)
+
+        check = True
+
+    except Exception as e:
+        log(mpy_trace, app_dict, "error",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check,
+        'file_path' : file_path,
+        'file_selected' : file_selected,
+        }
+
+@metrics
+def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
+
+    r"""
+    This function opens a dialog for the user to select a directory.
+
+    :param mpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param init_dir: The directory in which the dialog will initially be opened
+    :param title: Title of the open directory dialog
+
+    :return: dict
+        mpy_trace: operation credentials and tracing
+        check: The function ended with no errors and a file was chosen
+        dir_path: Path of the selected directory
+        dir_selected: True, if directory was selected. False, if canceled.
+
+    :example:
+        init_dir = "C:\"
+        title = 'Select a directory...'
+        dir_path = mpy.dialog_sel_dir(mpy_trace, app_dict, init_dir, title)["dir_path"]
+    """
+
+    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
+    module = 'mpy_ui_tk'
+    operation = 'dialog_sel_dir(~)'
+    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+
+    check = False
+    dir_path = None
+    dir_selected = False
+
+    try:
+        if not init_dir:
+            init_dir = app_dict["conf"]["main_path"]
+        if not title:
+            title = f'{app_dict["loc"]["mpy"]["dialog_sel_dir_select"]}'
+
+        # Invoke the Tkinter root window and withdraw it to force the
+        # dialog to be opened in the foreground
+        root = tk.Tk()
+        root.withdraw()
+        root.iconbitmap(app_dict["conf"]["app_icon"])
+
+        # Open the actual dialog in the foreground and store the chosen folder
+        root.dir_name = filedialog.askdirectory(
+            parent = root,
+            title = f'{title}',
+            initialdir = init_dir,
+        )
+        dir_path = root.dir_name
+
+        if not dir_path:
+            # No directory was chosen by the user.
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_dir_nosel"]}\n'
+                f'{app_dict["loc"]["mpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_dir_cancel"]}')
+        else:
+            dir_selected = True
+            # A directory was chosen by the user.
+            log(mpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["mpy"]["dialog_sel_dir_asel"]}\n'
+                    f'{app_dict["loc"]["mpy"]["dialog_sel_dir_path"]}: {dir_path}\n'
+                    f'{app_dict["loc"]["mpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["mpy"]["dialog_sel_dir_open"]}')
+
+            # Create a path object
+            mpy_fct.pathtool(mpy_trace, dir_path)
+
+        check = True
+
+    except Exception as e:
+        log(mpy_trace, app_dict, "error",
+        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+
+    return{
+        'mpy_trace' : mpy_trace,
+        'check' : check,
+        'dir_path' : dir_path,
+        'dir_selected' : dir_selected,
         }
