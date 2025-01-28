@@ -68,8 +68,6 @@ def initialize_morpy():
     """
 
     mpy_init_check = False
-    app_dict = None
-    orchestrator = None
 
     try:
         from lib import mpy_init

@@ -14,6 +14,7 @@ ToDo:       - GUI Instanz im app_dict anmelden
 
 import lib.mpy_fct as mpy_fct
 import lib.mpy_common as mpy_common
+import lib.mpy_exit as mpy_exit
 from lib.mpy_decorators import metrics, log
 
 import threading
@@ -854,14 +855,19 @@ class cl_progress_gui:
             # Update overall headline
             if headline_total is not None and self.overall_progress_on:
                 # Retain the final colon to stay consistent with constructor
-                self.headline_total = headline_total + ":"
+                self.headline_total_nocol = headline_total
+                self.headline_total = self.headline_total_nocol + ":"
+                self.overall_progress_tracker.description = self.headline_total_nocol
                 if self.total_headline_label is not None:
                     self.total_headline_label.config(text=self.headline_total)
 
             # Update stage headline
             if headline_stage is not None and self.stage_progress_on:
+                raise
                 # Retain the final colon to stay consistent with constructor
-                self.headline_stage = headline_stage + ":"
+                self.headline_stage_nocol = headline_stage
+                self.headline_stage = self.headline_stage_nocol + ":"
+                self.stage_progress_tracker.description = self.headline_stage_nocol
                 if self.stage_headline_label is not None:
                     self.stage_headline_label.config(text=self.headline_stage)
 
@@ -931,6 +937,9 @@ class cl_progress_gui:
     @metrics
     def _start_work_thread(self, mpy_trace: dict, app_dict: dict):
         r"""
+        TODO implement morPy threading and use it here
+            > right now interrupt/abort does not work as desired: background threads shall be terminated immediately.
+
         Launch the user-supplied function in a background thread.
 
         :param mpy_trace: Operation credentials and tracing information
@@ -962,7 +971,7 @@ class cl_progress_gui:
                         f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
 
         try:
-            self.worker_thread = threading.Thread(target=_thread_wrapper, daemon=False)
+            self.worker_thread = threading.Thread(target=_thread_wrapper, daemon=True)
             self.worker_thread.start()
 
             check = True
@@ -1004,6 +1013,14 @@ class cl_progress_gui:
             self._stop_console_redirection(mpy_trace, app_dict)
             self.root.quit()
             self.root.destroy()
+
+            # In case of aborting progress quit the program.
+            if not self.done:
+                # Initiate program exit
+                app_dict["global"]["mpy"]["mpy_exit"] = True
+
+                # Release the global interrupts
+                app_dict["global"]["mpy"]["mpy_interrupt"] = False
 
             check = True
 

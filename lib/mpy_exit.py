@@ -14,13 +14,18 @@ from mpy_decorators import metrics, log_no_q
 @metrics
 def _exit(mpy_trace: dict=None, app_dict: dict=None):
 
-    r""" This is the mpy exit routine. It may be executed at any time after
-        initialization.
-    :param
-        mpy_trace - operation credentials and tracing
-        app_dict - The mpy-specific global dictionary
-    :return
+    r"""
+    This is the mpy exit routine. It may be executed at any time after
+    initialization.
+
+    :param mpy_trace: operation credentials and tracing
+    :param app_dict: The mpy-specific global dictionary
+
+    :return:
         -
+
+    :example:
+        mpy_exit._exit(mpy_trace, app_dict)
     """
 
     # Define operation credentials (see mpy_init.init_cred() for all dict keys)

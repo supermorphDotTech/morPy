@@ -10,6 +10,7 @@ TODO provide a general purpose lock
 """
 
 import lib.mpy_fct as mpy_fct
+import lib.mpy_exit as mpy_exit
 from lib.mpy_decorators import metrics, log, log_no_q
 from lib.mpy_dict import cl_mpy_dict_ultra
 
@@ -522,6 +523,10 @@ class cl_orchestrator:
                     # Sleep if heap is empty
                     time.sleep(0.05)  # 0.05 seconds = 50 milliseconds
 
+                # Initiate program exit
+                if app_dict["global"]["mpy"]["mpy_exit"]:
+                    self._terminate = True
+
                 # Evaluate if spawned processes need to end. As long as the app is running in
                 # a different process, the orchestrator will not terminate.
                 # TODO workaround for single core
@@ -1027,6 +1032,7 @@ def interrupt(mpy_trace: dict, app_dict: dict) -> dict:
 
     try:
         # TODO finish
+        # TODO check if program exit -  app_dict["global"]["mpy"]["mpy_exit"]
         pass
 
     except Exception as e:
