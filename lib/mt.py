@@ -54,7 +54,7 @@ def mpy_thread_queue(morPy_trace: dict, app_dict: dict, name: str, priority: int
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'mt'
-    operation = 'mpy_thread_queue(~)'
+    operation = 'thread_queue(~)'
     morPy_trace = fct.tracing(module, operation, morPy_trace)
 
     check = False
@@ -73,9 +73,9 @@ def mpy_thread_queue(morPy_trace: dict, app_dict: dict, name: str, priority: int
 
                 # Enqueing task.
                 log(morPy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morPy"]["mpy_thread_queue_enqueue"]}\n'
-                        f'{app_dict["loc"]["morPy"]["mpy_thread_queue_task"]}: {task}\n'
-                        f'{app_dict["loc"]["morPy"]["mpy_thread_queue_priority"]}: {priority}')
+                lambda: f'{app_dict["loc"]["morPy"]["thread_queue_enqueue"]}\n'
+                        f'{app_dict["loc"]["morPy"]["thread_queue_task"]}: {task}\n'
+                        f'{app_dict["loc"]["morPy"]["thread_queue_priority"]}: {priority}')
 
                 app_dict["mt_priority_queue"].enqueue(morPy_trace, app_dict, name, priority, task)
 
@@ -90,8 +90,8 @@ def mpy_thread_queue(morPy_trace: dict, app_dict: dict, name: str, priority: int
 
                 # Checking threads availability.
                 log(morPy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_threads_available"]}\n'
-                        f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
+                lambda: f'{app_dict["loc"]["morPy"]["thread_queue_dbg_threads_available"]}\n'
+                        f'{app_dict["loc"]["morPy"]["thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
 
                 # Check for available threads by counting the listed thread ID's and compare them
                 # to the maximum amount of threads available.
@@ -103,20 +103,20 @@ def mpy_thread_queue(morPy_trace: dict, app_dict: dict, name: str, priority: int
                         worker.start()
 
                         # Append worker to a list of threads. It is mostly used to join threads later.
-                        app_dict["mpy_workers_running"].append(worker)
+                        app_dict["workers_running"].append(worker)
 
                         # Task successfully enqueued. Thread created.
                         log(morPy_trace, app_dict, "debug",
-                        lambda: f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_enqueue_done"]}\n'
-                                f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
-                                f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
+                        lambda: f'{app_dict["loc"]["morPy"]["thread_queue_dbg_enqueue_done"]}\n'
+                                f'{app_dict["loc"]["morPy"]["thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
+                                f'{app_dict["loc"]["morPy"]["thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
 
                     else:
                         # No free thread available. Skipping thread invoke.
                         log(morPy_trace, app_dict, "debug",
-                        lambda: f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_thread_skip"]}\n'
-                                f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
-                                f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
+                        lambda: f'{app_dict["loc"]["morPy"]["thread_queue_dbg_thread_skip"]}\n'
+                                f'{app_dict["loc"]["morPy"]["thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
+                                f'{app_dict["loc"]["morPy"]["thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
 
                 else:
                     # Start a thread.
@@ -124,13 +124,13 @@ def mpy_thread_queue(morPy_trace: dict, app_dict: dict, name: str, priority: int
                     worker.start()
 
                     # Append worker to a list of threads. It is mostly used to join threads later.
-                    app_dict["mpy_workers_running"].append(worker)
+                    app_dict["workers_running"].append(worker)
 
                     # New Thread ID list created. Task successfully enqueued.
                     log(morPy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_enq_new_done"]}\n'
-                            f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
-                            f'{app_dict["loc"]["morPy"]["mpy_thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
+                    lambda: f'{app_dict["loc"]["morPy"]["thread_queue_dbg_enq_new_done"]}\n'
+                            f'{app_dict["loc"]["morPy"]["thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
+                            f'{app_dict["loc"]["morPy"]["thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
 
                 check = True
 
@@ -172,7 +172,7 @@ def mpy_threads_joinall(morPy_trace: dict, app_dict: dict) -> dict:
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'mt'
-    operation = 'mpy_threads_joinall(~)'
+    operation = 'threads_joinall(~)'
     morPy_trace = fct.tracing(module, operation, morPy_trace)
 
     check = False
@@ -180,19 +180,19 @@ def mpy_threads_joinall(morPy_trace: dict, app_dict: dict) -> dict:
     try:
         # Waiting for all threads to finish up their work.
         log(morPy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morPy"]["mpy_threads_joinall_start"]}\n'
-                      f'{app_dict["loc"]["morPy"]["mpy_threads_joinall_eval"]}: {app_dict["mpy_workers_running"]}')
+        lambda: f'{app_dict["loc"]["morPy"]["threads_joinall_start"]}\n'
+                      f'{app_dict["loc"]["morPy"]["threads_joinall_eval"]}: {app_dict["workers_running"]}')
 
-        for thread in app_dict["mpy_workers_running"]:
+        for thread in app_dict["workers_running"]:
             thread.join()
 
         # Clear the list of invoked threads
-        app_dict["mpy_workers_running"] = []
+        app_dict["workers_running"] = []
 
         # All threads/tasks finished.
         log(morPy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morPy"]["mpy_threads_joinall_end"]}\n'
-                f'{app_dict["loc"]["morPy"]["mpy_threads_joinall_eval"]}: {app_dict["mpy_workers_running"]}')
+        lambda: f'{app_dict["loc"]["morPy"]["threads_joinall_end"]}\n'
+                f'{app_dict["loc"]["morPy"]["threads_joinall_eval"]}: {app_dict["workers_running"]}')
 
         check = True
 
@@ -396,7 +396,7 @@ class cl_priority_queue(object):
         try:
 
             # Wait for an interrupt to end
-            while app_dict["global"]["morPy"]["mpy_interrupt"] == True:
+            while app_dict["global"]["morPy"]["interrupt"] == True:
                 pass
 
             # Return the highest priority and oldest task from priority queue
@@ -471,10 +471,10 @@ def mt_init(morPy_trace: dict, app_dict: dict) -> dict:
         app_dict["mt_tasks_cnt"] = 0
 
         # Initialize list for running workers
-        app_dict["mpy_workers_running"] = []
+        app_dict["workers_running"] = []
 
         # Initialize the interrupt flag
-        app_dict["global"]["morPy"]["mpy_interrupt"] = False
+        app_dict["global"]["morPy"]["interrupt"] = False
 
         # Evaluate, if MT is enabled
         if app_dict["conf"]["mt_enabled"]:
@@ -640,7 +640,7 @@ class cl_thread(threading.Thread):
                 not self.app_dict["mt_exit"]:
 
                 # Wait for an interrupt before fetching a task
-                while self.app_dict["global"]["morPy"]["mpy_interrupt"]:
+                while self.app_dict["global"]["morPy"]["interrupt"]:
                     pass
 
                 task_dqed = self.app_dict["mt_priority_queue"].dequeue(morPy_trace, self.app_dict)["task_dqed"]

@@ -20,13 +20,6 @@ import time
 from math import sqrt
 from functools import partial
 
-import queue
-import threading
-import traceback
-import tkinter as tk
-from tkinter import ttk
-from PIL import Image, ImageTk
-
 @metrics
 def _run( morPy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
 

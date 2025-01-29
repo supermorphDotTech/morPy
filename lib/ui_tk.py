@@ -1019,7 +1019,7 @@ class cl_progress_gui:
                 app_dict["global"]["morPy"]["exit"] = True
 
                 # Release the global interrupts
-                app_dict["global"]["morPy"]["mpy_interrupt"] = False
+                app_dict["global"]["morPy"]["interrupt"] = False
 
             check = True
 

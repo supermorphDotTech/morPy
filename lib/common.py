@@ -370,7 +370,7 @@ class cl_priority_queue:
 
         try:
             # Global interrupt - wait for error handling
-            while app_dict["global"]["morPy"].get("mpy_interrupt", False):
+            while app_dict["global"]["morPy"].get("interrupt", False):
                 pass
 
             if len(self.heap) > 0:

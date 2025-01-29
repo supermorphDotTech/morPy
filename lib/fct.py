@@ -75,13 +75,13 @@ def privileges_handler(morPy_trace, app_dict):
             SHARE = 26
 
         # Test if elevated privileges are required
-        if  app_dict["conf"]["mpy_priv_required"]:
+        if  app_dict["conf"]["priv_required"]:
 
             # Routine for MS Windows
             if app_dict["sys"]["os"].upper == 'WINDOWS':
                 if ctypes.windll.shell32.IsUserAnAdmin():
                     # Program started with elevated Privileges.
-                    msg = app_dict["mpy_priv_handler_eval"]
+                    msg = app_dict["priv_handler_eval"]
                 else:
                     hinstance = ctypes.windll.shell32.ShellExecuteW(
                         None, 'runas', sys.executable, sys.argv[0], None, el_spec.SHOWNORMAL

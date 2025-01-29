@@ -99,24 +99,24 @@ def loc_morPy() -> dict:
         'init_duration' : 'Duration',
 
         # mpy_init.py - mpy_log_header(~)
-        'mpy_log_header_start' : 'START',
-        'mpy_log_header_author' : 'Author',
-        'mpy_log_header_app' : 'App',
-        'mpy_log_header_timestamp' : 'Timestamp',
-        'mpy_log_header_user' : 'User',
-        'mpy_log_header_system' : 'System',
-        'mpy_log_header_version' : 'Version',
-        'mpy_log_header_architecture' : 'Architecture',
-        'mpy_log_header_threads' : 'Threads',
-        'mpy_log_header_begin' : 'BEGIN',
+        'log_header_start' : 'START',
+        'log_header_author' : 'Author',
+        'log_header_app' : 'App',
+        'log_header_timestamp' : 'Timestamp',
+        'log_header_user' : 'User',
+        'log_header_system' : 'System',
+        'log_header_version' : 'Version',
+        'log_header_architecture' : 'Architecture',
+        'log_header_threads' : 'Threads',
+        'log_header_begin' : 'BEGIN',
 
         # mpy_init.py - mpy_ref(~)
-        'mpy_ref_descr' : 'This file shows the parameters set in mpy_param.py as well as the most important system and app related information. All of these are adressable through the app_dict which is available throughout all functions and modules of this framework. This reference is meant to be used for development only.',
-        'mpy_ref_created' : 'The init_dict was written to textfile.',
-        'mpy_ref_path' : 'Filepath',
+        'ref_descr' : 'This file shows the parameters set in mpy_param.py as well as the most important system and app related information. All of these are adressable through the app_dict which is available throughout all functions and modules of this framework. This reference is meant to be used for development only.',
+        'ref_created' : 'The init_dict was written to textfile.',
+        'ref_path' : 'Filepath',
 
         # mpy_fct.py - privileges_handler(~)
-        'mpy_priv_handler_eval' : 'Program started with elevated Privileges.',
+        'priv_handler_eval' : 'Program started with elevated Privileges.',
 
         # mpy_fct.py - datetime_now(~)
         'datetime_value_descr' : 'Date and time in the format YYYY-MM-DD hh:mm:ss.ms as value (used to determine runtime).',
@@ -181,7 +181,7 @@ def loc_morPy() -> dict:
         },
 
         # mpy_dict.py - mpy_dict_nesting(~)
-        'mpy_dict_nesting_done' : 'Dictionary referenced for nesting.',
+        'dict_nesting_done' : 'Dictionary referenced for nesting.',
 
         # mpy_dict.py - cl_mpy_dict(~)
         'cl_mpy_dict' : {
@@ -208,7 +208,7 @@ def loc_morPy() -> dict:
         'log_msg_builder_task_id' : 'Task',
 
         # mpy_msg.py - mpy_msg_print(~)
-        'mpy_msg_print_intrpt' : '>>> INTERRUPT <<< Press Enter to continue...',
+        'msg_print_intrpt' : '>>> INTERRUPT <<< Press Enter to continue...',
 
         # mpy_msg.py - log_db_connect(~)
         'log_db_connect_excpt' : 'The database could not be found and/or connected.',
@@ -395,13 +395,13 @@ def loc_morPy() -> dict:
         'csv_dict_to_excel_prog_descr' : 'Writing CSV to Excel',
 
         # mpy_exit.py - exit(~)
-        'mpy_exit_msg_done' : 'App exited.',
-        'mpy_exit_msg_started' : 'Started',
-        'mpy_exit_msg_at' : 'at',
-        'mpy_exit_msg_exited' : 'Exited',
-        'mpy_exit_msg_duration' : 'Duration',
-        'mpy_exit_msg_events' : 'Events',
-        'mpy_exit_msg_total' : 'Total',
+        'exit_msg_done' : 'App exited.',
+        'exit_msg_started' : 'Started',
+        'exit_msg_at' : 'at',
+        'exit_msg_exited' : 'Exited',
+        'exit_msg_duration' : 'Duration',
+        'exit_msg_events' : 'Events',
+        'exit_msg_total' : 'Total',
 
         # mpy_xl.py - cl_xl_workbook._init(~)
         'cl_xl_workbook_inst': 'MS Excel workbook instantiated.',
@@ -626,7 +626,7 @@ def loc_morPy() -> dict:
         'prio_correction_err' : 'The priority of a morPy-task has been corrected.',
 
         # mpy_mt.py - mpy_mt_abort(~)
-        'mpy_mt_abort_start' : 'Aborting threaded execution of tasks. Continuing main thread.',
+        'mt_abort_start' : 'Aborting threaded execution of tasks. Continuing main thread.',
 
         # mpy_mt.py - thread_imports(~)
         'thread_imports_start' : 'Task split to identify module imports.',
@@ -646,24 +646,24 @@ def loc_morPy() -> dict:
         'thread_id_err' : 'Overflow in thread ID list. ID exceeds maximum threads utilized.',
 
         # mpy_mt.py - mpy_thread_queue(~)
-        'mpy_thread_queue_enqueue' : 'Enqueing task.',
-        'mpy_thread_queue_dbg_enqueue_done' : 'Task successfully enqueued. Thread created.',
-        'mpy_thread_queue_dbg_thread_skip' : 'No free thread available. Skipping thread invoke.',
-        'mpy_thread_queue_dbg_enq_new_done' : 'New Thread ID list created. Task successfully enqueued.',
-        'mpy_thread_queue_task' : 'Task',
-        'mpy_thread_queue_priority' : 'Priority',
+        'thread_queue_enqueue' : 'Enqueing task.',
+        'thread_queue_dbg_enqueue_done' : 'Task successfully enqueued. Thread created.',
+        'thread_queue_dbg_thread_skip' : 'No free thread available. Skipping thread invoke.',
+        'thread_queue_dbg_enq_new_done' : 'New Thread ID list created. Task successfully enqueued.',
+        'thread_queue_task' : 'Task',
+        'thread_queue_priority' : 'Priority',
         'cl_priority_queue_enqueue_id_conflict' : 'Task not enqueued. Task ID mismatch or conflict.',
         'cl_priority_queue_enqueue_task_duplicate' : 'Task is already enqueued. Referencing in queue.',
-        'mpy_thread_queue_enqueue_err' : 'Enqueing failed.',
-        'mpy_thread_queue_dbg_threads_available' : 'Checking threads availability.',
-        'mpy_thread_queue_dbg_threads_used' : 'Threads in use',
-        'mpy_thread_queue_dbg_threads_max' : 'Threads total',
-        'mpy_thread_queue_thread_err' : 'A new thread could not be initiated.',
+        'thread_queue_enqueue_err' : 'Enqueing failed.',
+        'thread_queue_dbg_threads_available' : 'Checking threads availability.',
+        'thread_queue_dbg_threads_used' : 'Threads in use',
+        'thread_queue_dbg_threads_max' : 'Threads total',
+        'thread_queue_thread_err' : 'A new thread could not be initiated.',
 
         # mpy_mt.py - mpy_threads_joinall(~)
-        'mpy_threads_joinall_start' : 'Waiting for all threads to finish up their work.',
-        'mpy_threads_joinall_eval' : 'Threads running',
-        'mpy_threads_joinall_end' : 'All threads/tasks finished.',
+        'threads_joinall_start' : 'Waiting for all threads to finish up their work.',
+        'threads_joinall_eval' : 'Threads running',
+        'threads_joinall_end' : 'All threads/tasks finished.',
 
         # mpy_bulk_ops.py - find_replace_saveas(~)
         'find_replace_saveas_start' : 'Operation start.',
@@ -746,9 +746,9 @@ def loc_morPy_dbg() -> dict:
         'dummy_process_math_end' : 'Finished simple math benchmark.',
 
         # mpy_dbg.py - mpy_ut_call_test_op(~)
-        'mpy_ut_call_start' : 'START unit test of:',
-        'mpy_ut_call_pass' : 'PASSED:',
-        'mpy_ut_call_fail' : 'FAILED:',
+        'ut_call_start' : 'START unit test of:',
+        'ut_call_pass' : 'PASSED:',
+        'ut_call_fail' : 'FAILED:',
 
         # App specific area - END
     }

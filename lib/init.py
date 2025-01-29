@@ -77,7 +77,7 @@ def init(morPy_trace):
         init_dict["proc"]["morPy"].update({"proc_refs" : []})
 
         # Initialize the global interrupt flag and exit flag
-        init_dict["global"]["morPy"]["mpy_interrupt"] = False
+        init_dict["global"]["morPy"]["interrupt"] = False
         init_dict["global"]["morPy"]["exit"] = False
 
         # Set an initialization complete flag
@@ -94,12 +94,12 @@ def init(morPy_trace):
         init_dict["conf"].update(conf.parameters(start_time=init_dict["run"]["init_datetimestamp"]))
 
         # Evaluate log_enable
-        if not init_dict["conf"]["mpy_log_db_enable"] and not init_dict["conf"]["mpy_log_txt_enable"]:
-            init_dict["conf"]["mpy_log_enable"] = False
+        if not init_dict["conf"]["log_db_enable"] and not init_dict["conf"]["log_txt_enable"]:
+            init_dict["conf"]["log_enable"] = False
 
         # Pass down the log enabling parameter
-        morPy_trace["log_enable"] = init_dict["conf"]["mpy_log_enable"]
-        morPy_trace_init["log_enable"] = init_dict["conf"]["mpy_log_enable"]
+        morPy_trace["log_enable"] = init_dict["conf"]["log_enable"]
+        morPy_trace_init["log_enable"] = init_dict["conf"]["log_enable"]
 
         # Import the morPy core functions localization into init_dict.
         mpy_loc = importlib.import_module(init_dict["conf"]["localization"])
@@ -109,11 +109,11 @@ def init(morPy_trace):
         log_levels = ("init", "debug", "info", "warning", "denied", "error", "critical", "exit")
         for log_level in log_levels:
             if (
-                (init_dict["conf"]["mpy_log_enable"] and
-                 not (log_level in init_dict["conf"]["mpy_log_lvl_nolog"])
+                (init_dict["conf"]["log_enable"] and
+                 not (log_level in init_dict["conf"]["log_lvl_nolog"])
                  ) or (
                 init_dict["conf"]["msg_print"] and
-                 not (log_level in init_dict["conf"]["mpy_log_lvl_noprint"]))
+                 not (log_level in init_dict["conf"]["log_lvl_noprint"]))
             ):
                 init_dict["global"]["morPy"]["logs_generate"].update({log_level : True})
             else:
@@ -142,9 +142,9 @@ def init(morPy_trace):
         init_dict["run"]["events_EXIT"] = 0
 
         # Create first log in txt-file including the app header
-        if (init_dict["conf"]["mpy_log_txt_header_enable"] and
+        if (init_dict["conf"]["log_txt_header_enable"] and
             morPy_trace_init["log_enable"] and
-            init_dict["conf"]["mpy_log_txt_enable"]
+            init_dict["conf"]["log_txt_enable"]
         ):
             mpy_log_header(morPy_trace_init, init_dict)
 
@@ -172,11 +172,11 @@ def init(morPy_trace):
         lambda: f'{init_dict["loc"]["morPy"]["init_loc_finished"]}')
 
         # Load init_dict as a string
-        if (init_dict["conf"]["mpy_print_init_vars"] or init_dict["conf"]["mpy_ref_create"]):
+        if (init_dict["conf"]["print_init_vars"] or init_dict["conf"]["ref_create"]):
             init_dict_str = fct.app_dict_to_string(init_dict)
 
         # Print init_dict to console
-        if init_dict["conf"]["mpy_print_init_vars"]:
+        if init_dict["conf"]["print_init_vars"]:
             print(init_dict_str)
 
         # Initialize the morPy orchestrator
@@ -217,7 +217,7 @@ def init(morPy_trace):
         types_dict_finalize(morPy_trace_init, init_dict)
 
         # Write app_dict to file: initialized_app_dict.txt
-        if init_dict["conf"]["mpy_ref_create"]:
+        if init_dict["conf"]["ref_create"]:
             mpy_ref(morPy_trace_init, init_dict, init_dict_str)
 
         # Set an initialization complete flag
@@ -492,21 +492,21 @@ def mpy_log_header(morPy_trace: dict, init_dict: dict):
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'init'
-    operation = 'mpy_log_header(~)'
+    operation = 'log_header(~)'
     morPy_trace = fct.tracing(module, operation, morPy_trace)
 
     # Create the app header
     content = (
-        f'== {init_dict["loc"]["morPy"]["mpy_log_header_start"]}{3*" =="}\n\t'
-        f'{init_dict["loc"]["morPy"]["mpy_log_header_author"]}: Bastian Neuwirth\n\t'
-        f'{init_dict["loc"]["morPy"]["mpy_log_header_app"]}: {init_dict["conf"]["main_path"]}\n\t'
-        f'{init_dict["loc"]["morPy"]["mpy_log_header_timestamp"]}: {init_dict["run"]["init_datetimestamp"]}\n\t'
-        f'{init_dict["loc"]["morPy"]["mpy_log_header_user"]}: {init_dict["sys"]["username"]}\n\t'
-        f'{init_dict["loc"]["morPy"]["mpy_log_header_system"]}: {init_dict["sys"]["os"]} {init_dict["sys"]["os_release"]}\n\t'
-        f'{init_dict["loc"]["morPy"]["mpy_log_header_version"]}: {init_dict["sys"]["os_version"]}\n\t'
-        f'{init_dict["loc"]["morPy"]["mpy_log_header_architecture"]}: {init_dict["sys"]["os_arch"]}\n\t'
-        f'{init_dict["loc"]["morPy"]["mpy_log_header_threads"]}: {init_dict["sys"]["threads"]}\n'
-        f'== {init_dict["loc"]["morPy"]["mpy_log_header_begin"]}{3*" =="}\n'
+        f'== {init_dict["loc"]["morPy"]["log_header_start"]}{3*" =="}\n\t'
+        f'{init_dict["loc"]["morPy"]["log_header_author"]}: Bastian Neuwirth\n\t'
+        f'{init_dict["loc"]["morPy"]["log_header_app"]}: {init_dict["conf"]["main_path"]}\n\t'
+        f'{init_dict["loc"]["morPy"]["log_header_timestamp"]}: {init_dict["run"]["init_datetimestamp"]}\n\t'
+        f'{init_dict["loc"]["morPy"]["log_header_user"]}: {init_dict["sys"]["username"]}\n\t'
+        f'{init_dict["loc"]["morPy"]["log_header_system"]}: {init_dict["sys"]["os"]} {init_dict["sys"]["os_release"]}\n\t'
+        f'{init_dict["loc"]["morPy"]["log_header_version"]}: {init_dict["sys"]["os_version"]}\n\t'
+        f'{init_dict["loc"]["morPy"]["log_header_architecture"]}: {init_dict["sys"]["os_arch"]}\n\t'
+        f'{init_dict["loc"]["morPy"]["log_header_threads"]}: {init_dict["sys"]["threads"]}\n'
+        f'== {init_dict["loc"]["morPy"]["log_header_begin"]}{3*" =="}\n'
     )
 
     # Write to the logfile
@@ -534,7 +534,7 @@ def mpy_ref(morPy_trace: dict, init_dict: dict, init_dict_str: str):
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'init'
-    operation = 'mpy_ref(~)'
+    operation = 'ref(~)'
     morPy_trace = fct.tracing(module, operation, morPy_trace)
 
     try:
@@ -542,7 +542,7 @@ def mpy_ref(morPy_trace: dict, init_dict: dict, init_dict_str: str):
         init_dict = open(mpy_ref_path,'w')
 
         # Write init_dict to file
-        init_dict.write(f'{init_dict["loc"]["morPy"]["mpy_ref_descr"]}\n\n')
+        init_dict.write(f'{init_dict["loc"]["morPy"]["ref_descr"]}\n\n')
         init_dict.write(init_dict_str)
 
         # Close the file
@@ -550,8 +550,8 @@ def mpy_ref(morPy_trace: dict, init_dict: dict, init_dict_str: str):
 
         # The init_dict was written to textfile.
         log_no_q(morPy_trace, init_dict, "init",
-        lambda: f'{init_dict["loc"]["morPy"]["mpy_ref_created"]}\n'
-            f'{init_dict["loc"]["morPy"]["mpy_ref_path"]}: {mpy_ref_path}')
+        lambda: f'{init_dict["loc"]["morPy"]["ref_created"]}\n'
+            f'{init_dict["loc"]["morPy"]["ref_path"]}: {mpy_ref_path}')
 
     except Exception as e:
         log_no_q(morPy_trace, init_dict, "error",

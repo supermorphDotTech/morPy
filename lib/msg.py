@@ -40,7 +40,7 @@ def log(morPy_trace, app_dict, message, level):
 
     try:
         # Wait for an interrupt to end
-        while app_dict["global"]["morPy"]["mpy_interrupt"] == True:
+        while app_dict["global"]["morPy"]["interrupt"] == True:
             pass
 
         # Event handling (counting and formatting)
@@ -49,7 +49,7 @@ def log(morPy_trace, app_dict, message, level):
 
         # The log level will be evaluated as long as logging or prints to console are enabled. The
         # morPy_trace may be manipulated.
-        if app_dict["conf"]["msg_print"] or app_dict["conf"]["mpy_log_enable"]:
+        if app_dict["conf"]["msg_print"] or app_dict["conf"]["log_enable"]:
             morPy_trace_eval = log_eval(morPy_trace, app_dict, log_event_dict["level"], level_dict)
 
         # Retrieve a log specific datetimestamp
@@ -79,16 +79,16 @@ def log(morPy_trace, app_dict, message, level):
         msg = log_msg_builder(app_dict, log_dict)
         log_dict["log_msg_complete"] = msg
 
-        if app_dict["conf"]["mpy_log_enable"] and \
+        if app_dict["conf"]["log_enable"] and \
             log_dict["log_enable"] and \
-            app_dict["conf"]["mpy_log_txt_enable"]:
+            app_dict["conf"]["log_txt_enable"]:
 
             # Write to text file - Fallback if SQLite functionality is broken
             log_txt(log_dict, app_dict, log_dict)
 
-        if app_dict["conf"]["mpy_log_enable"] and \
+        if app_dict["conf"]["log_enable"] and \
             log_dict["log_enable"] and \
-            app_dict["conf"]["mpy_log_db_enable"]:
+            app_dict["conf"]["log_db_enable"]:
 
             # Write to logging database
             log_db(log_dict, app_dict, log_dict)
@@ -133,10 +133,10 @@ def log_eval(morPy_trace, app_dict, level, level_dict):
     morPy_trace_eval["pnt_enable"] = True
 
     # Check, if logging is enabled globally.
-    if app_dict["conf"]["mpy_log_enable"]:
+    if app_dict["conf"]["log_enable"]:
 
         # Evaluate the log level, if it is excluded from logging.
-        for lvl_nolog in app_dict["conf"]["mpy_log_lvl_nolog"]:
+        for lvl_nolog in app_dict["conf"]["log_lvl_nolog"]:
 
             if level == lvl_nolog:
                 morPy_trace_eval["log_enable"] = False
@@ -149,7 +149,7 @@ def log_eval(morPy_trace, app_dict, level, level_dict):
     if app_dict["conf"]["msg_print"]:
 
         # Evaluate the log level, if it is excluded from printing.
-        for lvl_noprint in app_dict["conf"]["mpy_log_lvl_noprint"]:
+        for lvl_noprint in app_dict["conf"]["log_lvl_noprint"]:
 
             if level == lvl_noprint:
                 morPy_trace_eval["pnt_enable"] = False
@@ -159,7 +159,7 @@ def log_eval(morPy_trace, app_dict, level, level_dict):
     else: pnt_enable = False
 
     # Evaluate the log level, if it will raise an interrupt.
-    for lvl_intpt in app_dict["conf"]["mpy_log_lvl_interrupts"]:
+    for lvl_intpt in app_dict["conf"]["log_lvl_interrupts"]:
 
         if level == lvl_intpt:
             morPy_trace_eval["interrupt_enable"] = True
@@ -233,14 +233,14 @@ def log_interrupt(morPy_trace, app_dict):
     morPy_trace["log_enable"] = False
 
     # Set the global interrupt flag
-    app_dict["global"]["morPy"]["mpy_interrupt"] = True
+    app_dict["global"]["morPy"]["interrupt"] = True
 
     # >>> INTERRUPT <<< Press Enter to continue...
     msg_text = app_dict["loc"]["morPy"]["msg_print_intrpt"]
     log_wait_for_input(morPy_trace, app_dict, msg_text)
 
     # Reset the global interrupt flag
-    app_dict["global"]["morPy"]["mpy_interrupt"] = False
+    app_dict["global"]["morPy"]["interrupt"] = False
 
 def log_msg_builder(app_dict, log_dict):
 
@@ -308,7 +308,7 @@ def msg_print(morPy_trace, app_dict, log_dict):
     # print messages according to their log level
     pnt = True
 
-    for lvl_pnt in app_dict["conf"]["mpy_log_lvl_noprint"]:
+    for lvl_pnt in app_dict["conf"]["log_lvl_noprint"]:
 
         if log_dict["level"] == lvl_pnt:
             pnt = False

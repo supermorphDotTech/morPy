@@ -1441,7 +1441,7 @@ def mpy_thread_queue(morPy_trace, app_dict, name, priority, task):
     except Exception as e:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mpy'
-        operation = 'mpy_thread_queue(~)'
+        operation = 'thread_queue(~)'
         morPy_trace = fct.tracing(module, operation, morPy_trace)
 
         log(morPy_trace, app_dict, "critical",
@@ -1463,7 +1463,7 @@ def mpy_threads_joinall(morPy_trace, app_dict):
     except Exception as e:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mpy'
-        operation = 'mpy_threads_joinall(~)'
+        operation = 'threads_joinall(~)'
         morPy_trace = fct.tracing(module, operation, morPy_trace)
 
         log(morPy_trace, app_dict, "critical",

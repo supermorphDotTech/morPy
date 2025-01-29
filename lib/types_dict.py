@@ -48,7 +48,7 @@ class cl_attr_guard:
                 for key, value in messages.items():
                     self.loc.update({key: value})
             else:
-                self.lang = 'mpy_en_US'
+                self.lang = 'en_US'
                 messages = {
                     "cl_attr_guard_no_mod": "can not modify an attribute of",
                     "cl_attr_guard_no_del": "Deletion prohibited!",
@@ -176,7 +176,7 @@ class cl_types_dict(dict):
                     self.loc.update({key : value})
             # Fallback to english if localization is not available
             else:
-                self.lang = 'mpy_en_US'
+                self.lang = 'en_US'
                 messages = {
                     'cl_types_dict_denied' : 'Prohibited method',
                     'cl_types_dict_new_key' : 'Keys can not be added.',
@@ -566,7 +566,7 @@ class cl_types_dict_ultra(UltraDict):
                     self.loc.update({key : value})
             # Fallback to english if localization is not available
             else:
-                self.lang = 'mpy_en_US'
+                self.lang = 'en_US'
                 messages = {
                     'cl_types_dict_denied' : 'Prohibited method',
                     'cl_types_dict_new_key' : 'Keys can not be added.',
