@@ -12,7 +12,7 @@ ToDo:       - GUI Instanz im app_dict anmelden
                 > Bei Exit-Routine schließen
 """
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 import lib.common as common
 import lib.exit as exit
 from lib.decorators import metrics, log
@@ -162,7 +162,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.__init__(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             self._init(morpy_trace, app_dict, frame_title=frame_title, frame_width=frame_width, frame_height=frame_height,
@@ -233,7 +233,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._init(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         frame_height_sizing = False
@@ -376,7 +376,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._create_widgets(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         self.overall_progress_text = None
@@ -522,7 +522,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._redirect_console(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -575,7 +575,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._stop_console_redirection(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -614,7 +614,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._main_loop(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -658,7 +658,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._update_console(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -738,7 +738,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.update_progress(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         stage_abs = None
@@ -847,7 +847,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.update_text(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -912,7 +912,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.run(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -954,7 +954,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._start_work_thread(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -1003,7 +1003,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._on_close(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -1051,7 +1051,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.get_console_output(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         console_text = ""
@@ -1102,7 +1102,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftype
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'ui_tk'
     operation = 'dialog_sel_file(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     file_path = None
@@ -1146,7 +1146,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftype
                     f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_open"]}')
 
             # Create a path object
-            fct.pathtool(morpy_trace, file_path)
+            morpy_fct.pathtool(morpy_trace, file_path)
 
         check = True
 
@@ -1188,7 +1188,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'ui_tk'
     operation = 'dialog_sel_dir(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     dir_path = None
@@ -1228,7 +1228,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
                     f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_open"]}')
 
             # Create a path object
-            fct.pathtool(morpy_trace, dir_path)
+            morpy_fct.pathtool(morpy_trace, dir_path)
 
         check = True
 

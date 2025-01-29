@@ -8,7 +8,6 @@ Descr.:     DESCRIPTION
 
 import lib.morPy as morPy
 import lib.mp as mp
-from app.init import app_init
 from lib.decorators import metrics, log
 
 import sys
@@ -134,6 +133,7 @@ def arbitrary_parallel_task(morpy_trace, app_dict, gui=None):
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
+    :param gui: GUI object (cl_progress_gui)
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -154,7 +154,6 @@ def arbitrary_parallel_task(morpy_trace, app_dict, gui=None):
         if not morpy_trace or not app_dict:
             raise RuntimeError
 
-        i = 0
         total = 10**2
         tmp_val = 0
         lst = []

@@ -8,7 +8,7 @@ Descr.:     This module delivers functions to debug, warn and log any operations
             all kinds of messaging, whether it be via console or ui.
 """
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 import sys
 
 from lib.decorators import metrics
@@ -53,7 +53,7 @@ def log(morpy_trace, app_dict, message, level):
             morpy_trace_eval = log_eval(morpy_trace, app_dict, log_event_dict["level"], level_dict)
 
         # Retrieve a log specific datetimestamp
-        time_lst = fct.datetime_now(morpy_trace_eval)
+        time_lst = morpy_fct.datetime_now()
         datetimestamp = time_lst["datetimestamp"]
         datetime_value = time_lst["datetime_value"]
 
@@ -227,9 +227,9 @@ def log_interrupt(morpy_trace, app_dict):
         > see https://docs.python.org/2/library/threading.html#condition-objects
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
-    morpy_trace = fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
+    morpy_trace = morpy_fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Set the global interrupt flag
@@ -302,7 +302,7 @@ def msg_print(morpy_trace, app_dict, log_dict):
     # Define operation credentials (see init.init_cred() for all dict keys)
     # module = 'msg'
     # operation = 'msg_print(~)'
-    # morpy_trace = fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
+    # morpy_trace = morpy_fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
     # morpy_trace["log_enable"] = False
 
     # print messages according to their log level
@@ -334,17 +334,17 @@ def log_txt(morpy_trace, app_dict, log_dict):
         -
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_db(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Write to text file - Fallback if SQLite functionality is broken
     filepath = app_dict["conf"]["log_txt_path"]
-    fct.txt_wr(morpy_trace, app_dict, filepath, log_dict["log_msg_complete"])
+    morpy_fct.txt_write(morpy_trace, app_dict, filepath, log_dict["log_msg_complete"])
 
 def log_db(morpy_trace, app_dict, log_dict):
 
@@ -357,12 +357,12 @@ def log_db(morpy_trace, app_dict, log_dict):
         -
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_db(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Define the table to be adressed.
@@ -399,13 +399,13 @@ def log_db_connect(morpy_trace, app_dict, db_path):
         conn - Connection object or None
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     import sys, sqlite3
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_db_connect(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
 
@@ -434,13 +434,13 @@ def log_db_disconnect(morpy_trace, app_dict, db_path):
         -
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     import sys, sqlite3
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_db_disconnect(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     conn = None
@@ -471,13 +471,13 @@ def log_db_table_create(morpy_trace, app_dict, db_path, table_name):
         -
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_db_table_create(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Apply standard formats
@@ -525,13 +525,13 @@ def log_db_table_check(morpy_trace, app_dict, db_path, table_name):
         check - If TRUE, the table was found
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_db_table_check(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Apply standard formats
@@ -586,13 +586,13 @@ def log_db_table_add_column(morpy_trace, app_dict, db_path, table_name, columns,
         check - If TRUE, the function was successful
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_db_table_add_column(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Apply standard formats
@@ -668,13 +668,13 @@ def log_db_row_insert(morpy_trace, app_dict, db_path, table_name, columns, log_d
         row_id - ID of the row inserted
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_db_row_insert(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Preparation
@@ -762,13 +762,13 @@ def log_regex_replace(morpy_trace, app_dict, search_obj, search_for, replace_by)
         result - The substituted chracter or string
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     import sys, re
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_regex_replace(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Apply standard formats
     search_obj = f'{search_obj}'
@@ -797,13 +797,13 @@ def log_wait_for_input(morpy_trace, app_dict, msg_text):
         usr_input - Returns the input of the user
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'msg'
     operation = 'log_wait_for_input(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
 

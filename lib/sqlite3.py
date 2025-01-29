@@ -84,7 +84,7 @@ SQLite Functions
 # TODO make this a class
 # Update how this works (use sets and dicts)
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 import sys
 import sqlite3
 
@@ -111,7 +111,7 @@ def sqlite3_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_db_connect(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Connecting to SQLite database.
     log(morpy_trace, app_dict, "debug",
@@ -155,7 +155,7 @@ def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> di
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_db_disconnect(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
 
@@ -209,7 +209,7 @@ def sqlite3_db_statement(morpy_trace: dict, app_dict: dict, db_path: str, db_smn
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_db_statement(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Preparing Parameters
     db_smnt = f'{db_smnt}'
@@ -282,7 +282,7 @@ def sqlite3_tbl_check(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_tbl_check(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     check = False
@@ -364,7 +364,7 @@ def sqlite3_tbl_create(morpy_trace: dict, app_dict: dict, db_path: str, table_na
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_tbl_create(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     check = False
@@ -438,7 +438,7 @@ def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, tabl
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_tbl_column_add(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     columns_str = f'{columns}'
@@ -569,7 +569,7 @@ def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_na
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_row_insert(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     check = False
@@ -711,7 +711,7 @@ def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_na
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_row_update(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     check = False
@@ -862,7 +862,7 @@ def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, ta
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_row_update_where(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     where = f'{where}'

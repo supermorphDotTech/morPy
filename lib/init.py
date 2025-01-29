@@ -7,7 +7,7 @@ Descr.:     This module holds all functions used for initialization of the
             morPy framework.
 """
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 import lib.conf as conf
 import lib.mp as mp
 
@@ -18,13 +18,14 @@ import sys
 import os
 import importlib
 
-
 def init_cred():
+    r"""
+    This function initializes the operation credentials and tracing.
 
-    r""" This function initializes the operation credentials and tracing.
-    :param
+    :param:
         -
-    :return - dictionary
+
+    :return: dict
         morpy_trace - operation credentials and tracing
     """
 
@@ -46,13 +47,13 @@ def init_cred():
     return morpy_trace
 
 def init(morpy_trace):
+    r"""
+    This function initializes the app dictionary and yields app
+    specific information to be handed down through called functions.
 
-    r""" This function initializes the app dictionary and yields app
-        specific information to be handed down through called functions.
-    :param
-        morpy_trace - operation credentials and tracing
-    :return - dictionary
-        app_dict - morPy global dictionary containing app configurations
+    :param morpy_trace: operation credentials and tracing
+
+    :return app_dict: morPy global dictionary containing app configurations
 
     TODO init log_db and store connection in app_dict
     TODO provide cleanups of log_db lock (conn) in exit functions
@@ -61,7 +62,7 @@ def init(morpy_trace):
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'init'
     operation = 'init(~)'
-    morpy_trace_init = fct.tracing(module, operation, morpy_trace)
+    morpy_trace_init = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
         # ############################################
@@ -84,14 +85,14 @@ def init(morpy_trace):
         init_dict["run"]["init_complete"] = False
 
         # Retrieve the starting time of the program
-        init_datetime = fct.datetime_now(morpy_trace_init)
+        init_datetime = morpy_fct.datetime_now()
 
         # Store the start time and timestamps in the dictionary
         for time_key in init_datetime:
             init_dict["run"][f'init_{time_key}'] = init_datetime[f'{time_key}']
 
         # Update the initialize dictionary with the parameters dictionary
-        init_dict["conf"].update(conf.parameters(start_time=init_dict["run"]["init_datetimestamp"]))
+        init_dict["conf"].update(conf.settings(start_time=init_dict["run"]["init_datetimestamp"]))
 
         # Evaluate log_enable
         if not init_dict["conf"]["log_db_enable"] and not init_dict["conf"]["log_txt_enable"]:
@@ -120,14 +121,14 @@ def init(morpy_trace):
                 init_dict["global"]["morpy"]["logs_generate"].update({log_level : False})
 
         # Retrieve system information
-        sysinfo = fct.sysinfo(morpy_trace_init)
+        sysinfo = morpy_fct.sysinfo()
 
         # Update init_dict with system information
         for sys_key in sysinfo:
             init_dict["sys"][sys_key] = sysinfo[sys_key]
 
         # Test for elevated privileges
-        fct.privileges_handler(morpy_trace_init, init_dict)
+        # TODO make an elevation handler
 
         # Prepare log levels
         init_dict["run"]["events_total"] = 0
@@ -173,7 +174,7 @@ def init(morpy_trace):
 
         # Load init_dict as a string
         if (init_dict["conf"]["print_init_vars"] or init_dict["conf"]["ref_create"]):
-            init_dict_str = fct.app_dict_to_string(init_dict)
+            init_dict_str = morpy_fct.app_dict_to_string(init_dict)
 
         # Print init_dict to console
         if init_dict["conf"]["print_init_vars"]:
@@ -204,7 +205,7 @@ def init(morpy_trace):
         # ############################################
 
         # Calculate the runtime of the initialization routine
-        init_duration = fct.runtime(morpy_trace_init, init_dict["run"]["init_datetime_value"])
+        init_duration = morpy_fct.runtime(init_dict["run"]["init_datetime_value"])
 
         # Record the duration of the initialization
         init_dict["run"]["init_rnt_delta"] = init_duration["rnt_delta"]
@@ -228,7 +229,7 @@ def init(morpy_trace):
         return retval
 
     except Exception as e:
-        fct.handle_exception_init(e)
+        morpy_fct.handle_exception_init(e)
         raise
 
 def types_dict_build(morpy_trace: dict):
@@ -251,7 +252,7 @@ def types_dict_build(morpy_trace: dict):
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'init'
     operation = 'types_dict_build(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Check for GIL and decide for an app_dict structure.
     gil = has_gil(morpy_trace)
@@ -450,7 +451,7 @@ def types_dict_finalize(morpy_trace: dict, init_dict: dict):
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'init'
     operation = 'types_dict_finalize(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
         init_dict._update_self(_access="tightened")
@@ -476,7 +477,6 @@ def types_dict_finalize(morpy_trace: dict, init_dict: dict):
                 f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
 
 def mpy_log_header(morpy_trace: dict, init_dict: dict):
-
     r"""
     This function writes the header for the logfile including app specific
     information.
@@ -493,7 +493,7 @@ def mpy_log_header(morpy_trace: dict, init_dict: dict):
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'init'
     operation = 'log_header(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Create the app header
     content = (
@@ -511,13 +511,12 @@ def mpy_log_header(morpy_trace: dict, init_dict: dict):
 
     # Write to the logfile
     filepath = init_dict["conf"]["log_txt_path"]
-    fct.txt_wr(morpy_trace, init_dict, filepath, content)
+    morpy_fct.txt_write(morpy_trace, init_dict, filepath, content)
 
     # Clean up
     del morpy_trace
 
 def mpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
-
     r"""
     This function documents the initialized dictionary (reference). It is stored
     in the same path as __main__.py and serves development purposes.
@@ -527,6 +526,7 @@ def mpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
     :param init_dict_str: String of the init_dict
 
     :return:
+        -
 
     :example:
         mpy_ref(morpy_trace, init_dict)
@@ -535,7 +535,7 @@ def mpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'init'
     operation = 'ref(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
         mpy_ref_path = os.path.join(f'{init_dict["conf"]["main_path"]}', 'initialized_app_dict.txt')
@@ -574,7 +574,7 @@ def has_gil(morpy_trace: dict) -> dict:
 
     module = 'init'
     operation = 'has_gil(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
         # 1) Check if 'nogil' or 'free-threading' is in the version string
@@ -620,4 +620,4 @@ def has_gil(morpy_trace: dict) -> dict:
         return True
 
     except Exception as e:
-        fct.handle_exception_init(e)
+        morpy_fct.handle_exception_init(e)

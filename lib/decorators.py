@@ -9,10 +9,9 @@ Descr.:     This module yields all decorators to be used with the morPy framewor
 import sys
 import time
 
-from functools import wraps, partial
+from functools import wraps
 
 def log(morpy_trace: dict, app_dict: dict, log_level: str, message_func: callable):
-
     r"""
     Wrapper for conditional logging based on log level. To benefit from
     this logic, it is necessary to construct "message" in the lambda shown
@@ -22,52 +21,40 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message_func: callabl
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
-    :param level: Severity: debug/info/warning/error/critical/denied
+    :param log_level: Severity: debug/info/warning/error/critical/denied
     :param message_func: A callable (e.g., lambda or function) that returns the log message.
 
     :example:
         from lib.decorators import log
-        log(morpy_trace, app_dict, level,
-        lambda: <message>)
+        log(morpy_trace, app_dict, "info",
+        lambda: "Hello world!")
     """
 
     import lib.msg as msg
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
     try:
         log_level = log_level.lower()
 
-        if log_level in app_dict["global"]["morpy"]["logs_generate"]:
-            if app_dict["global"]["morpy"]["logs_generate"][log_level] == True:
-                # Evaluate the message only when logging is demanded
-                message = message_func()
+        if app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+            # Evaluate the message only when logging is demanded
+            message = message_func()
 
-                try:
-                    if app_dict["proc"]["morpy"]["process_q"]:
-                        task = (msg.log, morpy_trace, app_dict, message, log_level)
+            if app_dict["proc"]["morpy"]["process_q"]:
+                task = (msg.log, morpy_trace, app_dict, message, log_level)
 
-                        # Enqueue the orchestrator task
-                        app_dict["proc"]["morpy"]["process_q"].enqueue(
-                            morpy_trace, app_dict, priority=-100, task=task, autocorrect=False, is_process=False
-                        )
-                except:
-                    msg.log(morpy_trace, app_dict, message, log_level)
+                # Enqueue the orchestrator task
+                app_dict["proc"]["morpy"]["process_q"].enqueue(
+                    morpy_trace, app_dict, priority=-100, task=task, autocorrect=False, is_process=False
+                )
 
     except Exception as e:
-        msg = (f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-               f'{type(e).__name__}: {e}\n'
-               f'{app_dict["loc"]["morpy"]["trace"]}: {morpy_trace["tracing"]}\n'
-               f'{app_dict["loc"]["morpy"]["process"]}: {morpy_trace["process_id"]}\n'
-               f'{app_dict["loc"]["morpy"]["thread"]}: {morpy_trace["thread_id"]}\n'
-               f'{app_dict["loc"]["morpy"]["task"]}: {morpy_trace["task_id"]}')
-
-        fct.handle_exception_decorator(msg)
+        morpy_fct.handle_exception_decorator(e)
 
         # Quit the program
         sys.exit()
 
 def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message_func: callable):
-
     r"""
     Wrapper for conditional logging based on log level. This decorator does not enqueue
     logs and is intended for use by morPy orchestrator only.
@@ -76,7 +63,7 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message_func: ca
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
-    :param level: Severity: debug/info/warning/error/critical/denied
+    :param log_level: Severity: debug/info/warning/error/critical/denied
     :param message_func: A callable (e.g., lambda or function) that returns the log message.
 
     :example:
@@ -86,32 +73,23 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message_func: ca
     """
 
     import lib.msg as msg
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
     try:
         log_level = log_level.lower()
 
-        if log_level in app_dict["global"]["morpy"]["logs_generate"]:
-            if app_dict["global"]["morpy"]["logs_generate"][log_level] == True:
-                # Evaluate the message only when logging is demanded
-                message = message_func()
-                msg.log(morpy_trace, app_dict, message, log_level)
+        if app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+            # Evaluate the message only when logging is demanded
+            message = message_func()
+            msg.log(morpy_trace, app_dict, message, log_level)
 
     except Exception as e:
-        msg = (f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-               f'{type(e).__name__}: {e}\n'
-               f'{app_dict["loc"]["morpy"]["trace"]}: {morpy_trace["tracing"]}\n'
-               f'{app_dict["loc"]["morpy"]["process"]}: {morpy_trace["process_id"]}\n'
-               f'{app_dict["loc"]["morpy"]["thread"]}: {morpy_trace["thread_id"]}\n'
-               f'{app_dict["loc"]["morpy"]["task"]}: {morpy_trace["task_id"]}')
-
-        fct.handle_exception_decorator(msg)
+        morpy_fct.handle_exception_decorator(e)
 
         # Quit the program
         sys.exit()
 
 def metrics(func):
-
     r"""
     Decorator used for metrics and performance analytics. in morPy this
     is the outermost decorator.
@@ -126,7 +104,7 @@ def metrics(func):
         my_function_call(morpy_trace, app_dict, *args, **kwargs)
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -161,7 +139,7 @@ def metrics(func):
             except (IndexError, TypeError):
                 # If we still don't have them, leave them as None
                 pass
-            except (KeyError):
+            except KeyError:
                 raise IndexError("Positional arguments morpy_trace and/or app_dict are missing or at wrong position!")
 
             try:
@@ -184,13 +162,13 @@ def metrics(func):
                 if isinstance(morpy_trace, dict) and isinstance(app_dict, dict):
                     module = 'decorators'
                     operation = 'metrics.wrapper(~)'
-                    morpy_trace_metrics = fct.tracing(module, operation, morpy_trace)
+                    morpy_trace_metrics = morpy_fct.tracing(module, operation, morpy_trace)
                     log(morpy_trace_metrics, app_dict, "critical",
                     lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                             f'{type(e).__name__}: {e}')
                 else:
                     # fallback handler if no tracing
-                    fct.handle_exception_decorator(e)
+                    morpy_fct.handle_exception_decorator(e)
 
                 # Quit the program
                 sys.exit(1)
@@ -200,16 +178,18 @@ def metrics(func):
     return wrapper
 
 def metrics_perf(morpy_trace, run_time):
+    r"""
+    This helper function makes use of the data collected by it calling
+    function metrics(~) and provides logging and formatting of the data.
+    It performs all action in performance mode, which limits the data
+    collected to function name, trace and runtime.
 
-    r""" This helper function makes use of the data collected by it's calling
-        function metrics(~) and provides logging and formatting of the data.
-        It performs all action in performance mode, which limits the data
-        collected to function name, trace and runtime.
-    :param
-        morpy_trace - [dictionary] operation credentials and tracing
-        run_time - Total run time of the wrapped function.
-    :return
-        -
+    :param morpy_trace: operation credentials and tracing
+    :param run_time: Total run time of the wrapped function.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -218,16 +198,18 @@ def metrics_perf(morpy_trace, run_time):
     # morpy_trace = morPy.tracing(module, operation, morpy_trace)
 
 def metrics_full(morpy_trace, run_time):
+    r"""
+    This helper function makes use of the data collected by it calling
+    function metrics(~) and provides logging and formatting of the data.
+    It performs all action in performance mode, which limits the data
+    collected to function name, trace and runtime.
 
-    r""" This helper function makes use of the data collected by it's calling
-        function metrics(~) and provides logging and formatting of the data.
-        It performs all action in performance mode, which limits the data
-        collected to function name, trace and runtime.
-    :param
-        morpy_trace - [dictionary] operation credentials and tracing
-        run_time - Total run time of the wrapped function.
-    :return
-        -
+    :param morpy_trace: operation credentials and tracing
+    :param run_time: Total run time of the wrapped function.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)

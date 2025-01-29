@@ -7,13 +7,11 @@ Descr.:     Multiprocessing functionality for morPy.
 """
 
 import lib.msg
-from lib.conf import parameters as morpy_params
+import lib.conf as conf
 import importlib
 import sys
-import traceback
 
 from UltraDict import UltraDict
-import multiprocessing
 
 class cl_attr_guard:
 
@@ -38,26 +36,25 @@ class cl_attr_guard:
 
     def _init_conf(self):
         # Initialize localization and app configuration
+        self.loc = {}
         try:
-            # Initialize localization and configuration messages
-            self.loc = {}
-            if morpy_params:
-                self.lang = morpy_params().get('localization', '')
-                loc_morpy = importlib.import_module(self.lang)
-                messages = getattr(loc_morpy, 'loc_morpy')().get('cl_attr_guard', {})
-                for key, value in messages.items():
-                    self.loc.update({key: value})
-            else:
-                self.lang = 'en_US'
-                messages = {
-                    "cl_attr_guard_no_mod": "can not modify an attribute of",
-                    "cl_attr_guard_no_del": "Deletion prohibited!",
-                }
-                for key, value in messages.items():
-                    self.loc.update({key: value})
+            self.lang = conf.settings().get('localization', '')
+            loc_morpy = importlib.import_module(self.lang)
+            messages = getattr(loc_morpy, 'loc_morpy')().get('cl_attr_guard', {})
+            for key, value in messages.items():
+                self.loc.update({key: value})
+        # Fallback to english if localization is not available
+        except AttributeError:
+            self.lang = 'en_US'
+            messages = {
+                "cl_attr_guard_no_mod": "can not modify an attribute of",
+                "cl_attr_guard_no_del": "Deletion prohibited!",
+            }
+            for key, value in messages.items():
+                self.loc.update({key: value})
         except Exception as e:
             raise RuntimeError(
-                f'CRITICAL {self._name}._init_conf(): Failed to initialize UltraDict.\n'
+                f'CRITICAL {self._name}._init_conf(): Failed to initialize.\n'
                 f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
             )
 
@@ -165,35 +162,33 @@ class cl_types_dict(dict):
 
     def _init_conf(self):
         # Initialize localization and app configuration
+        self.loc = {}
         try:
-            # Initialize localization and configuration messages
-            self.loc = {}
-            if morpy_params:
-                self.lang = morpy_params().get('localization', '')
-                loc_morpy = importlib.import_module(self.lang)
-                messages = getattr(loc_morpy, 'loc_morpy')().get('cl_types_dict', {})
-                for key, value in messages.items():
-                    self.loc.update({key : value})
-            # Fallback to english if localization is not available
-            else:
-                self.lang = 'en_US'
-                messages = {
-                    'cl_types_dict_denied' : 'Prohibited method',
-                    'cl_types_dict_new_key' : 'Keys can not be added.',
-                    'cl_types_dict_del_key' : 'Keys can not be deleted.',
-                    'cl_types_dict_clear' : 'Dictionary can not be cleared.',
-                    'cl_types_dict_lock' : 'Dictionary is locked.',
-                    'cl_types_dict_item' : 'Item',
-                    'cl_types_dict_key' : 'Key',
-                    'cl_types_dict_val' : 'Value',
-                    "cl_types_dict_key_str": "Keys must be strings.",
-                    "cl_types_dict_empty": "Dictionary is empty.",
-                }
-                for key, value in messages.items():
-                    self.loc.update({key : value})
+            self.lang = conf.settings().get('localization', '')
+            loc_morpy = importlib.import_module(self.lang)
+            messages = getattr(loc_morpy, 'loc_morpy')().get('cl_types_dict', {})
+            for key, value in messages.items():
+                self.loc.update({key: value})
+        # Fallback to english if localization is not available
+        except AttributeError:
+            self.lang = 'en_US'
+            messages = {
+                'cl_types_dict_denied' : 'Prohibited method',
+                'cl_types_dict_new_key' : 'Keys can not be added.',
+                'cl_types_dict_del_key' : 'Keys can not be deleted.',
+                'cl_types_dict_clear' : 'Dictionary can not be cleared.',
+                'cl_types_dict_lock' : 'Dictionary is locked.',
+                'cl_types_dict_item' : 'Item',
+                'cl_types_dict_key' : 'Key',
+                'cl_types_dict_val' : 'Value',
+                "cl_types_dict_key_str": "Keys must be strings.",
+                "cl_types_dict_empty": "Dictionary is empty.",
+            }
+            for key, value in messages.items():
+                self.loc.update({key : value})
         except Exception as e:
             raise RuntimeError(
-                f'CRITICAL {self._name}._init_conf(): Failed to initialize UltraDict.\n'
+                f'CRITICAL {self._name}._init_conf(): Failed to initialize.\n'
                 f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
             )
 
@@ -341,12 +336,12 @@ class cl_types_dict(dict):
             self._set_access(_access=_access)
 
         # Evaluate localization reinitialization
-        if morpy_params:
-            loc_conf = morpy_params().get('localization', '')
+        if conf.settings:
+            loc_conf = conf.settings().get('localization', '')
             if loc_conf != self.lang or localization_force:
                 self._init_loc()
         else:
-            pass  # Handle cases where conf.parameters() is not available
+            pass  # Handle cases where conf.settings() is not available
 
     def __setitem__(self, key, value):
         if not isinstance(key, str):
@@ -555,35 +550,33 @@ class cl_types_dict_ultra(UltraDict):
 
     def _init_conf(self):
         # Initialize localization and app configuration
+        self.loc = {}
         try:
-            # Initialize localization and configuration messages
-            self.loc = {}
-            if morpy_params:
-                self.lang = morpy_params().get('localization', '')
-                loc_morpy = importlib.import_module(self.lang)
-                messages = getattr(loc_morpy, 'loc_morpy')().get('cl_types_dict', {})
-                for key, value in messages.items():
-                    self.loc.update({key : value})
-            # Fallback to english if localization is not available
-            else:
-                self.lang = 'en_US'
-                messages = {
-                    'cl_types_dict_denied' : 'Prohibited method',
-                    'cl_types_dict_new_key' : 'Keys can not be added.',
-                    'cl_types_dict_del_key' : 'Keys can not be deleted.',
-                    'cl_types_dict_clear' : 'Dictionary can not be cleared.',
-                    'cl_types_dict_lock' : 'Dictionary is locked.',
-                    'cl_types_dict_item' : 'Item',
-                    'cl_types_dict_key' : 'Key',
-                    'cl_types_dict_val' : 'Value',
-                    "cl_types_dict_key_str": "Keys must be strings.",
-                    "cl_types_dict_empty": "Dictionary is empty.",
-                }
-                for key, value in messages.items():
-                    self.loc.update({key : value})
+            self.lang = conf.settings().get('localization', '')
+            loc_morpy = importlib.import_module(self.lang)
+            messages = getattr(loc_morpy, 'loc_morpy')().get('cl_types_dict', {})
+            for key, value in messages.items():
+                self.loc.update({key: value})
+        # Fallback to english if localization is not available
+        except AttributeError:
+            self.lang = 'en_US'
+            messages = {
+                'cl_types_dict_denied' : 'Prohibited method',
+                'cl_types_dict_new_key' : 'Keys can not be added.',
+                'cl_types_dict_del_key' : 'Keys can not be deleted.',
+                'cl_types_dict_clear' : 'Dictionary can not be cleared.',
+                'cl_types_dict_lock' : 'Dictionary is locked.',
+                'cl_types_dict_item' : 'Item',
+                'cl_types_dict_key' : 'Key',
+                'cl_types_dict_val' : 'Value',
+                "cl_types_dict_key_str": "Keys must be strings.",
+                "cl_types_dict_empty": "Dictionary is empty.",
+            }
+            for key, value in messages.items():
+                self.loc.update({key : value})
         except Exception as e:
             raise RuntimeError(
-                f'CRITICAL {self._name}._init_conf(): Failed to initialize UltraDict.\n'
+                f'CRITICAL {self._name}._init_conf(): Failed to initialize.\n'
                 f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
             )
 
@@ -733,13 +726,13 @@ class cl_types_dict_ultra(UltraDict):
                 self._set_access(_access=_access)
 
         # Evaluate localization reinitialization
-        if morpy_params:
-            loc_conf = morpy_params().get('localization', '')
+        if conf.settings:
+            loc_conf = conf.settings().get('localization', '')
             if loc_conf != self.lang or localization_force:
                 with lock:
                     self._init_loc()
         else:
-            pass  # Handle cases where conf.parameters() is not available
+            pass  # Handle cases where conf.settings() is not available
 
     def _get_lock(self):
         r""" Retrieve lock depending on super class """

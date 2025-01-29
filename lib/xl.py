@@ -13,7 +13,7 @@ NB you must use the English name for a function and function arguments
 must be separated by commas and not other punctuation such as semicolons.
 """
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 import lib.common as common
 from lib.decorators import metrics, log
 
@@ -298,7 +298,7 @@ class cl_xl_workbook:
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.__init__(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             # Use self._init() for initialization
@@ -341,12 +341,12 @@ class cl_xl_workbook:
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook._init(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
         try:
-            self.wb_path = fct.pathtool(morpy_trace, workbook)["out_path"]
+            self.wb_path = morpy_fct.pathtool(workbook)["out_path"]
             self.wb_sheets = []
             self.active_sheet = None
             self.active_sheet_title = ""
@@ -354,12 +354,12 @@ class cl_xl_workbook:
             self.tables_sheets = {}
 
             # Get the file extension in lowercase
-            self.file_ext = fct.pathtool(morpy_trace, self.wb_path)["file_ext"].lower()
+            self.file_ext = morpy_fct.pathtool(self.wb_path)["file_ext"].lower()
 
             # Set vba supporting file extensions
             self.files_vbs = {".xlsm", ".xltm"}
 
-            path_eval = fct.pathtool(morpy_trace, self.wb_path)
+            path_eval = morpy_fct.pathtool(self.wb_path)
             file_exists = path_eval["file_exists"]
 
             if not file_exists:
@@ -373,7 +373,7 @@ class cl_xl_workbook:
                     )
 
             # Re-evaluate file creation
-            path_eval = fct.pathtool(morpy_trace, self.wb_path)
+            path_eval = morpy_fct.pathtool(self.wb_path)
             is_file = path_eval["is_file"]
             if not is_file:
                 # The path to the workbook is invalid.
@@ -428,7 +428,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook._create_workbook(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -478,7 +478,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook._update_meta(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         table_range = None
@@ -560,7 +560,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook._cell_ref_autoformat(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     
         check = False
         cl_valid = False
@@ -746,7 +746,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.save_workbook(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         wb_obj_return = self
@@ -799,7 +799,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.close_workbook(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -851,7 +851,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.activate_worksheet(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -978,7 +978,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.read_cells(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         cl_dict = {}
@@ -1208,7 +1208,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'write_ranges(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         wb_obj_return = self
@@ -1331,7 +1331,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.get_table_attributes(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         table_attr = None
@@ -1394,7 +1394,7 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'xl'
     operation = 'table_opyxl_datb_dict(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     table_data = f'{table_data}'

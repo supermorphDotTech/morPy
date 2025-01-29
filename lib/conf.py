@@ -6,51 +6,35 @@ Author:     Bastian Neuwirth
 Descr.:     This module yields all basic parameters of the morPy fork. The
             parameters are meant to be tempered with.
 
-TODO remake paramters() as settings() and provide as json
+TODO provide as json
 """
 
-def parameters(start_time=None):
+def settings(start_time=None):
+    r"""
+    This function defines the parameters morPy will be run with. These
+    parameters are meant to be tinkered with and added on to. Have in mind,
+    that the return dictionary eventually needs to be altered. The
+    morPy framework is preconfigured to support the change of these parameters
+    during runtime, although that may be done within app_dict directly, rather
+    than initializing the parameters again. There are exceptions though, which
+    are pointed out with ">REINITIALIZE<", as an indicator, that the JSON file
+    containing all parameters needs to be updated before a change can have an
+    effect. To do so, simply execute param_to_json(~) after altering the
+    parameters in app_dict like so:
+        app_dict["conf"]['my_param'] = 'my_value'
+        param_to_json(morpy_trace, app_dict)
 
-    import pathlib, os
-
-    r""" This function defines the paramaters to be initialized. These
-        parameters are meant to be tinkered with and added on to. Have in mind,
-        that the return dictionary eventually needs to be altered. The
-        morPy framework is preconfigured to support the change of these parameters
-        during runtime, although that may be done within app_dict directly, rather
-        than initializing the parameters again. There are exceptions though, which
-        are pointed out with ">REINITIALIZE<", as an indicator, that the JSON file
-        containing all parameters needs to be updated before a change can have an
-        effect. To do so, simply execute param_to_json(~) after altering the
-        parameters in app_dict like so:
-            app_dict["conf"]['my_param'] = 'my_value'
-            param_to_json(morpy_trace, app_dict)
     :param
-        start_time - Datetime stamp of runtime start
-    :return - dictionary
-        language - Defines the localized dictionary to be initialized by referencing
-                   the related language with two capital letters, e.g. en_US.
-        mpy_priv_required - Defines wether elevated privileges are required.
-                        If required, the privileges will be tested and __main__ will be
-                        restarted.
-        mpy_ref_create - Store the initialized app dictionary in the
-                      main path of the app ...\init_dict.txt except localization.
-        mpy_print_init_vars - Print the initialized app dictionary to console.
-        mpy_log_db_enable - Enable logging to a database (for the path see log_db_path).
-        mpy_log_txt_enable - Enable logging to a textfile (for the path see log_txt_path).
-        mpy_log_txt_header_enable - Enable the prepared header for the logging textfile.
-        path_divider - System specific character or string used to
-                       divide folders in a path.
-        main_path - Path to the app folder.
-        log_path - Path to the logfile folder.
-        log_db_path - Path to the database holding all logs.
-        log_txt_path - Path to the textfile holding all logs.
-        modules_path - Path to the modules folder.
-        main_db_path - Path to the main database of the app.
+        start_time - Datetime stamp of runtime start. Defaults to None.
+
+    :return: dict
+        > See through the function for detailed descriptions of every morPy setting.
 
     TODO update return parameters in description
     TODO change variable names and remove "morpy" from it (dict nesting circumvents name collisions)
     """
+
+    import pathlib, os
 
     r"""
 >>> LOCALIZATION <<<
@@ -64,7 +48,7 @@ def parameters(start_time=None):
 >>> PRIVILEGES <<<
     """
 
-    # Defines, wether elevated privileges are required.
+    # Defines, whether elevated privileges are required.
     # Called by: init.init(~)
     mpy_priv_required = False
 
@@ -199,7 +183,7 @@ def parameters(start_time=None):
 >>> MULTITHREADING <<<
     """
 
-    # Enable or disable multthreading. Have in mind, that during initialization
+    # Enable or disable multithreading. Have in mind, that during initialization
     # the available threads will be determined and this option may be overwritten
     # if there is only a single thread available.
     mt_enabled = True

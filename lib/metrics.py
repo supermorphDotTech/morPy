@@ -30,7 +30,7 @@ def init_metrics(morpy_trace, app_dict):
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = '???'
     operation = '???(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Preparing parameters
     check = False

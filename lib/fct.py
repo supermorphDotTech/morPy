@@ -4,7 +4,7 @@ https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
 Descr.:     This module yields the most basic functions of the morPy fork. These
-            functions are optimised for initilization, so they do not support
+            functions are designed for the initialization, so they can not support
             logging. Although not intended, these modules may be used freely
             since they are fully compatible with morPy.
 """
@@ -15,110 +15,12 @@ import sys
 import psutil
 import logging
 
-def privileges_handler(morpy_trace, app_dict):
+def datetime_now():
+    r"""
+    This function reads the current date and time and returns formatted
+    stamps.
 
-    r""" This function tests the privileges of __main__ and restarts with
-        a request for admin rights if it was set in the parameters.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-    :return
-        -
-
-    TODO Finish the module and fix all bugs
-    """
-
-    import lib.msg as msg
-    import sys, ctypes, enum, gc
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'fct'
-    operation = 'privileges_handler(~)'
-    morpy_trace = tracing(module, operation, morpy_trace)
-
-    # Preparing parameters
-    check = False
-
-    try:
-
-        # Specification of how to open an elevated program
-        class el_spec(enum.IntEnum):
-
-            HIDE = 0
-            MAXIMIZE = 3
-            MINIMIZE = 6
-            RESTORE = 9
-            SHOW = 5
-            SHOWDEFAULT = 10
-            SHOWMAXIMIZED = 3
-            SHOWMINIMIZED = 2
-            SHOWMINNOACTIVE = 7
-            SHOWNA = 8
-            SHOWNOACTIVATE = 4
-            SHOWNORMAL = 1
-
-        # Specification of how to interpret errors from ctypes
-        class el_error(enum.IntEnum):
-
-            ZERO = 0
-            FILE_NOT_FOUND = 2
-            PATH_NOT_FOUND = 3
-            BAD_FORMAT = 11
-            ACCESS_DENIED = 5
-            ASSOC_INCOMPLETE = 27
-            DDE_BUSY = 30
-            DDE_FAIL = 29
-            DDE_TIMEOUT = 28
-            DLL_NOT_FOUND = 32
-            NO_ASSOC = 31
-            OOM = 8
-            SHARE = 26
-
-        # Test if elevated privileges are required
-        if  app_dict["conf"]["priv_required"]:
-
-            # Routine for MS Windows
-            if app_dict["sys"]["os"].upper == 'WINDOWS':
-                if ctypes.windll.shell32.IsUserAnAdmin():
-                    # Program started with elevated Privileges.
-                    msg = app_dict["priv_handler_eval"]
-                else:
-                    hinstance = ctypes.windll.shell32.ShellExecuteW(
-                        None, 'runas', sys.executable, sys.argv[0], None, el_spec.SHOWNORMAL
-                    )
-                    if hinstance <= 32:
-                        raise RuntimeError(el_error(hinstance))
-
-            # Routine for Linux
-            elif app_dict["sys"]["os"].upper == 'LINUX':
-                i = 0
-
-        check = True
-
-    # Error detection
-    except Exception as e:
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{type(e).__name__}: {e}')
-
-    finally:
-
-        # Garbage collection
-        gc.collect()
-
-        # Return a dictionary
-        return{
-            'morpy_trace' : morpy_trace,
-            'check' : check
-            }
-
-def datetime_now(morpy_trace):
-
-    r""" This function reads the current date and time and returns formatted
-        stamps.
-    :param
-        morpy_trace - operation credentials and tracing
-    :return - dictionary
+    :return: dict
         datetime_value - Date and time in the format YYYY-MM-DD hh:mm:ss.ms as value
                         (used to determine runtime).
         date - Date DD.MM.YYY as a string.
@@ -130,11 +32,6 @@ def datetime_now(morpy_trace):
     """
 
     from datetime import datetime
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    # module = 'fct'
-    # operation = 'datetime_now(~)'
-    # morpy_trace = tracing(module, operation, morpy_trace)
 
     # Retrieve the actual time value
     datetime_value  = datetime.now()
@@ -187,22 +84,17 @@ def datetime_now(morpy_trace):
         'loggingstamp' : loggingstamp
     }
 
-def runtime(morpy_trace, in_ref_time):
+def runtime(in_ref_time):
+    r"""
+    This function calculates the time delta between now and a reference time.
 
-    r""" This function calculates the actual runtime and returns it.
-    :param
-        morpy_trace - operation credentials and tracing
-        in_ref_time - Value of the reference time to calculate the actual runtime
-    :return - dictionary
+    :param in_ref_time: Value of the reference time to calculate the actual runtime
+
+    :return: dict
         rnt_delta - Value of the actual runtime.
     """
 
     from datetime import datetime
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    # module = 'fct'
-    # operation = 'runtime(~)'
-    # morpy_trace = tracing(module, operation, morpy_trace)
 
     rnt_delta = datetime.now() - in_ref_time
 
@@ -210,12 +102,11 @@ def runtime(morpy_trace, in_ref_time):
         'rnt_delta' : rnt_delta
     }
 
-def sysinfo(morpy_trace):
+def sysinfo():
+    r"""
+    This function returns various information about the hardware and operating system.
 
-    r""" This function returns various informations about the hardware and operating system.
-    :param
-        morpy_trace - operation credentials and tracing
-    :return - dictionary
+    :return: dict
         system - Operating system.
         release - Major version of the operating system.
         version - Major and subversions of the operating system.
@@ -231,17 +122,12 @@ def sysinfo(morpy_trace):
     import platform, getpass, os.path, socket
     from tkinter import Tk
 
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    # module = 'fct'
-    # operation = 'sysinfo(~)'
-    # morpy_trace = tracing(module, operation, morpy_trace)
-
     system = platform.uname().system
     release = platform.uname().release
     version = platform.uname().version
     arch = platform.uname().machine
     processor = platform.uname().processor
-    logical_cpus = perfinfo(morpy_trace)["cpu_count_log"]
+    logical_cpus = perfinfo()["cpu_count_log"]
     sys_memory_bytes = psutil.virtual_memory().total
 
     username = getpass.getuser()
@@ -268,15 +154,14 @@ def sysinfo(morpy_trace):
         'resolution_width' : res_width,
     }
 
-def pathtool(morpy_trace: dict, in_path):
+def pathtool(in_path):
     r"""
     This function takes a string and converts it to a path. Additionally,
     it returns path components and checks.
 
-    :param morpy_trace: operation credentials and tracing
     :param in_path: Path to be converted
 
-    :return: dictionary
+    :return: dict
         out_path - Same as the input, but converted to a path.
         is_file - The path is a file path. File does not need to exist.
         file_exists - The file has been found under the given path.
@@ -289,7 +174,7 @@ def pathtool(morpy_trace: dict, in_path):
 
     :example:
         file_path = "C:\my_file.txt"
-        file_path = morPy.pathtool(morpy_trace, file_path)["out_path"]
+        file_path = morPy.pathtool(file_path)["out_path"]
     """
 
     import pathlib
@@ -326,30 +211,21 @@ def pathtool(morpy_trace: dict, in_path):
         'parent_dir' : parent_dir,
     }
 
-def path_join(morpy_trace, path_parts, file_extension):
-
+def path_join(path_parts, file_extension):
     r"""
     This function joins components of a tuple to an OS path.
 
-    :param
-        morpy_trace - operation credentials and tracing
-        path_parts - Tuple of parts to be joined. Exact order is critical. Examples:
+    :param path_parts: Tuple of parts to be joined. Exact order is critical. Examples:
                      ('C:', 'This', 'is', 'my', 'path', '.txt') - C:\This\is\my\path.txt
                      ('T:This_Fol', 'der_Will_Be_Split', 'this_Way') - T:\This_Fol\der_Will_Be_Split\this_Way
                      ('Y:', 'myFile.txt') - Y:\myFile.txt
-        file_extension - String of the file extension (i.e. '.txt'). Leave
+    :param file_extension: String of the file extension (i.e. '.txt'). Leave
                          empty if path is a directory (None or '') or if the tuple already includes the
                          file extension.
-    :return
-        path_obj - OS path object of the joined path parts. Is None, if path_parts is not a tuple.
+    :return path_obj: OS path object of the joined path parts. Is None, if path_parts is not a tuple.
     """
 
     import pathlib
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    # module = 'fct'
-    # operation = 'makepath(~)'
-    # morpy_trace = tracing(module, operation, morpy_trace)
 
     # Preparation
     path_str = ''
@@ -392,12 +268,11 @@ def path_join(morpy_trace, path_parts, file_extension):
 
     return path_obj
 
-def perfinfo(morpy_trace):
+def perfinfo():
+    r"""
+    This function returns performance metrics.
 
-    r""" This function returns performance metrics.
-    :param
-        morpy_trace - operation credentials and tracing
-    :return - dictionary
+    :return: dict
         boot_time - Timestamp of the latest recorded boot process.
         cpu_count_phys - Return the number of physical CPUs in the system.
         cpu_count_log - Return the number of logical CPUs in the system.
@@ -414,11 +289,6 @@ def perfinfo(morpy_trace):
 
     import psutil
     from datetime import datetime
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    # module = 'fct'
-    # operation = 'perfinfo(~)'
-    # morpy_trace = tracing(module, operation, morpy_trace)
 
     #TODO: "cpu_perc_indv" only works on Linux
     #TODO: "cpu_perc_comb" and "cpu_perc_indv" do not work if interval=None
@@ -452,20 +322,20 @@ def perfinfo(morpy_trace):
         'mem_free_MB' : mem_free_MB,
     }
 
-def app_dict_to_string(app_dict, depth=0):
-
+def app_dict_to_string(app_dict, depth: int=0):
     r"""
     This function creates a string for the entire app_dict. May exceed memory.
 
     :param app_dict: morPy global dictionary
+    :param depth: Tracks the current indentation level for formatting the dictionary structure.
+                  Increases with each nested dictionary. Not intended to be used when calling
+                  it first.
 
     :return app_dict_str: morPy global dictionary as a UTF-8 string
-    """
 
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    # module = 'fct'
-    # operation = 'app_dict_to_string(~)'
-    # morpy_trace = tracing(module, operation, morpy_trace)
+    :example:
+        morPy.app_dict_to_string(app_dict) # Do not specify depth!
+    """
 
     if isinstance(app_dict, dict):
 
@@ -473,7 +343,7 @@ def app_dict_to_string(app_dict, depth=0):
         app_dict_order = ["conf", "sys", "run", "global", "proc", "loc"]
 
         lines = []
-        indent = 3 * " " * depth  # 4 spaces per depth level
+        indent = 4 * " " * depth  # 4 spaces per depth level
 
         for key, value in app_dict.items():
             if isinstance(value, dict):
@@ -492,13 +362,12 @@ def app_dict_to_string(app_dict, depth=0):
         return None
 
 def tracing(module, operation, morpy_trace, clone=True, process_id=None):
-
     r"""
     This function formats the trace to any given operation. This function is
     necessary to alter the morpy_trace as a pass down rather than pointing to the
-    same morpy_trace passed down by the calling operation. If morpy_trace is to altered
+    same morpy_trace passed down by the calling operation. If morpy_trace is to be altered
     in any way (i.e. 'log_enable') it needs to be done after calling this function.
-    This is why this function is called at the top of any operation.
+    This is why this function is called at the top of any morPy-operation.
 
     :param module: Name of the module, the operation is defined in (i.e. 'common')
     :param operation: Name of the operation executed (i.e. 'tracing(~)')
@@ -530,21 +399,20 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None):
 
     return morpy_trace_passdown
 
-def txt_wr(morpy_trace, app_dict, filepath, content):
+def txt_write(morpy_trace, app_dict, filepath, content):
+    r"""
+    This function appends to any textfile and creates it, if it does not already exist.
 
-    import lib.msg as msg
-    import sys, gc, pathlib
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param filepath: Path to the textfile including its name and filetype
+    :param content: Something that will be printed as a string.
 
-    r""" This function appends to any textfile and creates it, if it does not
-        exist yet.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        filepath - Path to the textfile including its name and filetype
-        content - Something that will be printed as a string.
-    :return
+    :return:
         -
     """
+
+    import sys, pathlib
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'fct'
@@ -619,7 +487,7 @@ def handle_exception_init(e):
     """
 
     # Fallback logging in case the app dictionary or logging fails
-    logging.critical(f'Module: init\n'
+    logging.critical(f'Module: lib.init\n'
                      f'Line: {sys.exc_info()[-1].tb_lineno}\n'
                      f'{type(e).__name__}: {e}\n'
                      f'morPy initialization failed!')
@@ -633,7 +501,7 @@ def handle_exception_decorator(e):
     """
 
     # Fallback logging in case the app dictionary or logging fails
-    logging.critical(f'Module: decorators\n'
+    logging.critical(f'Module: lib.decorators\n'
                      f'Line: {sys.exc_info()[-1].tb_lineno}\n'
                      f'{type(e).__name__}: {e}\n'
                      f'Wrapper function error.')
@@ -647,10 +515,10 @@ def handle_exception_mp(e):
     """
 
     # Fallback logging in case the app dictionary or logging fails
-    logging.critical(f'Module: mp\n'
+    logging.critical(f'Module: lib.mp\n'
                      f'Line: {sys.exc_info()[-1].tb_lineno}\n'
                      f'{type(e).__name__}: {e}\n'
-                     f'Multiprocessing decorator error.')
+                     f'Multiprocessing error.')
 
     # Quit the program
     sys.exit()

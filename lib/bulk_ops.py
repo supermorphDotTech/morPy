@@ -7,29 +7,29 @@ Descr.:     This module includes operations used to massively repeat/automize
             workflows.
 """
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 import lib.common as common
 from lib.decorators import metrics, log
 
 import sys
 
 @metrics
-def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_tpl: tuple, save_as: str, overwrite: bool) -> dict:
-
+def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_tpl: tuple, save_as: str,
+                        overwrite: bool=False) -> dict:
     r"""
     This function finds and replaces strings in a readable object
     line by line. The result is saved into a file specified.
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
-    :param search_obj: Any given object to search in for regular expressions.
-    :param replace_tpl: Tuple of tuples. Includes every tuple of regular
-        expressions and what they are supposed to be replaced by.
+    :param search_obj: Can be any given object to search in for regular expressions. Searches line by line.
+    :param replace_tpl: Tuple of tuples. Includes every tuple of regular expressions and what they are supposed
+                        to be replaced by.
     :param save_as: Complete path of the file to be saved.
-    :param overwrite: True if new files shall overwrite existing ones,
-        if there are any. False otherwise.
+    :param overwrite: True if new files shall overwrite existing ones, if there are any. False otherwise.
+                      Defaults to False.
 
-    :return: dictionary
+    :return: dict
         check - The function ended with no errors
         morpy_trace - operation credentials and tracing
 
@@ -41,9 +41,9 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         retval = find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
     """
 
-    module = 'bulk_ops'
+    module = 'lib.bulk_ops'
     operation = 'find_replace_saveas(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     search_obj = f'{search_obj}'
@@ -54,7 +54,7 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         lambda: f'{app_dict["find_replace_saveas_start"]}')
 
         # Check if file exists
-        file_exists = fct.pathtool(morpy_trace, save_as)["file_exists"]
+        file_exists = morpy_fct.pathtool(save_as)["file_exists"]
 
         # If file exists and overwrite is false, skip action.
         if file_exists and not overwrite:
@@ -85,7 +85,7 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
                     # Loop through all replace tuples.
                     for tpl in replace_tpl:
                         # Replace the actual findings
-                        new_line = common.regex_replace(morpy_trace, app_dict, line, tpl[0], tpl[1])
+                        new_line = common.regex_replace(morpy_trace, app_dict, line, tpl[0], tpl[1])["result"]
                         common.textfile_write(morpy_trace, app_dict, save_as, new_line)
 
                 check = True

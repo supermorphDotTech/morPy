@@ -6,7 +6,7 @@ Author:     Bastian Neuwirth
 Descr.:     This module provides routines for webscraping.
 """
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 import common
 import sys
 import requests
@@ -59,7 +59,7 @@ def web_request(morpy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'web'
     operation = 'web_request(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Preparing parameters
     check = False

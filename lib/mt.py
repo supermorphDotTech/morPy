@@ -16,7 +16,7 @@ Descr.:     This module delivers routines to handle Multithreading and
             many workers as available to runtime.
 """
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 import common
 import sys
 import threading
@@ -55,7 +55,7 @@ def mpy_thread_queue(morpy_trace: dict, app_dict: dict, name: str, priority: int
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'mt'
     operation = 'thread_queue(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     name = f'{name}'
@@ -173,7 +173,7 @@ def mpy_threads_joinall(morpy_trace: dict, app_dict: dict) -> dict:
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'mt'
     operation = 'threads_joinall(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
 
@@ -226,7 +226,7 @@ def mt_abort(morpy_trace: dict, app_dict: dict) -> dict:
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'mt'
     operation = 'mt_abort(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
 
@@ -286,7 +286,7 @@ class cl_priority_queue(object):
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mt'
         operation = 'cl_priority_queue.__init__(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         name = f'{name}'
 
@@ -333,7 +333,7 @@ class cl_priority_queue(object):
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mt'
         operation = 'cl_priority_queue.enqueue(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
         name = f'{name}'
@@ -389,7 +389,7 @@ class cl_priority_queue(object):
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mt'
         operation = 'cl_priority_queue.dequeue(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -458,7 +458,7 @@ def mt_init(morpy_trace: dict, app_dict: dict) -> dict:
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'mt'
     operation = 'mt_init(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     sys_threads = app_dict["sys"]["threads"] # Total threads available to the system
@@ -566,7 +566,7 @@ class cl_thread(threading.Thread):
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mt'
         operation = 'cl_thread.__init__(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             # A worker thread is being created.
@@ -618,7 +618,7 @@ class cl_thread(threading.Thread):
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mt'
         operation = 'cl_thread.run(~)'
-        morpy_trace = fct.tracing(module, operation, self.trace)
+        morpy_trace = morpy_fct.tracing(module, operation, self.trace)
         log_enable = morpy_trace["log_enable"]
 
         check = False
@@ -762,7 +762,7 @@ def prio_correction(morpy_trace: dict, app_dict: dict, priority: int, task: str)
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'mt'
     operation = 'prio_correction(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Preparing parameters
     check = False
@@ -842,7 +842,7 @@ def thread_id(morpy_trace: dict, app_dict: dict) -> dict:
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'mt'
     operation = 'thread_id(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     max_threads = app_dict["mt_max_threads"]
@@ -940,7 +940,7 @@ def thread_imports(morpy_trace: dict, app_dict: dict, task: str) -> dict:
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'mt'
     operation = 'thread_imports(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Preparing parameters
     check = False

@@ -6,7 +6,7 @@ Author:     Bastian Neuwirth
 Descr.:     Module of operations concerning csv-files.
 """
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 import lib.common as common
 import lib.xl as xl
 import sys
@@ -15,8 +15,8 @@ from lib.decorators import metrics, log
 from openpyxl.utils.cell import get_column_letter
 
 @metrics
-def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None, print_csv_dict: bool=False,
-                      log_progress: bool=False, progress_ticks: float=None) -> dict:
+def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
+             print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None) -> dict:
     r"""
     This function reads a csv file and returns a dictionary of
     dictionaries. The header row, first row of data and delimiter
@@ -57,16 +57,16 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
     :example:
         src_file_path = 'C:\myfile.csv'
         delimiter = '","'
-        csv = csv.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+        csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
         csv_dict = csv["csv_dict"]
         csv_header1 = csv["csv_dict"]["DATA1"]["header"]
         print(f'{csv_header1}')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'csv'
+    module = 'lib.csv'
     operation = 'csv_read(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     csv_copy_dict = {}
@@ -89,10 +89,10 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
         lambda: f'{app_dict["loc"]["morpy"]["csv_read_start"]}\n'
                 f'{app_dict["loc"]["morpy"]["csv_read_file_path"]}: {src_file_path}')
 
-        # Delimiter auto detection
+        # Delimiter auto-detection
         delimiters = (delimiter,) if delimiter else ('";"', '","', ';', ',', '"\t"', '\t', '":"', ':')
 
-        src_file_dict = fct.pathtool(morpy_trace, src_file_path)
+        src_file_dict = morpy_fct.pathtool(src_file_path)
         src_file_path = src_file_dict["out_path"]
         src_file_isfile = src_file_dict["is_file"]
         src_file_exists = src_file_dict["file_exists"]
@@ -269,7 +269,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
     :example:
         src_file_path = 'C:\my.csv'
         delimiter = '","'
-        csv = csv.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+        csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
 
         # ... process data in csv["csv_dict"] ...
 
@@ -285,14 +285,15 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'csv'
+    module = 'lib.csv'
     operation = 'csv_dict_to_excel(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     xl_exists = False
     xl_write = False
     wb_obj = None
+    progress = None
 
     try:
         # Writing data to MS Excel file.
@@ -317,13 +318,13 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
 
             # Instantiate progress logging
             progress = common.cl_progress(morpy_trace, app_dict,
-                                                description=f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_descr"]}',
-                                                total=total_prog_count,
-                                                ticks=progress_ticks)
+                                          description=f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_descr"]}',
+                                          total=total_prog_count,
+                                          ticks=progress_ticks)
 
         # Check target file path
         if xl_path:
-            xl_path_eval = fct.pathtool(morpy_trace, in_path=xl_path)
+            xl_path_eval = morpy_fct.pathtool(in_path=xl_path)
             xl_exists = xl_path_eval["file_exists"]
             xl_valid = True
         else:
@@ -401,8 +402,8 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
                         row_keys.append(int(k))
                         if log_progress:
                             progress.update(morpy_trace, app_dict)
-                    except:
-                        pass
+                    except (ValueError, TypeError):
+                        pass # Ignore keys that cannot be converted to integers
                 row_keys.sort()
 
                 for row_key in row_keys:

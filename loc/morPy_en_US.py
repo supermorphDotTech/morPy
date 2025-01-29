@@ -115,10 +115,10 @@ def loc_morpy() -> dict:
         'ref_created' : 'The init_dict was written to textfile.',
         'ref_path' : 'Filepath',
 
-        # mpy_fct.py - privileges_handler(~)
+        # mpy_morpy_fct.py - privileges_handler(~)
         'priv_handler_eval' : 'Program started with elevated Privileges.',
 
-        # mpy_fct.py - datetime_now(~)
+        # mpy_morpy_fct.py - datetime_now(~)
         'datetime_value_descr' : 'Date and time in the format YYYY-MM-DD hh:mm:ss.ms as value (used to determine runtime).',
         'date_descr' : 'Date DD.MM.YYY as a string.',
         'datestamp_descr' : 'Datestamp YYYY-MM-DD as a string.',
@@ -127,10 +127,10 @@ def loc_morpy() -> dict:
         'datetimestamp_descr' : 'Date- and timestamp YYY-MM-DD_hhmmss as a string.',
         'loggingstamp_descr' : 'Date- and timestamp for logging YYYMMDD_hhmmss as a string.',
 
-        # mpy_fct.py - runtime(~)
+        # mpy_morpy_fct.py - runtime(~)
         'rnt_delta_descr' : 'Value of the actual runtime.',
 
-        # mpy_fct.py - sysinfo(~)
+        # mpy_morpy_fct.py - sysinfo(~)
         'system_descr' : 'Operating system.',
         'system_release_descr' : 'Major version of the operating system.',
         'system_version_descr' : 'Major and subversions of the operating system.',
@@ -141,7 +141,7 @@ def loc_morpy() -> dict:
         'homedir_descr' : 'Returns the home directory.',
         'hostname_descr' : 'Returns the host name.',
 
-        # mpy_fct.py - pathtool(~)
+        # mpy_morpy_fct.py - pathtool(~)
         'out_path_descr' : 'Same as the input, but converted to a path.',
         'is_file_descr' : 'The path is a file path.',
         'file_exists_descr' : 'The file has been found under the given path.',
@@ -152,7 +152,7 @@ def loc_morpy() -> dict:
         'dir_name_descr' : 'This is the actual directory name.',
         'parent_dir_descr' : 'Path of the parent directory.',
 
-        # mpy_fct.py - perfinfo(~)
+        # mpy_morpy_fct.py - perfinfo(~)
         'boot_time_descr' : 'Timestamp of the latest recorded boot process.',
         'cpu_count_phys_descr' : 'Return the number of physical CPUs in the system.',
         'cpu_count_log_descr' : 'Return the number of logical CPUs in the system.',
@@ -254,6 +254,7 @@ def loc_morpy() -> dict:
         'decode_to_plain_text_to' : 'to plain text.',
         'decode_to_plain_text_msg' : 'Message',
         'decode_to_plain_text_not' : 'The Input is not encoded or not supported. No action taken.',
+        'decode_to_plain_text_val_fail' : 'Validation of encoding failed.',
 
         # mpy_common.py - cl_progress_gui._init(~)
         'cl_progress_gui_prog': 'Progress',
@@ -710,8 +711,8 @@ def loc_morpy_dbg() -> dict:
         'dbg_mpy_mt_end' : 'Debugging of mpy_mt.py finished.',
 
         # debug.py - dbg_mpy_fct(~)
-        'dbg_mpy_fct_start' : 'Start debugging of the mpy_fct.py module.',
-        'dbg_mpy_fct_end' : 'Debugging of mpy_fct.py finished.',
+        'dbg_mpy_fct_start' : 'Start debugging of the mpy_morpy_fct.py module.',
+        'dbg_mpy_fct_end' : 'Debugging of mpy_morpy_fct.py finished.',
 
         # debug.py - dbg_mpy_msg(~)
         'dbg_mpy_msg_start' : 'Start debugging of the mpy_msg.py module.',

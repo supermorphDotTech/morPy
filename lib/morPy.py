@@ -9,7 +9,6 @@ Descr.:     This module is the interface to the morPy framework.
 import lib.bulk_ops as bulk_ops
 import lib.common as common
 import lib.csv as csv
-import lib.fct as fct
 import lib.mp as mp
 import lib.mt as mt
 import lib.ui_tk as ui_tk
@@ -23,7 +22,7 @@ import sys
 def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
     r"""
     This class delivers a priority queue solution. Any task may be enqueued.
-    When dequeueing, the highest priority task (lowest number) is dequeued
+    When dequeuing, the highest priority task (lowest number) is dequeued
     first. In case there is more than one, the oldest is dequeued.
 
     :param morpy_trace: Operation credentials and tracing information
@@ -67,10 +66,13 @@ def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
     try:
         return common.cl_priority_queue(morpy_trace, app_dict, name)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'cl_priority_queue(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
@@ -103,10 +105,13 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
     try:
         return common.cl_progress(morpy_trace, app_dict, description, total, ticks)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'cl_progress(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
@@ -245,10 +250,13 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
                 max_per_stage=max_per_stage, console=console, auto_close=auto_close, work=work,
             )
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'cl_progress_gui(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
@@ -495,17 +503,20 @@ def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: boo
         return xl.cl_xl_workbook(morpy_trace, app_dict, workbook, create=create,
                                      data_only=data_only, keep_vba=keep_vba)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'cl_xl_workbook(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
 def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
-             print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None) -> dict:
+             print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None):
     r"""
     This function reads a csv file and returns a dictionary of
     dictionaries. The header row, first row of data and delimiter
@@ -546,7 +557,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
     :example:
         src_file_path = 'C:\myfile.csv'
         delimiter = '","'
-        csv = csv.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+        csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
         csv_dict = csv["csv_dict"]
         csv_header1 = csv["csv_dict"]["DATA1"]["header"]
         print(f'{csv_header1}')
@@ -556,10 +567,13 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
         return csv.csv_read(morpy_trace, app_dict, src_file_path=src_file_path, delimiter=delimiter,
             print_csv_dict=print_csv_dict, log_progress=log_progress, progress_ticks=progress_ticks)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'csv_read(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
@@ -567,7 +581,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
 
 def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, overwrite: bool=False,
                       worksheet: str=None, close_workbook: bool=False, csv_dict: dict=None,
-                      log_progress: bool=False, progress_ticks: float=None) -> dict:
+                      log_progress: bool=False, progress_ticks: float=None):
     r"""
     This function takes da dictionary as provided by csv_read() and saves it as an MS Excel file.
     The csv_dict however may be evaluated and processed prior to executing csv_dict_to_excel().
@@ -600,7 +614,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
             DATA2 : ...}
     :param log_progress: If True, logs the progress.
     :param progress_ticks: Percentage of total to log the progress. I.e. at ticks=10.7 at every
-        10.7% progress exceeded the exact progress will be logged. If None, will default to 10.
+        10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -611,7 +625,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
     :example:
         src_file_path = 'C:\my.csv'
         delimiter = '","'
-        csv = csv.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+        csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
 
         # ... process data in csv["csv_dict"] ...
 
@@ -631,47 +645,58 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
             worksheet=worksheet, close_workbook=close_workbook, csv_dict=csv_dict, log_progress=log_progress,
             progress_ticks=progress_ticks)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'csv_dict_to_excel(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, encoding: str) -> dict:
+def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, encoding: str=''):
+    r"""
+    This function decodes different types of data and returns
+    a plain text to work with in python. The return result behaves
+    like using the open(file, 'r') method.
 
-    r""" This function decodes different types of data and returns
-        a plain text to work with in python. The return result behaves
-        like using the open(file, 'r') method.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        src_input - Any kind of data to be decoded. Binary expected. Example:
-                    src_input = open(src_file, 'rb')
-        encoding - String that defines encoding. Leave empty to auto detect. Examples:
-                   '' - Empty. Encoding will be determined automatically. May be incorrect.
-                   'utf-16-le' - Decode UTF-16 LE to buffered text.
-    :return - dictionary
-        result - Decoded result. Buffered object that my be used with the readlines() method.
-        encoding - String containing the encoding of src_input.
-        morpy_trace - [dictionary] operation credentials and tracing
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param src_input: Any kind of data to be decoded. Binary expected.
+    :param encoding: String that defines encoding. Leave empty to auto-detect.
+
+    :return: dict
+        check: Indicates whether the function executed successfully (True/False).
+        morpy_trace: Operation credentials and tracing.
+        result: Decoded result. Buffered object that may be used with the readlines() method.
+        encoding: String containing the encoding of src_input.
+        lines: Number of lines in the file.
+
+    :example:
+        src_input = open(src_file, 'rb')
+        encoding = 'utf-16-le'
+        retval = decode_to_plain_text(morpy_trace, app_dict, src_input, encoding)
     """
 
     try:
-        return common.decode_to_plain_text(morpy_trace, app_dict, src_input, encoding)
+        return common.decode_to_plain_text(morpy_trace, app_dict, src_input, encoding=encoding)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'decode_to_plain_text(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None) -> dict:
+def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None):
 
     r"""
     This function opens a dialog for the user to select a file.
@@ -699,16 +724,19 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftype
     try:
         return ui_tk.dialog_sel_file(morpy_trace, app_dict, init_dir, ftypes, title)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'dialog_sel_file(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
+def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None):
 
     r"""
     This function opens a dialog for the user to select a directory.
@@ -733,153 +761,191 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
     try:
         return ui_tk.dialog_sel_dir(morpy_trace, app_dict, init_dir, title)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'dialog_sel_dir(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def fso_copy_file(morpy_trace, app_dict, source, dest, ovwr_perm):
+def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, overwrite: bool=False):
+    r"""
+    Copies a single file from the source to the destination. Includes a file
+    check to ensure the operation's validity.
 
-    r""" This function is used to copy a single file from source to destination.
-        A file check is already included and will be performed.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        source - Complete path to the source file including the file extension
-        dest - Complete path to the destination file including the file extension
-        ovwr_perm - If TRUE, the destination file may be overwritten.
-    :return - dictionary
-        check - The function ended with no errors
-        source - Path to the source file as a path object
-        dest - Path to the destination file as a path object
-        morpy_trace - [dictionary] operation credentials and tracing
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param source: Complete path to the source file, including the file extension.
+    :param dest: Complete path to the destination file, including the file extension.
+    :param overwrite: Boolean indicating if the destination file may be overwritten. Defaults to False.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+        source: Path to the source file as a path object.
+        dest: Path to the destination file as a path object.
+
+    :example:
+        result = fso_copy_file(morpy_trace, app_dict, "path/to/source.txt", "path/to/destination.txt", True)
     """
 
     try:
-        return common.fso_copy_file(morpy_trace, app_dict, source, dest, ovwr_perm)
+        return common.fso_copy_file(morpy_trace, app_dict, source, dest, overwrite=overwrite)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'fso_copy_file(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def fso_create_dir(morpy_trace, app_dict, mk_dir):
+def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str):
+    r"""
+    Creates a directory and its parent directories recursively.
 
-    r""" This function creates a directory as well as it's parents
-        recursively.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        mk_dir - Path to the directory/tree to be created
-    :return - dictionary
-        check - The function ended with no errors
-        morpy_trace - [dictionary] operation credentials and tracing
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param mk_dir: Path to the directory or directory tree to be created.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+
+    :example:
+        result = fso_create_dir(morpy_trace, app_dict, "path/to/new_directory")
     """
 
     try:
         return common.fso_create_dir(morpy_trace, app_dict, mk_dir)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'fso_create_dir(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def fso_delete_dir(morpy_trace, app_dict, del_dir):
+def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str):
+    r"""
+    Deletes an entire directory, including its contents. A directory check
+    is performed before deletion.
 
-    r""" This function is used to delete an entire directory including it's
-        contents. A directory check is already included and will be performed.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        del_dir - Path to the directory to be deleted
-    :return - dictionary
-        check - The function ended with no errors
-        morpy_trace - [dictionary] operation credentials and tracing
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param del_dir: Path to the directory to be deleted.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+
+    :example:
+        result = fso_delete_dir(morpy_trace, app_dict, "path/to/directory_to_delete")
     """
 
     try:
         return common.fso_delete_dir(morpy_trace, app_dict, del_dir)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'fso_delete_dir(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def fso_delete_file(morpy_trace, app_dict, del_file):
-
+def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str):
     r"""
-    This function is used to delete a file. A path check is
-    already included and will be performed.
+    Deletes a file. Will check path before deletion.
 
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        del_file - Path to the directory to be deleted
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param del_file: Path to the file to be deleted.
 
-    :return - dictionary
-        check - The function ended with no errors
-        morpy_trace - [dictionary] operation credentials and tracing
+    :return: dict
+        morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+
+    :example:
+        result = fso_delete_file(morpy_trace, app_dict, "path/to/file_to_delete.txt")
     """
 
     try:
         return common.fso_delete_file(morpy_trace, app_dict, del_file)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'fso_delete_file(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def fso_walk(morpy_trace, app_dict, path, depth):
+def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
+    r"""
+    Returns the contents of a directory.
 
-    r""" This function returns the contents of a directory.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        path - Path to be analyzed
-        depth - Limits the depth to be analyzed
-                -1 - No Limit
-                0 - path only
-    :return - dictionary
-        check - The function ended with no errors
-        walk_dict - Dictionary of root directories and it's contents. Example:
-                {'root0' : {'root' : root, \
-                            'dirs' : [dir list], \
-                            'files' : [file list]}
-                 'root1' : {'root' : root, \
-                            'dirs' : [dir list], \
-                            'files' : [file list]}
-                 ...
-                }
-        morpy_trace - [dictionary] operation credentials and tracing
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param path: Path to the directory to be analyzed.
+    :param depth: Limits the depth of the analysis. Defaults to 1. Examples:
+                  -1: No limit.
+                   0: Path only.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+        walk_dict: Dictionary of root directories and their contents. Example:
+                   {
+                       'root0': {
+                           'root': root,
+                           'dirs': [dir list],
+                           'files': [file list]
+                       },
+                       'root1': {
+                           'root': root,
+                           'dirs': [dir list],
+                           'files': [file list]
+                       },
+                       [...],
+                   }
+
+    :example:
+        result = fso_walk(morpy_trace, app_dict, "path/to/directory", -1)
     """
 
     try:
-        return common.fso_walk(morpy_trace, app_dict, path, depth)
+        return common.fso_walk(morpy_trace, app_dict, path, depth=depth)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'fso_walk(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
@@ -927,10 +993,13 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
             process_qed = True
 
         except Exception as e:
+
+            import lib.fct as morpy_fct
+
             # Define operation credentials (see init.init_cred() for all dict keys)
-            module = 'mpy'
+            module = 'lib.morPy'
             operation = 'process_q(~)'
-            morpy_trace = fct.tracing(module, operation, morpy_trace)
+            morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
             log(morpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
@@ -952,7 +1021,7 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
     finally:
         return process_qed
 
-def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
+def interrupt(morpy_trace: dict, app_dict: dict):
 
     r"""
     This function sets a global interrupt flag. Processes and threads
@@ -975,17 +1044,19 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
     try:
         return mp.interrupt(morpy_trace, app_dict)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'interrupt(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def regex_findall(morpy_trace, app_dict, search_obj, pattern):
-
+def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str):
     r"""
     Searches for a regular expression in a given object and returns a list of found expressions.
 
@@ -995,8 +1066,9 @@ def regex_findall(morpy_trace, app_dict, search_obj, pattern):
     :param pattern: The regular expression pattern to search for.
 
     :return: dict
-        result: List of expressions found in the input, or None if nothing was found.
         morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+        result: List of expressions found in the input, or None if nothing was found.
 
     :example:
         string = "Find digits 12345"
@@ -1007,17 +1079,19 @@ def regex_findall(morpy_trace, app_dict, search_obj, pattern):
     try:
         return common.regex_findall(morpy_trace, app_dict, search_obj, pattern)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'regex_findall(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def regex_find1st(morpy_trace, app_dict, search_obj, pattern):
-
+def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str):
     r"""
     Searches for a regular expression in a given object and returns the first match.
 
@@ -1027,8 +1101,9 @@ def regex_find1st(morpy_trace, app_dict, search_obj, pattern):
     :param pattern: The regular expression pattern to search for.
 
     :return: dict
-        result: The first match found in the input, or None if nothing was found.
         morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+        result: The first match found in the input, or None if nothing was found.
 
     :example:
         string = "Find digits 12345"
@@ -1039,17 +1114,19 @@ def regex_find1st(morpy_trace, app_dict, search_obj, pattern):
     try:
         return common.regex_find1st(morpy_trace, app_dict, search_obj, pattern)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'regex_find1st(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def regex_split(morpy_trace, app_dict, search_obj, delimiter):
-
+def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter: str):
     r"""
     Splits an object into a list using a given delimiter.
 
@@ -1061,8 +1138,9 @@ def regex_split(morpy_trace, app_dict, search_obj, delimiter):
                       to use '.' as a delimiter).
 
     :return: dict
-        result: The list of parts split from the input.
         morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+        result: The list of parts split from the input.
 
     :example:
         string = "apple.orange.banana"
@@ -1073,17 +1151,19 @@ def regex_split(morpy_trace, app_dict, search_obj, delimiter):
     try:
         return common.regex_split(morpy_trace, app_dict, search_obj, delimiter)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'regex_split(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def regex_replace(morpy_trace, app_dict, search_obj, search_for, replace_by):
-
+def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_for: str, replace_by: str):
     r"""
     Substitutes characters or strings in an input object based on a regular expression.
 
@@ -1095,6 +1175,7 @@ def regex_replace(morpy_trace, app_dict, search_obj, search_for, replace_by):
 
     :return: dict
         morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
         result: The modified string with substitutions applied.
 
     :example:
@@ -1107,88 +1188,125 @@ def regex_replace(morpy_trace, app_dict, search_obj, search_for, replace_by):
     try:
         return common.regex_replace(morpy_trace, app_dict, search_obj, search_for, replace_by)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'regex_replace(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def regex_remove_special(morpy_trace, app_dict, inp_string, spec_lst):
+def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spec_lst: list):
+    r"""
+    Removes or replaces special characters in a given string. The `spec_lst` parameter
+    specifies which characters to replace and their replacements. If no replacement is
+    specified, a standard list is used to remove special characters without substitution.
 
-    r""" This function removes special characters of a given string and instead inserts
-        any character if defined. The spec_lst is a list consiting of tuples
-        consisting of special characters and what they are supposed to get exchanged
-        with. Using a blank list will invoke a standard list where specials will be
-        removed and not replaced by any other character. This function may even be used
-        to perform a number of regex_replace actions on the same string, because it
-        will replace what ever is given to the tuples-list. Essentially, you can use
-        any valid regular expression instead of the special character.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        inp_string - The string to be altered
-        spec_lst - List consisting of 2-tuples as a definition of which special character
-                   is to be replaced by which [(special1,replacement1),...]. Set the
-                   list to [('','')] to invoke the standard replace list.
-    :return
-        result - The substituted chracter or string
+    This function can also perform multiple `regex_replace` actions on the same string,
+    as any valid regular expression can be used in the `spec_lst`.
+
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param inp_string: The string to be altered.
+    :param spec_lst: A list of 2-tuples defining the special characters to replace and
+                     their replacements. Example:
+                     [(special1, replacement1), ...]. Use `[('', '')]` to invoke the
+                     standard replacement list.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+        result: The modified string with special characters replaced or removed.
+
+    :example:
+        result = regex_remove_special(
+            morpy_trace, app_dict, "Hello!@#$%^&*()", [("@", "AT"), ("!", "")]
+        )
     """
 
     try:
         return common.regex_remove_special(morpy_trace, app_dict, inp_string, spec_lst)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'regex_remove_special(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def textfile_write(morpy_trace, app_dict, filepath, content):
+def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: str):
+    r"""
+    Appends content to a text file, creating the file if it does not already exist.
 
-    r""" This function appends any textfile and creates it, if there
-        is no such file.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        filepath - Path to the textfile including its name and filetype
-        content - Something that will be printed as a string.
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param filepath: Path to the text file, including its name and file extension.
+    :param content: The content to be written to the file, converted to a string if necessary.
 
-    :return
-        -
+    :return: dict
+        morpy_trace: Operation credentials and tracing.
+        check: Indicates whether the function executed successfully (True/False).
+
+    :example:
+        result = textfile_write(morpy_trace, app_dict, "path/to/file.txt", "This is some text.")
     """
 
     try:
         return common.textfile_write(morpy_trace, app_dict, filepath, content)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'textfile_write(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def testprint(morpy_trace, input):
+def testprint(morpy_trace: dict, app_dict: dict, message: str):
+    r"""
+    Prints any value provided. This function is intended for debugging purposes.
 
-    r""" This function prints any value given. It is intended to be used for debugging.
-    :param
-        morpy_trace - operation credentials and tracing
-        input - Something that will be printed as a string.
-    :return
-        -
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param message: The value to be printed, converted to a string if necessary.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing.
+        check - The function ended with no errors
+
+    :example:
+        mpy.testprint(morpy_trace, app_dict, "This is a test value.")
     """
 
-    return common.testprint(morpy_trace, input)
+    try:
+        return common.testprint(morpy_trace, app_dict, message)
+    except Exception as e:
 
-def wait_for_input(morpy_trace, app_dict, msg_text):
+        import lib.fct as morpy_fct
 
+        # Define operation credentials (see init.init_cred() for all dict keys)
+        module = 'lib.morPy'
+        operation = 'testprint(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        log(morpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                f'{type(e).__name__}: {e}')
+
+def wait_for_input(morpy_trace: dict, app_dict: dict, message: str):
     r"""
     Pauses program execution until a user provides input. The input is then
     returned to the calling module. Take note, that the returned user input
@@ -1196,45 +1314,48 @@ def wait_for_input(morpy_trace, app_dict, msg_text):
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
-    :param msg_text: The text to be displayed as a prompt before user input.
+    :param message: The text to be displayed as a prompt before user input.
 
     :return: dict
-        usr_input: The input provided by the user.
         morpy_trace: Operation credentials and tracing.
+        check - The function ended with no errors
+        usr_input: The input provided by the user.
 
     :example:
         result = wait_for_input(morpy_trace, app_dict, "Please enter your name: ")["usr_input"]
     """
 
     try:
-        return common.wait_for_input(morpy_trace, app_dict, msg_text)
+        return common.wait_for_input(morpy_trace, app_dict, message)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'wait_for_input(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def wait_for_select(morpy_trace: dict, app_dict: dict, msg_text: str, collection: tuple=None) -> dict:
-
+def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection: tuple=None):
     r"""
     Pauses program execution until a user provides input. The input needs to
     be part of a tuple, otherwise it is repeated or aborted. Take note, that the
-    returned user input will always be a string. Take note, that the
     returned user input will always be a string.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
-    :param msg_text: The text to be displayed as a prompt before user input.
+    :param message: The text to be displayed as a prompt before user input.
     :param collection: Tuple, that holds all valid user input options. If None,
         evaluation will be skipped.
 
     :return: dict
-        usr_input: The input provided by the user.
         morpy_trace: Operation credentials and tracing.
+        check - The function ended with no errors
+        usr_input: The input provided by the user.
 
     :example:
         msg_text = "Select 1. this or 2. that"
@@ -1243,24 +1364,26 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, msg_text: str, collection
     """
 
     try:
-        return common.wait_for_select(morpy_trace, app_dict, msg_text, collection)
+        return common.wait_for_select(morpy_trace, app_dict, message, collection)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'wait_for_select(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def datetime_now(morpy_trace):
+def datetime_now():
+    r"""
+    This function reads the current date and time and returns formatted
+    stamps.
 
-    r""" This function reads the current date and time and returns formatted
-        stamps.
-    :param
-        morpy_trace - operation credentials and tracing
-    :return - dictionary
+    :return: dict
         datetime_value - Date and time in the format YYYY-MM-DD hh:mm:ss.ms as value
                         (used to determine runtime).
         date - Date DD.MM.YYY as a string.
@@ -1271,28 +1394,35 @@ def datetime_now(morpy_trace):
         loggingstamp - Date- and timestamp for logging YYYMMDD_hhmmss as a string.
     """
 
-    return fct.datetime_now(morpy_trace)
+    import lib.fct as morpy_fct
 
-def runtime(morpy_trace, in_ref_time):
+    try:
+        return morpy_fct.datetime_now()
+    except Exception as e:
+        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
-    r""" This function calculates the actual runtime and returns it.
-    :param
-        morpy_trace - operation credentials and tracing
-        in_ref_time - Value of the reference time to calculate the actual runtime
-    :return - dictionary
+def runtime(in_ref_time):
+    r"""
+    This function calculates the time delta between now and a reference time.
+
+    :param in_ref_time: Value of the reference time to calculate the actual runtime
+
+    :return: dict
         rnt_delta - Value of the actual runtime.
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
-    return fct.runtime(morpy_trace, in_ref_time)
+    try:
+        return morpy_fct.runtime(in_ref_time)
+    except Exception as e:
+        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
-def sysinfo(morpy_trace):
+def sysinfo():
+    r"""
+    This function returns various informations about the hardware and operating system.
 
-    r""" This function returns various informations about the hardware and operating system.
-    :param
-        morpy_trace - operation credentials and tracing
-    :return - dictionary
+    :return: dict
         system - Operating system.
         release - Major version of the operating system.
         version - Major and subversions of the operating system.
@@ -1305,19 +1435,21 @@ def sysinfo(morpy_trace):
         hostname - Returns the host name.
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
-    return fct.sysinfo(morpy_trace)
+    try:
+        return morpy_fct.sysinfo()
+    except Exception as e:
+        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
-def pathtool(morpy_trace, in_path):
+def pathtool(in_path):
     r"""
     This function takes a string and converts it to a path. Additionally,
     it returns path components and checks.
 
-    :param morpy_trace: operation credentials and tracing
     :param in_path: Path to be converted
 
-    :return: dictionary
+    :return: dict
         out_path - Same as the input, but converted to a path.
         is_file - The path is a file path. File does not need to exist.
         file_exists - The file has been found under the given path.
@@ -1330,39 +1462,42 @@ def pathtool(morpy_trace, in_path):
 
     :example:
         file_path = "C:\my_file.txt"
-        file_path = morPy.pathtool(morpy_trace, file_path)["out_path"]
+        file_path = morPy.pathtool(file_path)["out_path"]
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
-    return fct.pathtool(morpy_trace, in_path)
+    try:
+        return morpy_fct.pathtool(in_path)
+    except Exception as e:
+        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
-def path_join(morpy_trace, path_parts, file_extension):
+def path_join(path_parts, file_extension):
+    r"""
+    This function joins components of a tuple to an OS path.
 
-    r""" This function joins components of a tuple to an OS path.
-    :param
-        morpy_trace - operation credentials and tracing
-        path_parts - Tuple of parts to be joined. Exact order is critical. Examples:
+    :param path_parts: Tuple of parts to be joined. Exact order is critical. Examples:
                      ('C:', 'This', 'is', 'my', 'path', '.txt') - C:\This\is\my\path.txt
                      ('T:This_Fol', 'der_Will_Be_Split', 'this_Way') - T:\This_Fol\der_Will_Be_Split\this_Way
                      ('Y:', 'myFile.txt') - Y:\myFile.txt
-        file_extension - String of the file extension (i.e. '.txt'). Leave
+    :param file_extension: String of the file extension (i.e. '.txt'). Leave
                          empty if path is a directory (None or '') or if the tuple already includes the
                          file extension.
-    :return
-        path_obj - OS path object of the joined path parts.
+    :return path_obj: OS path object of the joined path parts. Is None, if path_parts is not a tuple.
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
-    return fct.path_join(morpy_trace, path_parts, file_extension)
+    try:
+        return morpy_fct.path_join(path_parts, file_extension)
+    except Exception as e:
+        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
-def perfinfo(morpy_trace):
+def perfinfo():
+    r"""
+    This function returns performance metrics.
 
-    r""" This function returns performance metrics.
-    :param
-        morpy_trace - operation credentials and tracing
-    :return - dictionary
+    :return: dict
         boot_time - Timestamp of the latest recorded boot process.
         cpu_count_phys - Return the number of physical CPUs in the system.
         cpu_count_log - Return the number of logical CPUs in the system.
@@ -1377,189 +1512,120 @@ def perfinfo(morpy_trace):
         mem_free_MB - Memory not being used at all (zeroed) that is readily available in MB.
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
-    return fct.perfinfo(morpy_trace)
+    try:
+        return morpy_fct.perfinfo()
+    except Exception as e:
+        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
 def app_dict_to_string(app_dict):
+    r"""
+    This function creates a string for the entire app_dict. May exceed memory.
 
-    r""" This function prints the entire app dictionary in Terminal.
-    :param
-        app_dict - morPy global dictionary
-    :return
+    :param app_dict: morPy global dictionary
+    :param depth: Tracks the current indentation level for formatting the dictionary structure.
+                  Increases with each nested dictionary. Not intended to be used when calling
+                  it first.
+
+    :return app_dict_str: morPy global dictionary as a UTF-8 string
+
+    :example:
+        morPy.app_dict_to_string(app_dict) # Do not specify depth!
+    """
+
+    import lib.fct as morpy_fct
+
+    try:
+        return morpy_fct.app_dict_to_string(app_dict)
+    except Exception as e:
+        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
+
+def tracing(module, operation, morpy_trace):
+    r"""
+    This function formats the trace to any given operation. This function is
+    necessary to alter the morpy_trace as a pass down rather than pointing to the
+    same morpy_trace passed down by the calling operation. If morpy_trace is to be altered
+    in any way (i.e. 'log_enable') it needs to be done after calling this function.
+    This is why this function is called at the top of any morPy-operation.
+
+    :param module: Name of the module, the operation is defined in (i.e. 'common')
+    :param operation: Name of the operation executed (i.e. 'tracing(~)')
+    :param morpy_trace: operation credentials and tracing
+    :param clone: If true (default), a clone of the trace will be created ensuring the tracing
+        within morPy. If false, the parent trace will be altered directly (intended for
+        initialization only).
+    :param process_id: Adjust the process ID of the trace. Intended to be used by morPy
+        orchestrator only.
+
+    :return morpy_trace_passdown: operation credentials and tracing
+    """
+
+    import lib.fct as morpy_fct
+
+    try:
+        return morpy_fct.tracing(module, operation, morpy_trace)
+    except Exception as e:
+        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
+
+def txt_write(morpy_trace, app_dict, filepath, content):
+    r"""
+    This function appends to any textfile and creates it, if it does not already exist.
+
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param filepath: Path to the textfile including its name and filetype
+    :param content: Something that will be printed as a string.
+
+    :return:
         -
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
-    return fct.app_dict_to_string(app_dict)
+    try:
+        return morpy_fct.txt_write(morpy_trace, app_dict, filepath, content)
+    except Exception as e:
+        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
-def tracing(module, operation, morpy_trace):
+def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_tpl: tuple, save_as: str,
+                        overwrite: bool=False):
+    r"""
+    This function finds and replaces strings in a readable object
+    line by line. The result is saved into a file specified.
 
-    r""" This function formats the trace to any given operation. This function is
-        necessary to alter the morpy_trace as a pass down rather than pointing to the
-        same morpy_trace passed down by the calling operation. If morpy_trace is to altered
-        in any way (i.e. 'log_enable') it needs to be done after calling this function.
-        This is why this function is called at the top of any operation.
-    :param
-        module - Name of the module, the operation is defined in (i.e. 'common')
-        operation - Name of the operation executed (i.e. 'tracing(~)')
-        morpy_trace - operation credentials and tracing
-    :return
-        morpy_trace_passdown - operation credentials and tracing
-    """
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param search_obj: Can be any given object to search in for regular expressions. Searches line by line.
+    :param replace_tpl: Tuple of tuples. Includes every tuple of regular expressions and what they are supposed
+                        to be replaced by.
+    :param save_as: Complete path of the file to be saved.
+    :param overwrite: True if new files shall overwrite existing ones, if there are any. False otherwise.
+                      Defaults to False.
 
-    import lib.fct as fct
-
-    return fct.tracing(module, operation, morpy_trace)
-
-def mpy_thread_queue(morpy_trace, app_dict, name, priority, task):
-
-    r""" This function handles the task queue (instance 'mt_priority_queue' of cl_mtPriorityQueue)
-        of this framework. Its main purpose is to provide an easy handling of multithreaded
-        programming in the way, that the developer just needs to fill the queue with tasks
-        and tailor the multithreading parameters to the apps needs. However, when being
-        bound to single threaded execution the queue will just execute sequentially, while
-        prioritizing the tasks.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        name - Name of the task/thread.
-        priority - Integer value. Sets the priority of the given task. Lower numbers indicate
-                   a higher priority. Negative integers should be avoided.
-        task - Statement, function or class/module to be run by the thread. A string
-               is expected and will be executed via the exec()-function. The module has
-               got to be referenced (if any) in order to work. Example:
-
-                   task = 'app_module1.app_function1([morpy_trace], [app_dict], [...], [log])'
-    :return - dictionary
+    :return: dict
         check - The function ended with no errors
-    """
-
-    try:
-        return mt.mpy_thread_queue(morpy_trace, app_dict, name, priority, task)
-    except Exception as e:
-        # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
-        operation = 'thread_queue(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
-
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-            f'{type(e).__name__}: {e}')
-
-def mpy_threads_joinall(morpy_trace, app_dict):
-
-    r""" This function stops execution of the code until all threads have finished their work.
-    :param
         morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-    :return - dictionary
-        check - The function ended with no errors
+
+    :example:
+        search_obj = "Let's replace1 and replace2!"
+        replace_tpl = (("replace1", "with1"), ("replace2", "with2"))
+        save_as = "C:\my_replaced_strings.txt"
+        overwrite = True
+        retval = find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
     """
 
     try:
-        return mt.mpy_threads_joinall(morpy_trace, app_dict)
+        return bulk_ops.find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as,
+                                            overwrite=overwrite)
     except Exception as e:
+
+        import lib.fct as morpy_fct
+
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
-        operation = 'threads_joinall(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
-
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-            f'{type(e).__name__}: {e}')
-
-def mt_abort(morpy_trace, app_dict):
-
-    r""" This function aborts all pending tasks. However, the priority queue still exists and new threads
-        would eventually pick up the aborted tasks.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-    :return - dictionary
-        check - The function ended with no errors
-    """
-
-    try:
-        return mt.mt_abort(morpy_trace, app_dict)
-    except Exception as e:
-        # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
-        operation = 'mt_abort(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
-
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{type(e).__name__}: {e}')
-
-# TODO MS Excel API
-
-def tk_progbar_indeterminate(morpy_trace, app_dict, GUI_dict):
-
-    r""" This function invokes a window with an indeterminate progress bar
-        and status messages.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - The mpy-specific global dictionary
-        GUI_dict - Dictionary holding all needed parameters:
-
-            GUI_dict = {'frame_title' : 'TITLE' , \
-                        'frame_width' : 450 , \
-                        'frame_height' : 300 , \
-                        'headline_txt' : 'HEADLINE' , \
-                        'headline_font_size' : 35 , \
-                        'status_font_size' : 25
-                        }
-    # TODO finish progressbar
-
-    :return - dictionary
-        check - The function ended with no errors and a file was chosen
-    """
-
-    try:
-        return ui_tk.tk_progbar_indeterminate(morpy_trace, app_dict, GUI_dict)
-    except Exception as e:
-        # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
-        operation = 'tk_progbar_indeterminate(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
-
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{type(e).__name__}: {e}')
-
-def find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite):
-
-    r""" This function finds and replaces strings in a readable object
-        line by line. This may be text or csv files, but even strings
-        would be converted so they are read line by line. This function
-        does not repeat, but it's easy to iterate it. Once every line
-        was evaluated and regular expressions got replaced, a file
-        will be saved including all changes.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        search_obj - Any given object to search in for regular
-                     expressions.
-        replace_tpl - Tuple of tuples. Includes every tuple of regular
-                      expressions and what they are supposed to be
-                      replaced by. Example:
-                    ((replace 1, by 1), (replace 2, by 2), ...)
-        save_as - Complete path of the file to be saved.
-        overwrite - True, if new files shall overwrite existing ones,
-                    if there are any. False otherwise.
-    :return - dictionary
-        check - The function ended with no errors
-    """
-
-    try:
-        return bulk_ops.find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
-    except Exception as e:
-        # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mpy'
+        module = 'lib.morPy'
         operation = 'find_replace_saveas(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'

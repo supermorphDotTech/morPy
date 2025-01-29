@@ -6,17 +6,16 @@ Author:     Bastian Neuwirth
 Descr.:     This module delivers functions to handle exiting the app.
 """
 
-import lib.fct as fct
-import sys
-
+import lib.fct as morpy_fct
 from lib.decorators import metrics, log_no_q
+
+import sys
 
 @metrics
 def _exit(morpy_trace: dict=None, app_dict: dict=None):
-
     r"""
-    This is the mpy exit routine. It may be executed at any time after
-    initialization.
+    This is the mpy exit routine. It is not intended to be used as part of an app, but it may be executed however,
+    at any time after initialization.
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: The mpy-specific global dictionary
@@ -29,9 +28,9 @@ def _exit(morpy_trace: dict=None, app_dict: dict=None):
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'exit'
+    module = 'lib.exit'
     operation = '_exit(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
         # Wait for all threads to finish their current tasks
@@ -40,10 +39,10 @@ def _exit(morpy_trace: dict=None, app_dict: dict=None):
         # mt.mpy_threads_joinall(morpy_trace, app_dict)
 
         # Retrieve exit time and date
-        datetime_exit = fct.datetime_now(morpy_trace)
+        datetime_exit = morpy_fct.datetime_now()
 
         # determine runtime duration
-        temp_duration = fct.runtime(morpy_trace, app_dict["run"]["init_datetime_value"])
+        temp_duration = morpy_fct.runtime(app_dict["run"]["init_datetime_value"])
 
         # Correction of the exit occurrance counter for the very last message
         app_dict["run"]["events_EXIT"] += 1

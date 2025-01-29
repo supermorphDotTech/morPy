@@ -78,8 +78,8 @@ def initialize_morpy():
         return morpy_trace, app_dict, orchestrator, init_check
 
     except Exception as e:
-        import lib.fct as fct
-        fct.handle_exception_main(e, init=init_check)
+        import lib.fct as morpy_fct
+        morpy_fct.handle_exception_main(e, init=init_check)
 
 def main(morpy_trace, app_dict, orchestrator):
     r"""
@@ -104,10 +104,10 @@ if __name__ == '__main__':
         morpy_trace, app_dict, orchestrator, init_check = initialize_morpy()
         main(morpy_trace, app_dict, orchestrator)
     except Exception as e:
-        import lib.fct as fct
-        fct.handle_exception_main(e, init=init_check)
+        import lib.fct as morpy_fct
+        morpy_fct.handle_exception_main(e, init=init_check)
     finally:
         try:
             finalize_morpy(morpy_trace, app_dict)
         except Exception as e:
-            fct.handle_exception_main(e, init=init_check)
+            morpy_fct.handle_exception_main(e, init=init_check)

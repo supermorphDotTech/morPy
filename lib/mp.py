@@ -9,7 +9,7 @@ TODO provide a general purpose lock
     > Find a way to lock file objects and dirs
 """
 
-import lib.fct as fct
+import lib.fct as morpy_fct
 from lib.decorators import metrics, log, log_no_q
 
 import sys
@@ -36,7 +36,7 @@ class cl_orchestrator:
         # Setup morPy tracing
         module = 'mp'
         operation = 'cl_orchestrator.__init__(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             # Initialize with self._init() for metrics decorator support
@@ -58,7 +58,7 @@ class cl_orchestrator:
 
         module = 'mp'
         operation = 'cl_orchestrator._init(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -102,7 +102,7 @@ class cl_orchestrator:
 
         module = 'mp'
         operation = 'cl_orchestrator._init_processes(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -218,7 +218,7 @@ class cl_orchestrator:
 
         module = 'mp'
         operation = 'cl_orchestrator._init_memory(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -316,7 +316,7 @@ class cl_orchestrator:
 
         module = 'mp'
         operation = 'cl_orchestrator._init_app_dict(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -366,7 +366,7 @@ class cl_orchestrator:
 
         module = 'mp'
         operation = 'cl_orchestrator._init_run(~)'
-        morpy_trace_init_run = fct.tracing(module, operation, morpy_trace)
+        morpy_trace_init_run = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -397,7 +397,7 @@ class cl_orchestrator:
 
         module = 'mp'
         operation = 'cl_orchestrator._app_run(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -436,9 +436,9 @@ class cl_orchestrator:
         module = 'mp'
         operation = 'cl_orchestrator._run(~)'
         # TODO Find out, why morpy_trace["process_id"] is changed after exit of run_parallel()
-        # The enforced deepcopy fct.tracing() is a workaround.
-        morpy_trace_app = fct.tracing(module, operation, morpy_trace)
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        # The enforced deepcopy morpy_fct.tracing() is a workaround.
+        morpy_trace_app = morpy_fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -493,7 +493,7 @@ class cl_orchestrator:
 
         module = 'mp'
         operation = 'cl_orchestrator._main_loop(~)'
-        morpy_trace = fct.tracing(module, operation, morpy_trace)
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -577,11 +577,11 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
         mp.run_parallel(morpy_trace, app_dict, task=task, priority=priority)
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
 
     module = 'mp'
     operation = 'run_parallel(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     id_check = False
@@ -857,14 +857,14 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
         watcher(morpy_trace, app_dict, task, single_check=True)
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     import copy
     from multiprocessing import active_children
 
     morpy_trace_in = copy.deepcopy(morpy_trace)
     module = 'mp'
     operation = 'watcher(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     priority = -20
@@ -950,12 +950,12 @@ def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
     TODO find solution for 2-core mode
     """
 
-    import lib.fct as fct
+    import lib.fct as morpy_fct
     from multiprocessing import active_children
 
     module = 'mp'
     operation = 'join_processes(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
     p_id = None
@@ -1024,7 +1024,7 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
 
     module = 'mp'
     operation = 'interrupt(~)'
-    morpy_trace = fct.tracing(module, operation, morpy_trace)
+    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     check = False
 
