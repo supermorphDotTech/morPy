@@ -74,7 +74,7 @@ def cl_priority_queue(mpy_trace: dict, app_dict: dict, name: str=None):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def cl_progress(mpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None):
     r"""
@@ -110,7 +110,7 @@ def cl_progress(mpy_trace: dict, app_dict: dict, description: str=None, total: f
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def cl_progress_gui(mpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
                  frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
@@ -252,7 +252,7 @@ def cl_progress_gui(mpy_trace: dict, app_dict: dict, frame_title: str = None, fr
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def cl_xl_workbook(mpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
               data_only: bool=False, keep_vba: bool=True):
@@ -502,7 +502,7 @@ def cl_xl_workbook(mpy_trace: dict, app_dict: dict, workbook: str, create: bool=
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
              print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None) -> dict:
@@ -563,7 +563,7 @@ def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwrite: bool=False,
                       worksheet: str=None, close_workbook: bool=False, csv_dict: dict=None,
@@ -638,7 +638,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encoding: str) -> dict:
 
@@ -669,7 +669,7 @@ def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encodi
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None) -> dict:
 
@@ -706,7 +706,7 @@ def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes:
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
 
@@ -740,7 +740,7 @@ def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str=None, title: s
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def fso_copy_file(mpy_trace, app_dict, source, dest, ovwr_perm):
 
@@ -769,7 +769,7 @@ def fso_copy_file(mpy_trace, app_dict, source, dest, ovwr_perm):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def fso_create_dir(mpy_trace, app_dict, mk_dir):
 
@@ -794,7 +794,7 @@ def fso_create_dir(mpy_trace, app_dict, mk_dir):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def fso_delete_dir(mpy_trace, app_dict, del_dir):
 
@@ -819,7 +819,7 @@ def fso_delete_dir(mpy_trace, app_dict, del_dir):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def fso_delete_file(mpy_trace, app_dict, del_file):
 
@@ -847,7 +847,7 @@ def fso_delete_file(mpy_trace, app_dict, del_file):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def fso_walk(mpy_trace, app_dict, path, depth):
 
@@ -883,7 +883,7 @@ def fso_walk(mpy_trace, app_dict, path, depth):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
 
@@ -934,16 +934,18 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
 
             log(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
     except Exception as e:
         if app_dict:
             raise ValueError(f'{app_dict["loc"]["mpy"]["ValueError"]}\n'
                              f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                             f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}'
+                             f'{type(e).__name__}: {e}'
                              )
         else:
             raise ValueError('A function got an argument of correct type but improper value.\n'
+                             f'Line: {sys.exc_info()[-1].tb_lineno}\n'
+                             f'{type(e).__name__}: {e}\n'
                              f'mpy_trace: {True if mpy_trace else False}\n'
                              f'app_dict: False')
 
@@ -980,7 +982,7 @@ def interrupt(mpy_trace: dict, app_dict: dict) -> dict:
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def regex_findall(mpy_trace, app_dict, search_obj, pattern):
 
@@ -1012,7 +1014,7 @@ def regex_findall(mpy_trace, app_dict, search_obj, pattern):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def regex_find1st(mpy_trace, app_dict, search_obj, pattern):
 
@@ -1044,7 +1046,7 @@ def regex_find1st(mpy_trace, app_dict, search_obj, pattern):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def regex_split(mpy_trace, app_dict, search_obj, delimiter):
 
@@ -1078,7 +1080,7 @@ def regex_split(mpy_trace, app_dict, search_obj, delimiter):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def regex_replace(mpy_trace, app_dict, search_obj, search_for, replace_by):
 
@@ -1112,7 +1114,7 @@ def regex_replace(mpy_trace, app_dict, search_obj, search_for, replace_by):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def regex_remove_special(mpy_trace, app_dict, inp_string, spec_lst):
 
@@ -1145,7 +1147,7 @@ def regex_remove_special(mpy_trace, app_dict, inp_string, spec_lst):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def textfile_write(mpy_trace, app_dict, filepath, content):
 
@@ -1171,7 +1173,7 @@ def textfile_write(mpy_trace, app_dict, filepath, content):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def testprint(mpy_trace, input):
 
@@ -1214,7 +1216,7 @@ def wait_for_input(mpy_trace, app_dict, msg_text):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def wait_for_select(mpy_trace: dict, app_dict: dict, msg_text: str, collection: tuple=None) -> dict:
 
@@ -1250,7 +1252,7 @@ def wait_for_select(mpy_trace: dict, app_dict: dict, msg_text: str, collection: 
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def datetime_now(mpy_trace):
 
@@ -1444,7 +1446,7 @@ def mpy_thread_queue(mpy_trace, app_dict, name, priority, task):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-            f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+            f'{type(e).__name__}: {e}')
 
 def mpy_threads_joinall(mpy_trace, app_dict):
 
@@ -1466,7 +1468,7 @@ def mpy_threads_joinall(mpy_trace, app_dict):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-            f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+            f'{type(e).__name__}: {e}')
 
 def mpy_mt_abort(mpy_trace, app_dict):
 
@@ -1489,7 +1491,7 @@ def mpy_mt_abort(mpy_trace, app_dict):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 # TODO MS Excel API
 
@@ -1525,7 +1527,7 @@ def tk_progbar_indeterminate(mpy_trace, app_dict, GUI_dict):
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def find_replace_saveas(mpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite):
 
@@ -1561,4 +1563,4 @@ def find_replace_saveas(mpy_trace, app_dict, search_obj, replace_tpl, save_as, o
 
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')

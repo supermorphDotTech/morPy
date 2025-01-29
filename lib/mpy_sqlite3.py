@@ -132,7 +132,7 @@ def sqlite3_db_connect(mpy_trace: dict, app_dict: dict, db_path: str) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 @metrics
 def sqlite3_db_disconnect(mpy_trace: dict, app_dict: dict, db_path: str) -> dict:
@@ -169,7 +169,7 @@ def sqlite3_db_disconnect(mpy_trace: dict, app_dict: dict, db_path: str) -> dict
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     finally:
         try:
@@ -184,7 +184,7 @@ def sqlite3_db_disconnect(mpy_trace: dict, app_dict: dict, db_path: str) -> dict
         except Exception as e:
             log(mpy_trace, app_dict, "error",
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
 @metrics
 def sqlite3_db_statement(mpy_trace: dict, app_dict: dict, db_path: str, db_smnt: str) -> dict:
@@ -252,7 +252,7 @@ def sqlite3_db_statement(mpy_trace: dict, app_dict: dict, db_path: str, db_smnt:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -334,7 +334,7 @@ def sqlite3_tbl_check(mpy_trace: dict, app_dict: dict, db_path: str, table_name:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -406,7 +406,7 @@ def sqlite3_tbl_create(mpy_trace: dict, app_dict: dict, db_path: str, table_name
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -511,7 +511,7 @@ def sqlite3_tbl_column_add(mpy_trace: dict, app_dict: dict, db_path: str, table_
             except Exception as e:
                 log(mpy_trace, app_dict, "error",
                     lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["mpy"]["sqlite3_tbl_column_add_smnt"]}: {exec_statement}')
 
         # Log and print a denial
@@ -536,7 +536,7 @@ def sqlite3_tbl_column_add(mpy_trace: dict, app_dict: dict, db_path: str, table_
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -653,7 +653,7 @@ def sqlite3_row_insert(mpy_trace: dict, app_dict: dict, db_path: str, table_name
             except Exception as e:
                 log(mpy_trace, app_dict, "error",
                     lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["mpy"]["sqlite3_row_insert_smnt"]}: {exec_statement}')
 
         # Log and print a denial
@@ -677,7 +677,7 @@ def sqlite3_row_insert(mpy_trace: dict, app_dict: dict, db_path: str, table_name
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -802,7 +802,7 @@ def sqlite3_row_update(mpy_trace: dict, app_dict: dict, db_path: str, table_name
             except Exception as e:
                 log(mpy_trace, app_dict, "error",
                     lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["mpy"]["sqlite3_row_update_smnt"]}: {exec_statement}')
 
         # Log and print a denial
@@ -826,7 +826,7 @@ def sqlite3_row_update(mpy_trace: dict, app_dict: dict, db_path: str, table_name
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -953,7 +953,7 @@ def sqlite3_row_update_where(mpy_trace: dict, app_dict: dict, db_path: str, tabl
             except Exception as e:
                 log(mpy_trace, app_dict, "error",
                     lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                        f'{type(e).__name__}: {e}')
 
         # Log and print a denial
         if not check:
@@ -976,7 +976,7 @@ def sqlite3_row_update_where(mpy_trace: dict, app_dict: dict, db_path: str, tabl
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace, \

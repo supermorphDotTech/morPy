@@ -76,4 +76,4 @@ def _exit(mpy_trace: dict=None, app_dict: dict=None):
     except Exception as e:
         log_no_q(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')

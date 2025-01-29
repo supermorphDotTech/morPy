@@ -82,7 +82,7 @@ def mpy_thread_queue(mpy_trace: dict, app_dict: dict, name: str, priority: int, 
             except Exception as e:
                 log(mpy_trace, app_dict, "critical",
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                        f'{type(e).__name__}: {e}')
 
             # Start a thread, if there are threads available. If all threads are already in use, skip
             # this step as the threads will keep pulling tasks.
@@ -137,7 +137,7 @@ def mpy_thread_queue(mpy_trace: dict, app_dict: dict, name: str, priority: int, 
             except Exception as e:
                 log(mpy_trace, app_dict, "critical",
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                        f'{type(e).__name__}: {e}')
 
         # Run fallback mode - single threaded
         else:
@@ -147,7 +147,7 @@ def mpy_thread_queue(mpy_trace: dict, app_dict: dict, name: str, priority: int, 
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -199,7 +199,7 @@ def mpy_threads_joinall(mpy_trace: dict, app_dict: dict) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -249,7 +249,7 @@ def mpy_mt_abort(mpy_trace: dict, app_dict: dict) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -307,7 +307,7 @@ class cl_priority_queue(object):
         except Exception as e:
             log(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
     def enqueue(self, mpy_trace: dict, app_dict: dict, name: str, priority: int, task: str) -> dict:
 
@@ -358,7 +358,7 @@ class cl_priority_queue(object):
         except Exception as e:
             log(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return{
             'mpy_trace' : mpy_trace,
@@ -428,7 +428,7 @@ class cl_priority_queue(object):
         except Exception as e:
             log(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return{
             'mpy_trace' : mpy_trace,
@@ -535,7 +535,7 @@ def mt_init(mpy_trace: dict, app_dict: dict) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -598,7 +598,7 @@ class cl_thread(threading.Thread):
         except Exception as e:
             log(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
     def run(self) -> dict:
 
@@ -728,7 +728,7 @@ class cl_thread(threading.Thread):
         except Exception as e:
             log(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return{
             'mpy_trace' : mpy_trace,
@@ -812,7 +812,7 @@ def prio_correction(mpy_trace: dict, app_dict: dict, priority: int, task: str) -
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -908,7 +908,7 @@ def thread_id(mpy_trace: dict, app_dict: dict) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -994,7 +994,7 @@ def thread_imports(mpy_trace: dict, app_dict: dict, task: str) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,

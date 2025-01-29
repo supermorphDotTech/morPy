@@ -48,7 +48,7 @@ def init_metrics(mpy_trace, app_dict):
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     # Return a dictionary
     return{

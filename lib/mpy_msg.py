@@ -419,7 +419,7 @@ def log_db_connect(mpy_trace, app_dict, db_path):
         # The database could not be found and/or connected.
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                f'{type(e).__name__}: {e}\n'
                 f'{app_dict["loc"]["mpy"]["log_db_connect_excpt"]}\n'
                 f'db_path: {db_path}')
 
@@ -451,7 +451,7 @@ def log_db_disconnect(mpy_trace, app_dict, db_path):
         # The database could not be found and/or disconnected.
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                f'{type(e).__name__}: {e}\n'
                 f'{app_dict["loc"]["mpy"]["log_db_disconnect_excpt"]}\n'
                 f'db_path: {db_path}')
 
@@ -508,7 +508,7 @@ def log_db_table_create(mpy_trace, app_dict, db_path, table_name):
         # The log table for runtime could not be created.
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                f'{type(e).__name__}: {e}\n'
                 f'{app_dict["loc"]["mpy"]["log_db_table_create_excpt"]}\n'
                 f'{app_dict["loc"]["mpy"]["log_db_table_create_stmt"]}: {exec_statement}')
 
@@ -569,7 +569,7 @@ def log_db_table_check(mpy_trace, app_dict, db_path, table_name):
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def log_db_table_add_column(mpy_trace, app_dict, db_path, table_name, columns, col_types):
 
@@ -648,7 +648,7 @@ def log_db_table_add_column(mpy_trace, app_dict, db_path, table_name, columns, c
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def log_db_row_insert(mpy_trace, app_dict, db_path, table_name, columns, log_dict):
 
@@ -746,7 +746,7 @@ def log_db_row_insert(mpy_trace, app_dict, db_path, table_name, columns, log_dic
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def log_regex_replace(mpy_trace, app_dict, search_obj, search_for, replace_by):
 
@@ -783,7 +783,7 @@ def log_regex_replace(mpy_trace, app_dict, search_obj, search_for, replace_by):
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
 def log_wait_for_input(mpy_trace, app_dict, msg_text):
 
@@ -814,4 +814,4 @@ def log_wait_for_input(mpy_trace, app_dict, msg_text):
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')

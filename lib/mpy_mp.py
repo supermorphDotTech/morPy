@@ -47,7 +47,7 @@ class cl_orchestrator:
         except Exception as e:
             log_no_q(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
     @metrics
     def _init(self, mpy_trace: dict, app_dict: dict) -> dict:
@@ -83,7 +83,7 @@ class cl_orchestrator:
         except Exception as e:
             log_no_q(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             'mpy_trace': mpy_trace,
@@ -202,7 +202,7 @@ class cl_orchestrator:
         except Exception as e:
             log_no_q(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             'mpy_trace': mpy_trace,
@@ -300,7 +300,7 @@ class cl_orchestrator:
         except Exception as e:
             log_no_q(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             'mpy_trace': mpy_trace,
@@ -350,7 +350,7 @@ class cl_orchestrator:
         except Exception as e:
             log_no_q(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             'mpy_trace': mpy_trace,
@@ -381,7 +381,7 @@ class cl_orchestrator:
         except Exception as e:
             log_no_q(mpy_trace_init_run, app_dict, "critical",
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                        f'{type(e).__name__}: {e}')
 
         return {
             'mpy_trace': mpy_trace_init_run,
@@ -419,7 +419,7 @@ class cl_orchestrator:
         except Exception as e:
             log_no_q(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             'mpy_trace': mpy_trace,
@@ -469,7 +469,7 @@ class cl_orchestrator:
         except Exception as e:
             log_no_q(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         finally:
             return {
@@ -538,7 +538,7 @@ class cl_orchestrator:
         except Exception as e:
             log_no_q(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         finally:
             return {
@@ -761,7 +761,7 @@ def run_parallel(mpy_trace: dict, app_dict: dict, task: list=None, priority=None
     except Exception as e:
         log_no_q(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     finally:
         return {
@@ -837,7 +837,7 @@ def spawn(task: list):
 
     except Exception as e:
         print(f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-            f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+            f'{type(e).__name__}: {e}')
 
 @metrics
 def watcher(mpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=False) -> dict:
@@ -923,7 +923,7 @@ def watcher(mpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=Fal
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     finally:
         return {
@@ -996,7 +996,7 @@ def join_processes(mpy_trace: dict, app_dict: dict) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     finally:
         return {
@@ -1038,7 +1038,7 @@ def interrupt(mpy_trace: dict, app_dict: dict) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "critical",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
     finally:
         return {

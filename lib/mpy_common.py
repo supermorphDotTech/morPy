@@ -96,7 +96,7 @@ class cl_priority_queue:
         except Exception as e:
             err_msg = (
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["mpy"]["cl_priority_queue_name"]}: {self.name}'
             )
             if self.is_manager:
@@ -152,7 +152,7 @@ class cl_priority_queue:
         except Exception as e:
             err_msg = (
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["mpy"]["cl_priority_queue_name"]}: {self.name}'
             )
             if self.is_manager:
@@ -194,7 +194,7 @@ class cl_priority_queue:
         except Exception as e:
             err_msg = (
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["mpy"]["cl_priority_queue_name"]}: {self.name}'
             )
             if self.is_manager:
@@ -318,7 +318,7 @@ class cl_priority_queue:
         except Exception as e:
             err_msg = (
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["mpy"]["cl_priority_queue_name"]}: {self.name}\n'
                         f'{app_dict["loc"]["mpy"]["cl_priority_queue_enqueue_priority"]}: {priority}'
             )
@@ -404,7 +404,7 @@ class cl_priority_queue:
         except Exception as e:
             err_msg = (
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+                        f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["mpy"]["cl_priority_queue_name"]}: {self.name}'
             )
             if self.is_manager:
@@ -494,7 +494,7 @@ class cl_progress():
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
     @metrics
     def _init(self, mpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None) -> dict:
@@ -548,7 +548,7 @@ class cl_progress():
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return{
             'mpy_trace' : mpy_trace,
@@ -609,7 +609,7 @@ class cl_progress():
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return{
             'mpy_trace' : mpy_trace,
@@ -693,7 +693,7 @@ class cl_progress():
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return{
             'mpy_trace' : mpy_trace,
@@ -788,7 +788,7 @@ def decode_to_plain_text(mpy_trace: dict, app_dict: dict, src_input: str, encodi
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return {
         'mpy_trace': mpy_trace,
@@ -890,7 +890,7 @@ def fso_copy_file(mpy_trace: dict, app_dict: dict, source: str, dest: str, ovwr_
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -950,7 +950,7 @@ def fso_create_dir(mpy_trace: dict, app_dict: dict, mk_dir: str) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1010,7 +1010,7 @@ def fso_delete_dir(mpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1069,7 +1069,7 @@ def fso_delete_file(mpy_trace: dict, app_dict: dict, del_file: str) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1150,7 +1150,7 @@ def fso_walk(mpy_trace: dict, app_dict: dict, path: str, depth: int) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1207,7 +1207,7 @@ def regex_findall(mpy_trace: dict, app_dict: dict, search_obj: object, pattern: 
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1275,7 +1275,7 @@ def regex_find1st(mpy_trace: dict, app_dict: dict, search_obj: object, pattern: 
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1345,7 +1345,7 @@ def regex_split(mpy_trace: dict, app_dict: dict, search_obj: object, delimiter: 
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1406,7 +1406,7 @@ def regex_replace(mpy_trace: dict, app_dict: dict, search_obj: object, search_fo
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1533,7 +1533,7 @@ def regex_remove_special(mpy_trace: dict, app_dict: dict, inp_string: str, spec_
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1596,7 +1596,7 @@ def textfile_write(mpy_trace: dict, app_dict: dict, filepath: str, content: str)
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1676,7 +1676,7 @@ def wait_for_input(mpy_trace: dict, app_dict: dict, msg_text: str) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1757,7 +1757,7 @@ def wait_for_select(mpy_trace: dict, app_dict: dict, msg_text: str, collection: 
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,

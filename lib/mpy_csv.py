@@ -214,7 +214,7 @@ def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -480,7 +480,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,

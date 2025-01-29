@@ -174,7 +174,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
     @metrics
     def _init(self, mpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
@@ -350,7 +350,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         finally:
             return {
@@ -497,7 +497,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace" : mpy_trace,
@@ -535,7 +535,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                        f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace": mpy_trace,
@@ -588,7 +588,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                        f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace": mpy_trace,
@@ -633,7 +633,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
                 lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                        f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace": mpy_trace,
@@ -674,7 +674,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace" : mpy_trace,
@@ -814,7 +814,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace" : mpy_trace,
@@ -863,7 +863,6 @@ class cl_progress_gui:
 
             # Update stage headline
             if headline_stage is not None and self.stage_progress_on:
-                raise
                 # Retain the final colon to stay consistent with constructor
                 self.headline_stage_nocol = headline_stage
                 self.headline_stage = self.headline_stage_nocol + ":"
@@ -884,7 +883,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {"mpy_trace": mpy_trace, "check": check}
 
@@ -927,7 +926,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace" : mpy_trace,
@@ -968,7 +967,7 @@ class cl_progress_gui:
                 log(mpy_trace, app_dict, "error",
                 lambda: f'{app_dict["loc"]["mpy"]["cl_progress_gui_start_work_thread_err"]}\n'
                         f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                        f'{type(e).__name__}: {e}')
 
         try:
             self.worker_thread = threading.Thread(target=_thread_wrapper, daemon=True)
@@ -979,7 +978,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace" : mpy_trace,
@@ -1027,7 +1026,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace" : mpy_trace,
@@ -1066,7 +1065,7 @@ class cl_progress_gui:
         except Exception as e:
             log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                    f'{type(e).__name__}: {e}')
 
         return {
             "mpy_trace" : mpy_trace,
@@ -1154,7 +1153,7 @@ def dialog_sel_file(mpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -1236,7 +1235,7 @@ def dialog_sel_dir(mpy_trace: dict, app_dict: dict, init_dir: str=None, title: s
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,

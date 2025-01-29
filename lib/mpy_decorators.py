@@ -54,7 +54,7 @@ def log(mpy_trace: dict, app_dict: dict, log_level: str, message_func: callable)
 
     except Exception as e:
         msg = (f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-            f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+            f'{type(e).__name__}: {e}\n'
            f'{app_dict["loc"]["mpy"]["trace"]}: {mpy_trace["tracing"]}\n'
            f'{app_dict["loc"]["mpy"]["process"]}: {mpy_trace["process_id"]}\n'
            f'{app_dict["loc"]["mpy"]["thread"]}: {mpy_trace["thread_id"]}\n'
@@ -97,7 +97,7 @@ def log_no_q(mpy_trace: dict, app_dict: dict, log_level: str, message_func: call
 
     except Exception as e:
         msg = (f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-            f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}\n'
+            f'{type(e).__name__}: {e}\n'
            f'{app_dict["loc"]["mpy"]["trace"]}: {mpy_trace["tracing"]}\n'
            f'{app_dict["loc"]["mpy"]["process"]}: {mpy_trace["process_id"]}\n'
            f'{app_dict["loc"]["mpy"]["thread"]}: {mpy_trace["thread_id"]}\n'
@@ -159,6 +159,8 @@ def metrics(func):
             except (IndexError, TypeError):
                 # If we still don't have them, leave them as None
                 pass
+            except (KeyError):
+                raise IndexError("Positional arguments mpy_trace and/or app_dict are missing or at wrong position!")
 
             try:
                 if enable_metrics:
@@ -175,7 +177,7 @@ def metrics(func):
                 else:
                     retval = func(*args, **kwargs)
 
-            except AttributeError as e:
+            except Exception as e:
                 # If we actually got our tracing info, log a CRITICAL error
                 if isinstance(mpy_trace, dict) and isinstance(app_dict, dict):
                     module = 'mpy_decorators'
@@ -183,7 +185,7 @@ def metrics(func):
                     mpy_trace_metrics = mpy_fct.tracing(module, operation, mpy_trace)
                     log(mpy_trace_metrics, app_dict, "critical",
                         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                                f'{type(e).__name__}: {e}')
                 else:
                     # fallback handler if no tracing
                     mpy_fct.handle_exception_decorator(f'{e}\nmpy_trace: {mpy_trace}\n*args: {args}\n**kwargs: {kwargs}')

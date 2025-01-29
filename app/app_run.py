@@ -84,7 +84,7 @@ def _run( mpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -136,7 +136,7 @@ def new_process(mpy_trace: dict, app_dict: dict, counter: int=0) -> dict:
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,
@@ -203,7 +203,7 @@ def arbitrary_parallel_task(mpy_trace, app_dict, gui=None):
     except Exception as e:
         log(mpy_trace, app_dict, "error",
         lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace,

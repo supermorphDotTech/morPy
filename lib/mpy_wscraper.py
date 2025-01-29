@@ -126,7 +126,7 @@ def web_request(mpy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> di
     except Exception as e:
         log(mpy_trace, app_dict, "error",
             lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["mpy"]["err_excp"]}: {e}')
+                f'{type(e).__name__}: {e}')
 
     return{
         'mpy_trace' : mpy_trace, \
