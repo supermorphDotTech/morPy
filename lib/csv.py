@@ -6,23 +6,23 @@ Author:     Bastian Neuwirth
 Descr.:     Module of operations concerning csv-files.
 """
 
-import lib.mpy_fct as mpy_fct
-import lib.mpy_common as mpy_common
-import lib.mpy_xl as mpy_xl
+import lib.fct as fct
+import lib.common as common
+import lib.xl as xl
 import sys
 
-from lib.mpy_decorators import metrics, log
+from lib.decorators import metrics, log
 from openpyxl.utils.cell import get_column_letter
 
 @metrics
-def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None, print_csv_dict: bool=False,
+def csv_read(morPy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None, print_csv_dict: bool=False,
                       log_progress: bool=False, progress_ticks: float=None) -> dict:
     r"""
     This function reads a csv file and returns a dictionary of
     dictionaries. The header row, first row of data and delimiter
     is determined automatically.
 
-    :param mpy_trace: Operation credentials and tracing
+    :param morPy_trace: Operation credentials and tracing
     :param app_dict: morPy global dictionary containing app configurations
     :param src_file_path: Path to the csv file.
     :param delimiter: Delimiters used in the csv. None = Auto detection
@@ -33,7 +33,7 @@ def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter
         10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
 
     :return: dict
-        mpy_trace: Operation credentials and tracing
+        morPy_trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
         csv_dict: Dictionary containing all tags. The line numbers of data are
             the keys of the parent dictionary, and the csv header consists of
@@ -57,16 +57,16 @@ def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter
     :example:
         src_file_path = 'C:\myfile.csv'
         delimiter = '","'
-        csv = mpy_csv.csv_read(mpy_trace, app_dict, src_file_path, delimiter)
+        csv = csv.csv_read(morPy_trace, app_dict, src_file_path, delimiter)
         csv_dict = csv["csv_dict"]
         csv_header1 = csv["csv_dict"]["DATA1"]["header"]
         print(f'{csv_header1}')
     """
 
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_csv'
+    # Define operation credentials (see init.init_cred() for all dict keys)
+    module = 'csv'
     operation = 'csv_read(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+    morPy_trace = fct.tracing(module, operation, morPy_trace)
 
     check = False
     csv_copy_dict = {}
@@ -85,14 +85,14 @@ def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter
 
     try:
         # Started processing CSV-file.
-        log(mpy_trace, app_dict, "info",
-        lambda: f'{app_dict["loc"]["mpy"]["csv_read_start"]}\n'
-                f'{app_dict["loc"]["mpy"]["csv_read_file_path"]}: {src_file_path}')
+        log(morPy_trace, app_dict, "info",
+        lambda: f'{app_dict["loc"]["morPy"]["csv_read_start"]}\n'
+                f'{app_dict["loc"]["morPy"]["csv_read_file_path"]}: {src_file_path}')
 
         # Delimiter auto detection
         delimiters = (delimiter,) if delimiter else ('";"', '","', ';', ',', '"\t"', '\t', '":"', ':')
 
-        src_file_dict = mpy_fct.pathtool(mpy_trace, src_file_path)
+        src_file_dict = fct.pathtool(morPy_trace, src_file_path)
         src_file_path = src_file_dict["out_path"]
         src_file_isfile = src_file_dict["is_file"]
         src_file_exists = src_file_dict["file_exists"]
@@ -109,7 +109,7 @@ def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter
             # Track progress
             if log_progress:
                 prog_total = len(delimiters) * r_tot
-                csv_read_progress = mpy_common.cl_progress(mpy_trace, app_dict,
+                csv_read_progress = common.cl_progress(morPy_trace, app_dict,
                     description='CSV Read Progress', total=prog_total, ticks=progress_ticks)
 
             # Determine delimiters, header and data rows
@@ -118,7 +118,7 @@ def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter
                 for row, line in csv_copy_dict.items():
                     r_det +=1
                     if csv_read_progress:
-                        csv_read_progress.update(mpy_trace, app_dict, current=r_det)
+                        csv_read_progress.update(morPy_trace, app_dict, current=r_det)
                     line = line.rstrip()
                     if d in line:
                         # Check, if header needs to be found
@@ -166,14 +166,14 @@ def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter
             # Process CSV into dictionary
             if delim_check:
                 # CSV file processed. Dictionary contains ## rows.
-                log(mpy_trace, app_dict, "info",
-                lambda: f'{app_dict["loc"]["mpy"]["csv_read_done"]}: {data_rows}')
+                log(morPy_trace, app_dict, "info",
+                lambda: f'{app_dict["loc"]["morPy"]["csv_read_done"]}: {data_rows}')
 
                 # Print csv_dict to console for debugging.
                 if print_csv_dict:
                     # Start printing returned dictionary to console.
-                    log(mpy_trace, app_dict, "info",
-                    lambda: f'{app_dict["loc"]["mpy"]["csv_read_done"]}: {data_rows}')
+                    log(morPy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["morPy"]["csv_read_done"]}: {data_rows}')
 
                     for data_table_name in csv_dict.keys():
                         print(f'{0*" "}{data_table_name}: {{')
@@ -191,39 +191,39 @@ def csv_read(mpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter
                         data_cnt_row = 0
 
                     # Finished printing returned dictionary to console.
-                    log(mpy_trace, app_dict, "info",
-                    lambda: f'{app_dict["loc"]["mpy"]["csv_read_done"]}: {data_rows}')
+                    log(morPy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["morPy"]["csv_read_done"]}: {data_rows}')
 
             else:
                 # Delimiters could not be determined or data is corrupted. No return dictionary created.
-                log(mpy_trace, app_dict, "warning",
-                lambda: f'{app_dict["loc"]["mpy"]["csv_read_no_return"]}\n'
-                        f'{app_dict["loc"]["mpy"]["csv_read_file_path"]}: {src_file_path}')
+                log(morPy_trace, app_dict, "warning",
+                lambda: f'{app_dict["loc"]["morPy"]["csv_read_no_return"]}\n'
+                        f'{app_dict["loc"]["morPy"]["csv_read_file_path"]}: {src_file_path}')
 
         else:
             # File does not exist or is not a CSV file.
-            log(mpy_trace, app_dict, "warning",
-            lambda: f'{app_dict["loc"]["mpy"]["csv_read_not_done"]}\n'
-                    f'{app_dict["loc"]["mpy"]["csv_read_file_exist"]}: {src_file_exists}\n'
-                    f'{app_dict["loc"]["mpy"]["csv_read_isfile"]}: {src_file_isfile}\n'
-                    f'{app_dict["loc"]["mpy"]["csv_read_file_ext"]}: {src_file_ext}\n'
-                    f'{app_dict["loc"]["mpy"]["csv_read_file_path"]}: {src_file_path}')
+            log(morPy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morPy"]["csv_read_not_done"]}\n'
+                    f'{app_dict["loc"]["morPy"]["csv_read_file_exist"]}: {src_file_exists}\n'
+                    f'{app_dict["loc"]["morPy"]["csv_read_isfile"]}: {src_file_isfile}\n'
+                    f'{app_dict["loc"]["morPy"]["csv_read_file_ext"]}: {src_file_ext}\n'
+                    f'{app_dict["loc"]["morPy"]["csv_read_file_path"]}: {src_file_path}')
 
         check = True
 
     except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morPy_trace, app_dict, "error",
+        lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'mpy_trace' : mpy_trace,
+        'morPy_trace' : morPy_trace,
         'check' : check,
         'csv_dict' : csv_dict
         }
 
 @metrics
-def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwrite: bool=False,
+def csv_dict_to_excel(morPy_trace: dict, app_dict: dict, xl_path: str=None, overwrite: bool=False,
                       worksheet: str=None, close_workbook: bool=False, csv_dict: dict=None,
                       log_progress: bool=False, progress_ticks: float=None) -> dict:
     r"""
@@ -231,7 +231,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
     The csv_dict however may be evaluated and processed prior to executing csv_dict_to_excel().
     The file will be saved automatically, but closing the workbook is optional.
 
-    :param mpy_trace: Operation credentials and tracing
+    :param morPy_trace: Operation credentials and tracing
     :param app_dict: morPy global dictionary containing app configurations
     :param xl_path: Path to the target MS Excel file.
     :param overwrite: If True, an existing MS Excel file may be overwritten.
@@ -261,21 +261,21 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
         10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
 
     :return: dict
-        mpy_trace: Operation credentials and tracing
+        morPy_trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
-        wb_obj: Returns None, if the object was closed. Else returns an instance of "mpy_xl.cl_xl_workbook()".
+        wb_obj: Returns None, if the object was closed. Else returns an instance of "xl.cl_xl_workbook()".
             Used to delete the reference to an instance.
 
     :example:
         src_file_path = 'C:\my.csv'
         delimiter = '","'
-        csv = mpy_csv.csv_read(mpy_trace, app_dict, src_file_path, delimiter)
+        csv = csv.csv_read(morPy_trace, app_dict, src_file_path, delimiter)
 
         # ... process data in csv["csv_dict"] ...
 
         target_path = 'C:\my.xlsx'
         wb_sht = 'Sheet1'
-        wb = csv_dict_to_excel(mpy_trace, app_dict, csv_dict=csv["csv_dict"], xl_path=target_path,
+        wb = csv_dict_to_excel(morPy_trace, app_dict, csv_dict=csv["csv_dict"], xl_path=target_path,
             overwrite=True, worksheet=wb_sht)["wb_obj"]
 
         # ... modify 'C:\my.xlsx' ...
@@ -284,10 +284,10 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
         wb.close_workbook(mpy_trac, app_dict, save_workbook=True, close_workbook=True)
     """
 
-    # Define operation credentials (see mpy_init.init_cred() for all dict keys)
-    module = 'mpy_csv'
+    # Define operation credentials (see init.init_cred() for all dict keys)
+    module = 'csv'
     operation = 'csv_dict_to_excel(~)'
-    mpy_trace = mpy_fct.tracing(module, operation, mpy_trace)
+    morPy_trace = fct.tracing(module, operation, morPy_trace)
 
     check = False
     xl_exists = False
@@ -296,10 +296,10 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
 
     try:
         # Writing data to MS Excel file.
-        log(mpy_trace, app_dict, "info",
-            lambda: f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_start"]}\n'
-                    f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_path"]}: {xl_path}\n'
-                    f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
+        log(morPy_trace, app_dict, "info",
+            lambda: f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_start"]}\n'
+                    f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_path"]}: {xl_path}\n'
+                    f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
 
         # Log the progress
         if log_progress:
@@ -312,18 +312,18 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
                     log_progress = False
 
                     # Missing row count in csv_dict. Skipping progress logging.
-                    log(mpy_trace, app_dict, "warning",
-                        lambda: f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_prog_fail"]}')
+                    log(morPy_trace, app_dict, "warning",
+                        lambda: f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_prog_fail"]}')
 
             # Instantiate progress logging
-            progress = mpy_common.cl_progress(mpy_trace, app_dict,
-                                                description=f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_prog_descr"]}',
+            progress = common.cl_progress(morPy_trace, app_dict,
+                                                description=f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_prog_descr"]}',
                                                 total=total_prog_count,
                                                 ticks=progress_ticks)
 
         # Check target file path
         if xl_path:
-            xl_path_eval = mpy_fct.pathtool(mpy_trace, in_path=xl_path)
+            xl_path_eval = fct.pathtool(morPy_trace, in_path=xl_path)
             xl_exists = xl_path_eval["file_exists"]
             xl_valid = True
         else:
@@ -336,7 +336,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
         # If we have a valid path and a dictionary with data, attempt to write
         if xl_write and csv_dict:
             # Instantiate workbook API
-            wb = mpy_xl.cl_xl_workbook(mpy_trace, app_dict, xl_path, create=not xl_exists)
+            wb = xl.cl_xl_workbook(morPy_trace, app_dict, xl_path, create=not xl_exists)
 
             row_index = 1  # Starting row
 
@@ -371,7 +371,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
 
                 # Write the header row
                 wb.write_ranges(
-                    mpy_trace,
+                    morPy_trace,
                     app_dict,
                     worksheet=worksheet,
                     cell_range=header_range,
@@ -400,7 +400,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
                     try:
                         row_keys.append(int(k))
                         if log_progress:
-                            progress.update(mpy_trace, app_dict)
+                            progress.update(morPy_trace, app_dict)
                     except:
                         pass
                 row_keys.sort()
@@ -420,7 +420,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
                         cell_writes_for_data.append({"value": cell_value})
 
                     wb.write_ranges(
-                        mpy_trace,
+                        morPy_trace,
                         app_dict,
                         worksheet=worksheet,
                         cell_range=row_range,
@@ -438,7 +438,7 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
 
             # Save and optionally close the workbook
             wb_obj = wb.save_workbook(
-                mpy_trace,
+                morPy_trace,
                 app_dict,
                 close_workbook=close_workbook,
             )["wb_obj"]
@@ -447,43 +447,43 @@ def csv_dict_to_excel(mpy_trace: dict, app_dict: dict, xl_path: str=None, overwr
 
         if xl_exists and overwrite:
             # MS Excel file exists. Overwritten.
-            log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_xl_ovwr"]}\n'
-                        f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_path"]}: {xl_path}\n'
-                        f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
+            log(morPy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_xl_ovwr"]}\n'
+                        f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_path"]}: {xl_path}\n'
+                        f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
 
         elif xl_exists and not overwrite:
             # MS Excel file exists. Operation skipped.
-            log(mpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_xl_novwr"]}\n'
-                        f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_path"]}: {xl_path}'
-                        f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
+            log(morPy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_xl_novwr"]}\n'
+                        f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_path"]}: {xl_path}'
+                        f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
 
         if not xl_path:
             # Missing path to MS Excel file. Operation skipped.
-            log(mpy_trace, app_dict, "warning",
-            lambda: f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_missing_xl"]}\n'
-                    f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_path"]}: {xl_path}')
+            log(morPy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_missing_xl"]}\n'
+                    f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_path"]}: {xl_path}')
 
         if not xl_valid:
             # Invalid path to MS Excel file. Operation skipped.
-            log(mpy_trace, app_dict, "warning",
-            lambda: f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_inval_xl"]}\n'
-                    f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_path"]}: {xl_path}')
+            log(morPy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_inval_xl"]}\n'
+                    f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_path"]}: {xl_path}')
 
         elif not csv_dict:
             # Missing data book from csv file. operation skipped.
-            log(mpy_trace, app_dict, "warning",
-            lambda: f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_missing_data"]}\n'
-                    f'{app_dict["loc"]["mpy"]["csv_dict_to_excel_data"]}: {csv_dict}')
+            log(morPy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_missing_data"]}\n'
+                    f'{app_dict["loc"]["morPy"]["csv_dict_to_excel_data"]}: {csv_dict}')
 
     except Exception as e:
-        log(mpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["mpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morPy_trace, app_dict, "error",
+        lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'mpy_trace' : mpy_trace,
+        'morPy_trace' : morPy_trace,
         'check' : check,
         'wb_obj' : wb_obj,
         }
