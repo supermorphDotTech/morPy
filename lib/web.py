@@ -7,11 +7,11 @@ Descr.:     This module provides routines for webscraping.
 """
 
 import lib.fct as morpy_fct
-import common
+import lib.common as common
+from lib.decorators import metrics, log
+
 import sys
 import requests
-
-from lib.decorators import metrics, log
 
 @metrics
 def web_request(morpy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> dict:

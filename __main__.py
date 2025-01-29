@@ -44,23 +44,11 @@ TODO use pyinstaller to generate standalone application
 """
 
 import sys
-import os
-import pathlib
 import logging
 
 # Setup fallback-logging for __main__
 logging.basicConfig(level=logging.CRITICAL)
 init_check = False
-
-def add_paths():
-    r"""
-    Add morPy specific paths to sys.path.
-    """
-    base_path = pathlib.Path(__file__).parent.resolve()
-    sys.path.append(os.path.join(base_path, 'lib'))
-    sys.path.append(os.path.join(base_path, 'loc'))
-    sys.path.append(os.path.join(base_path, 'app'))
-    sys.path.append(os.path.join(base_path, 'res'))
 
 def initialize_morpy():
     r"""
@@ -98,8 +86,6 @@ def finalize_morpy(morpy_trace, app_dict):
     sys.exit()
 
 if __name__ == '__main__':
-    add_paths() # Add system paths for enhanced compatibility
-
     try:
         morpy_trace, app_dict, orchestrator, init_check = initialize_morpy()
         main(morpy_trace, app_dict, orchestrator)

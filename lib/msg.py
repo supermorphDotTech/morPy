@@ -6,16 +6,18 @@ Author:     Bastian Neuwirth
 Descr.:     This module delivers functions to debug, warn and log any operations
             executed within the morPy framework. At the same time it processes
             all kinds of messaging, whether it be via console or ui.
+
+TODO make logging a class
+    > Needed to efficiently share the lock on the db
 """
 
 import lib.fct as morpy_fct
-import sys
-
 from lib.decorators import metrics
+
+import sys
 
 @metrics
 def log(morpy_trace, app_dict, message, level):
-
     r"""
     This function writes an event to a specified file and/or prints it out
     according to it's severity (level).
@@ -31,9 +33,8 @@ def log(morpy_trace, app_dict, message, level):
     :example:
         msg.log(morpy_trace, app_dict, level, message)
 
-    #TODO
-    Implement a mechanism to keep logfile size in check
-    > Preferably auto delete logs based on "no errors occurred" per process, task, thread and __main__
+    TODO Implement a mechanism to keep logfile size in check
+        > Preferably auto delete logs based on "no errors occurred" per process, task, thread and __main__
     """
 
     morpy_trace_eval = None
@@ -107,19 +108,19 @@ def log(morpy_trace, app_dict, message, level):
         # Severe morPy logging error.
         raise RuntimeError(f'{app_dict["loc"]["morpy"]["log_crit_fail"]}')
 
-def log_eval(morpy_trace, app_dict, level, level_dict):
+def log_eval(morpy_trace, app_dict, level, level_dict) -> dict:
+    r"""
+    This function evaluates the log level and makes manipulation of morpy_trace
+    possible for passdown only. That means, for the purpose of logging, certain
+    parameters (keys) may be altered in check with mpy_param.py or other parts
+    of the code to hide, extend, enable or what else is needed for a log.
 
-    r""" This function evaluates the log level and makes manipulation of morpy_trace
-        possible for passdown only. That means, for the purpose of logging, certain
-        parameters (keys) may be altered in check with mpy_param.py or other parts
-        of the code to hide, extend, enable or what else is needed for a log.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        level - uppercase formatted level
-        level_dict - Dictionary defining all possible log levels of the morPy framework
-    :return
-        morpy_trace_eval - Evaluated and/or manipulated morpy_trace
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param level: uppercase formatted level
+    :param level_dict: Dictionary defining all possible log levels of the morPy framework
+
+    :return morpy_trace_eval: Evaluated and/or manipulated morpy_trace
     """
 
     import copy
@@ -190,17 +191,17 @@ def log_event_handler(app_dict, message, level):
     level = f'{level.lower()}'
 
     # Log level definition. Dictionary serves the purpose of avoiding a loop over a list.
-    level_dict = { \
-                'init' : 'init',
-                'debug' : 'debug',
-                'info' : 'info',
-                'warning' : 'warning',
-                'denied' : 'denied',
-                'error' : 'error',
-                'critical' : 'critical',
-                'exit' : 'exit',
-                'undefined' : 'undefined' \
-                }
+    level_dict = {
+        'init' : 'init',
+        'debug' : 'debug',
+        'info' : 'info',
+        'warning' : 'warning',
+        'denied' : 'denied',
+        'error' : 'error',
+        'critical' : 'critical',
+        'exit' : 'exit',
+        'undefined' : 'undefined'
+    }
 
     # Set logging level UNDEFINED if not part of level definition
     try: level = level_dict[level]

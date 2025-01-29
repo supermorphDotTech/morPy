@@ -369,7 +369,7 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None):
     in any way (i.e. 'log_enable') it needs to be done after calling this function.
     This is why this function is called at the top of any morPy-operation.
 
-    :param module: Name of the module, the operation is defined in (i.e. 'common')
+    :param module: Name of the module, the operation is defined in (i.e. 'lib.common')
     :param operation: Name of the operation executed (i.e. 'tracing(~)')
     :param morpy_trace: operation credentials and tracing
     :param clone: If true (default), a clone of the trace will be created ensuring the tracing

@@ -6,7 +6,8 @@ Author:     Bastian Neuwirth
 Descr.:     This module delivers functions to work with a SQLite database. The
             main database as defined in app_dict will be referenced.
 
-#TODO
+TODO troubleshooting and enhancement
+    > Make sqlite3 a class with it's methods
 -----------------
 SQLite Tutorial
 

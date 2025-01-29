@@ -252,7 +252,7 @@ def settings(start_time=None):
 
     return{
         'language' : language,
-        'localization' : f'morPy_{language}',
+        'localization' : f'loc.morPy_{language}',
         'priv_required' : mpy_priv_required,
         'log_enable' : mpy_log_enable,
         'ref_create' : mpy_ref_create,

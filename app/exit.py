@@ -29,10 +29,14 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict, orchestrat
         check: Indicates whether the function ended without errors
 
     :example:
+        from app import init as app_init
+        from app import run as app_run
+        from app import exit as app_exit
+
         orchestrator = app_dict["proc"]["morpy"]["cl_orchestrator"]
-        init_retval = _init(morpy_trace, app_dict)
-        run_retval = _run(morpy_trace, app_dict, init_retval)
-        _exit(morpy_trace, app_dict, run_retval, orchestrator)
+        init_retval = app_init(morpy_trace, app_dict)
+        run_retval = app_run(morpy_trace, app_dict, init_retval)
+        app_exit(morpy_trace, app_dict, run_retval, orchestrator)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)

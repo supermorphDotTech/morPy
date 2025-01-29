@@ -60,7 +60,7 @@ def init(morpy_trace):
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'init'
+    module = 'lib.init'
     operation = 'init(~)'
     morpy_trace_init = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -173,8 +173,10 @@ def init(morpy_trace):
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_finished"]}')
 
         # Load init_dict as a string
-        if (init_dict["conf"]["print_init_vars"] or init_dict["conf"]["ref_create"]):
+        if init_dict["conf"]["print_init_vars"] or init_dict["conf"]["ref_create"]:
             init_dict_str = morpy_fct.app_dict_to_string(init_dict)
+        else:
+            init_dict_str = ''
 
         # Print init_dict to console
         if init_dict["conf"]["print_init_vars"]:
@@ -233,15 +235,13 @@ def init(morpy_trace):
         raise
 
 def types_dict_build(morpy_trace: dict):
-
     r"""
     This function builds the app_dict. This is needed in spawned processes, too
     to successfully link the nested dictionaries.
 
     :param morpy_trace: operation credentials and tracing
 
-    :return: dict-like
-        init_dict
+    :return init_dict: morPy global dictionary containing app configurations
 
     :example:
         init_dict = init.types_dict_build(morpy_trace, create=True)
@@ -250,7 +250,7 @@ def types_dict_build(morpy_trace: dict):
     from lib.types_dict import cl_types_dict
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'init'
+    module = 'lib.init'
     operation = 'types_dict_build(~)'
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -433,7 +433,6 @@ def types_dict_build(morpy_trace: dict):
         return init_dict
 
 def types_dict_finalize(morpy_trace: dict, init_dict: dict):
-
     r"""
     This function locks parts of the global dictionary to streamline the use
     of app_dict as designed.
@@ -449,7 +448,7 @@ def types_dict_finalize(morpy_trace: dict, init_dict: dict):
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'init'
+    module = 'lib.init'
     operation = 'types_dict_finalize(~)'
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -485,13 +484,14 @@ def mpy_log_header(morpy_trace: dict, init_dict: dict):
     :param init_dict: Dictionary holding all initialized data (init of app_dict)
 
     :return:
+        -
 
     :example:
         mpy_log_header(morpy_trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'init'
+    module = 'lib.init'
     operation = 'log_header(~)'
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -533,7 +533,7 @@ def mpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'init'
+    module = 'lib.init'
     operation = 'ref(~)'
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -551,14 +551,14 @@ def mpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
         # The init_dict was written to textfile.
         log_no_q(morpy_trace, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["ref_created"]}\n'
-            f'{init_dict["loc"]["morpy"]["ref_path"]}: {mpy_ref_path}')
+                f'{init_dict["loc"]["morpy"]["ref_path"]}: {mpy_ref_path}')
 
     except Exception as e:
         log_no_q(morpy_trace, init_dict, "error",
         lambda: f'{init_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
 
-def has_gil(morpy_trace: dict) -> dict:
+def has_gil(morpy_trace: dict) -> bool | None:
     r"""
     Return True if we detect a standard GIL-based Python runtime on a 'typical' operating system.
     Return False if we suspect a 'no-gil' or 'free-threading' build on Linux/macOS/Windows, or if
@@ -566,22 +566,24 @@ def has_gil(morpy_trace: dict) -> dict:
 
     :param morpy_trace: operation credentials and tracing information
 
-    :return: bool
+    :return gil_detected: If True, Python environment has GIL implemented. Process forking not supported.
 
     :example:
         gil = init.has_gil(morpy_trace)
     """
 
-    module = 'init'
+    module = 'lib.init'
     operation = 'has_gil(~)'
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+    gil_detected = False
 
     try:
         # 1) Check if 'nogil' or 'free-threading' is in the version string
         version_str = sys.version.lower()
         if "nogil" in version_str or "free threading" in version_str:
             # If we see "nogil"/"free threading", we assume *no GIL*:
-            return False
+            return gil_detected
 
         # 2) Check the Python implementation
         #    - "cpython" typically has GIL,
@@ -597,10 +599,12 @@ def has_gil(morpy_trace: dict) -> dict:
             # - Return False for other interpreters, etc.
             # For simplicity, let's assume any non-CPython is "no GIL"
             # or "unknown GIL" scenario:
-            return False
+            return gil_detected
+
+        gil_detected = True
 
         # 3) Check the OS platform, if expectation of no-GIL forks on certain OS
-        current_os = sys.platform.lower()
+        # current_os = sys.platform.lower()
         # Examples:
         #   - 'linux' or 'linux2'
         #   - 'darwin' for macOS
@@ -617,7 +621,7 @@ def has_gil(morpy_trace: dict) -> dict:
 
         # 4) If nothing triggered a "False", assume standard CPython with GIL
 
-        return True
+        return gil_detected
 
     except Exception as e:
         morpy_fct.handle_exception_init(e)

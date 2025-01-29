@@ -26,7 +26,8 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
         app_init_return: Return value (dict) of the initialization process, handed to app_run
 
     :example:
-        init_retval = _init(morpy_trace, app_dict)
+        from app import init as app_init
+        init_retval = app_init(morpy_trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)

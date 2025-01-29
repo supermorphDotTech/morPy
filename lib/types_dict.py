@@ -44,7 +44,7 @@ class cl_attr_guard:
             for key, value in messages.items():
                 self.loc.update({key: value})
         # Fallback to english if localization is not available
-        except AttributeError:
+        except (AttributeError, ImportError):
             self.lang = 'en_US'
             messages = {
                 "cl_attr_guard_no_mod": "can not modify an attribute of",
@@ -170,7 +170,7 @@ class cl_types_dict(dict):
             for key, value in messages.items():
                 self.loc.update({key: value})
         # Fallback to english if localization is not available
-        except AttributeError:
+        except (AttributeError, ImportError):
             self.lang = 'en_US'
             messages = {
                 'cl_types_dict_denied' : 'Prohibited method',
@@ -558,7 +558,7 @@ class cl_types_dict_ultra(UltraDict):
             for key, value in messages.items():
                 self.loc.update({key: value})
         # Fallback to english if localization is not available
-        except AttributeError:
+        except (AttributeError, ImportError):
             self.lang = 'en_US'
             messages = {
                 'cl_types_dict_denied' : 'Prohibited method',

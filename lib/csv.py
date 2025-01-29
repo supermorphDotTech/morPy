@@ -9,9 +9,9 @@ Descr.:     Module of operations concerning csv-files.
 import lib.fct as morpy_fct
 import lib.common as common
 import lib.xl as xl
-import sys
-
 from lib.decorators import metrics, log
+
+import sys
 from openpyxl.utils.cell import get_column_letter
 
 @metrics

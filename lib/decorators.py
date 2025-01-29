@@ -79,9 +79,7 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message_func: ca
         log_level = log_level.lower()
 
         if app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
-            # Evaluate the message only when logging is demanded
-            message = message_func()
-            msg.log(morpy_trace, app_dict, message, log_level)
+            msg.log(morpy_trace, app_dict, message_func(), log_level)
 
     except Exception as e:
         morpy_fct.handle_exception_decorator(e)

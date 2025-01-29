@@ -406,6 +406,7 @@ class cl_orchestrator:
             from app.run import app_run
             from app.exit import app_exit
 
+            # Initialize and run the app
             app_init_return = app_init(morpy_trace, app_dict)["app_init_return"]
             app_run_return = app_run(morpy_trace, app_dict, app_init_return)["app_run_return"]
 
@@ -547,17 +548,17 @@ class cl_orchestrator:
 @metrics
 def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=None, task_sys_id=None) -> dict:
     r"""
-    TODO description correction
+    This function is takes a task from the morPy priority queue, reserves a process ID, modifies the
+    morpy_trace of the task ultimately starts the parallel process.
+
     TODO provide task wrapper to release processes (write to registers)
         app_dict["proc"]["morpy"]["processes_available"]
         app_dict["proc"]["morpy"]["processes_busy"]
 
-    Function to run a task in a parallel process. The task is wrapped with
-    partial and is dequeued prior from the priority queue.
-
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
     :param task: The dequeued task list
+    :param priority: Integer representing task priority (lower is higher priority)
     :param task_sys_id: System ID only for internal use. Handled by
         @process_control, not used in function call.
 
@@ -680,6 +681,9 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                 # Remove app_dict from the task to prevent pickling external to UltraDict
                 task[2] = {}
 
+                # Convert the task to a tuple
+                task = tuple(task)
+
                 # Run the task
                 if task is not None:
                     # Check for remnants of old process, prevent collisions due to shelving
@@ -769,10 +773,8 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
 
 def spawn(task: list):
     r"""
-    TODO Function
+    This function registers a task and executes it.
 
-    :param morpy_trace: operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
     :param task: Task represented by a list
 
     :return: dict
@@ -784,6 +786,8 @@ def spawn(task: list):
         p = Process(target=spawn, args=task,)
         p.start()
     """
+
+    app_dict = {}
 
     try:
         # Rebuild the app_dict by reference (shared memory), after spawning
@@ -834,13 +838,20 @@ def spawn(task: list):
         result = func(*args)
 
     except Exception as e:
-        print(f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-            f'{type(e).__name__}: {e}')
+        try:
+            print(f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                  f'{type(e).__name__}: {e}')
+        except KeyError:
+            print(f'Line: {sys.exc_info()[-1].tb_lineno}\n'
+                  f'{type(e).__name__}: {e}')
 
 @metrics
 def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=False) -> dict:
     r"""
-    TODO Function 
+    Watcher function that monitors a running process based on the provided task reference. It verifies
+    if the process is still active and, if so, re-enqueues itself for continued monitoring unless
+    single_check is set to True. Once the process is detected to be inactive, it cleans up references
+    to free the process ID and related resources.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -944,8 +955,7 @@ def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
     :example:
         mp.join_processes(morpy_trace, app_dict)
 
-
-    TODO add .join() to API and allow for custom settings
+    TODO allow for custom settings/options
     TODO do not wait for orchestrator
     TODO find solution for 2-core mode
     """

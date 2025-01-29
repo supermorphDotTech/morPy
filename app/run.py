@@ -29,8 +29,11 @@ def app_run( morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
         app_run_return: Return value (dict) of the app process, handed to app_exit
 
     :example:
-        init_retval = _init(morpy_trace, app_dict)
-        run_retval = _run(morpy_trace, app_dict, init_retval)
+        from app import init as app_init
+        from app import run as app_run
+
+        init_retval = app_init(morpy_trace, app_dict)
+        run_retval = app_run(morpy_trace, app_dict, init_retval)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)

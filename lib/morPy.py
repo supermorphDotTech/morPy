@@ -65,8 +65,8 @@ def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
 
     try:
         return common.cl_priority_queue(morpy_trace, app_dict, name)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -104,8 +104,8 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
 
     try:
         return common.cl_progress(morpy_trace, app_dict, description, total, ticks)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -249,8 +249,8 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
                 description_font_size=description_font_size, font=font, stages=stages,
                 max_per_stage=max_per_stage, console=console, auto_close=auto_close, work=work,
             )
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -502,8 +502,8 @@ def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: boo
     try:
         return xl.cl_xl_workbook(morpy_trace, app_dict, workbook, create=create,
                                      data_only=data_only, keep_vba=keep_vba)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -566,8 +566,8 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
     try:
         return csv.csv_read(morpy_trace, app_dict, src_file_path=src_file_path, delimiter=delimiter,
             print_csv_dict=print_csv_dict, log_progress=log_progress, progress_ticks=progress_ticks)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -644,8 +644,8 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         return csv.csv_dict_to_excel(morpy_trace, app_dict, xl_path=xl_path, overwrite=overwrite,
             worksheet=worksheet, close_workbook=close_workbook, csv_dict=csv_dict, log_progress=log_progress,
             progress_ticks=progress_ticks)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -683,8 +683,8 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, enco
 
     try:
         return common.decode_to_plain_text(morpy_trace, app_dict, src_input, encoding=encoding)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -697,7 +697,6 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, enco
                 f'{type(e).__name__}: {e}')
 
 def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None):
-
     r"""
     This function opens a dialog for the user to select a file.
 
@@ -723,8 +722,8 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftype
 
     try:
         return ui_tk.dialog_sel_file(morpy_trace, app_dict, init_dir, ftypes, title)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -737,7 +736,6 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftype
                 f'{type(e).__name__}: {e}')
 
 def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None):
-
     r"""
     This function opens a dialog for the user to select a directory.
 
@@ -760,8 +758,8 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
 
     try:
         return ui_tk.dialog_sel_dir(morpy_trace, app_dict, init_dir, title)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -796,8 +794,8 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
 
     try:
         return common.fso_copy_file(morpy_trace, app_dict, source, dest, overwrite=overwrite)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -827,8 +825,8 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str):
 
     try:
         return common.fso_create_dir(morpy_trace, app_dict, mk_dir)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -859,8 +857,8 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str):
 
     try:
         return common.fso_delete_dir(morpy_trace, app_dict, del_dir)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -890,8 +888,8 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str):
 
     try:
         return common.fso_delete_file(morpy_trace, app_dict, del_file)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -938,8 +936,8 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
 
     try:
         return common.fso_walk(morpy_trace, app_dict, path, depth=depth)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -952,7 +950,6 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
                 f'{type(e).__name__}: {e}')
 
 def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
-
     r"""
     This function enqueues a task in the morPy multiprocessing queue. The task is a
     tuple, that demands the positional arguments (func, morpy_trace, app_dict, *args, **kwargs).
@@ -993,7 +990,6 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
             process_qed = True
 
         except Exception as e:
-
             import lib.fct as morpy_fct
 
             # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1021,8 +1017,37 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
     finally:
         return process_qed
 
-def interrupt(morpy_trace: dict, app_dict: dict):
+def join_processes(morpy_trace: dict, app_dict: dict):
+    r"""
+    Function
 
+    :param morpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates if the task was dequeued successfully
+
+    :example:
+        mp.join_processes(morpy_trace, app_dict)
+    """
+
+    try:
+        return join_processes(morpy_trace, app_dict)
+
+    except Exception as e:
+        import lib.fct as morpy_fct
+
+        # Define operation credentials (see init.init_cred() for all dict keys)
+        module = 'lib.morPy'
+        operation = 'interrupt(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        log(morpy_trace, app_dict, "critical",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{type(e).__name__}: {e}')
+
+def interrupt(morpy_trace: dict, app_dict: dict):
     r"""
     This function sets a global interrupt flag. Processes and threads
     will halt once they pass (the most recurring) morPy functions.
@@ -1036,15 +1061,12 @@ def interrupt(morpy_trace: dict, app_dict: dict):
 
     :example:
         mp.interrupt(morpy_trace, app_dict)
-
-
-    TODO finish this function
     """
 
     try:
         return mp.interrupt(morpy_trace, app_dict)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1078,8 +1100,8 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
 
     try:
         return common.regex_findall(morpy_trace, app_dict, search_obj, pattern)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1113,8 +1135,8 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
 
     try:
         return common.regex_find1st(morpy_trace, app_dict, search_obj, pattern)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1150,8 +1172,8 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
 
     try:
         return common.regex_split(morpy_trace, app_dict, search_obj, delimiter)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1187,8 +1209,8 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
 
     try:
         return common.regex_replace(morpy_trace, app_dict, search_obj, search_for, replace_by)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1230,8 +1252,8 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
 
     try:
         return common.regex_remove_special(morpy_trace, app_dict, inp_string, spec_lst)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1262,8 +1284,8 @@ def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: st
 
     try:
         return common.textfile_write(morpy_trace, app_dict, filepath, content)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1293,8 +1315,8 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str):
 
     try:
         return common.testprint(morpy_trace, app_dict, message)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1327,8 +1349,8 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str):
 
     try:
         return common.wait_for_input(morpy_trace, app_dict, message)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1365,8 +1387,8 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection:
 
     try:
         return common.wait_for_select(morpy_trace, app_dict, message, collection)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1398,6 +1420,7 @@ def datetime_now():
 
     try:
         return morpy_fct.datetime_now()
+
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
@@ -1415,6 +1438,7 @@ def runtime(in_ref_time):
 
     try:
         return morpy_fct.runtime(in_ref_time)
+
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
@@ -1439,6 +1463,7 @@ def sysinfo():
 
     try:
         return morpy_fct.sysinfo()
+
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
@@ -1469,6 +1494,7 @@ def pathtool(in_path):
 
     try:
         return morpy_fct.pathtool(in_path)
+
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
@@ -1490,6 +1516,7 @@ def path_join(path_parts, file_extension):
 
     try:
         return morpy_fct.path_join(path_parts, file_extension)
+
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
@@ -1516,6 +1543,7 @@ def perfinfo():
 
     try:
         return morpy_fct.perfinfo()
+
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
@@ -1538,6 +1566,7 @@ def app_dict_to_string(app_dict):
 
     try:
         return morpy_fct.app_dict_to_string(app_dict)
+
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
@@ -1565,6 +1594,7 @@ def tracing(module, operation, morpy_trace):
 
     try:
         return morpy_fct.tracing(module, operation, morpy_trace)
+
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
@@ -1585,6 +1615,7 @@ def txt_write(morpy_trace, app_dict, filepath, content):
 
     try:
         return morpy_fct.txt_write(morpy_trace, app_dict, filepath, content)
+
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
@@ -1618,8 +1649,8 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
     try:
         return bulk_ops.find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as,
                                             overwrite=overwrite)
-    except Exception as e:
 
+    except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)

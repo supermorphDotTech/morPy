@@ -17,12 +17,12 @@ Descr.:     This module delivers routines to handle Multithreading and
 """
 
 import lib.fct as morpy_fct
-import common
+import lib.common as common
+from lib.decorators import log
+
 import sys
 import threading
 import math
-
-from lib.decorators import log
 from heapq import heappop, heappush
 from itertools import count
 
