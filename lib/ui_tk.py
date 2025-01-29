@@ -29,7 +29,7 @@ class cl_progress_gui:
     A progress tracking GUI using tkinter to visualize the progress of a background task. The GUI can
     be adjusted with the arguments during construction.
 
-    :param morPy_trace: Operation credentials and tracing information
+    :param morpy_trace: Operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
     :param frame_title: Window frame title as shown in the title bar.
     :param frame_width: Frame width in pixels.
@@ -63,10 +63,10 @@ class cl_progress_gui:
     :param work: A callable (e.g. functools.partial()). Will run in a new thread.
 
     :methods:
-        .run(morPy_trace: dict, app_dict: dict)
+        .run(morpy_trace: dict, app_dict: dict)
             Start the GUI main loop.
 
-        .update_progress(morPy_trace: dict, app_dict: dict, current: float = None, max_per_stage: int = None)
+        .update_progress(morpy_trace: dict, app_dict: dict, current: float = None, max_per_stage: int = None)
             Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
             switch button text to "Close" and stop console redirection.
 
@@ -81,7 +81,7 @@ class cl_progress_gui:
                                  increment). A value of 10 for example amounts to 10% per increment.
                                  Defaults to 0.
 
-        .update_text(morPy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
+        .update_text(morpy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
                     description_stage: str = None)
             Update the headline texts or description at runtime.
 
@@ -96,7 +96,7 @@ class cl_progress_gui:
         # Define a function or method to be progress tracked. It will be executed in a new thread, because
         # tkinter needs to run in main thread. The argument "gui" will be referenced automatically by the
         # GUI, no explicit assignment is needed.
-        def my_func(morPy_trace, app_dict, gui=None):
+        def my_func(morpy_trace, app_dict, gui=None):
             outer_loop_count = 2 # Amount stages, i.e. folders to walk
             inner_loop_count = 10 # Increments in the stage, i.e. files modified
 
@@ -119,7 +119,7 @@ class cl_progress_gui:
                     # Update progress and text for actual stage
                     if gui:
                         gui.update_text(description_stage=f'This describes progress no. {j} of the stage.')
-                        gui.update_progress(morPy_trace, app_dict)
+                        gui.update_progress(morpy_trace, app_dict)
 
         if name == "__main__":
             # Run function with GUI. For full customization during construction see the
@@ -131,10 +131,10 @@ class cl_progress_gui:
             inner_loop_count = 10 # same as the value set in my_func()
 
             # Define a callable to be progress tracked
-            work = partial(my_func, morPy_trace, app_dict)
+            work = partial(my_func, morpy_trace, app_dict)
 
             # Construct the GUI
-            progress = morPy.cl_progress_gui(morPy_trace, app_dict,
+            progress = morPy.cl_progress_gui(morpy_trace, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Generic Progress stage",
                 stages=outer_loop_count,
@@ -142,10 +142,10 @@ class cl_progress_gui:
                 work=work)
 
             # Start GUI in main thread and run "work" in separate thread
-            progress.run(morPy_trace, app_dict)
+            progress.run(morpy_trace, app_dict)
     """
 
-    def __init__(self, morPy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
+    def __init__(self, morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
                  frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
                  headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
                  font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
@@ -155,29 +155,29 @@ class cl_progress_gui:
 
         In order to get metrics for __init__(), call helper method _init()
         for the @metrics decorator to work. It relies on the returned
-        {'morPy_trace' : morPy_trace}, which __init__() can not do (needs to be None).
+        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
 
         :return: self
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.__init__(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         try:
-            self._init(morPy_trace, app_dict, frame_title=frame_title, frame_width=frame_width, frame_height=frame_height,
+            self._init(morpy_trace, app_dict, frame_title=frame_title, frame_width=frame_width, frame_height=frame_height,
                 headline_total=headline_total, headline_stage=headline_stage, headline_font_size=headline_font_size,
                 description_stage=description_stage, description_font_size=description_font_size, font=font, stages=stages,
                 max_per_stage=max_per_stage, console=console, auto_close=auto_close, work=work,
             )
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
     @metrics
-    def _init(self, morPy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
+    def _init(self, morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
               frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
               headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
               font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
@@ -185,7 +185,7 @@ class cl_progress_gui:
         r"""
         Initializes the GUI with progress tracking.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         :param frame_title: Window frame title as shown in the title bar.
         :param frame_width: Frame width in pixels.
@@ -219,11 +219,11 @@ class cl_progress_gui:
         :param work: A callable (e.g. functools.partial()). Will run in a new thread.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            progress = morPy.cl_progress_gui(morPy_trace: dict, app_dict,
+            progress = morPy.cl_progress_gui(morpy_trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Generic Progress stage",
                 stages=outer_loop_count,
@@ -233,7 +233,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._init(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
         frame_height_sizing = False
@@ -247,20 +247,20 @@ class cl_progress_gui:
             self.main_loop_interval = 100  # ms, how often we do the main loop
 
             # Default texts
-            self.frame_title = (app_dict["loc"]["morPy"]["cl_progress_gui_prog"]
+            self.frame_title = (app_dict["loc"]["morpy"]["cl_progress_gui_prog"]
                                 if not frame_title else frame_title)
             self.frame_width = frame_width
             self.frame_height = frame_height
-            self.headline_total_nocol = (f'{app_dict["loc"]["morPy"]["cl_progress_gui_overall"]}'
+            self.headline_total_nocol = (f'{app_dict["loc"]["morpy"]["cl_progress_gui_overall"]}'
                              if not headline_total else f'{headline_total}')
-            self.headline_stage_nocol = (f'{app_dict["loc"]["morPy"]["cl_progress_gui_curr"]}'
+            self.headline_stage_nocol = (f'{app_dict["loc"]["morpy"]["cl_progress_gui_curr"]}'
                              if not headline_stage else f'{headline_stage}')
             self.description_stage = description_stage
             self.headline_font_size = headline_font_size
             self.description_font_size = description_font_size
             self.font = font
-            self.button_text_abort = f'{app_dict["loc"]["morPy"]["cl_progress_gui_abort"]}'
-            self.button_text_close = f'{app_dict["loc"]["morPy"]["cl_progress_gui_close"]}'
+            self.button_text_abort = f'{app_dict["loc"]["morpy"]["cl_progress_gui_abort"]}'
+            self.button_text_close = f'{app_dict["loc"]["morpy"]["cl_progress_gui_close"]}'
 
             # Progress tracking
             self.stages = stages
@@ -287,7 +287,7 @@ class cl_progress_gui:
 
                 # Construct the overall progress tracker
                 self.overall_progress_tracker = common.cl_progress(
-                    morPy_trace, app_dict, description=self.headline_total_nocol, total=self.stages, ticks=.01
+                    morpy_trace, app_dict, description=self.headline_total_nocol, total=self.stages, ticks=.01
                 )
 
                 # Finalize overall headline
@@ -304,7 +304,7 @@ class cl_progress_gui:
 
                 # Construct the stage progress tracker
                 self.stage_progress_tracker = common.cl_progress(
-                    morPy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage, ticks=.01
+                    morpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage, ticks=.01
                 )
 
                 # Finalize stage headline
@@ -335,48 +335,48 @@ class cl_progress_gui:
             self.root.title(self.frame_title)
             self.root.geometry(f'{self.frame_width}x{self.frame_height}')
 
-            self._create_widgets(morPy_trace, app_dict)
+            self._create_widgets(morpy_trace, app_dict)
 
             if self.console_on:
-                self._redirect_console(morPy_trace, app_dict)
+                self._redirect_console(morpy_trace, app_dict)
 
             # The background work to run (if any)
             self.work_callable = work
             if self.work_callable is not None:
-                self._start_work_thread(morPy_trace, app_dict)
+                self._start_work_thread(morpy_trace, app_dict)
 
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         finally:
             return {
-                "morPy_trace" : morPy_trace,
+                "morpy_trace" : morpy_trace,
                 "check" : check,
             }
 
     @metrics
-    def _create_widgets(self, morPy_trace: dict, app_dict: dict):
+    def _create_widgets(self, morpy_trace: dict, app_dict: dict):
         r"""
         Build and place all widgets in a grid layout.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._create_widgets(morPy_trace, app_dict)
+            self._create_widgets(morpy_trace, app_dict)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._create_widgets(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
         self.overall_progress_text = None
@@ -394,7 +394,7 @@ class cl_progress_gui:
             self.close_button = tk.Button(
                 self.root,
                 textvariable=self.button_text,
-                command=lambda: self._on_close(morPy_trace, app_dict)
+                command=lambda: self._on_close(morpy_trace, app_dict)
             )
             self.close_button.grid(row=4, column=2, columnspan=1, padx=10, pady=(0, 10), sticky="nse")
 
@@ -495,34 +495,34 @@ class cl_progress_gui:
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace" : morPy_trace,
+            "morpy_trace" : morpy_trace,
             "check" : check,
         }
 
     @metrics
-    def _redirect_console(self, morPy_trace: dict, app_dict: dict):
+    def _redirect_console(self, morpy_trace: dict, app_dict: dict):
         r"""
         Redirect sys.stdout/sys.stderr to self.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._redirect_console(morPy_trace, app_dict)
+            self._redirect_console(morpy_trace, app_dict)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._redirect_console(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -533,12 +533,12 @@ class cl_progress_gui:
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace": morPy_trace,
+            "morpy_trace": morpy_trace,
             "check": check,
         }
 
@@ -558,24 +558,24 @@ class cl_progress_gui:
         pass
 
     @metrics
-    def _stop_console_redirection(self, morPy_trace: dict, app_dict: dict):
+    def _stop_console_redirection(self, morpy_trace: dict, app_dict: dict):
         r"""
         Stop capturing print statements in the GUI console.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._stop_console_redirection(morPy_trace, app_dict)
+            self._stop_console_redirection(morpy_trace, app_dict)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._stop_console_redirection(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -586,35 +586,35 @@ class cl_progress_gui:
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace": morPy_trace,
+            "morpy_trace": morpy_trace,
             "check": check,
         }
 
     @metrics
-    def _main_loop(self, morPy_trace, app_dict):
+    def _main_loop(self, morpy_trace, app_dict):
         r"""
         Main repeating loop for GUI refreshes. Read console queue to update text widget (unless we are done &
         auto_close=False). Update the progress bars (unless done), then schedule itself again.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._main_loop(morPy_trace, app_dict)
+            self._main_loop(morpy_trace, app_dict)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._main_loop(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -623,42 +623,42 @@ class cl_progress_gui:
             if (self.console_on and not self.done):
                 # If done & auto_close=False, console redirection presumably stopped.
                 # Skip reading from the queue to avoid confusion.
-                self._update_console(morPy_trace, app_dict)
+                self._update_console(morpy_trace, app_dict)
 
             # Schedule again
-            self.root.after(self.main_loop_interval, lambda: self._main_loop(morPy_trace, app_dict))
+            self.root.after(self.main_loop_interval, lambda: self._main_loop(morpy_trace, app_dict))
 
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace": morPy_trace,
+            "morpy_trace": morpy_trace,
             "check": check,
         }
 
     @metrics
-    def _update_console(self, morPy_trace: dict, app_dict: dict):
+    def _update_console(self, morpy_trace: dict, app_dict: dict):
         r"""
         One-time call to read from the queue and add text to the widget.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._update_console(morPy_trace, app_dict)
+            self._update_console(morpy_trace, app_dict)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._update_console(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -672,22 +672,22 @@ class cl_progress_gui:
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace" : morPy_trace,
+            "morpy_trace" : morpy_trace,
             "check" : check,
         }
 
     @metrics
-    def update_progress(self, morPy_trace: dict, app_dict: dict, current: float = None, max_per_stage: int = None):
+    def update_progress(self, morpy_trace: dict, app_dict: dict, current: float = None, max_per_stage: int = None):
         r"""
         Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
         switch button text to "Close" and stop console redirection.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         :param current: Current progress count. If None, each call of this method will add +1
             to the progress count. Defaults to None.
@@ -701,44 +701,44 @@ class cl_progress_gui:
                              Defaults to 0.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            progress = morPy.cl_progress_gui(morPy_trace: dict, app_dict,
+            progress = morPy.cl_progress_gui(morpy_trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Starting stage 1",
                 stages=2,
                 max_per_stage=10,
                 work=work)
 
-            progress.run(morPy_trace, app_dict)
+            progress.run(morpy_trace, app_dict)
 
             curr_cnt = 5.67
             msg = f'Currently at {curr_cnt}'
-            progress.update_progress(morPy_trace, app_dict, current=curr_cnt, description_stage=msg)
+            progress.update_progress(morpy_trace, app_dict, current=curr_cnt, description_stage=msg)
 
             # stage 1 is at 100%
             curr_cnt = 10
             msg = f'Currently at {curr_cnt}'
-            progress.update_progress(morPy_trace, app_dict, current=curr_cnt, description_stage=msg)
+            progress.update_progress(morpy_trace, app_dict, current=curr_cnt, description_stage=msg)
 
             # Setup stage 2
-            progress.update_text(morPy_trace, app_dict,
+            progress.update_text(morpy_trace, app_dict,
                 headline_stage="Starting stage 2",
                 description_stage="Now copying data...",
             )
-            progress.update_progress(morPy_trace, app_dict, current=0, max_per_stage=15)
+            progress.update_progress(morpy_trace, app_dict, current=0, max_per_stage=15)
 
             # stage 2 is at 100%
             curr_cnt = 15
             msg = f'Currently at {curr_cnt}'
-            progress.update_progress(morPy_trace, app_dict, current=curr_cnt, description_stage=msg)
+            progress.update_progress(morpy_trace, app_dict, current=curr_cnt, description_stage=msg)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.update_progress(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
         stage_abs = None
@@ -757,7 +757,7 @@ class cl_progress_gui:
             else:
                 # 1) stage progress
                 if self.stage_progress_on:
-                    stage_info = self.stage_progress_tracker.update(morPy_trace, app_dict, current=current)
+                    stage_info = self.stage_progress_tracker.update(morpy_trace, app_dict, current=current)
                     stage_abs = stage_info["prog_abs"]  # 0..100.0%
 
                     if self.stage_progress is not None and stage_abs:
@@ -788,16 +788,16 @@ class cl_progress_gui:
                         # If all stages are finished, mark as done
                         self.done = True
                         if self.auto_close:
-                            self._stop_console_redirection(morPy_trace, app_dict)
-                            self._on_close(morPy_trace, app_dict)
+                            self._stop_console_redirection(morpy_trace, app_dict)
+                            self._on_close(morpy_trace, app_dict)
                         else:
                             self.button_text.set(self.button_text_close)
-                            self._stop_console_redirection(morPy_trace, app_dict)
+                            self._stop_console_redirection(morpy_trace, app_dict)
 
                 # 3) Reset stage progress last to avoid lag in between update of stage and overall progress.
                 if self.stage_progress_on and reset_stage_progress:
                     self.stage_progress_tracker._init(
-                        morPy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage,
+                        morpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage,
                         ticks=.01
                     )
                     if self.stages_finished < self.stages:
@@ -812,33 +812,33 @@ class cl_progress_gui:
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace" : morPy_trace,
+            "morpy_trace" : morpy_trace,
             "check" : check,
         }
 
     @metrics
-    def update_text(self, morPy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
+    def update_text(self, morpy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
                     description_stage: str = None):
         r"""
         Update the headline texts or description at runtime.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         :param headline_total: If not None, sets the overall progress headline text.
         :param headline_stage: If not None, sets the stage progress headline text.
         :param description_stage: If not None, sets the description text beneath the stage headline.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether text update completed without errors
 
         :example:
-            gui.update_text(morPy_trace, app_dict,
+            gui.update_text(morpy_trace, app_dict,
                 headline_total="Processing Outer Loop 3",
                 headline_stage="Processing File 5",
                 description_stage="Now copying data...",
@@ -847,7 +847,7 @@ class cl_progress_gui:
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.update_text(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -881,80 +881,80 @@ class cl_progress_gui:
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
-        return {"morPy_trace": morPy_trace, "check": check}
+        return {"morpy_trace": morpy_trace, "check": check}
 
     @metrics
-    def run(self, morPy_trace: dict, app_dict: dict):
+    def run(self, morpy_trace: dict, app_dict: dict):
         r"""
         Start the GUI main loop and run the Tk mainloop on the main thread.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            progress = morPy.cl_progress_gui(morPy_trace: dict, app_dict,
+            progress = morPy.cl_progress_gui(morpy_trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Generic Progress stage",
                 stages=1,
                 max_per_stage=10,
                 work=work)
 
-            progress.run(morPy_trace, app_dict)
+            progress.run(morpy_trace, app_dict)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.run(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
         try:
             # Start our custom loop
-            self._main_loop(morPy_trace, app_dict)
+            self._main_loop(morpy_trace, app_dict)
             self.root.mainloop()
 
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace" : morPy_trace,
+            "morpy_trace" : morpy_trace,
             "check" : check,
         }
 
     @metrics
-    def _start_work_thread(self, morPy_trace: dict, app_dict: dict):
+    def _start_work_thread(self, morpy_trace: dict, app_dict: dict):
         r"""
         TODO implement morPy threading and use it here
             > right now interrupt/abort does not work as desired: background threads shall be terminated immediately.
 
         Launch the user-supplied function in a background thread.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._start_work_thread(morPy_trace, app_dict)
+            self._start_work_thread(morpy_trace, app_dict)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._start_work_thread(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -964,9 +964,9 @@ class cl_progress_gui:
                 self.work_callable(gui=self)
             except Exception as e:
                 # Exception in the worker thread.
-                log(morPy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morPy"]["cl_progress_gui_start_work_thread_err"]}\n'
-                        f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                log(morpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["morpy"]["cl_progress_gui_start_work_thread_err"]}\n'
+                        f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}')
 
         try:
@@ -976,82 +976,82 @@ class cl_progress_gui:
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace" : morPy_trace,
+            "morpy_trace" : morpy_trace,
             "check" : check,
         }
 
     @metrics
-    def _on_close(self, morPy_trace: dict, app_dict: dict):
+    def _on_close(self, morpy_trace: dict, app_dict: dict):
         r"""
         Close or abort the GUI.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._on_close(morPy_trace, app_dict)
+            self._on_close(morpy_trace, app_dict)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui._on_close(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
         try:
             # Restore original console if not already done
-            self._stop_console_redirection(morPy_trace, app_dict)
+            self._stop_console_redirection(morpy_trace, app_dict)
             self.root.quit()
             self.root.destroy()
 
             # In case of aborting progress quit the program.
             if not self.done:
                 # Initiate program exit
-                app_dict["global"]["morPy"]["exit"] = True
+                app_dict["global"]["morpy"]["exit"] = True
 
                 # Release the global interrupts
-                app_dict["global"]["morPy"]["interrupt"] = False
+                app_dict["global"]["morpy"]["interrupt"] = False
 
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace" : morPy_trace,
+            "morpy_trace" : morpy_trace,
             "check" : check,
         }
 
     @metrics
-    def get_console_output(self, morPy_trace: dict, app_dict: dict):
+    def get_console_output(self, morpy_trace: dict, app_dict: dict):
         r"""
         Retrieve the current text from the console widget.
 
-        :param morPy_trace: Operation credentials and tracing information
+        :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self.get_console_output(morPy_trace, app_dict)
+            self.get_console_output(morpy_trace, app_dict)
         """
 
         module = 'ui_tk'
         operation = 'cl_progress_gui.get_console_output(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
         console_text = ""
@@ -1063,23 +1063,23 @@ class cl_progress_gui:
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            "morPy_trace" : morPy_trace,
+            "morpy_trace" : morpy_trace,
             "check" : check,
             "console_output" : console_text,
         }
 
 @metrics
-def dialog_sel_file(morPy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None) -> dict:
+def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None) -> dict:
 
     r"""
     This function opens a dialog for the user to select a file.
 
-    :param morPy_trace: operation credentials and tracing
+    :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
     :param init_dir: The directory in which the dialog will initially be opened
     :param ftypes: This tuple of 2-tuples specifies, which filetypes will be
@@ -1087,7 +1087,7 @@ def dialog_sel_file(morPy_trace: dict, app_dict: dict, init_dir: str=None, ftype
     :param title: Title of the open file dialog
 
     :return: dict
-        morPy_trace: operation credentials and tracing
+        morpy_trace: operation credentials and tracing
         check: The function ended with no errors and a file was chosen
         file_path: Path of the selected file
         file_selected: True, if file was selected. False, if canceled.
@@ -1096,13 +1096,13 @@ def dialog_sel_file(morPy_trace: dict, app_dict: dict, init_dir: str=None, ftype
         init_dir = "C:\"
         ftypes = (('PDF','*.pdf'),('Textfile','*.txt'),('All Files','*.*'))
         title = 'Select a file...'
-        file_path = morPy.dialog_sel_file(morPy_trace, app_dict, init_dir, ftypes, title)["file_path"]
+        file_path = morPy.dialog_sel_file(morpy_trace, app_dict, init_dir, ftypes, title)["file_path"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'ui_tk'
     operation = 'dialog_sel_file(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     check = False
     file_path = None
@@ -1112,9 +1112,9 @@ def dialog_sel_file(morPy_trace: dict, app_dict: dict, init_dir: str=None, ftype
         if not init_dir:
             init_dir = app_dict["conf"]["main_path"]
         if not ftypes:
-            ftypes = (f'{app_dict["loc"]["morPy"]["dialog_sel_file_all_files"]}','*.*')
+            ftypes = (f'{app_dict["loc"]["morpy"]["dialog_sel_file_all_files"]}','*.*')
         if not title:
-            title = f'{app_dict["loc"]["morPy"]["dialog_sel_file_select"]}'
+            title = f'{app_dict["loc"]["morpy"]["dialog_sel_file_select"]}'
 
         # Invoke the Tkinter root window and withdraw it to force the
         # dialog to be opened in the foreground
@@ -1133,48 +1133,48 @@ def dialog_sel_file(morPy_trace: dict, app_dict: dict, init_dir: str=None, ftype
 
         if not file_path:
             # No file was chosen by the user.
-            log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["dialog_sel_file_nosel"]}\n'
-                    f'{app_dict["loc"]["morPy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morPy"]["dialog_sel_file_cancel"]}')
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_nosel"]}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_cancel"]}')
 
         else:
             file_selected = True
             # A file was chosen by the user.
-            log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["dialog_sel_file_asel"]}\n'
-                    f'{app_dict["loc"]["morPy"]["dialog_sel_file_path"]}: {file_path}\n'
-                    f'{app_dict["loc"]["morPy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morPy"]["dialog_sel_file_open"]}')
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_asel"]}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_file_path"]}: {file_path}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_open"]}')
 
             # Create a path object
-            fct.pathtool(morPy_trace, file_path)
+            fct.pathtool(morpy_trace, file_path)
 
         check = True
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace,
+        'morpy_trace' : morpy_trace,
         'check' : check,
         'file_path' : file_path,
         'file_selected' : file_selected,
         }
 
 @metrics
-def dialog_sel_dir(morPy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
+def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
 
     r"""
     This function opens a dialog for the user to select a directory.
 
-    :param morPy_trace: operation credentials and tracing
+    :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
     :param init_dir: The directory in which the dialog will initially be opened
     :param title: Title of the open directory dialog
 
     :return: dict
-        morPy_trace: operation credentials and tracing
+        morpy_trace: operation credentials and tracing
         check: The function ended with no errors and a file was chosen
         dir_path: Path of the selected directory
         dir_selected: True, if directory was selected. False, if canceled.
@@ -1182,13 +1182,13 @@ def dialog_sel_dir(morPy_trace: dict, app_dict: dict, init_dir: str=None, title:
     :example:
         init_dir = "C:\"
         title = 'Select a directory...'
-        dir_path = morPy.dialog_sel_dir(morPy_trace, app_dict, init_dir, title)["dir_path"]
+        dir_path = morPy.dialog_sel_dir(morpy_trace, app_dict, init_dir, title)["dir_path"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'ui_tk'
     operation = 'dialog_sel_dir(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     check = False
     dir_path = None
@@ -1198,7 +1198,7 @@ def dialog_sel_dir(morPy_trace: dict, app_dict: dict, init_dir: str=None, title:
         if not init_dir:
             init_dir = app_dict["conf"]["main_path"]
         if not title:
-            title = f'{app_dict["loc"]["morPy"]["dialog_sel_dir_select"]}'
+            title = f'{app_dict["loc"]["morpy"]["dialog_sel_dir_select"]}'
 
         # Invoke the Tkinter root window and withdraw it to force the
         # dialog to be opened in the foreground
@@ -1216,29 +1216,29 @@ def dialog_sel_dir(morPy_trace: dict, app_dict: dict, init_dir: str=None, title:
 
         if not dir_path:
             # No directory was chosen by the user.
-            log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["dialog_sel_dir_nosel"]}\n'
-                f'{app_dict["loc"]["morPy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morPy"]["dialog_sel_dir_cancel"]}')
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_nosel"]}\n'
+                f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_cancel"]}')
         else:
             dir_selected = True
             # A directory was chosen by the user.
-            log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["dialog_sel_dir_asel"]}\n'
-                    f'{app_dict["loc"]["morPy"]["dialog_sel_dir_path"]}: {dir_path}\n'
-                    f'{app_dict["loc"]["morPy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morPy"]["dialog_sel_dir_open"]}')
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_asel"]}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_dir_path"]}: {dir_path}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_open"]}')
 
             # Create a path object
-            fct.pathtool(morPy_trace, dir_path)
+            fct.pathtool(morpy_trace, dir_path)
 
         check = True
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace,
+        'morpy_trace' : morpy_trace,
         'check' : check,
         'dir_path' : dir_path,
         'dir_selected' : dir_selected,

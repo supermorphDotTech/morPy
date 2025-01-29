@@ -71,28 +71,28 @@ def initialize_morpy():
 
     try:
         from lib import init
-        morPy_trace = init.init_cred()
-        app_dict, orchestrator = init.init(morPy_trace)
+        morpy_trace = init.init_cred()
+        app_dict, orchestrator = init.init(morpy_trace)
         if app_dict and orchestrator:
             init_check = True
-        return morPy_trace, app_dict, orchestrator, init_check
+        return morpy_trace, app_dict, orchestrator, init_check
 
     except Exception as e:
         import lib.fct as fct
         fct.handle_exception_main(e, init=init_check)
 
-def main(morPy_trace, app_dict, orchestrator):
+def main(morpy_trace, app_dict, orchestrator):
     r"""
     Run morPy.
     """
-    orchestrator._run(morPy_trace, app_dict)
+    orchestrator._run(morpy_trace, app_dict)
 
-def finalize_morpy(morPy_trace, app_dict):
+def finalize_morpy(morpy_trace, app_dict):
     r"""
     Finalize morPy components.
     """
     import lib.exit as exit
-    exit._exit(morPy_trace, app_dict)
+    exit._exit(morpy_trace, app_dict)
 
     # Quit the program
     sys.exit()
@@ -101,13 +101,13 @@ if __name__ == '__main__':
     add_paths() # Add system paths for enhanced compatibility
 
     try:
-        morPy_trace, app_dict, orchestrator, init_check = initialize_morpy()
-        main(morPy_trace, app_dict, orchestrator)
+        morpy_trace, app_dict, orchestrator, init_check = initialize_morpy()
+        main(morpy_trace, app_dict, orchestrator)
     except Exception as e:
         import lib.fct as fct
         fct.handle_exception_main(e, init=init_check)
     finally:
         try:
-            finalize_morpy(morPy_trace, app_dict)
+            finalize_morpy(morpy_trace, app_dict)
         except Exception as e:
             fct.handle_exception_main(e, init=init_check)

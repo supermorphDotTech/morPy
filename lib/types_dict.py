@@ -7,7 +7,7 @@ Descr.:     Multiprocessing functionality for morPy.
 """
 
 import lib.msg
-from lib.conf import parameters
+from lib.conf import parameters as morpy_params
 import importlib
 import sys
 import traceback
@@ -41,10 +41,10 @@ class cl_attr_guard:
         try:
             # Initialize localization and configuration messages
             self.loc = {}
-            if parameters:
-                self.lang = parameters().get('localization', '')
-                loc_morPy = importlib.import_module(self.lang)
-                messages = getattr(loc_morPy, 'loc_morPy')().get('cl_attr_guard', {})
+            if morpy_params:
+                self.lang = morpy_params().get('localization', '')
+                loc_morpy = importlib.import_module(self.lang)
+                messages = getattr(loc_morpy, 'loc_morpy')().get('cl_attr_guard', {})
                 for key, value in messages.items():
                     self.loc.update({key: value})
             else:
@@ -168,10 +168,10 @@ class cl_types_dict(dict):
         try:
             # Initialize localization and configuration messages
             self.loc = {}
-            if parameters:
-                self.lang = parameters().get('localization', '')
-                loc_morPy = importlib.import_module(self.lang)
-                messages = getattr(loc_morPy, 'loc_morPy')().get('cl_types_dict', {})
+            if morpy_params:
+                self.lang = morpy_params().get('localization', '')
+                loc_morpy = importlib.import_module(self.lang)
+                messages = getattr(loc_morpy, 'loc_morpy')().get('cl_types_dict', {})
                 for key, value in messages.items():
                     self.loc.update({key : value})
             # Fallback to english if localization is not available
@@ -341,8 +341,8 @@ class cl_types_dict(dict):
             self._set_access(_access=_access)
 
         # Evaluate localization reinitialization
-        if parameters:
-            loc_conf = parameters().get('localization', '')
+        if morpy_params:
+            loc_conf = morpy_params().get('localization', '')
             if loc_conf != self.lang or localization_force:
                 self._init_loc()
         else:
@@ -558,10 +558,10 @@ class cl_types_dict_ultra(UltraDict):
         try:
             # Initialize localization and configuration messages
             self.loc = {}
-            if parameters:
-                self.lang = parameters().get('localization', '')
-                loc_morPy = importlib.import_module(self.lang)
-                messages = getattr(loc_morPy, 'loc_morPy')().get('cl_types_dict', {})
+            if morpy_params:
+                self.lang = morpy_params().get('localization', '')
+                loc_morpy = importlib.import_module(self.lang)
+                messages = getattr(loc_morpy, 'loc_morpy')().get('cl_types_dict', {})
                 for key, value in messages.items():
                     self.loc.update({key : value})
             # Fallback to english if localization is not available
@@ -733,8 +733,8 @@ class cl_types_dict_ultra(UltraDict):
                 self._set_access(_access=_access)
 
         # Evaluate localization reinitialization
-        if parameters:
-            loc_conf = parameters().get('localization', '')
+        if morpy_params:
+            loc_conf = morpy_params().get('localization', '')
             if loc_conf != self.lang or localization_force:
                 with lock:
                     self._init_loc()

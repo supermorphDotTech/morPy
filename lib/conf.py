@@ -24,7 +24,7 @@ def parameters(start_time=None):
         effect. To do so, simply execute param_to_json(~) after altering the
         parameters in app_dict like so:
             app_dict["conf"]['my_param'] = 'my_value'
-            param_to_json(morPy_trace, app_dict)
+            param_to_json(morpy_trace, app_dict)
     :param
         start_time - Datetime stamp of runtime start
     :return - dictionary
@@ -49,7 +49,7 @@ def parameters(start_time=None):
         main_db_path - Path to the main database of the app.
 
     TODO update return parameters in description
-    TODO change variable names and remove "morPy" from it (dict nesting circumvents name collisions)
+    TODO change variable names and remove "morpy" from it (dict nesting circumvents name collisions)
     """
 
     r"""

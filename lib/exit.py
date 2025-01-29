@@ -12,38 +12,38 @@ import sys
 from lib.decorators import metrics, log_no_q
 
 @metrics
-def _exit(morPy_trace: dict=None, app_dict: dict=None):
+def _exit(morpy_trace: dict=None, app_dict: dict=None):
 
     r"""
     This is the mpy exit routine. It may be executed at any time after
     initialization.
 
-    :param morPy_trace: operation credentials and tracing
+    :param morpy_trace: operation credentials and tracing
     :param app_dict: The mpy-specific global dictionary
 
     :return:
         -
 
     :example:
-        exit._exit(morPy_trace, app_dict)
+        exit._exit(morpy_trace, app_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'exit'
     operation = '_exit(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     try:
         # Wait for all threads to finish their current tasks
         # TODO wait for mp and mt processes to finish up
         # TODO implement a timeout, as all tasks should be finished at this point anyway
-        # mt.mpy_threads_joinall(morPy_trace, app_dict)
+        # mt.mpy_threads_joinall(morpy_trace, app_dict)
 
         # Retrieve exit time and date
-        datetime_exit = fct.datetime_now(morPy_trace)
+        datetime_exit = fct.datetime_now(morpy_trace)
 
         # determine runtime duration
-        temp_duration = fct.runtime(morPy_trace, app_dict["run"]["init_datetime_value"])
+        temp_duration = fct.runtime(morpy_trace, app_dict["run"]["init_datetime_value"])
 
         # Correction of the exit occurrance counter for the very last message
         app_dict["run"]["events_EXIT"] += 1
@@ -51,16 +51,16 @@ def _exit(morPy_trace: dict=None, app_dict: dict=None):
 
         # Determine leading spaces before app_dict["exit_msg_total"] so the colons
         # of the exit message fall in one vertcal line.
-        spaces_total = 9 - len(app_dict["loc"]["morPy"]["exit_msg_total"])
+        spaces_total = 9 - len(app_dict["loc"]["morpy"]["exit_msg_total"])
         leading_total = f'{spaces_total * " "}'
 
         # Build the exit message
-        log_no_q(morPy_trace, app_dict, "exit",
-        lambda: f'{app_dict["loc"]["morPy"]["exit_msg_done"]}\n'
-                f'{app_dict["loc"]["morPy"]["exit_msg_started"]}: {app_dict["run"]["init_date"]} {app_dict["loc"]["morPy"]["exit_msg_at"]} {app_dict["run"]["init_time"]}\n'
-                f'{app_dict["loc"]["morPy"]["exit_msg_exited"]}: {datetime_exit["date"]} {app_dict["loc"]["morPy"]["exit_msg_at"]} {datetime_exit["time"]}\n'
-                f'{app_dict["loc"]["morPy"]["exit_msg_duration"]}: {temp_duration["rnt_delta"]}\n\n'
-                f'{5 * "-"} {app_dict["loc"]["morPy"]["exit_msg_events"]} {5 * "-"}\n'
+        log_no_q(morpy_trace, app_dict, "exit",
+        lambda: f'{app_dict["loc"]["morpy"]["exit_msg_done"]}\n'
+                f'{app_dict["loc"]["morpy"]["exit_msg_started"]}: {app_dict["run"]["init_date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {app_dict["run"]["init_time"]}\n'
+                f'{app_dict["loc"]["morpy"]["exit_msg_exited"]}: {datetime_exit["date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {datetime_exit["time"]}\n'
+                f'{app_dict["loc"]["morpy"]["exit_msg_duration"]}: {temp_duration["rnt_delta"]}\n\n'
+                f'{5 * "-"} {app_dict["loc"]["morpy"]["exit_msg_events"]} {5 * "-"}\n'
                 f'     INIT: {app_dict["run"]["events_INIT"]}\n'
                 f'    DEBUG: {app_dict["run"]["events_DEBUG"]}\n'
                 f'     INFO: {app_dict["run"]["events_INFO"]}\n'
@@ -71,9 +71,9 @@ def _exit(morPy_trace: dict=None, app_dict: dict=None):
                 f'     EXIT: {app_dict["run"]["events_EXIT"]}\n'
                 f'UNDEFINED: {app_dict["run"]["events_UNDEFINED"]}\n'
                 f'{18 * "-"}\n'
-                f'{leading_total}{app_dict["loc"]["morPy"]["exit_msg_total"]}: {app_dict["run"]["events_total"]}')
+                f'{leading_total}{app_dict["loc"]["morpy"]["exit_msg_total"]}: {app_dict["run"]["events_total"]}')
 
     except Exception as e:
-        log_no_q(morPy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log_no_q(morpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')

@@ -15,12 +15,12 @@ import sys
 import psutil
 import logging
 
-def privileges_handler(morPy_trace, app_dict):
+def privileges_handler(morpy_trace, app_dict):
 
     r""" This function tests the privileges of __main__ and restarts with
         a request for admin rights if it was set in the parameters.
     :param
-        morPy_trace - operation credentials and tracing
+        morpy_trace - operation credentials and tracing
         app_dict - morPy global dictionary
     :return
         -
@@ -28,13 +28,13 @@ def privileges_handler(morPy_trace, app_dict):
     TODO Finish the module and fix all bugs
     """
 
-    import lib.msg
+    import lib.msg as msg
     import sys, ctypes, enum, gc
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'fct'
     operation = 'privileges_handler(~)'
-    morPy_trace = tracing(module, operation, morPy_trace)
+    morpy_trace = tracing(module, operation, morpy_trace)
 
     # Preparing parameters
     check = False
@@ -97,8 +97,8 @@ def privileges_handler(morPy_trace, app_dict):
 
     # Error detection
     except Exception as e:
-        log(morPy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     finally:
@@ -108,16 +108,16 @@ def privileges_handler(morPy_trace, app_dict):
 
         # Return a dictionary
         return{
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check
             }
 
-def datetime_now(morPy_trace):
+def datetime_now(morpy_trace):
 
     r""" This function reads the current date and time and returns formatted
         stamps.
     :param
-        morPy_trace - operation credentials and tracing
+        morpy_trace - operation credentials and tracing
     :return - dictionary
         datetime_value - Date and time in the format YYYY-MM-DD hh:mm:ss.ms as value
                         (used to determine runtime).
@@ -134,7 +134,7 @@ def datetime_now(morPy_trace):
     # Define operation credentials (see init.init_cred() for all dict keys)
     # module = 'fct'
     # operation = 'datetime_now(~)'
-    # morPy_trace = tracing(module, operation, morPy_trace)
+    # morpy_trace = tracing(module, operation, morpy_trace)
 
     # Retrieve the actual time value
     datetime_value  = datetime.now()
@@ -187,11 +187,11 @@ def datetime_now(morPy_trace):
         'loggingstamp' : loggingstamp
     }
 
-def runtime(morPy_trace, in_ref_time):
+def runtime(morpy_trace, in_ref_time):
 
     r""" This function calculates the actual runtime and returns it.
     :param
-        morPy_trace - operation credentials and tracing
+        morpy_trace - operation credentials and tracing
         in_ref_time - Value of the reference time to calculate the actual runtime
     :return - dictionary
         rnt_delta - Value of the actual runtime.
@@ -202,7 +202,7 @@ def runtime(morPy_trace, in_ref_time):
     # Define operation credentials (see init.init_cred() for all dict keys)
     # module = 'fct'
     # operation = 'runtime(~)'
-    # morPy_trace = tracing(module, operation, morPy_trace)
+    # morpy_trace = tracing(module, operation, morpy_trace)
 
     rnt_delta = datetime.now() - in_ref_time
 
@@ -210,11 +210,11 @@ def runtime(morPy_trace, in_ref_time):
         'rnt_delta' : rnt_delta
     }
 
-def sysinfo(morPy_trace):
+def sysinfo(morpy_trace):
 
     r""" This function returns various informations about the hardware and operating system.
     :param
-        morPy_trace - operation credentials and tracing
+        morpy_trace - operation credentials and tracing
     :return - dictionary
         system - Operating system.
         release - Major version of the operating system.
@@ -234,14 +234,14 @@ def sysinfo(morPy_trace):
     # Define operation credentials (see init.init_cred() for all dict keys)
     # module = 'fct'
     # operation = 'sysinfo(~)'
-    # morPy_trace = tracing(module, operation, morPy_trace)
+    # morpy_trace = tracing(module, operation, morpy_trace)
 
     system = platform.uname().system
     release = platform.uname().release
     version = platform.uname().version
     arch = platform.uname().machine
     processor = platform.uname().processor
-    logical_cpus = perfinfo(morPy_trace)["cpu_count_log"]
+    logical_cpus = perfinfo(morpy_trace)["cpu_count_log"]
     sys_memory_bytes = psutil.virtual_memory().total
 
     username = getpass.getuser()
@@ -268,12 +268,12 @@ def sysinfo(morPy_trace):
         'resolution_width' : res_width,
     }
 
-def pathtool(morPy_trace: dict, in_path):
+def pathtool(morpy_trace: dict, in_path):
     r"""
     This function takes a string and converts it to a path. Additionally,
     it returns path components and checks.
 
-    :param morPy_trace: operation credentials and tracing
+    :param morpy_trace: operation credentials and tracing
     :param in_path: Path to be converted
 
     :return: dictionary
@@ -289,7 +289,7 @@ def pathtool(morPy_trace: dict, in_path):
 
     :example:
         file_path = "C:\my_file.txt"
-        file_path = morPy.pathtool(morPy_trace, file_path)["out_path"]
+        file_path = morPy.pathtool(morpy_trace, file_path)["out_path"]
     """
 
     import pathlib
@@ -326,13 +326,13 @@ def pathtool(morPy_trace: dict, in_path):
         'parent_dir' : parent_dir,
     }
 
-def path_join(morPy_trace, path_parts, file_extension):
+def path_join(morpy_trace, path_parts, file_extension):
 
     r"""
     This function joins components of a tuple to an OS path.
 
     :param
-        morPy_trace - operation credentials and tracing
+        morpy_trace - operation credentials and tracing
         path_parts - Tuple of parts to be joined. Exact order is critical. Examples:
                      ('C:', 'This', 'is', 'my', 'path', '.txt') - C:\This\is\my\path.txt
                      ('T:This_Fol', 'der_Will_Be_Split', 'this_Way') - T:\This_Fol\der_Will_Be_Split\this_Way
@@ -349,7 +349,7 @@ def path_join(morPy_trace, path_parts, file_extension):
     # Define operation credentials (see init.init_cred() for all dict keys)
     # module = 'fct'
     # operation = 'makepath(~)'
-    # morPy_trace = tracing(module, operation, morPy_trace)
+    # morpy_trace = tracing(module, operation, morpy_trace)
 
     # Preparation
     path_str = ''
@@ -392,11 +392,11 @@ def path_join(morPy_trace, path_parts, file_extension):
 
     return path_obj
 
-def perfinfo(morPy_trace):
+def perfinfo(morpy_trace):
 
     r""" This function returns performance metrics.
     :param
-        morPy_trace - operation credentials and tracing
+        morpy_trace - operation credentials and tracing
     :return - dictionary
         boot_time - Timestamp of the latest recorded boot process.
         cpu_count_phys - Return the number of physical CPUs in the system.
@@ -418,7 +418,7 @@ def perfinfo(morPy_trace):
     # Define operation credentials (see init.init_cred() for all dict keys)
     # module = 'fct'
     # operation = 'perfinfo(~)'
-    # morPy_trace = tracing(module, operation, morPy_trace)
+    # morpy_trace = tracing(module, operation, morpy_trace)
 
     #TODO: "cpu_perc_indv" only works on Linux
     #TODO: "cpu_perc_comb" and "cpu_perc_indv" do not work if interval=None
@@ -465,7 +465,7 @@ def app_dict_to_string(app_dict, depth=0):
     # Define operation credentials (see init.init_cred() for all dict keys)
     # module = 'fct'
     # operation = 'app_dict_to_string(~)'
-    # morPy_trace = tracing(module, operation, morPy_trace)
+    # morpy_trace = tracing(module, operation, morpy_trace)
 
     if isinstance(app_dict, dict):
 
@@ -491,54 +491,54 @@ def app_dict_to_string(app_dict, depth=0):
     else:
         return None
 
-def tracing(module, operation, morPy_trace, clone=True, process_id=None):
+def tracing(module, operation, morpy_trace, clone=True, process_id=None):
 
     r"""
     This function formats the trace to any given operation. This function is
-    necessary to alter the morPy_trace as a pass down rather than pointing to the
-    same morPy_trace passed down by the calling operation. If morPy_trace is to altered
+    necessary to alter the morpy_trace as a pass down rather than pointing to the
+    same morpy_trace passed down by the calling operation. If morpy_trace is to altered
     in any way (i.e. 'log_enable') it needs to be done after calling this function.
     This is why this function is called at the top of any operation.
 
     :param module: Name of the module, the operation is defined in (i.e. 'common')
     :param operation: Name of the operation executed (i.e. 'tracing(~)')
-    :param morPy_trace: operation credentials and tracing
+    :param morpy_trace: operation credentials and tracing
     :param clone: If true (default), a clone of the trace will be created ensuring the tracing
         within morPy. If false, the parent trace will be altered directly (intended for
         initialization only).
     :param process_id: Adjust the process ID of the trace. Intended to be used by morPy
         orchestrator only.
 
-    :return morPy_trace_passdown: operation credentials and tracing
+    :return morpy_trace_passdown: operation credentials and tracing
     """
 
-    # Deepcopy the morPy_trace dictionary. Any change in either dictionary is not reflected
+    # Deepcopy the morpy_trace dictionary. Any change in either dictionary is not reflected
     # in the other one. This is important to pass down a functions trace effectively.
     if clone:
         import copy
-        morPy_trace_passdown = copy.deepcopy(morPy_trace)
+        morpy_trace_passdown = copy.deepcopy(morpy_trace)
     else:
-        morPy_trace_passdown = morPy_trace
+        morpy_trace_passdown = morpy_trace
 
     if process_id:
-        morPy_trace_passdown["process_id"] = process_id
+        morpy_trace_passdown["process_id"] = process_id
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    morPy_trace_passdown["module"] = f'{module}'
-    morPy_trace_passdown["operation"] = f'{operation}'
-    morPy_trace_passdown["tracing"] = f'{morPy_trace["tracing"]} > {module}.{operation}'
+    morpy_trace_passdown["module"] = f'{module}'
+    morpy_trace_passdown["operation"] = f'{operation}'
+    morpy_trace_passdown["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
 
-    return morPy_trace_passdown
+    return morpy_trace_passdown
 
-def txt_wr(morPy_trace, app_dict, filepath, content):
+def txt_wr(morpy_trace, app_dict, filepath, content):
 
-    import lib.msg
+    import lib.msg as msg
     import sys, gc, pathlib
 
     r""" This function appends to any textfile and creates it, if it does not
         exist yet.
     :param
-        morPy_trace - operation credentials and tracing
+        morpy_trace - operation credentials and tracing
         app_dict - morPy global dictionary
         filepath - Path to the textfile including its name and filetype
         content - Something that will be printed as a string.
@@ -549,7 +549,7 @@ def txt_wr(morPy_trace, app_dict, filepath, content):
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'fct'
     operation = 'txt_wr(~)'
-    morPy_trace = tracing(module, operation, morPy_trace)
+    morpy_trace = tracing(module, operation, morpy_trace)
 
     # Preparing parameters
     check = False
@@ -576,14 +576,14 @@ def txt_wr(morPy_trace, app_dict, filepath, content):
         check = True
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     finally:
         # Return a dictionary
         return{
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check
             }
 
@@ -591,23 +591,23 @@ def handle_exception_main(e, init=False, app_dict=None):
     r"""
     Handle any exception outside the scope of msg.py
     """
-    import lib.msg
+    import lib.msg as msg
 
     if init and app_dict is not None:
         message = (f'{app_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                       f'{app_dict["err_excp"]}: {e}')
+                   f'{type(e).__name__}: {e}')
         msg.log('__main__', app_dict, message, 'critical')
     elif not init:
         # Fallback logging in case the app dictionary or logging fails
         logging.critical(f'Module: __main__\n'
                          f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                         f'CRITICAL Exception: {e}\n'
+                         f'{type(e).__name__}: {e}\n'
                          f'morPy initialization failed!')
     elif init and app_dict is None:
         # Fallback logging in case the app dictionary or logging fails
         logging.critical(f'Module: __main__\n'
                          f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                         f'CRITICAL Exception: {e}\n'
+                         f'{type(e).__name__}: {e}\n'
                          f'Missing app_dict - morPy execution failed!')
 
     # Quit the program
@@ -621,7 +621,7 @@ def handle_exception_init(e):
     # Fallback logging in case the app dictionary or logging fails
     logging.critical(f'Module: init\n'
                      f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                     f'CRITICAL Exception: {e}\n'
+                     f'{type(e).__name__}: {e}\n'
                      f'morPy initialization failed!')
 
     # Quit the program
@@ -635,7 +635,7 @@ def handle_exception_decorator(e):
     # Fallback logging in case the app dictionary or logging fails
     logging.critical(f'Module: decorators\n'
                      f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                     f'CRITICAL Exception: {e}\n'
+                     f'{type(e).__name__}: {e}\n'
                      f'Wrapper function error.')
 
     # Quit the program
@@ -649,7 +649,7 @@ def handle_exception_mp(e):
     # Fallback logging in case the app dictionary or logging fails
     logging.critical(f'Module: mp\n'
                      f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                     f'CRITICAL Exception: {e}\n'
+                     f'{type(e).__name__}: {e}\n'
                      f'Multiprocessing decorator error.')
 
     # Quit the program

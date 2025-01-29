@@ -28,7 +28,7 @@ class cl_xl_workbook:
     to read from and write to the workbook. It uses OpenPyXL and all those
     methods can be used on self.wb_obj if a more versatile API is required.
 
-    :param morPy_trace: operation credentials and tracing information
+    :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
     :param workbook: Path of the workbook
     :param create: If True and file does not yet exist, will create the workbook.
@@ -39,7 +39,7 @@ class cl_xl_workbook:
                 and reopening the workbook is required to change behaviour.
 
     :methods:
-        .save_workbook(morPy_trace: dict, app_dict: dict, close_workbook: bool=False)
+        .save_workbook(morpy_trace: dict, app_dict: dict, close_workbook: bool=False)
 
             Saves the changes to the MS Excel workbook.
             :param close_workbook: If True, closes the workbook.
@@ -48,20 +48,20 @@ class cl_xl_workbook:
                 wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
                     reference to an instance.
 
-        .close_workbook(morPy_trace: dict, app_dict: dict)
+        .close_workbook(morpy_trace: dict, app_dict: dict)
 
             Closes the MS Excel workbook.
             :return: dict
                 wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
                     reference to an instance.
 
-        .activate_worksheet(morPy_trace: dict, app_dict: dict, worksheet: str)
+        .activate_worksheet(morpy_trace: dict, app_dict: dict, worksheet: str)
 
             Activates a specified worksheet in the workbook. If the sheet is not found,
             an error is logged.
             :param worksheet: The name of the worksheet to activate.
 
-        .read_cells(self, morPy_trace: dict, app_dict: dict, cell_range: list=None,
+        .read_cells(self, morpy_trace: dict, app_dict: dict, cell_range: list=None,
                    cell_styles: bool=False, worksheet: str=None)
 
             Reads the cells of MS Excel workbooks. Overlapping ranges will get auto-formatted
@@ -132,11 +132,11 @@ class cl_xl_workbook:
 
             :example:
                 wb_path = "C:\my.xlsx"
-                wb = morPy.cl_xl_workbook(morPy_trace, app_dict, wb_path)
-                cl_dict = wb.read_cells(morPy_trace, app_dict, "Sheet1", ["A1", "B2:C3"])["cl_dict"]
+                wb = morPy.cl_xl_workbook(morpy_trace, app_dict, wb_path)
+                cl_dict = wb.read_cells(morpy_trace, app_dict, "Sheet1", ["A1", "B2:C3"])["cl_dict"]
                 print(f'{cl_dict}')
 
-        .write_ranges(self, morPy_trace: dict, app_dict: dict, worksheet: str=None, cell_range: list=None,
+        .write_ranges(self, morpy_trace: dict, app_dict: dict, worksheet: str=None, cell_range: list=None,
                      cell_writes: list=None, fill_range: bool=False, style_default: bool=False,
                      save_workbook: bool=True, close_workbook: bool=False)
 
@@ -227,35 +227,35 @@ class cl_xl_workbook:
                         "color" : "D1760C",
                         },
                 })
-                wb = wb.write_cells(morPy_trace, app_dict, worksheet=w_sh, cell_range=cl_rng, cell_writes=cl_list
+                wb = wb.write_cells(morpy_trace, app_dict, worksheet=w_sh, cell_range=cl_rng, cell_writes=cl_list
                                     save_workbook=True, close_workbook=True)["wb_obj"]
 
     :example:
         # Construct a workbook instance
         wb_path = "C:\my.xlsx"
-        wb = cl_xl_workbook(morPy_trace, app_dict, wb_path)
+        wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
 
         # Activate a certain worksheet
         worksheet1 = "Sheet1"
-        wb.activate_worksheet(morPy_trace, app_dict, worksheet1)
+        wb.activate_worksheet(morpy_trace, app_dict, worksheet1)
 
         # Read cells in range
         range1 = ["A1", "B2:C3"]
         worksheet2 = "Sheet2"
-        cl_dict = wb.read_cells(morPy_trace, app_dict, worksheet=worksheet2, cell_range=range1)["cl_dict"]
+        cl_dict = wb.read_cells(morpy_trace, app_dict, worksheet=worksheet2, cell_range=range1)["cl_dict"]
 
         # Write to cells in a range and apply styles. Fill range in alternating pattern (fill_range=True).
         cell_writes = []
         cell_writes.append({"value": "Example"})
         cell_writes.append({"value" : r"=1+2", "font" : {"color" : "D1760C",}})
-        wb = wb.write_cells(morPy_trace, app_dict, worksheet=worksheet1, cell_range=range1, cell_writes=cell_writes
+        wb = wb.write_cells(morpy_trace, app_dict, worksheet=worksheet1, cell_range=range1, cell_writes=cell_writes
                             save_workbook=False, close_workbook=False, fill_range=True)["wb_obj"]
 
         # Save the workbook.
-        wb = wb.save_workbook(morPy_trace, app_dict, close=False)["wb_obj"]
+        wb = wb.save_workbook(morpy_trace, app_dict, close=False)["wb_obj"]
 
         # Close the workbook. Write "None" to the reference "wb".
-        wb = wb.close_workbook(morPy_trace, app_dict)["wb_obj"]
+        wb = wb.close_workbook(morpy_trace, app_dict)["wb_obj"]
     """
 
     __slots__ = (
@@ -270,14 +270,14 @@ class cl_xl_workbook:
         "files_vbs",
     )
 
-    def __init__(self, morPy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
+    def __init__(self, morpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
               data_only: bool=False, keep_vba: bool=True) -> None:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
-        {'morPy_trace' : morPy_trace}, which __init__() can not do (needs to be None).
+        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
 
-        :param morPy_trace: operation credentials and tracing information
+        :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         :param workbook: Path of the workbook
         :param create: If True and file does not yet exist, will create the workbook.
@@ -292,34 +292,34 @@ class cl_xl_workbook:
 
         :example:
             wb_path = "C:\projects\my.xlsx"
-            wb = cl_xl_workbook(morPy_trace, app_dict, wb_path)
+            wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.__init__(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         try:
             # Use self._init() for initialization
-            check = self._init(morPy_trace, app_dict, workbook, create)["check"]
+            check = self._init(morpy_trace, app_dict, workbook, create)["check"]
 
             if not check:
                 # Instance construction aborted.
-                raise RuntimeError(f'{app_dict["loc"]["morPy"]["cl_xl_workbook_inst_abort"]}')
+                raise RuntimeError(f'{app_dict["loc"]["morpy"]["cl_xl_workbook_inst_abort"]}')
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
     @metrics
-    def _init(self, morPy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
+    def _init(self, morpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
               data_only: bool=False, keep_vba: bool=True) -> dict:
         r"""
         Helper method for initialization to ensure @metrics decorator usage.
 
-        :param morPy_trace: operation credentials and tracing information
+        :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         :param workbook: Path of the workbook
         :param create: If True and file does not yet exist, will create the workbook. If file exists, will
@@ -331,22 +331,22 @@ class cl_xl_workbook:
                     and reopening the workbook is required to change behaviour.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing
+            morpy_trace: Operation credentials and tracing
             check: Indicates whether the function ended without errors
 
         :example:
-            self._init(morPy_trace, app_dict)
+            self._init(morpy_trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook._init(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
         try:
-            self.wb_path = fct.pathtool(morPy_trace, workbook)["out_path"]
+            self.wb_path = fct.pathtool(morpy_trace, workbook)["out_path"]
             self.wb_sheets = []
             self.active_sheet = None
             self.active_sheet_title = ""
@@ -354,32 +354,32 @@ class cl_xl_workbook:
             self.tables_sheets = {}
 
             # Get the file extension in lowercase
-            self.file_ext = fct.pathtool(morPy_trace, self.wb_path)["file_ext"].lower()
+            self.file_ext = fct.pathtool(morpy_trace, self.wb_path)["file_ext"].lower()
 
             # Set vba supporting file extensions
             self.files_vbs = {".xlsm", ".xltm"}
 
-            path_eval = fct.pathtool(morPy_trace, self.wb_path)
+            path_eval = fct.pathtool(morpy_trace, self.wb_path)
             file_exists = path_eval["file_exists"]
 
             if not file_exists:
                 if create:
-                    self._create_workbook(morPy_trace, app_dict)
+                    self._create_workbook(morpy_trace, app_dict)
                 else:
                     # File does not exist and was not created.
                     raise LookupError(
-                        f'{app_dict["loc"]["morPy"]["cl_xl_workbook_not_create"]}\n'
-                        f'{app_dict["loc"]["morPy"]["cl_xl_workbook_create"]}: {create}'
+                        f'{app_dict["loc"]["morpy"]["cl_xl_workbook_not_create"]}\n'
+                        f'{app_dict["loc"]["morpy"]["cl_xl_workbook_create"]}: {create}'
                     )
 
             # Re-evaluate file creation
-            path_eval = fct.pathtool(morPy_trace, self.wb_path)
+            path_eval = fct.pathtool(morpy_trace, self.wb_path)
             is_file = path_eval["is_file"]
             if not is_file:
                 # The path to the workbook is invalid.
                 raise LookupError(
-                    f'{app_dict["loc"]["morPy"]["cl_xl_workbook_path_invalid"]}\n'
-                    f'{app_dict["loc"]["morPy"]["cl_xl_workbook_path"]}: {self.wb_path}'
+                    f'{app_dict["loc"]["morpy"]["cl_xl_workbook_path_invalid"]}\n'
+                    f'{app_dict["loc"]["morpy"]["cl_xl_workbook_path"]}: {self.wb_path}'
                 )
 
             # Evaluate, if file type supports vba
@@ -390,45 +390,45 @@ class cl_xl_workbook:
             self.wb_obj = load_workbook(self.wb_path, data_only=data_only, keep_vba=keep_vba)
 
             # Update workbook metadata
-            self._update_meta(morPy_trace, app_dict)
+            self._update_meta(morpy_trace, app_dict)
 
             # MS Excel workbook instantiated.
-            log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["cl_xl_workbook_inst"]}'
-                    f'{app_dict["loc"]["morPy"]["cl_xl_workbook_wb"]}: {self.wb_path}')
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["cl_xl_workbook_inst"]}'
+                    f'{app_dict["loc"]["morpy"]["cl_xl_workbook_wb"]}: {self.wb_path}')
 
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check,
             }
 
     @metrics
-    def _create_workbook(self, morPy_trace: dict, app_dict: dict) -> dict:
+    def _create_workbook(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Creates a new, empty Excel workbook at the specified path.
 
-        :param morPy_trace: Operation credentials and tracing information.
+        :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing.
+            morpy_trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
 
         :example:
-            self._create_workbook(morPy_trace, app_dict)
+            self._create_workbook(morpy_trace, app_dict)
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook._create_workbook(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -437,40 +437,40 @@ class cl_xl_workbook:
             wb.save(filename=f'{self.wb_path}')
 
             # MS Excel workbook created.
-            log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["create_workbook_done"]}\n'
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["create_workbook_done"]}\n'
                     f'xl_path: {self.wb_path}')
 
             check = True
 
         # Error detection
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            'morPy_trace': morPy_trace,
+            'morpy_trace': morpy_trace,
             'check': check
         }
 
     @metrics
-    def _update_meta(self, morPy_trace: dict, app_dict: dict, minimal: bool=False) -> dict:
+    def _update_meta(self, morpy_trace: dict, app_dict: dict, minimal: bool=False) -> dict:
         r"""
         Update which metadata of the workbook. This could be which sheet is active
         and which sheets there are.
 
-        :param morPy_trace: Operation credentials and tracing information.
+        :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
         :param minimal: If True, updates only the attributes that could change
             without actually writing to the cell (i.e. active_sheet).
 
         :return: dict
-            morPy_trace: Operation credentials and tracing.
+            morpy_trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
 
         :example:
-            self._update_sheets(morPy_trace, app_dict)
+            self._update_sheets(morpy_trace, app_dict)
             print(f'{self.active_sheet_title}')
             print(f'{self.wb_sheets}')
         """
@@ -478,7 +478,7 @@ class cl_xl_workbook:
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook._update_meta(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
         table_range = None
@@ -525,42 +525,42 @@ class cl_xl_workbook:
 
         # Error detection
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            'morPy_trace': morPy_trace,
+            'morpy_trace': morpy_trace,
             'check': check
         }
 
     @metrics
-    def _cell_ref_autoformat(self, morPy_trace: dict, app_dict: dict, cell_range: list) -> dict:
+    def _cell_ref_autoformat(self, morpy_trace: dict, app_dict: dict, cell_range: list) -> dict:
         r"""
         Converts a list of cells and cell ranges to a dictionary. Overlapping cell
         ranges/cells will be auto-formatted to a single reference.
     
-        :param morPy_trace: Operation credentials and tracing information.
+        :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
         :param cell_range: The cell or range of cells to read from. Accepted formats:
             - Single cell: ["A1"]
             - Range of cells: ["A1:ZZ1000", "C3", ...] (not case-sensitive).
     
         :return: dict
-            morPy_trace: Operation credentials and tracing.
+            morpy_trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             cl_dict: Dictionary where cells are keys with empty arguments:
                      {'cell1': '', 'cell2': '', ...}
     
         :example:
             cl_range = ["A1", "B2:C3"]
-            cl_dict = self._cell_ref_autoformat(morPy_trace, app_dict, cell_range = cl_range)["cl_dict"]
+            cl_dict = self._cell_ref_autoformat(morpy_trace, app_dict, cell_range = cl_range)["cl_dict"]
         """
     
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook._cell_ref_autoformat(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
     
         check = False
         cl_valid = False
@@ -577,7 +577,7 @@ class cl_xl_workbook:
                 # Evaluate the type. If a list with 0 or more than 2 items was found, the cell
                 # list is invalid. For 1 item it is a single cell and for 2 items it is a range.
                 pattern = '[a-zA-Z]?[a-zA-Z]{1}[0-9]+'
-                type_cl = common.regex_findall(morPy_trace, app_dict, cl, pattern)["result"]
+                type_cl = common.regex_findall(morpy_trace, app_dict, cl, pattern)["result"]
                 type_cl_len = len(type_cl)
     
                 # The item is a cell
@@ -586,9 +586,9 @@ class cl_xl_workbook:
                     cl_dict.update({type_cl[0] : ''})
     
                     # A single cell was added to the dictionary.
-                    log(morPy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["morPy"]["cell_ref_autoformat_1cell"]}\n'
-                            f'{app_dict["loc"]["morPy"]["cell_ref_autoformat_cl"]}: {type_cl[0]}')
+                    log(morpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["morpy"]["cell_ref_autoformat_1cell"]}\n'
+                            f'{app_dict["loc"]["morpy"]["cell_ref_autoformat_cl"]}: {type_cl[0]}')
 
                     cl_valid = True
     
@@ -597,9 +597,9 @@ class cl_xl_workbook:
                     # Convert the range to a list
                     # 1) Extract columns
                     pattern = '[a-zA-Z]?[a-zA-Z]{1}'
-                    range_col1 = common.regex_findall(morPy_trace, app_dict, type_cl[0], pattern)["result"]
+                    range_col1 = common.regex_findall(morpy_trace, app_dict, type_cl[0], pattern)["result"]
                     pattern = '[a-zA-Z]?[a-zA-Z]{1}'
-                    range_col2 = common.regex_findall(morPy_trace, app_dict, type_cl[1], pattern)["result"]
+                    range_col2 = common.regex_findall(morpy_trace, app_dict, type_cl[1], pattern)["result"]
     
                     # Compare columns by string length
                     if len(range_col1) <= len(range_col2):
@@ -612,7 +612,7 @@ class cl_xl_workbook:
                     # Extract and enumerate components of columns to loop through them.
                     if len(col_from[0]) == 2:
                         pattern = '[A-Z]{1}'
-                        col_from = common.regex_findall(morPy_trace, app_dict, col_from, pattern)["result"]
+                        col_from = common.regex_findall(morpy_trace, app_dict, col_from, pattern)["result"]
     
                         # Build the sum of columns from A to col_from for further comparison.
                         # 64 refers to the Unicode value of capital A minus 1.
@@ -623,7 +623,7 @@ class cl_xl_workbook:
                     # Extract and enumerate components of columns to loop through them.
                     if len(col_to[0]) == 2:
                         pattern = '[A-Z]{1}'
-                        col_to = common.regex_findall(morPy_trace, app_dict, col_to, pattern)["result"]
+                        col_to = common.regex_findall(morpy_trace, app_dict, col_to, pattern)["result"]
     
                         # Build the sum of columns from A to col_to for further comparison.
                         # 64 refers to the Unicode value of capital A minus 1.
@@ -646,9 +646,9 @@ class cl_xl_workbook:
     
                     # 2) Extract rows
                     pattern = '[0-9]+'
-                    range_row1 = common.regex_findall(morPy_trace, app_dict, type_cl[0], pattern)["result"]
+                    range_row1 = common.regex_findall(morpy_trace, app_dict, type_cl[0], pattern)["result"]
                     pattern = '[0-9]+'
-                    range_row2 = common.regex_findall(morPy_trace, app_dict, type_cl[1], pattern)["result"]
+                    range_row2 = common.regex_findall(morpy_trace, app_dict, type_cl[1], pattern)["result"]
     
                     # Make rows integers
                     range_row1 = int(range_row1[0])
@@ -686,9 +686,9 @@ class cl_xl_workbook:
                         col_counter += 1
     
                     # A range of cells was added to the dictionary.
-                    log(morPy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["morPy"]["cell_ref_autoformat_done"]}\n'
-                            f'{app_dict["loc"]["morPy"]["cell_ref_autoformat_rng"]}: '
+                    log(morpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["morpy"]["cell_ref_autoformat_done"]}\n'
+                            f'{app_dict["loc"]["morpy"]["cell_ref_autoformat_rng"]}: '
                             f'({openpyxl.utils.cell.get_column_letter(col_from_sum)}:{row_from}) - '
                             f'({openpyxl.utils.cell.get_column_letter(col_to_sum)}:{row_to})')
 
@@ -699,9 +699,9 @@ class cl_xl_workbook:
                     cl_valid = False
     
                     # The cell value is invalid. Autoformatting aborted.
-                    log(morPy_trace, app_dict, "warning",
-                    lambda: f'{app_dict["loc"]["morPy"]["cell_ref_autoformat_invalid"]}\n'
-                            f'{app_dict["loc"]["morPy"]["cell_ref_autoformat_cls"]}: {cell_range}\n'
+                    log(morpy_trace, app_dict, "warning",
+                    lambda: f'{app_dict["loc"]["morpy"]["cell_ref_autoformat_invalid"]}\n'
+                            f'{app_dict["loc"]["morpy"]["cell_ref_autoformat_cls"]}: {cell_range}\n'
                             f'check: {check}')
     
             # Evaluate the validity of the dictionary
@@ -709,44 +709,44 @@ class cl_xl_workbook:
                 check = True
     
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
     
         return{
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check,
             'cl_dict' : cl_dict
             }
 
     @metrics
-    def save_workbook(self, morPy_trace: dict, app_dict: dict, close_workbook: bool=False) -> dict:
+    def save_workbook(self, morpy_trace: dict, app_dict: dict, close_workbook: bool=False) -> dict:
         r"""
         Saves the changes to the MS Excel workbook.
 
-        :param morPy_trace: Operation credentials and tracing information.
+        :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
         :param close_workbook: If True, closes the workbook.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing.
+            morpy_trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
                 reference to an instance.
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = cl_xl_workbook(morPy_trace, app_dict, wb_path)
+            wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
 
             # Save and close the workbook. Write "None" to the reference "wb".
-            wb = wb.save_workbook(morPy_trace, app_dict, close=True)["wb_obj"]
+            wb = wb.save_workbook(morpy_trace, app_dict, close=True)["wb_obj"]
             print(f'{wb}')
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.save_workbook(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
         wb_obj_return = self
@@ -757,49 +757,49 @@ class cl_xl_workbook:
 
             if close_workbook:
                 # Close the workbook
-                wb_obj_return = self.close_workbook(morPy_trace, app_dict)["wb_obj"]
+                wb_obj_return = self.close_workbook(morpy_trace, app_dict)["wb_obj"]
 
             check = True
 
         # Error detection
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}')
 
         return {
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check,
             'wb_obj' : wb_obj_return,
         }
 
     @metrics
-    def close_workbook(self, morPy_trace: dict, app_dict: dict) -> dict:
+    def close_workbook(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Closes the MS Excel workbook.
 
-        :param morPy_trace: Operation credentials and tracing information.
+        :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing.
+            morpy_trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
                 reference to an instance.
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = cl_xl_workbook(morPy_trace, app_dict, wb_path)
+            wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
 
             # Close the workbook. Write "None" to the reference "wb".
-            wb = wb.close_workbook(morPy_trace, app_dict)["wb_obj"]
+            wb = wb.close_workbook(morpy_trace, app_dict)["wb_obj"]
             print(f'{wb}')
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.close_workbook(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -809,49 +809,49 @@ class cl_xl_workbook:
             self.wb_obj.close()
 
             # The workbook object was closed.
-            log(morPy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morPy"]["close_workbook_done"]}\n'
-                        f'{app_dict["loc"]["morPy"]["close_workbook_path"]}: {wb_path}')
+            log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["close_workbook_done"]}\n'
+                        f'{app_dict["loc"]["morpy"]["close_workbook_path"]}: {wb_path}')
 
             check = True
 
         # Error detection
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}')
 
         return {
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check,
             'wb_obj' : None,
         }
 
     @metrics
-    def activate_worksheet(self, morPy_trace: dict, app_dict: dict, worksheet: str) -> dict:
+    def activate_worksheet(self, morpy_trace: dict, app_dict: dict, worksheet: str) -> dict:
         r"""
         Activates a specified worksheet in the workbook. If the sheet is not found,
         an error is logged.
 
-        :param morPy_trace: Operation credentials and tracing information.
+        :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
         :param worksheet: The name of the worksheet to activate.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing.
+            morpy_trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = cl_xl_workbook(morPy_trace, app_dict, wb_path)
+            wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
             w_sht = "Sheet1"
-            wb.activate_worksheet(morPy_trace, app_dict, w_sht)
+            wb.activate_worksheet(morpy_trace, app_dict, w_sht)
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.activate_worksheet(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
 
@@ -859,48 +859,48 @@ class cl_xl_workbook:
             # Check if the requested sheet exists in the workbook
             if worksheet in self.wb_sheets:
                 # Check for the active sheet
-                self._update_meta(morPy_trace, app_dict, minimal=True)
+                self._update_meta(morpy_trace, app_dict, minimal=True)
 
                 if not worksheet == self.active_sheet_title:
                     # Set the requested sheet as active
                     self.wb_obj.active = self.wb_obj[worksheet]
                     # Store active sheet in meta data
-                    self._update_meta(morPy_trace, app_dict, minimal=True)
+                    self._update_meta(morpy_trace, app_dict, minimal=True)
 
                     # The worksheet was successfully activated.
-                    log(morPy_trace, app_dict, "debug",
-                        lambda: f'{app_dict["loc"]["morPy"]["activate_worksheet_done"]}\n'
-                                f'{app_dict["loc"]["morPy"]["activate_worksheet_sht"]}: {worksheet}')
+                    log(morpy_trace, app_dict, "debug",
+                        lambda: f'{app_dict["loc"]["morpy"]["activate_worksheet_done"]}\n'
+                                f'{app_dict["loc"]["morpy"]["activate_worksheet_sht"]}: {worksheet}')
 
                 check = True
             else:
                 # The requested sheet was not found.
                 raise ValueError(
-                    f'{app_dict["loc"]["morPy"]["activate_worksheet_nfnd"]}\n'
-                    f'{app_dict["loc"]["morPy"]["activate_worksheet_file"]}: {self.wb_path}\n'
-                    f'{app_dict["loc"]["morPy"]["activate_worksheet_req_sht"]}: {worksheet}'
+                    f'{app_dict["loc"]["morpy"]["activate_worksheet_nfnd"]}\n'
+                    f'{app_dict["loc"]["morpy"]["activate_worksheet_file"]}: {self.wb_path}\n'
+                    f'{app_dict["loc"]["morpy"]["activate_worksheet_req_sht"]}: {worksheet}'
                 )
 
         # Error detection
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}')
 
         return {
-            'morPy_trace': morPy_trace,
+            'morpy_trace': morpy_trace,
             'check': check
         }
 
     @metrics
-    def read_cells(self, morPy_trace: dict, app_dict: dict, cell_range: list=None,
+    def read_cells(self, morpy_trace: dict, app_dict: dict, cell_range: list=None,
                    cell_styles: bool=False, worksheet: str=None) -> dict:
 
         r"""
         Reads the cells of MS Excel workbooks. Overlapping ranges will get auto-formatted
         to ensure every cell is addressed only once.
 
-        :param morPy_trace: Operation credentials and tracing information.
+        :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
         :param cell_range: The cell or range of cells to read from. Accepted formats:
             - not case-sensitive
@@ -912,7 +912,7 @@ class cl_xl_workbook:
             active sheet is addressed.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing.
+            morpy_trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             cl_dict: Dictionary of cell content dictionaries containing values and styles of cells. Following is
                     an example of a single complete cell write:
@@ -970,26 +970,26 @@ class cl_xl_workbook:
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = morPy.cl_xl_workbook(morPy_trace, app_dict, wb_path)
-            cl_dict = wb.read_cells(morPy_trace, app_dict, worksheet="Sheet1", cell_range=["A1", "B2:C3"])["cl_dict"]
+            wb = morPy.cl_xl_workbook(morpy_trace, app_dict, wb_path)
+            cl_dict = wb.read_cells(morpy_trace, app_dict, worksheet="Sheet1", cell_range=["A1", "B2:C3"])["cl_dict"]
             print(f'{cl_dict}')
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.read_cells(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
         cl_dict = {}
 
         try:
             # Update metadata of the workbook instance
-            self._update_meta(morPy_trace, app_dict)
+            self._update_meta(morpy_trace, app_dict)
 
             if not cell_range:
                 # Missing cell range. Skipped reading cells.
-                raise ValueError(f'{app_dict["loc"]["morPy"]["read_cells_no_range"]}')
+                raise ValueError(f'{app_dict["loc"]["morpy"]["read_cells_no_range"]}')
 
             # Check if sheet is already active
             if self.active_sheet_title == worksheet:
@@ -999,7 +999,7 @@ class cl_xl_workbook:
             else:
                 # Check is sheet exists
                 if worksheet in self.wb_sheets:
-                    self.activate_worksheet(morPy_trace, app_dict, worksheet)
+                    self.activate_worksheet(morpy_trace, app_dict, worksheet)
                     worksheet_obj = self.active_sheet
 
                 elif not worksheet:
@@ -1010,14 +1010,14 @@ class cl_xl_workbook:
                 else:
                     # Could not find the requested worksheet.
                     raise ValueError(
-                        f'{app_dict["loc"]["morPy"]["read_cells_nfnd"]}\n'
-                        f'{app_dict["loc"]["morPy"]["read_cells_file"]}: {self.wb_path}\n'
-                        f'{app_dict["loc"]["morPy"]["read_cells_sht"]}: {worksheet}\n'
-                        f'{app_dict["loc"]["morPy"]["read_cells_av_shts"]}: {self.wb_sheets}'
+                        f'{app_dict["loc"]["morpy"]["read_cells_nfnd"]}\n'
+                        f'{app_dict["loc"]["morpy"]["read_cells_file"]}: {self.wb_path}\n'
+                        f'{app_dict["loc"]["morpy"]["read_cells_sht"]}: {worksheet}\n'
+                        f'{app_dict["loc"]["morpy"]["read_cells_av_shts"]}: {self.wb_sheets}'
                     )
 
             # Autoformat cell reference(s)
-            cl_dict = self._cell_ref_autoformat(morPy_trace, app_dict, cell_range)["cl_dict"]
+            cl_dict = self._cell_ref_autoformat(morpy_trace, app_dict, cell_range)["cl_dict"]
 
             # Loop through all the cells and read them
             for cl in cl_dict:
@@ -1083,28 +1083,28 @@ class cl_xl_workbook:
                     }
 
             # The worksheet was read from.
-            log(morPy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morPy"]["read_cells_read"]}\n'
-                    f'{app_dict["loc"]["morPy"]["read_cells_file"]}: {self.wb_path}\n'
-                    f'{app_dict["loc"]["morPy"]["read_cells_sht"]}: {worksheet}\n'
-                    f'{app_dict["loc"]["morPy"]["read_cells_cls"]}: {cell_range}')
+            log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["read_cells_read"]}\n'
+                    f'{app_dict["loc"]["morpy"]["read_cells_file"]}: {self.wb_path}\n'
+                    f'{app_dict["loc"]["morpy"]["read_cells_sht"]}: {worksheet}\n'
+                    f'{app_dict["loc"]["morpy"]["read_cells_cls"]}: {cell_range}')
 
             check = True
 
         # Error detection
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check,
             'cl_dict' : cl_dict
             }
 
     @metrics
-    def write_ranges(self, morPy_trace: dict, app_dict: dict, worksheet: str=None, cell_range: list=None,
+    def write_ranges(self, morpy_trace: dict, app_dict: dict, worksheet: str=None, cell_range: list=None,
                      cell_writes: list=None, fill_range: bool=False, style_default: bool=False,
                      save_workbook: bool=True, close_workbook: bool=False) -> dict:
         r"""
@@ -1112,7 +1112,7 @@ class cl_xl_workbook:
         https://openpyxl.readthedocs.io/en/stable/api/openpyxl.cell.cell.html#openpyxl.cell.cell.Cell
         https://openpyxl.readthedocs.io/en/3.1.3/styles.html
 
-        :param morPy_trace: Operation credentials and tracing information.
+        :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
         :param worksheet: Name of the worksheet, where the cell is located. If None, the
             active sheet is addressed.
@@ -1184,7 +1184,7 @@ class cl_xl_workbook:
 
         :return: dict
             check: Indicates whether the function executed successfully (True/False).
-            morPy_trace: Operation credentials and tracing.
+            morpy_trace: Operation credentials and tracing.
             wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
                 reference to an instance.
 
@@ -1201,29 +1201,29 @@ class cl_xl_workbook:
                     "color" : "D1760C",
                     },
             })
-            wb = wb.write_cells(morPy_trace, app_dict, worksheet=w_sh, cell_range=cl_rng, cell_writes=cell_writes
+            wb = wb.write_cells(morpy_trace, app_dict, worksheet=w_sh, cell_range=cl_rng, cell_writes=cell_writes
                                 save_workbook=True, close_workbook=True)["wb_obj"]
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'write_ranges(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
         wb_obj_return = self
 
         try:
             if not worksheet:
-                self._update_meta(morPy_trace, app_dict, minimal=True)
+                self._update_meta(morpy_trace, app_dict, minimal=True)
                 worksheet_obj = self.active_sheet
                 sht_check = True
             else:
-                sht_check = self.activate_worksheet(morPy_trace, app_dict, worksheet)["check"]
+                sht_check = self.activate_worksheet(morpy_trace, app_dict, worksheet)["check"]
                 worksheet_obj = self.active_sheet
                 
             if cell_range and sht_check:
-                cl_dict = self._cell_ref_autoformat(morPy_trace, app_dict, cell_range=cell_range)["cl_dict"]
+                cl_dict = self._cell_ref_autoformat(morpy_trace, app_dict, cell_range=cell_range)["cl_dict"]
                 cell_keys = list(cl_dict.keys())
                 write_count = len(cell_writes)
 
@@ -1240,7 +1240,7 @@ class cl_xl_workbook:
                         cell_obj.style = 'Normal'
 
                     # Get cell styles to be merged with cell_writes
-                    cell_data = self.read_cells(morPy_trace, app_dict, cell_range=[cell_key],
+                    cell_data = self.read_cells(morpy_trace, app_dict, cell_range=[cell_key],
                                                     worksheet=self.active_sheet_title)
 
                     if not cell_data["check"]:
@@ -1284,92 +1284,92 @@ class cl_xl_workbook:
 
             elif not cell_range:
                 # Missing cell range. Skipped writing to cells.
-                raise ValueError(f'{app_dict["loc"]["morPy"]["write_cells_no_range"]}')
+                raise ValueError(f'{app_dict["loc"]["morpy"]["write_cells_no_range"]}')
 
             # Cells written to.
-            log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["write_cells_done"]}\n'
-                    f'{app_dict["loc"]["morPy"]["write_cells_range"]}: {cell_range}')
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["write_cells_done"]}\n'
+                    f'{app_dict["loc"]["morpy"]["write_cells_range"]}: {cell_range}')
 
             if save_workbook:
-                wb_obj_return = self.save_workbook(morPy_trace, app_dict, close_workbook=close_workbook)["wb_obj"]
+                wb_obj_return = self.save_workbook(morpy_trace, app_dict, close_workbook=close_workbook)["wb_obj"]
 
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check,
             'wb_obj' : wb_obj_return,
         }
 
     @metrics
-    def get_table_attributes(self, morPy_trace: dict, app_dict: dict, table: str) -> dict:
+    def get_table_attributes(self, morpy_trace: dict, app_dict: dict, table: str) -> dict:
         r"""
         Retrieves all attributes of an MS Excel table. OpenPyXL documentation:
         https://openpyxl.readthedocs.io/en/stable/api/openpyxl.worksheet.table.html#openpyxl.worksheet.table.Table
 
-        :param morPy_trace: Operation credentials and tracing information.
+        :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
         :param table: Name of the table to be analyzed.
 
         :return: dict
-            morPy_trace: Operation credentials and tracing.
+            morpy_trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             table_attr: List of the table's attributes.
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = morPy.cl_xl_workbook(morPy_trace, app_dict, wb_path)
-            table_attr = wb.get_table_attributes(morPy_trace, app_dict, "Table1")["table_attr"]
+            wb = morPy.cl_xl_workbook(morpy_trace, app_dict, wb_path)
+            table_attr = wb.get_table_attributes(morpy_trace, app_dict, "Table1")["table_attr"]
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
         operation = 'cl_xl_workbook.get_table_attributes(~)'
-        morPy_trace = fct.tracing(module, operation, morPy_trace)
+        morpy_trace = fct.tracing(module, operation, morpy_trace)
 
         check = False
         table_attr = None
 
         try:
             # Update metadata of the workbook instance
-            self._update_meta(morPy_trace, app_dict, minimal=True)
+            self._update_meta(morpy_trace, app_dict, minimal=True)
 
             # Inquire the according worksheet of the table
             worksheet = self.tables_sheets[table]
 
             # Get all values of the table
             table_data = self.wb_obj[worksheet].tables.values()
-            table_data = openpyxl_table_data_dict(morPy_trace, app_dict, table_data, table)
+            table_data = openpyxl_table_data_dict(morpy_trace, app_dict, table_data, table)
             table_attr = table_data["table_attr"]
 
             # Retrieved all values of an MS Excel table.
-            log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["get_table_attributes_retr"]}\n'
-                    f'{app_dict["loc"]["morPy"]["get_table_attributes_path"]}: {self.wb_path}\n'
-                    f'{app_dict["loc"]["morPy"]["get_table_attributes_sheet"]}: {worksheet}\n'
-                    f'{app_dict["loc"]["morPy"]["get_table_attributes_table"]}: {table}')
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["get_table_attributes_retr"]}\n'
+                    f'{app_dict["loc"]["morpy"]["get_table_attributes_path"]}: {self.wb_path}\n'
+                    f'{app_dict["loc"]["morpy"]["get_table_attributes_sheet"]}: {worksheet}\n'
+                    f'{app_dict["loc"]["morpy"]["get_table_attributes_table"]}: {table}')
 
             check = True
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check,
             'table_attr' : table_attr,
             }
 
 @metrics
-def openpyxl_table_data_dict(morPy_trace: dict, app_dict: dict, table_data: object, table: str) -> dict:
+def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: object, table: str) -> dict:
 
     r"""
     Converts the interface of an OpenPyXL data book into a dictionary containing
@@ -1377,24 +1377,24 @@ def openpyxl_table_data_dict(morPy_trace: dict, app_dict: dict, table_data: obje
     typically called by `get_all_tables_attributes` to improve on the OpenPyXL
     API.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
     :param table_data: The data book object as generated by OpenPyXL.
     :param table: Name of the table to be analyzed.
 
     :return: dict
-        morPy_trace: Operation credentials and tracing.
+        morpy_trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         table_attr: List containing all attributes of the OpenPyXL databook.
 
     :example:
-        openpyxl_table_data_dict(morPy_trace, app_dict, databook_obj, "Table1")
+        openpyxl_table_data_dict(morpy_trace, app_dict, databook_obj, "Table1")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'xl'
     operation = 'table_opyxl_datb_dict(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     check = False
     table_data = f'{table_data}'
@@ -1406,11 +1406,11 @@ def openpyxl_table_data_dict(morPy_trace: dict, app_dict: dict, table_data: obje
         # relevant Part.
 
         # 1. Purge all whitespace characters to make regex easier and more precise
-        table_data = common.regex_replace(morPy_trace, app_dict, table_data, '\s', '')
+        table_data = common.regex_replace(morpy_trace, app_dict, table_data, '\s', '')
 
         # 2. Split the data-book into a list of distinct table attributes
         delimiter = '<openpyxl.worksheet.table.Tableobject>'
-        table_data_list = common.regex_split(morPy_trace, app_dict, table_data, delimiter)
+        table_data_list = common.regex_split(morpy_trace, app_dict, table_data, delimiter)
 
         # 3. Iterate through the list in search for the table and delete
         # elements not associated with it
@@ -1418,37 +1418,37 @@ def openpyxl_table_data_dict(morPy_trace: dict, app_dict: dict, table_data: obje
 
         for table_item in table_data_list:
 
-            result = common.regex_find1st(morPy_trace, app_dict, table_item, pattern)
+            result = common.regex_find1st(morpy_trace, app_dict, table_item, pattern)
 
             if result:
                 break
 
         # 4. Replace the comma at the end of the string, if there is any
-        table_item = common.regex_replace(morPy_trace, app_dict, table_item, ',$', '')
+        table_item = common.regex_replace(morpy_trace, app_dict, table_item, ',$', '')
 
         # 5. Add the first delimiter and reinsert some spaces for compatibility
         # with OpenPyXL
         table_item = f'<openpyxl.worksheet.table.Tableobject>{table_item}'
-        table_item = common.regex_replace(morPy_trace, app_dict, table_item, 'object>', ' object>')
+        table_item = common.regex_replace(morpy_trace, app_dict, table_item, 'object>', ' object>')
 
         # 6. Split the string into different sections
-        table_attr = common.regex_split(morPy_trace, app_dict, table_item, ',')
+        table_attr = common.regex_split(morpy_trace, app_dict, table_item, ',')
 
         # Converted an OpenPyXL data-book into a list specific to the attributes of the MS Excel table.
-        log(morPy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morPy"]["openpyxl_table_data_dict_conv"]}\n'
-                f'{app_dict["loc"]["morPy"]["openpyxl_table_data_dict_tbl"]}: {table}\n'
-                f'{app_dict["loc"]["morPy"]["openpyxl_table_data_dict_attr"]}:\n{table_attr}')
+        log(morpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["morpy"]["openpyxl_table_data_dict_conv"]}\n'
+                f'{app_dict["loc"]["morpy"]["openpyxl_table_data_dict_tbl"]}: {table}\n'
+                f'{app_dict["loc"]["morpy"]["openpyxl_table_data_dict_attr"]}:\n{table_attr}')
 
         check = True
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
         return{
-            'morPy_trace' : morPy_trace,
+            'morpy_trace' : morpy_trace,
             'check' : check,
             'table_attr' : table_attr
             }

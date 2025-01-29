@@ -12,25 +12,25 @@ Descr.:     This module delivers operations to track performance, occurances of 
                 Processes (finished / started)
 """
 
-def init_metrics(morPy_trace, app_dict):
+def init_metrics(morpy_trace, app_dict):
 
     r""" This function initializes the metrics functionality if set in the parameters.
     :param
-        morPy_trace - operation credentials and tracing
+        morpy_trace - operation credentials and tracing
         app_dict - morPy global dictionary
     :return - dictionary
         check - The function ended with no errors
     """
 
     # Import the morPy link
-    import lib.msg, fct
+    import lib.msg as msg, fct
     # Import standard libraries
     import sys, gc
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = '???'
     operation = '???(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     # Preparing parameters
     check = False
@@ -46,8 +46,8 @@ def init_metrics(morPy_trace, app_dict):
         check = True
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     # Return a dictionary

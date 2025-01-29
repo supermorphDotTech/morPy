@@ -91,12 +91,12 @@ import sqlite3
 from lib.decorators import metrics, log
 
 @metrics
-def sqlite3_db_connect(morPy_trace: dict, app_dict: dict, db_path: str) -> dict:
+def sqlite3_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
 
     r"""
     Establishes a connection to a SQLite database. Creates the database file if it does not exist.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The mpy-specific global dictionary.
     :param db_path: The path to the database to be addressed or altered.
 
@@ -105,42 +105,42 @@ def sqlite3_db_connect(morPy_trace: dict, app_dict: dict, db_path: str) -> dict:
         error - Error details if the connection fails
 
     :example:
-        sqlite3_db_connect(morPy_trace, app_dict, '/path/to/db.sqlite')
+        sqlite3_db_connect(morpy_trace, app_dict, '/path/to/db.sqlite')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_db_connect(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     # Connecting to SQLite database.
-    log(morPy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morPy"]["sqlite3_db_connect_conn"]}\n'
-            f'{app_dict["loc"]["morPy"]["sqlite3_db_connect_Path"]}: {db_path}')
+    log(morpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["morpy"]["sqlite3_db_connect_conn"]}\n'
+            f'{app_dict["loc"]["morpy"]["sqlite3_db_connect_Path"]}: {db_path}')
 
     conn = None
     try:
         conn = sqlite3.connect(db_path)
 
         # SQLite database connected.
-        log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["sqlite3_db_connect_ready"]}\n'
+        log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["sqlite3_db_connect_ready"]}\n'
                 f'conn: {conn}')
 
         return conn
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
 @metrics
-def sqlite3_db_disconnect(morPy_trace: dict, app_dict: dict, db_path: str) -> dict:
+def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
 
     r"""
     Disconnects a SQLite database.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The mpy-specific global dictionary.
     :param db_path: The path to the database to be addressed or altered.
 
@@ -149,26 +149,26 @@ def sqlite3_db_disconnect(morPy_trace: dict, app_dict: dict, db_path: str) -> di
         message - Details about the disconnection process
 
     :example:
-        sqlite3_db_disconnect(morPy_trace, app_dict, '/path/to/db.sqlite')
+        sqlite3_db_disconnect(morpy_trace, app_dict, '/path/to/db.sqlite')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_db_disconnect(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     try:
 
         # Disconnecting from SQLite database.
-        log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["sqlite3_db_disconnect_discon"]}\n'
-                f'{app_dict["loc"]["morPy"]["sqlite3_db_disconnect_path"]}: {db_path}')
+        log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["sqlite3_db_disconnect_discon"]}\n'
+                f'{app_dict["loc"]["morpy"]["sqlite3_db_disconnect_path"]}: {db_path}')
 
         conn = sqlite3.connect(db_path)
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     finally:
@@ -177,22 +177,22 @@ def sqlite3_db_disconnect(morPy_trace: dict, app_dict: dict, db_path: str) -> di
                 conn.close()
 
                 # SQLite database disconnected.
-                log(morPy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["morPy"]["sqlite3_db_disconnect_ready"]}\n'
+                log(morpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["morpy"]["sqlite3_db_disconnect_ready"]}\n'
                               f'conn: {conn}')
 
         except Exception as e:
-            log(morPy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            log(morpy_trace, app_dict, "error",
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                     f'{type(e).__name__}: {e}')
 
 @metrics
-def sqlite3_db_statement(morPy_trace: dict, app_dict: dict, db_path: str, db_smnt: str) -> dict:
+def sqlite3_db_statement(morpy_trace: dict, app_dict: dict, db_path: str, db_smnt: str) -> dict:
 
     r"""
     Executes any SQLite3 statement provided.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The mpy-specific global dictionary.
     :param db_path: The path to the database to be addressed or altered.
     :param db_smnt: The SQLite statement to be executed.
@@ -203,29 +203,29 @@ def sqlite3_db_statement(morPy_trace: dict, app_dict: dict, db_path: str, db_smn
         error - Error details if the statement fails.
 
     :example:
-        sqlite3_db_statement(morPy_trace, app_dict, '/path/to/db.sqlite', 'SELECT * FROM table_name')
+        sqlite3_db_statement(morpy_trace, app_dict, '/path/to/db.sqlite', 'SELECT * FROM table_name')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_db_statement(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     # Preparing Parameters
     db_smnt = f'{db_smnt}'
     check = False
 
     # Executing a SQLite3 statement.
-    log(morPy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morPy"]["sqlite3_db_statement_exec"]}\n'
-            f'{app_dict["loc"]["morPy"]["sqlite3_db_statement_db"]}: {db_path}\n'
-            f'{app_dict["loc"]["morPy"]["sqlite3_db_statement_smnt"]}: {db_smnt}')
+    log(morpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["morpy"]["sqlite3_db_statement_exec"]}\n'
+            f'{app_dict["loc"]["morpy"]["sqlite3_db_statement_db"]}: {db_path}\n'
+            f'{app_dict["loc"]["morpy"]["sqlite3_db_statement_smnt"]}: {db_smnt}')
 
     # Execution
     try:
 
         # Connect the database
-        conn = sqlite3_db_connect(morPy_trace, app_dict, db_path)
+        conn = sqlite3_db_connect(morpy_trace, app_dict, db_path)
 
         # Activate WAL mode to acces the database
         conn.execute('pragma journal_mode=wal;')
@@ -240,32 +240,32 @@ def sqlite3_db_statement(morPy_trace: dict, app_dict: dict, db_path: str, db_smn
         c.close()
 
         # Disconnect from the database
-        sqlite3_db_disconnect(morPy_trace, app_dict, db_path)
+        sqlite3_db_disconnect(morpy_trace, app_dict, db_path)
 
         # Statement executed.
-        log(morPy_trace, app_dict, "info",
-            lambda: f'{app_dict["loc"]["morPy"]["sqlite3_db_statement_ready"]}\n'
-                      f'{app_dict["loc"]["morPy"]["sqlite3_db_statement_db"]}: {db_path}')
+        log(morpy_trace, app_dict, "info",
+            lambda: f'{app_dict["loc"]["morpy"]["sqlite3_db_statement_ready"]}\n'
+                      f'{app_dict["loc"]["morpy"]["sqlite3_db_statement_db"]}: {db_path}')
 
         check = True
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace,
+        'morpy_trace' : morpy_trace,
         'check' : check
         }
 
 @metrics
-def sqlite3_tbl_check(morPy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> dict:
+def sqlite3_tbl_check(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> dict:
 
     r"""
     Checks for the existence of a table in a given SQLite database.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The mpy-specific global dictionary.
     :param db_path: The path to the database to be addressed or altered.
     :param table_name: The name of the database table to check.
@@ -276,22 +276,22 @@ def sqlite3_tbl_check(morPy_trace: dict, app_dict: dict, db_path: str, table_nam
         error - Error details if the check fails.
 
     :example:
-        sqlite3_tbl_check(morPy_trace, app_dict, '/path/to/db.sqlite', 'users_table')
+        sqlite3_tbl_check(morpy_trace, app_dict, '/path/to/db.sqlite', 'users_table')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_tbl_check(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     check = False
 
     # Checking the existence of a SQLite database table.
-    log(morPy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morPy"]["sqlite3_tbl_check_start"]}\n'
-            f'{app_dict["loc"]["morPy"]["sqlite3_tbl_check_db"]}: {db_path}\n'
-            f'{app_dict["loc"]["morPy"]["sqlite3_tbl_check_tbl"]}: {table_name}')
+    log(morpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["morpy"]["sqlite3_tbl_check_start"]}\n'
+            f'{app_dict["loc"]["morpy"]["sqlite3_tbl_check_db"]}: {db_path}\n'
+            f'{app_dict["loc"]["morpy"]["sqlite3_tbl_check_tbl"]}: {table_name}')
 
     # Define the execution statement
     exec_statement = f'SELECT count(name) FROM sqlite_master WHERE type=\"table\" AND name=\"{table_name}\"'
@@ -299,7 +299,7 @@ def sqlite3_tbl_check(morPy_trace: dict, app_dict: dict, db_path: str, table_nam
     # Execution
     try:
         # Connect the database
-        conn = sqlite3_db_connect(morPy_trace, app_dict, db_path)
+        conn = sqlite3_db_connect(morpy_trace, app_dict, db_path)
 
         # Activate WAL mode to acces the database
         conn.execute('pragma journal_mode=wal;')
@@ -319,35 +319,35 @@ def sqlite3_tbl_check(morPy_trace: dict, app_dict: dict, db_path: str, table_nam
             # Table does not exist.
             msg = app_dict["sqlite3_tbl_check_tbl_nex"]
 
-            log(morPy_trace, app_dict, "debug",
+            log(morpy_trace, app_dict, "debug",
                 lambda: f'{msg}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_tbl_check_db"]}: {db_path}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_tbl_check_tbl"]}: {table_name}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_tbl_check_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_tbl_check_tbl"]}: {table_name}\n'
                     f'check: {check}')
 
         # Close the cursor
         c.close()
 
         # Disconnect from the database
-        sqlite3_db_disconnect(morPy_trace, app_dict, db_path)
+        sqlite3_db_disconnect(morpy_trace, app_dict, db_path)
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace,
+        'morpy_trace' : morpy_trace,
         'check' : check
         }
 
 @metrics
-def sqlite3_tbl_create(morPy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> dict:
+def sqlite3_tbl_create(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> dict:
 
     r"""
     Creates a table in a given SQLite database.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The mpy-specific global dictionary.
     :param db_path: The path to the database to be addressed or altered.
     :param table_name: The name of the database table to be created.
@@ -358,22 +358,22 @@ def sqlite3_tbl_create(morPy_trace: dict, app_dict: dict, db_path: str, table_na
         error - Error details if the table creation fails.
 
     :example:
-        sqlite3_tbl_create(morPy_trace, app_dict, '/path/to/db.sqlite', 'new_table')
+        sqlite3_tbl_create(morpy_trace, app_dict, '/path/to/db.sqlite', 'new_table')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_tbl_create(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     check = False
 
     # Creating a SQLite database table.
-    log(morPy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morPy"]["sqlite3_tbl_create_start"]}\n'
-            f'{app_dict["loc"]["morPy"]["sqlite3_tbl_create_db"]}: {db_path}\n'
-            f'{app_dict["loc"]["morPy"]["sqlite3_tbl_create_tbl"]}: {table_name}')
+    log(morpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["morpy"]["sqlite3_tbl_create_start"]}\n'
+            f'{app_dict["loc"]["morpy"]["sqlite3_tbl_create_db"]}: {db_path}\n'
+            f'{app_dict["loc"]["morpy"]["sqlite3_tbl_create_tbl"]}: {table_name}')
 
     # Define the execution statement
     exec_statement = f'CREATE TABLE IF NOT EXISTS {table_name} (ID INTEGER PRIMARY KEY)'
@@ -381,7 +381,7 @@ def sqlite3_tbl_create(morPy_trace: dict, app_dict: dict, db_path: str, table_na
     # Execution
     try:
         # Connect the database
-        conn = sqlite3_db_connect(morPy_trace, app_dict, db_path)
+        conn = sqlite3_db_connect(morpy_trace, app_dict, db_path)
 
         # Activate WAL mode to acces the database
         conn.execute('pragma journal_mode=wal;')
@@ -393,33 +393,33 @@ def sqlite3_tbl_create(morPy_trace: dict, app_dict: dict, db_path: str, table_na
         conn.commit()
 
         # SQLite table created.
-        log(morPy_trace, app_dict, "info",
-            lambda: f'{app_dict["loc"]["morPy"]["sqlite3_tbl_create_ready"]}\n'
-                f'{app_dict["loc"]["morPy"]["sqlite3_tbl_create_db"]}: {db_path}\n'
-                f'{app_dict["loc"]["morPy"]["sqlite3_tbl_create_tbl"]}: {table_name}')
+        log(morpy_trace, app_dict, "info",
+            lambda: f'{app_dict["loc"]["morpy"]["sqlite3_tbl_create_ready"]}\n'
+                f'{app_dict["loc"]["morpy"]["sqlite3_tbl_create_db"]}: {db_path}\n'
+                f'{app_dict["loc"]["morpy"]["sqlite3_tbl_create_tbl"]}: {table_name}')
 
         # Disconnect from the database
-        sqlite3_db_disconnect(morPy_trace, app_dict, db_path)
+        sqlite3_db_disconnect(morpy_trace, app_dict, db_path)
 
         check = True
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace,
+        'morpy_trace' : morpy_trace,
         'check' : check
         }
 
 @metrics
-def sqlite3_tbl_column_add(morPy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, col_types: list ) -> dict:
+def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, col_types: list ) -> dict:
 
     r"""
     Adds one or more columns to a table in a given SQLite database.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The mpy-specific global dictionary.
     :param db_path: The path to the database to be addressed or altered.
     :param table_name: The name of the database table to be altered.
@@ -432,13 +432,13 @@ def sqlite3_tbl_column_add(morPy_trace: dict, app_dict: dict, db_path: str, tabl
         error - Error details if the column addition fails.
 
     :example:
-        sqlite3_tbl_column_add(morPy_trace, app_dict, '/path/to/db.sqlite', 'table_name', ['new_column1', 'new_column2'], ['TEXT', 'INTEGER'])
+        sqlite3_tbl_column_add(morpy_trace, app_dict, '/path/to/db.sqlite', 'table_name', ['new_column1', 'new_column2'], ['TEXT', 'INTEGER'])
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_tbl_column_add(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     columns_str = f'{columns}'
@@ -449,10 +449,10 @@ def sqlite3_tbl_column_add(morPy_trace: dict, app_dict: dict, db_path: str, tabl
     try:
 
         # Adding columns to a SQLite database table.
-        log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_start"]}\n'
-                f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
-                f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}')
+        log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_start"]}\n'
+                f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
+                f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}')
 
         # Compare items in columns and col_types
         i = 0
@@ -469,13 +469,13 @@ def sqlite3_tbl_column_add(morPy_trace: dict, app_dict: dict, db_path: str, tabl
             plausible = True
 
             # Check the existence of the table
-            check = sqlite3_tbl_check(morPy_trace, app_dict, db_path, table_name)
+            check = sqlite3_tbl_check(morpy_trace, app_dict, db_path, table_name)
 
         # Proceed only if table exists and column count is plausible.
         if check:
 
             # Connect the database
-            conn = sqlite3_db_connect(morPy_trace, app_dict, db_path)
+            conn = sqlite3_db_connect(morpy_trace, app_dict, db_path)
 
             # Activate WAL mode to acces the database
             conn.execute('pragma journal_mode=wal;')
@@ -498,59 +498,59 @@ def sqlite3_tbl_column_add(morPy_trace: dict, app_dict: dict, db_path: str, tabl
                     k += 1
 
                 # Columns added to SQLite table.
-                log(morPy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_start"]}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_col"]}: {columns_str}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_datatype"]}: {col_types_str}')
+                log(morpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_start"]}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_col"]}: {columns_str}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_datatype"]}: {col_types_str}')
 
                 # Disconnect from the database
-                sqlite3_db_disconnect(morPy_trace, app_dict, db_path)
+                sqlite3_db_disconnect(morpy_trace, app_dict, db_path)
 
             except Exception as e:
-                log(morPy_trace, app_dict, "error",
-                    lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                log(morpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_smnt"]}: {exec_statement}')
+                        f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_smnt"]}: {exec_statement}')
 
         # Log and print a denial
         if not check:
             # The table does not exist. Columns could not be inserted.
-            log(morPy_trace, app_dict, "denied",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_tbl_nex"]}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}\n'
+            log(morpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_tbl_nex"]}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_tbl"]}: {table_name}\n'
                     f'check: {check}')
 
         # Log and print a denial
         if not plausible:
             # The number of columns does not match the number of datatypes handed over to the function.
-            log(morPy_trace, app_dict, "denied",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_mismatch"]}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_col"]}: {columns_str}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_numcol"]}: {i}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_datatype"]}: {col_types_str}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_tbl_column_add_numdatatype"]}: {j}')
+            log(morpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_mismatch"]}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_col"]}: {columns_str}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_numcol"]}: {i}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_datatype"]}: {col_types_str}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_numdatatype"]}: {j}')
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace,
+        'morpy_trace' : morpy_trace,
         'check' : check,
         'tbl_check' : tbl_check
         }
 
 @metrics
-def sqlite3_row_insert(morPy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list) -> dict:
+def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list) -> dict:
 
     r"""
     Inserts a row into a table in a given SQLite database.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The mpy-specific global dictionary.
     :param db_path: The path to the database to be addressed or altered.
     :param table_name: The name of the database table where the row will be inserted.
@@ -563,13 +563,13 @@ def sqlite3_row_insert(morPy_trace: dict, app_dict: dict, db_path: str, table_na
         error - Error details if the row insertion fails.
 
     :example:
-        sqlite3_row_insert(morPy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['value1', 123])
+        sqlite3_row_insert(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['value1', 123])
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_row_insert(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     check = False
@@ -601,22 +601,22 @@ def sqlite3_row_insert(morPy_trace: dict, app_dict: dict, db_path: str, table_na
         exec_statement = f'INSERT INTO {table_name} ({col_formatted}) VALUES ({dat_formatted})'
 
         # Inserting a row into a SQLite database table.
-        log(morPy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_start"]}\n'
-                      f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_db"]}: {db_path}\n'
-                      f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_tbl"]}: {table_name}')
+        log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_start"]}\n'
+                      f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_db"]}: {db_path}\n'
+                      f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_tbl"]}: {table_name}')
 
         # Plausibility check for columns and according data.
         if i == j:
             plausible = True
 
             # Number of columns match data.
-            log(morPy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_match"]}\n'
+            log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_match"]}\n'
                     f'plausible: {plausible}')
 
             # Check the existence of the table
-            check = sqlite3_tbl_check(morPy_trace, app_dict, db_path, table_name)
+            check = sqlite3_tbl_check(morpy_trace, app_dict, db_path, table_name)
 
         # Proceed only if table exists and column count is plausible.
         if check:
@@ -624,7 +624,7 @@ def sqlite3_row_insert(morPy_trace: dict, app_dict: dict, db_path: str, table_na
             # Execution
             try:
                 # Connect the database
-                conn = sqlite3_db_connect(morPy_trace, app_dict, db_path)
+                conn = sqlite3_db_connect(morpy_trace, app_dict, db_path)
 
                 # Activate WAL mode to acces the database
                 conn.execute('pragma journal_mode=wal;')
@@ -642,56 +642,56 @@ def sqlite3_row_insert(morPy_trace: dict, app_dict: dict, db_path: str, table_na
                 c.close()
 
                 # Disconnect from the database
-                sqlite3_db_disconnect(morPy_trace, app_dict, db_path)
+                sqlite3_db_disconnect(morpy_trace, app_dict, db_path)
 
                 # Row inserted into SQLite table.
-                log(morPy_trace, app_dict, "info",
-                    lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_ready"]}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_db"]}: {db_path}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_tbl"]}: {table_name}')
+                log(morpy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_ready"]}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_db"]}: {db_path}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_tbl"]}: {table_name}')
 
             except Exception as e:
-                log(morPy_trace, app_dict, "error",
-                    lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                log(morpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_smnt"]}: {exec_statement}')
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_smnt"]}: {exec_statement}')
 
         # Log and print a denial
         if not check:
             # The table does not exist.
-            log(morPy_trace, app_dict, "denied",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_tblnex"]}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_db"]}: {db_path}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_tbl"]}: {table_name}\n'
+            log(morpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_tblnex"]}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_tbl"]}: {table_name}\n'
                     f'check: {check}')
 
         # Log and print a denial
         if not plausible:
             # The number of columns does not match the number of values handed to the function.
-            log(morPy_trace, app_dict, "denied",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_mismatch"]}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_col"]}: {col_formatted}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_numcol"]}: {i}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_insert_numval"]}: {j}')
+            log(morpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_mismatch"]}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_col"]}: {col_formatted}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_numcol"]}: {i}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_numval"]}: {j}')
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace,
+        'morpy_trace' : morpy_trace,
         'check' : check,
         'row_id' : row_id
         }
 
 @metrics
-def sqlite3_row_update(morPy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list, row_id: int) -> dict:
+def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list, row_id: int) -> dict:
 
     r"""
     Updates a row in a table in a given SQLite database. Only the specified columns will be updated.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The mpy-specific global dictionary.
     :param db_path: The path to the database to be addressed or altered.
     :param table_name: The name of the database table where the row will be updated.
@@ -705,13 +705,13 @@ def sqlite3_row_update(morPy_trace: dict, app_dict: dict, db_path: str, table_na
         error - Error details if the update operation fails.
 
     :example:
-        sqlite3_row_update(morPy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], 42)
+        sqlite3_row_update(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], 42)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_row_update(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     check = False
@@ -745,15 +745,15 @@ def sqlite3_row_update(morPy_trace: dict, app_dict: dict, db_path: str, table_na
             plausible = True
 
             # Updating a row of a SQLite database table.
-            log(morPy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_update_start"]}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_db"]}: {db_path}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_id"]}: {row_id}')
+            log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_update_start"]}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_id"]}: {row_id}')
 
             # Check the existence of the table
-            check = sqlite3_tbl_check(morPy_trace, app_dict, db_path, table_name)
+            check = sqlite3_tbl_check(morpy_trace, app_dict, db_path, table_name)
 
         # Proceed only if table exists and column count is plausible.
         if check:
@@ -774,7 +774,7 @@ def sqlite3_row_update(morPy_trace: dict, app_dict: dict, db_path: str, table_na
                 exec_statement = f'UPDATE {table_name} SET {dat_sets} WHERE ID = {row_id}'
 
                 # Connect the database
-                conn = sqlite3_db_connect(morPy_trace, app_dict, db_path)
+                conn = sqlite3_db_connect(morpy_trace, app_dict, db_path)
 
                 # Activate WAL mode to acces the database
                 conn.execute('pragma journal_mode=wal;')
@@ -789,59 +789,59 @@ def sqlite3_row_update(morPy_trace: dict, app_dict: dict, db_path: str, table_na
                 c.close()
 
                 # Disconnect from the database
-                sqlite3_db_disconnect(morPy_trace, app_dict, db_path)
+                sqlite3_db_disconnect(morpy_trace, app_dict, db_path)
 
                 # Updated a row of a SQLite table.
-                log(morPy_trace, app_dict, "info",
-                    lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_update_ready"]}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_update_db"]}: {db_path}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_update_id"]}: {row_id}')
+                log(morpy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_update_ready"]}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_update_db"]}: {db_path}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_update_id"]}: {row_id}')
 
             except Exception as e:
-                log(morPy_trace, app_dict, "error",
-                    lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                log(morpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_update_smnt"]}: {exec_statement}')
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_update_smnt"]}: {exec_statement}')
 
         # Log and print a denial
         if not check:
             # The table does not exist.
-            log(morPy_trace, app_dict, "denied",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_update_tbl_nex"]}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_db"]}: {db_path}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
+            log(morpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_update_tbl_nex"]}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_tbl"]}: {table_name}\n'
                     f'check: {check}')
 
         # Log and print a denial
         if not plausible:
             # The number of columns does not match the number of values handed to the function.
-            log(morPy_trace, app_dict, "denied",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_update_mismatch"]}\n'
-                          f'{app_dict["loc"]["morPy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
-                          f'{app_dict["loc"]["morPy"]["sqlite3_row_update_numcol"]}: {i}\n'
-                          f'{app_dict["loc"]["morPy"]["sqlite3_row_update_numval"]}: {j}')
+            log(morpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_update_mismatch"]}\n'
+                          f'{app_dict["loc"]["morpy"]["sqlite3_row_update_col"]}: {col_formatted}\n'
+                          f'{app_dict["loc"]["morpy"]["sqlite3_row_update_numcol"]}: {i}\n'
+                          f'{app_dict["loc"]["morpy"]["sqlite3_row_update_numval"]}: {j}')
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace,
+        'morpy_trace' : morpy_trace,
         'check' : check,
         'row_id' : row_id
         }
 
 @metrics
-def sqlite3_row_update_where(morPy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list, where: str) -> dict:
+def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list, where: str) -> dict:
 
     r"""
     Updates one or more rows in a table in a given SQLite database based on a specified condition.
     Only the specified columns will be updated.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The mpy-specific global dictionary.
     :param db_path: The path to the database to be addressed or altered.
     :param table_name: The name of the database table where the row(s) will be updated.
@@ -855,14 +855,14 @@ def sqlite3_row_update_where(morPy_trace: dict, app_dict: dict, db_path: str, ta
         error - Error details if the update operation fails.
 
     :example:
-        sqlite3_row_update_where(morPy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], "id = 42 AND status = 'active'"
+        sqlite3_row_update_where(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], "id = 42 AND status = 'active'"
         )
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'sqlite3'
     operation = 'sqlite3_row_update_where(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     table_name = f'{table_name}'
     where = f'{where}'
@@ -897,15 +897,15 @@ def sqlite3_row_update_where(morPy_trace: dict, app_dict: dict, db_path: str, ta
             plausible = True
 
             # Updating a row of a SQLite database table.
-            log(morPy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_start"]}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
+            log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_start"]}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
                     f'where: {where}')
 
             # Check the existence of the table
-            check = sqlite3_tbl_check(morPy_trace, app_dict, db_path, table_name)
+            check = sqlite3_tbl_check(morpy_trace, app_dict, db_path, table_name)
 
         if check and plausible:
 
@@ -925,7 +925,7 @@ def sqlite3_row_update_where(morPy_trace: dict, app_dict: dict, db_path: str, ta
                 exec_statement = f'UPDATE {table_name} SET {dat_sets} WHERE {where}'
 
                 # Connect the database
-                conn = sqlite3_db_connect(morPy_trace, app_dict, db_path)
+                conn = sqlite3_db_connect(morpy_trace, app_dict, db_path)
 
                 # Activate WAL mode to acces the database
                 conn.execute('pragma journal_mode=wal;')
@@ -940,46 +940,46 @@ def sqlite3_row_update_where(morPy_trace: dict, app_dict: dict, db_path: str, ta
                 c.close()
 
                 # Disconnect from the database
-                sqlite3_db_disconnect(morPy_trace, app_dict, db_path)
+                sqlite3_db_disconnect(morpy_trace, app_dict, db_path)
 
                 # Updated a row of a SQLite table.
-                log(morPy_trace, app_dict, "info",
-                    lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_ready"]}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
-                        f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
+                log(morpy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_ready"]}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
+                        f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
                         f'where: {where}')
 
             except Exception as e:
-                log(morPy_trace, app_dict, "error",
-                    lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                log(morpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                         f'{type(e).__name__}: {e}')
 
         # Log and print a denial
         if not check:
             # The table does not exist.
-            log(morPy_trace, app_dict, "denied",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_tbl_nex"]}\n'
-                          f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
-                          f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
+            log(morpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_tbl_nex"]}\n'
+                          f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_db"]}: {db_path}\n'
+                          f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_tbl"]}: {table_name}\n'
                           f'check: {check}')
 
         # Log and print a denial
         if not plausible:
             # The number of columns does not match the number of values handed to the function.
-            log(morPy_trace, app_dict, "denied",
-                lambda: f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_mismatch"]}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_numcol"]}: {i}\n'
-                    f'{app_dict["loc"]["morPy"]["sqlite3_row_update_where_numval"]}: {j}')
+            log(morpy_trace, app_dict, "denied",
+                lambda: f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_mismatch"]}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_col"]}: {col_formatted}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_numcol"]}: {i}\n'
+                    f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_numval"]}: {j}')
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace, \
+        'morpy_trace' : morpy_trace, \
         'check' : check , \
         'where' : where
         }

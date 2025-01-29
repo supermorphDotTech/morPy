@@ -14,13 +14,13 @@ import requests
 from lib.decorators import metrics, log
 
 @metrics
-def web_request(morPy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> dict:
+def web_request(morpy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> dict:
 
     r"""
     Connects to a URL and delivers the requested responses. Data from web pages,
     such as spreadsheets or other media, can be extracted using this method.
 
-    :param morPy_trace: Operation credentials and tracing information.
+    :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
     :param URL: The link to the webpage.
     :param req_dict: Dictionary specifying which responses are requested. Example:
@@ -45,13 +45,13 @@ def web_request(morPy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> 
         }
 
     :return: dict
-        morPy_trace: Operation credentials and tracing.
+        morpy_trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         html_code: The 3-digit HTTP response code.
         response_dict: Returns the requested responses. Includes the same keys as the provided `req_dict`.
 
     :example:
-        web_request(morPy_trace, app_dict, "https://example.com", {'content': True, 'status_code': True})
+        web_request(morpy_trace, app_dict, "https://example.com", {'content': True, 'status_code': True})
 
     TODO finish the function
     """
@@ -59,7 +59,7 @@ def web_request(morPy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module = 'web'
     operation = 'web_request(~)'
-    morPy_trace = fct.tracing(module, operation, morPy_trace)
+    morpy_trace = fct.tracing(module, operation, morpy_trace)
 
     # Preparing parameters
     check = False
@@ -90,7 +90,7 @@ def web_request(morPy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> 
                         }
 
         # TODO Localization
-        log(morPy_trace, app_dict, "info",
+        log(morpy_trace, app_dict, "info",
             lambda: f'Fetching a webpage.\n'
                       f'URL: {URL}')
 
@@ -99,7 +99,7 @@ def web_request(morPy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> 
 
         # Get and format the response code
         html_code = f'{response}'
-        html_code = common.regex_findall(morPy_trace, app_dict, html_code, '[0-9]{3}')['result']
+        html_code = common.regex_findall(morpy_trace, app_dict, html_code, '[0-9]{3}')['result']
 
         # Evaluate the request and get responses
         # Loop through requests to show up in logging
@@ -116,7 +116,7 @@ def web_request(morPy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> 
                     requests_log = f'{requests_log}\n> {key}'
 
         # TODO Localization
-        log(morPy_trace, app_dict, "debug",
+        log(morpy_trace, app_dict, "debug",
             lambda: f'Webpage data requested successfully.\n'
                       f'HTML Response Code: {html_code}\n'
                       f'Requests:\n{requests_log}')
@@ -124,12 +124,12 @@ def web_request(morPy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> 
         check = True
 
     except Exception as e:
-        log(morPy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morPy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
-        'morPy_trace' : morPy_trace, \
+        'morpy_trace' : morpy_trace, \
         'check' : check, \
         'html_code' : html_code, \
         'response_dict' : response_dict

@@ -17,7 +17,7 @@ Descr.:     This module defines all descriptive strings as a dictionary. This
             You may create your own modules for that purpose.
 """
 
-def loc_morPy() -> dict:
+def loc_morpy() -> dict:
 
     r"""
     This dictionary defines all messages for morPy core functions localized to a
@@ -27,7 +27,7 @@ def loc_morPy() -> dict:
         -
 
     :return: dict
-        loc_morPy_dict: Localization dictionary for morPy core functions. All keys
+        loc_morpy_dict: Localization dictionary for morPy core functions. All keys
             will be copied to app_dict during morPy initialization.
 
     :example:
@@ -36,7 +36,7 @@ def loc_morPy() -> dict:
 
     mpy_language = 'en-US'
 
-    loc_morPy_dict = {
+    loc_morpy_dict = {
 
         # morPy specific area - BEGIN
 
@@ -83,15 +83,15 @@ def loc_morPy() -> dict:
 
         # mpy_init.py - init(~)
         'events_total_descr' : 'Total number of logged events.',
-        'events_DEBUG_descr' : 'Number of occurences with the log level "debug".',
-        'events_INFO_descr' : 'Number of occurences with the log level "info".',
-        'events_WARNING_descr' : 'Number of occurences with the log level "warning".',
-        'events_DENIED_descr' : 'Number of occurences with the log level "denied".',
-        'events_ERROR_descr' : 'Number of occurences with the log level "error".',
-        'events_CRITICAL_descr' : 'Number of occurences with the log level "critical".',
-        'events_UNDEFINED_descr' : 'Number of occurences with the log level "undefined".',
-        'events_INIT_descr' : 'Number of occurences with the log level "init".',
-        'events_EXIT_descr' : 'Number of occurences with the log level "exit".',
+        'events_DEBUG_descr' : 'Number of occurrences with the log level "debug".',
+        'events_INFO_descr' : 'Number of occurrences with the log level "info".',
+        'events_WARNING_descr' : 'Number of occurrences with the log level "warning".',
+        'events_DENIED_descr' : 'Number of occurrences with the log level "denied".',
+        'events_ERROR_descr' : 'Number of occurrences with the log level "error".',
+        'events_CRITICAL_descr' : 'Number of occurrences with the log level "critical".',
+        'events_UNDEFINED_descr' : 'Number of occurrences with the log level "undefined".',
+        'events_INIT_descr' : 'Number of occurrences with the log level "init".',
+        'events_EXIT_descr' : 'Number of occurrences with the log level "exit".',
         'init_loc_dbg_loaded' : 'morPy debug localization loaded.',
         'init_loc_app_loaded' : 'App localization loaded.',
         'init_loc_finished' : f'Localization initialized.\nLanguage: {mpy_language}',
@@ -111,7 +111,7 @@ def loc_morPy() -> dict:
         'log_header_begin' : 'BEGIN',
 
         # mpy_init.py - mpy_ref(~)
-        'ref_descr' : 'This file shows the parameters set in mpy_param.py as well as the most important system and app related information. All of these are adressable through the app_dict which is available throughout all functions and modules of this framework. This reference is meant to be used for development only.',
+        'ref_descr' : 'This file shows the parameters set in mpy_param.py as well as the most important system and app related information. All of these are addressable through the app_dict which is available throughout all functions and modules of this framework. This reference is meant to be used for development only.',
         'ref_created' : 'The init_dict was written to textfile.',
         'ref_path' : 'Filepath',
 
@@ -646,7 +646,7 @@ def loc_morPy() -> dict:
         'thread_id_err' : 'Overflow in thread ID list. ID exceeds maximum threads utilized.',
 
         # mpy_mt.py - mpy_thread_queue(~)
-        'thread_queue_enqueue' : 'Enqueing task.',
+        'thread_queue_enqueue' : 'Enqueueing task.',
         'thread_queue_dbg_enqueue_done' : 'Task successfully enqueued. Thread created.',
         'thread_queue_dbg_thread_skip' : 'No free thread available. Skipping thread invoke.',
         'thread_queue_dbg_enq_new_done' : 'New Thread ID list created. Task successfully enqueued.',
@@ -654,7 +654,7 @@ def loc_morPy() -> dict:
         'thread_queue_priority' : 'Priority',
         'cl_priority_queue_enqueue_id_conflict' : 'Task not enqueued. Task ID mismatch or conflict.',
         'cl_priority_queue_enqueue_task_duplicate' : 'Task is already enqueued. Referencing in queue.',
-        'thread_queue_enqueue_err' : 'Enqueing failed.',
+        'thread_queue_enqueue_err' : 'Enqueueing failed.',
         'thread_queue_dbg_threads_available' : 'Checking threads availability.',
         'thread_queue_dbg_threads_used' : 'Threads in use',
         'thread_queue_dbg_threads_max' : 'Threads total',
@@ -673,9 +673,9 @@ def loc_morPy() -> dict:
         # morPy specific area - END
     }
 
-    return loc_morPy_dict
+    return loc_morpy_dict
 
-def loc_morPy_dbg() -> dict:
+def loc_morpy_dbg() -> dict:
 
     r"""
     This dictionary defines all messages for morPy core functions debugging localized to a
@@ -685,7 +685,7 @@ def loc_morPy_dbg() -> dict:
         -
 
     :return: dict
-        loc_morPy_dbg_dict: Localization dictionary for morPy unit tests. All keys
+        loc_morpy_dbg_dict: Localization dictionary for morPy unit tests. All keys
             will be copied to app_dict during unit testing instead of morPy
             initialization.
 
@@ -693,7 +693,7 @@ def loc_morPy_dbg() -> dict:
         app_dict["loc"]["dbg"][KEY]
     """
 
-    loc_morPy_dbg_dict = {
+    loc_morpy_dbg_dict = {
 
         # Debug specific area - BEGIN
 
@@ -753,7 +753,7 @@ def loc_morPy_dbg() -> dict:
         # App specific area - END
     }
 
-    return loc_morPy_dbg_dict
+    return loc_morpy_dbg_dict
 
 def loc_app() -> dict:
 
