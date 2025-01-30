@@ -5,12 +5,9 @@ https://github.com/supermorphDotTech
 Author:     Bastian Neuwirth
 Descr.:     This module defines all descriptive, localized strings for use in the developed app.
             It is loaded during initialization.
-
-            TODO remove mpy_ as prefixes
 """
 
 def loc_morpy() -> dict:
-
     r"""
     This dictionary defines all messages for morPy core functions localized to a
     specific language.
@@ -583,13 +580,11 @@ def loc_morpy() -> dict:
         'openpyxl_table_data_dict_conv' : 'Converted an openpyxl data-book into a list specific to the attributes of the MS Excel table.',
         'openpyxl_table_data_dict_tbl' : 'Table',
         'openpyxl_table_data_dict_attr' : 'Attributes',
-
     }
 
     return loc_morpy_dict
 
 def loc_morpy_dbg() -> dict:
-
     r"""
     This dictionary defines all messages for morPy core functions debugging localized to a
     specific language.
@@ -606,8 +601,6 @@ def loc_morpy_dbg() -> dict:
         app_dict["loc"]["dbg"][KEY]
     """
 
-    loc_morpy_dbg_dict = {
-
-    }
+    loc_morpy_dbg_dict = {}
 
     return loc_morpy_dbg_dict
