@@ -12,6 +12,7 @@ TODO make logging a class
 """
 
 import lib.fct as morpy_fct
+from lib.common import textfile_write
 from lib.decorators import metrics
 
 import sys
@@ -340,7 +341,7 @@ def log_txt(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
 
     # Write to text file - Fallback if SQLite functionality is broken
     filepath = app_dict["conf"]["log_txt_path"]
-    morpy_fct.txt_write(morpy_trace, app_dict, filepath, log_dict["log_msg_complete"])
+    textfile_write(morpy_trace, app_dict, filepath, log_dict["log_msg_complete"])
 
 def log_db(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
 
@@ -415,7 +416,8 @@ def log_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> object | 
     except Exception as e:
         # The database could not be found and/or connected.
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}\n'
                 f'{app_dict["loc"]["morpy"]["log_db_connect_excpt"]}\n'
                 f'db_path: {db_path}')
@@ -448,7 +450,8 @@ def log_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> None:
     except Exception as e:
         # The database could not be found and/or disconnected.
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}\n'
                 f'{app_dict["loc"]["morpy"]["log_db_disconnect_excpt"]}\n'
                 f'db_path: {db_path}')
@@ -506,7 +509,8 @@ def log_db_table_create(morpy_trace: dict, app_dict: dict, db_path: str, table_n
     except Exception as e:
         # The log table for runtime could not be created.
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}\n'
                 f'{app_dict["loc"]["morpy"]["log_db_table_create_excpt"]}\n'
                 f'{app_dict["loc"]["morpy"]["log_db_table_create_stmt"]}: {exec_statement}')
@@ -567,7 +571,8 @@ def log_db_table_check(morpy_trace: dict, app_dict: dict, db_path: str, table_na
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list,
@@ -647,7 +652,8 @@ def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, tab
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list,
@@ -745,7 +751,8 @@ def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def log_wait_for_input(morpy_trace: dict, app_dict: dict, msg_text: str) -> str | None:
@@ -776,5 +783,6 @@ def log_wait_for_input(morpy_trace: dict, app_dict: dict, msg_text: str) -> str 
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')

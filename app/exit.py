@@ -56,7 +56,8 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict, orchestrat
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     finally:

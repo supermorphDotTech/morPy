@@ -81,7 +81,8 @@ def mpy_thread_queue(morpy_trace: dict, app_dict: dict, name: str, priority: int
 
             except Exception as e:
                 log(morpy_trace, app_dict, "critical",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}')
 
             # Start a thread, if there are threads available. If all threads are already in use, skip
@@ -136,7 +137,8 @@ def mpy_thread_queue(morpy_trace: dict, app_dict: dict, name: str, priority: int
 
             except Exception as e:
                 log(morpy_trace, app_dict, "critical",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}')
 
         # Run fallback mode - single threaded
@@ -146,7 +148,8 @@ def mpy_thread_queue(morpy_trace: dict, app_dict: dict, name: str, priority: int
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -198,7 +201,8 @@ def mpy_threads_joinall(morpy_trace: dict, app_dict: dict) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -248,7 +252,8 @@ def mt_abort(morpy_trace: dict, app_dict: dict) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -306,7 +311,8 @@ class cl_priority_queue(object):
 
         except Exception as e:
             log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
     def enqueue(self, morpy_trace: dict, app_dict: dict, name: str, priority: int, task: str) -> dict:
@@ -357,7 +363,8 @@ class cl_priority_queue(object):
 
         except Exception as e:
             log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
@@ -427,7 +434,8 @@ class cl_priority_queue(object):
 
         except Exception as e:
             log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
@@ -534,7 +542,8 @@ def mt_init(morpy_trace: dict, app_dict: dict) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -597,7 +606,8 @@ class cl_thread(threading.Thread):
 
         except Exception as e:
             log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
     def run(self) -> dict:
@@ -727,7 +737,8 @@ class cl_thread(threading.Thread):
 
         except Exception as e:
             log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
@@ -811,7 +822,8 @@ def prio_correction(morpy_trace: dict, app_dict: dict, priority: int, task: str)
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -907,7 +919,8 @@ def thread_id(morpy_trace: dict, app_dict: dict) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -993,7 +1006,8 @@ def thread_imports(morpy_trace: dict, app_dict: dict, task: str) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{

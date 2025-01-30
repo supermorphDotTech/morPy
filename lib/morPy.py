@@ -73,7 +73,8 @@ def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
@@ -120,7 +121,8 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
@@ -265,7 +267,8 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
@@ -519,7 +522,8 @@ def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: boo
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
@@ -583,7 +587,8 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, overwrite: bool=False,
@@ -661,7 +666,8 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, encoding: str=''):
@@ -700,7 +706,8 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, enco
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None):
@@ -739,7 +746,8 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftype
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None):
@@ -775,7 +783,8 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, overwrite: bool=False):
@@ -811,7 +820,8 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str):
@@ -842,7 +852,8 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str):
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str):
@@ -874,7 +885,8 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str):
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str):
@@ -905,7 +917,8 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str):
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
@@ -953,7 +966,8 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
@@ -1005,7 +1019,8 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
             morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
             log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
     except Exception as e:
@@ -1051,7 +1066,8 @@ def join_processes(morpy_trace: dict, app_dict: dict):
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
 def interrupt(morpy_trace: dict, app_dict: dict):
@@ -1082,7 +1098,8 @@ def interrupt(morpy_trace: dict, app_dict: dict):
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str):
@@ -1117,7 +1134,8 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str):
@@ -1152,7 +1170,8 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter: str):
@@ -1189,7 +1208,8 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_for: str, replace_by: str):
@@ -1226,7 +1246,8 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spec_lst: list):
@@ -1269,7 +1290,8 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: str):
@@ -1301,7 +1323,8 @@ def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: st
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def testprint(morpy_trace: dict, app_dict: dict, message: str):
@@ -1332,7 +1355,8 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str):
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def wait_for_input(morpy_trace: dict, app_dict: dict, message: str):
@@ -1366,7 +1390,8 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str):
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection: tuple=None):
@@ -1404,7 +1429,8 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection:
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 def datetime_now():
@@ -1597,27 +1623,6 @@ def tracing(module, operation, morpy_trace):
     except Exception as e:
         raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
 
-def txt_write(morpy_trace, app_dict, filepath, content):
-    r"""
-    This function appends to any textfile and creates it, if it does not already exist.
-
-    :param morpy_trace: operation credentials and tracing
-    :param app_dict: morPy global dictionary
-    :param filepath: Path to the textfile including its name and filetype
-    :param content: Something that will be printed as a string.
-
-    :return:
-        -
-    """
-
-    import lib.fct as morpy_fct
-
-    try:
-        return morpy_fct.txt_write(morpy_trace, app_dict, filepath, content)
-
-    except Exception as e:
-        raise RuntimeError(f'Line: {sys.exc_info()[-1].tb_lineno}\n{type(e).__name__}: {e}')
-
 def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_tpl: tuple, save_as: str,
                         overwrite: bool=False):
     r"""
@@ -1658,5 +1663,6 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')

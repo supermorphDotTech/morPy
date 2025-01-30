@@ -31,6 +31,7 @@ def loc_morpy() -> dict:
 
         # ERRORS - Common vocabulary
         'err_line' : 'Line',
+        'err_module' : 'in module',
         'err_excp' : 'Exception',
         'priority' : 'priority',
         'trace' : 'trace',

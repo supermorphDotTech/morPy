@@ -69,5 +69,6 @@ def _exit(morpy_trace: dict=None, app_dict: dict=None):
 
     except Exception as e:
         log_no_q(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')

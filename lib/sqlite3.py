@@ -132,7 +132,8 @@ def sqlite3_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
 @metrics
@@ -169,7 +170,8 @@ def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> di
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     finally:
@@ -184,7 +186,8 @@ def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> di
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
 @metrics
@@ -252,7 +255,8 @@ def sqlite3_db_statement(morpy_trace: dict, app_dict: dict, db_path: str, db_smn
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -334,7 +338,8 @@ def sqlite3_tbl_check(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -406,7 +411,8 @@ def sqlite3_tbl_create(morpy_trace: dict, app_dict: dict, db_path: str, table_na
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -511,7 +517,8 @@ def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, tabl
 
             except Exception as e:
                 log(morpy_trace, app_dict, "error",
-                    lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_smnt"]}: {exec_statement}')
 
@@ -536,7 +543,8 @@ def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, tabl
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -653,7 +661,8 @@ def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_na
 
             except Exception as e:
                 log(morpy_trace, app_dict, "error",
-                    lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_smnt"]}: {exec_statement}')
 
@@ -677,7 +686,8 @@ def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_na
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -802,7 +812,8 @@ def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_na
 
             except Exception as e:
                 log(morpy_trace, app_dict, "error",
-                    lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["morpy"]["sqlite3_row_update_smnt"]}: {exec_statement}')
 
@@ -826,7 +837,8 @@ def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_na
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -953,7 +965,8 @@ def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, ta
 
             except Exception as e:
                 log(morpy_trace, app_dict, "error",
-                    lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}')
 
         # Log and print a denial
@@ -976,7 +989,8 @@ def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, ta
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{

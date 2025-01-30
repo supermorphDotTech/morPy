@@ -407,62 +407,6 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None):
 
     return morpy_trace_passdown
 
-def txt_write(morpy_trace, app_dict, filepath, content):
-    r"""
-    This function appends to any textfile and creates it, if it does not already exist.
-
-    :param morpy_trace: operation credentials and tracing
-    :param app_dict: morPy global dictionary
-    :param filepath: Path to the textfile including its name and filetype
-    :param content: Something that will be printed as a string.
-
-    :return:
-        -
-    """
-
-    import sys, pathlib
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'fct'
-    operation = 'txt_wr(~)'
-    morpy_trace = tracing(module, operation, morpy_trace)
-
-    # Preparing parameters
-    check = False
-
-    # Apply standard formats
-    content = f'{content}'
-    filepath = pathlib.Path(filepath)
-
-    # Write to file
-    try:
-
-        # Append to a textfile
-        if filepath.is_file():
-
-            with open(filepath, 'a') as ap:
-                ap.write(f'\n{content}')
-
-        # Create and write a textfile
-        else:
-
-            with open(filepath, 'w') as wr:
-                wr.write(content)
-
-        check = True
-
-    except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{type(e).__name__}: {e}')
-
-    finally:
-        # Return a dictionary
-        return{
-            'morpy_trace' : morpy_trace,
-            'check' : check
-            }
-
 def handle_exception_main(e, init=False, app_dict=None):
     r"""
     Handle any exception outside the scope of msg.py

@@ -12,6 +12,7 @@ import lib.conf as conf
 import lib.mp as mp
 
 from lib.common import cl_priority_queue
+from lib.common import textfile_write
 from lib.decorators import log_no_q
 
 import sys
@@ -416,7 +417,8 @@ def types_dict_build(morpy_trace: dict):
     # Error detection
     except Exception as e:
         log_no_q(morpy_trace, init_dict, "error",
-        lambda: f'{init_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{init_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{init_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
 
     finally:
@@ -462,7 +464,8 @@ def types_dict_finalize(morpy_trace: dict, init_dict: dict):
     # Error detection
     except Exception as e:
         log_no_q(morpy_trace, init_dict, "error",
-        lambda: f'{init_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{init_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{init_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
 
 def morpy_log_header(morpy_trace: dict, init_dict: dict):
@@ -501,7 +504,7 @@ def morpy_log_header(morpy_trace: dict, init_dict: dict):
 
     # Write to the logfile
     filepath = init_dict["conf"]["log_txt_path"]
-    morpy_fct.txt_write(morpy_trace, init_dict, filepath, content)
+    textfile_write(morpy_trace, init_dict, filepath, content)
 
     # Clean up
     del morpy_trace
@@ -545,7 +548,8 @@ def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
 
     except Exception as e:
         log_no_q(morpy_trace, init_dict, "error",
-        lambda: f'{init_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{init_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{init_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
 
 def has_gil(morpy_trace: dict) -> bool | None:

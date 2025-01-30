@@ -92,7 +92,8 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{app_dict["loc"]["morpy"]["err_excp"]}: {e}')
 
     return {

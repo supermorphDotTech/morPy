@@ -87,7 +87,8 @@ class cl_priority_queue:
 
         except Exception as e:
             err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}'
             )
@@ -146,7 +147,8 @@ class cl_priority_queue:
 
         except Exception as e:
             err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}'
             )
@@ -188,7 +190,8 @@ class cl_priority_queue:
 
         except Exception as e:
             err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}'
             )
@@ -312,7 +315,8 @@ class cl_priority_queue:
 
         except Exception as e:
             err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}\n'
                         f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_priority"]}: {priority}'
@@ -397,7 +401,8 @@ class cl_priority_queue:
 
         except Exception as e:
             err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
                         f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}'
             )
@@ -482,7 +487,8 @@ class cl_progress:
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
     @metrics
@@ -544,7 +550,8 @@ class cl_progress:
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
@@ -602,7 +609,8 @@ class cl_progress:
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
@@ -691,7 +699,8 @@ class cl_progress:
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
@@ -750,7 +759,8 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding:
         #   Warning if src_copy is of wrong format or not encoded.
             except Exception as e:
                 log(morpy_trace, app_dict, "warning",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{app_dict["loc"]["morpy"]["decode_to_plain_text_msg"]}: {e}')
 
         # Validate provided encoding
@@ -787,7 +797,8 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding:
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return {
@@ -889,7 +900,8 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -948,7 +960,8 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1007,7 +1020,8 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1065,7 +1079,8 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1142,7 +1157,8 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1202,7 +1218,8 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1271,7 +1288,8 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1341,7 +1359,8 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1403,7 +1422,8 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1531,7 +1551,8 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1593,7 +1614,8 @@ def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: st
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1636,7 +1658,8 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1689,7 +1712,8 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{
@@ -1770,7 +1794,8 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection:
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     return{

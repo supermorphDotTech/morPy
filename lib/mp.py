@@ -44,7 +44,8 @@ class cl_orchestrator:
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
     @metrics
@@ -80,7 +81,8 @@ class cl_orchestrator:
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
@@ -199,7 +201,8 @@ class cl_orchestrator:
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
@@ -297,7 +300,8 @@ class cl_orchestrator:
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
@@ -347,7 +351,8 @@ class cl_orchestrator:
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
@@ -378,7 +383,8 @@ class cl_orchestrator:
 
         except Exception as e:
             log_no_q(morpy_trace_init_run, app_dict, "critical",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}')
 
         return {
@@ -417,7 +423,8 @@ class cl_orchestrator:
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
@@ -467,7 +474,8 @@ class cl_orchestrator:
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         finally:
@@ -536,7 +544,8 @@ class cl_orchestrator:
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         finally:
@@ -758,7 +767,8 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
 
     except Exception as e:
         log_no_q(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     finally:
@@ -927,7 +937,8 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     finally:
@@ -999,7 +1010,8 @@ def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
     finally:
@@ -1041,7 +1053,8 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
     finally:

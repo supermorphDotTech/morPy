@@ -310,7 +310,8 @@ class cl_xl_workbook:
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
     @metrics
@@ -401,7 +402,8 @@ class cl_xl_workbook:
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
@@ -446,7 +448,8 @@ class cl_xl_workbook:
         # Error detection
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
@@ -526,7 +529,8 @@ class cl_xl_workbook:
         # Error detection
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
@@ -710,7 +714,8 @@ class cl_xl_workbook:
     
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
     
         return{
@@ -764,8 +769,9 @@ class cl_xl_workbook:
         # Error detection
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{type(e).__name__}: {e}')
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
 
         return {
             'morpy_trace' : morpy_trace,
@@ -818,8 +824,9 @@ class cl_xl_workbook:
         # Error detection
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{type(e).__name__}: {e}')
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
 
         return {
             'morpy_trace' : morpy_trace,
@@ -884,8 +891,9 @@ class cl_xl_workbook:
         # Error detection
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                        f'{type(e).__name__}: {e}')
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
 
         return {
             'morpy_trace': morpy_trace,
@@ -1094,7 +1102,8 @@ class cl_xl_workbook:
         # Error detection
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
@@ -1298,7 +1307,8 @@ class cl_xl_workbook:
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return {
@@ -1359,7 +1369,8 @@ class cl_xl_workbook:
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                     f'{type(e).__name__}: {e}')
 
         return{
@@ -1444,7 +1455,8 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
         return{
