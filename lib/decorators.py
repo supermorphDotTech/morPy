@@ -53,9 +53,6 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, ve
     except Exception as e:
         morpy_fct.handle_exception_decorator(e)
 
-        # Quit the program
-        sys.exit()
-
 def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
     r"""
     Wrapper for conditional logging based on log level. This decorator does not enqueue
@@ -91,9 +88,6 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callabl
     except Exception as e:
         morpy_fct.handle_exception_decorator(e)
 
-        # Quit the program
-        sys.exit()
-
 def metrics(func):
     r"""
     Decorator used for metrics and performance analytics. in morPy this
@@ -117,7 +111,6 @@ def metrics(func):
         perf_mode = None
         enable_metrics = False
         morpy_trace = None
-        app_dict = None
         len_args = len(args)
 
         # Skip metrics, if arguments morpy_trace or app_dict are missing
@@ -163,20 +156,7 @@ def metrics(func):
                     retval = func(*args, **kwargs)
 
             except Exception as e:
-                # If we actually got our tracing info, log a CRITICAL error
-                if isinstance(morpy_trace, dict) and isinstance(app_dict, dict):
-                    module = 'decorators'
-                    operation = 'metrics.wrapper(~)'
-                    morpy_trace_metrics = morpy_fct.tracing(module, operation, morpy_trace)
-                    log(morpy_trace_metrics, app_dict, "critical",
-                    lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                            f'{type(e).__name__}: {e}')
-                else:
-                    # fallback handler if no tracing
-                    morpy_fct.handle_exception_decorator(e)
-
-                # Quit the program
-                sys.exit(1)
+                morpy_fct.handle_exception_decorator(e)
 
         return retval
 

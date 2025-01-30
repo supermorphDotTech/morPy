@@ -85,7 +85,7 @@ class cl_morpy_dict(dict):
     to tighten or lock the dictionaries, restricting modifications.
 
     TODO flat setup of app_dict with a map to imitate nesting
-    TODO set up the map as a tuple of immutables to "share" in memory (more like save in UltraDict without pickling)
+    TODO set up the map(reference to dicts) as a tuple of immutables to "share" in memory (more like save in UltraDict without pickling)
     TODO write a reduced map to the created UltraDict, to only reflect it's own nesting
     TODO Find a way to keep all maps updated
 
@@ -495,9 +495,6 @@ class cl_morpy_dict_ultra(UltraDict):
                 'interrupt_enable': False,
             }
 
-            # Inherit from UltraDict
-            # TODO This is only MS Windows compatible yet
-
             # Pass initialization arguments to UltraDict
             self._name = kwargs.setdefault('name', name)
             self.create = kwargs.setdefault('create', create)
@@ -530,23 +527,8 @@ class cl_morpy_dict_ultra(UltraDict):
         except Exception as e:
             msg = (f'CRITICAL {self._name}.__init__(): Failed to initialize UltraDict.\n'
                 f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n')
-            ###################################
-            # TODO remove textfile dump
-            try:
-                from multiprocessing import current_process
-                import pathlib
-                process = current_process()
-                filename = process.name
-                filepath = pathlib.Path(f'Z://{filename}.log')
-
-                with open(filepath, 'a') as ap:
-                    ap.write(f'{msg}\n{6*"#"} END OF LOG {6*"#"}\n\n')
-            except:
-                pass
-            ###################################
 
             raise RuntimeError(msg)
-            sys.exit()
 
     def _init_conf(self):
         # Initialize localization and app configuration
@@ -753,7 +735,6 @@ class cl_morpy_dict_ultra(UltraDict):
         if not isinstance(key, str):
             # Keys must be strings.
             raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
-        # TODO make verbose warning for regular dict (can't be shared)
         if self._access == 'tightened':
             msg = f'{self.msg__setitem__} {key}'
             if key not in super_class.keys():

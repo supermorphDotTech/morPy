@@ -29,8 +29,6 @@ def settings(start_time=None):
 
     :return: dict
         > See through the function for detailed descriptions of every morPy setting.
-
-    TODO change variable names and remove "mpy" from it (dict nesting circumvents name collisions)
     """
 
     import pathlib, os
@@ -56,28 +54,28 @@ def settings(start_time=None):
     Log Levels: init, debug, info, warning, denied, error, critical, exit, undefined
     """
 
-    # Enable logging. If mpy_log_db_enable and mpy_log_txt_enable both are set false,
+    # Enable logging. If log_db_enable and log_txt_enable both are set false,
     # then log_enable will be overwritten to be False in init.init(~). Log messages
     # may still be printed to console.
     # Called by: init.init(~)
-    mpy_log_enable = True
+    log_enable = True
 
     # Store the initialized system parameters relevant to a developer in a text file.
     # This is for checking initialized app_dict prior to app execution.
     # Called by: init.mpy_ref(~)
-    mpy_ref_create = False
+    ref_create = False
 
     # Enable logging to database.
     # Called by: msg.log(~)
-    mpy_log_db_enable = True
+    log_db_enable = True
 
     # Enable logging to a textfile.
     # Called by: msg.log(~)
-    mpy_log_txt_enable = False
+    log_txt_enable = False
 
     # Enable the prepared header for the logging textfile.
     # Called by: init.init(~)
-    mpy_log_txt_header_enable = mpy_log_txt_enable
+    log_txt_header_enable = log_txt_enable
 
     # Enable printouts of logs to console. This option works, even if log_enable is false.
     # Called by: throughout msg operations
@@ -92,28 +90,28 @@ def settings(start_time=None):
 
     # Print the initialized app dictionary to console.
     # Called by: init.init(~)
-    mpy_print_init_vars = False
+    print_init_vars = False
 
     # List object to exclude certain log levels from being logged to DB or text file.
     # These log levels may still be printed to console.
     # Called by: throughout msg operations
     # Default: ["debug"]
-    mpy_log_lvl_nolog = ["debug"]
+    log_lvl_nolog = ["debug"]
 
     # List object to exclude certain log levels from being printed to ui or console.
     # These log levels may still be logged to DB or text file.
     # Called by: msg.msg_print(~)
     # Default: ["debug"]
-    mpy_log_lvl_noprint = ["debug", "warning"]
+    log_lvl_noprint = ["debug", "warning"]
 
     # List object to have certain log levels raise an interrupt. This will also freeze
     # running threads and processes and eventually abort the program (depending on
     # further implementation of UI). An interrupt is only raised, if msg_print
-    # or mpy_log_enable is true. If an item is part of this list, it will override being
-    # part of the list mpy_log_lvl_nolog.
+    # or log_enable is true. If an item is part of this list, it will override being
+    # part of the list log_lvl_nolog.
     # Called by: msg.msg_print(~)
     # Default: ["denied","error","critical"]
-    mpy_log_lvl_interrupts = ["denied","error","critical"]
+    log_lvl_interrupts = ["denied","error","critical"]
 
     r"""
 >>> METRICS <<<
@@ -253,17 +251,17 @@ def settings(start_time=None):
         'language' : language,
         'localization' : f'loc.morPy_{language}',
         'priv_required' : mpy_priv_required,
-        'log_enable' : mpy_log_enable,
-        'ref_create' : mpy_ref_create,
-        'log_db_enable' : mpy_log_db_enable,
-        'log_txt_enable' : mpy_log_txt_enable,
-        'log_txt_header_enable' : mpy_log_txt_header_enable,
+        'log_enable' : log_enable,
+        'ref_create' : ref_create,
+        'log_db_enable' : log_db_enable,
+        'log_txt_enable' : log_txt_enable,
+        'log_txt_header_enable' : log_txt_header_enable,
         'msg_print' : msg_print,
         'msg_verbose' : msg_verbose,
-        'print_init_vars' : mpy_print_init_vars,
-        'log_lvl_nolog' : mpy_log_lvl_nolog,
-        'log_lvl_noprint' : mpy_log_lvl_noprint,
-        'log_lvl_interrupts' : mpy_log_lvl_interrupts,
+        'print_init_vars' : print_init_vars,
+        'log_lvl_nolog' : log_lvl_nolog,
+        'log_lvl_noprint' : log_lvl_noprint,
+        'log_lvl_interrupts' : log_lvl_interrupts,
         'metrics_enable' : metrics_enable,
         'metrics_perfmode' : metrics_perfmode,
         'memory_count_absolute' : memory_count_absolute,

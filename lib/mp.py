@@ -436,7 +436,7 @@ class cl_orchestrator:
 
         module = 'mp'
         operation = 'cl_orchestrator._run(~)'
-        # TODO Find out, why morpy_trace["process_id"] is changed after exit of run_parallel()
+        # TODO Find out, why morpy_trace["process_id"] is overwritten in app trace
         # The enforced deepcopy morpy_fct.tracing() is a workaround.
         morpy_trace_app = morpy_fct.tracing(module, operation, morpy_trace)
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
@@ -444,8 +444,8 @@ class cl_orchestrator:
         check = False
 
         try:
-            # TODO Fix orchestrator loop
-            # TODO cases for single threaded, 2 threaded and 2+ threaded
+            # TODO provide case for 2-core mode
+            #   > 1 core for orchestrator and 1 core for app, so no additional spawns
             # TODO Add logging thread
 
             # Start the app
@@ -527,8 +527,8 @@ class cl_orchestrator:
                     self._terminate = True
 
                 # Evaluate if spawned processes need to end. As long as the app is running in
-                # a different process, the orchestrator will not terminate.
-                # TODO workaround for single core
+                # a different process, the orchestrator will not terminate. A critical exception
+                # may end the app, too.
                 if len(app_dict["proc"]["morpy"]["proc_busy"]) == 0:
                     self._terminate = True
 
@@ -550,10 +550,6 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
     r"""
     This function is takes a task from the morPy priority queue, reserves a process ID, modifies the
     morpy_trace of the task ultimately starts the parallel process.
-
-    TODO provide task wrapper to release processes (write to registers)
-        app_dict["proc"]["morpy"]["processes_available"]
-        app_dict["proc"]["morpy"]["processes_busy"]
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -792,7 +788,7 @@ def spawn(task: list):
     try:
         # Rebuild the app_dict by reference (shared memory), after spawning
         # a process.
-        # TODO solve app_dict sharing
+        # TODO solve app_dict sharing - implement nested-but-flat solution here
         from lib.init import types_dict_build
         from lib.init import types_dict_finalize
 
@@ -1039,8 +1035,8 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
     check = False
 
     try:
-        # TODO finish
-        # TODO check if program exit -  app_dict["global"]["morpy"]["exit"]
+        # TODO check for program exit as an exit point
+        #   > app_dict["global"]["morpy"]["exit"]
         pass
 
     except Exception as e:

@@ -33,11 +33,6 @@ def _exit(morpy_trace: dict=None, app_dict: dict=None):
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
-        # Wait for all threads to finish their current tasks
-        # TODO wait for mp and mt processes to finish up
-        # TODO implement a timeout, as all tasks should be finished at this point anyway
-        # mt.mpy_threads_joinall(morpy_trace, app_dict)
-
         # Retrieve exit time and date
         datetime_exit = morpy_fct.datetime_now()
 

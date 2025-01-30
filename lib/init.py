@@ -54,9 +54,6 @@ def init(morpy_trace):
     :param morpy_trace: operation credentials and tracing
 
     :return app_dict: morPy global dictionary containing app configurations
-
-    TODO init log_db and store connection in app_dict
-    TODO provide cleanups of log_db lock (conn) in exit functions
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -149,13 +146,10 @@ def init(morpy_trace):
         ):
             morpy_log_header(morpy_trace_init, init_dict)
 
-        # TODO Initialize the priority queue and Multithreading
         # Logging may start after this
         init_dict["proc"]["morpy"]["process_q"] = cl_priority_queue(
             morpy_trace_init, init_dict, name="morPy priority queue", is_manager=True
         )
-        # TODO Threading
-        # mt.mt_init(morpy_trace_init, init_dict)
 
         # Initialize the morPy debug-specific localization
         init_dict["loc"]["morpy_dgb"].update(getattr(morpy_loc, 'loc_morpy_dbg')())
@@ -189,12 +183,6 @@ def init(morpy_trace):
 
         # Activate priority queue
         init_dict["proc"]["morpy"]["process_q"]._init_mp(morpy_trace_init, init_dict)
-
-        # Initialize Multiprocessing dictionary
-        if init_dict["proc"]["morpy"]["cl_orchestrator"].processes_max > 1:
-            # TODO finish Multiprocessing dictionary
-            # TODO initialize Multiprocessing dictionary
-            pass
 
         # ############################################
         # END Single-threaded initialization

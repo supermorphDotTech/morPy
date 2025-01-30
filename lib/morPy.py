@@ -3,17 +3,15 @@ Author:     Bastian Neuwirth
 Date:       12.08.2023
 Version:    0.1
 Descr.:     This module is the interface to the morPy framework.
-    TODO Finish formatting in morPy standard
 """
 
 import lib.bulk_ops as bulk_ops
 import lib.common as common
 import lib.csv as csv
 import lib.mp as mp
-import lib.mt as mt
 import lib.ui_tk as ui_tk
 # import lib.web as web
-# TODO fix webscraper
+# TODO fix web module
 import lib.xl as xl
 from lib.decorators import log
 

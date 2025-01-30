@@ -5,9 +5,6 @@ https://github.com/supermorphDotTech
 Author:     Bastian Neuwirth
 Descr.:     This module provides UI-building functions using the TKinter
             libraries.
-
-TODO: close GUI if global exit is raised
-    > GUI needs to register in app_dict and be closed by global exit-routine
 """
 
 import lib.fct as morpy_fct

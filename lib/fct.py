@@ -290,18 +290,26 @@ def perfinfo():
     import psutil
     from datetime import datetime
 
-    #TODO: "cpu_perc_indv" only works on Linux
-    #TODO: "cpu_perc_comb" and "cpu_perc_indv" do not work if interval=None
+    # Gather boot time
+    boot_time = datetime.fromtimestamp(psutil.boot_time())
 
-    boot_time       = datetime.fromtimestamp(psutil.boot_time())
+    # CPU counts
+    cpu_count_phys = psutil.cpu_count(logical=False)
+    cpu_count_log  = psutil.cpu_count(logical=True)
 
-    cpu_count_phys  = psutil.cpu_count(logical=False)
-    cpu_count_log   = psutil.cpu_count(logical=True)
-    cpu_freq_max    = psutil.cpu_freq(percpu=False).max
-    cpu_freq_min    = psutil.cpu_freq(percpu=False).min
-    cpu_freq_comb   = psutil.cpu_freq(percpu=False).current
-    cpu_perc_comb   = psutil.cpu_percent(interval=None, percpu=False)
-    cpu_perc_indv   = psutil.cpu_percent(interval=None, percpu=True)
+    # CPU frequencies
+    freq_info     = psutil.cpu_freq(percpu=False)
+    cpu_freq_max  = freq_info.max
+    cpu_freq_min  = freq_info.min
+    cpu_freq_comb = freq_info.current
+
+    # CPU percentages:
+    # Use a small interval so psutil measures CPU usage instead of returning a cached value.
+    cpu_percent_list = psutil.cpu_percent(interval=0.1, percpu=True)
+    cpu_perc_indv    = cpu_percent_list
+    cpu_perc_comb    = sum(cpu_percent_list) / len(cpu_percent_list) if cpu_percent_list else 0.0
+
+    # Memory info in MB
     mem_total_MB    = psutil.virtual_memory().total / 1024**2
     mem_available_MB= psutil.virtual_memory().available / 1024**2
     mem_used_MB     = psutil.virtual_memory().used / 1024**2
