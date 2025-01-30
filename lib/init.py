@@ -147,7 +147,7 @@ def init(morpy_trace):
             morpy_trace_init["log_enable"] and
             init_dict["conf"]["log_txt_enable"]
         ):
-            mpy_log_header(morpy_trace_init, init_dict)
+            morpy_log_header(morpy_trace_init, init_dict)
 
         # TODO Initialize the priority queue and Multithreading
         # Logging may start after this
@@ -223,7 +223,7 @@ def init(morpy_trace):
 
         # Write app_dict to file: initialized_app_dict.txt
         if init_dict["conf"]["ref_create"]:
-            mpy_ref(morpy_trace_init, init_dict, init_dict_str)
+            morpy_ref(morpy_trace_init, init_dict, init_dict_str)
 
         # Set an initialization complete flag
         init_dict["run"]["init_complete"] = True
@@ -477,7 +477,7 @@ def types_dict_finalize(morpy_trace: dict, init_dict: dict):
         lambda: f'{init_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
 
-def mpy_log_header(morpy_trace: dict, init_dict: dict):
+def morpy_log_header(morpy_trace: dict, init_dict: dict):
     r"""
     This function writes the header for the logfile including app specific
     information.
@@ -489,7 +489,7 @@ def mpy_log_header(morpy_trace: dict, init_dict: dict):
         -
 
     :example:
-        mpy_log_header(morpy_trace, init_dict)
+        morpy_log_header(morpy_trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -518,7 +518,7 @@ def mpy_log_header(morpy_trace: dict, init_dict: dict):
     # Clean up
     del morpy_trace
 
-def mpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
+def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
     r"""
     This function documents the initialized dictionary (reference). It is stored
     in the same path as __main__.py and serves development purposes.
@@ -531,7 +531,7 @@ def mpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
         -
 
     :example:
-        mpy_ref(morpy_trace, init_dict)
+        morpy_ref(morpy_trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -540,8 +540,8 @@ def mpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
-        mpy_ref_path = os.path.join(f'{init_dict["conf"]["main_path"]}', 'initialized_app_dict.txt')
-        init_dict = open(mpy_ref_path,'w')
+        morpy_ref_path = os.path.join(f'{init_dict["conf"]["main_path"]}', 'initialized_app_dict.txt')
+        init_dict = open(morpy_ref_path,'w')
 
         # Write init_dict to file
         init_dict.write(f'{init_dict["loc"]["morpy"]["ref_descr"]}\n\n')
@@ -553,7 +553,7 @@ def mpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
         # The init_dict was written to textfile.
         log_no_q(morpy_trace, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["ref_created"]}\n'
-                f'{init_dict["loc"]["morpy"]["ref_path"]}: {mpy_ref_path}')
+                f'{init_dict["loc"]["morpy"]["ref_path"]}: {morpy_ref_path}')
 
     except Exception as e:
         log_no_q(morpy_trace, init_dict, "error",

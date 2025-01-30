@@ -284,7 +284,7 @@ def loc_morpy() -> dict:
         'init_finished' : 'Initialization process finished.',
         'init_duration' : 'Duration',
 
-        # init.py - mpy_log_header(~)
+        # init.py - morpy_log_header(~)
         'log_header_start' : 'START',
         'log_header_author' : 'Author',
         'log_header_app' : 'App',
@@ -296,8 +296,8 @@ def loc_morpy() -> dict:
         'log_header_threads' : 'Threads',
         'log_header_begin' : 'BEGIN',
 
-        # init.py - mpy_ref(~)
-        'ref_descr' : 'This file shows the parameters set in mpy_param.py as well as the most important system and app related information. All of these are addressable through the app_dict which is available throughout all functions and modules of this framework. This reference is meant to be used for development only.',
+        # init.py - morpy_ref(~)
+        'ref_descr' : 'This file shows the parameters set in lib.conf.py as well as the most important system and app related information. All of these are addressable through the app_dict which is available throughout all functions and modules of this framework. This reference is meant to be used for development only.',
         'ref_created' : 'The init_dict was written to textfile.',
         'ref_path' : 'Filepath',
 
@@ -357,7 +357,7 @@ def loc_morpy() -> dict:
         'log_msg_builder_thread_id': 'Thread',
         'log_msg_builder_task_id': 'Task',
 
-        # msg.py - mpy_msg_print(~)
+        # msg.py - log_interrupt(~)
         'msg_print_intrpt': '>>> INTERRUPT <<< Press Enter to continue...',
 
         # msg.py - log_db_connect(~)
@@ -608,58 +608,6 @@ def loc_morpy_dbg() -> dict:
 
     loc_morpy_dbg_dict = {
 
-        # debug.py - dbg_mpy_param(~)
-        'dbg_mpy_param_start' : 'Start debugging of the mpy_param.py module.',
-        'dbg_mpy_param_end' : 'Debugging of mpy_param.py finished.',
-
-        # debug.py - dbg_mpy_mt(~)
-        'dbg_mpy_mt_start' : 'Start debugging of the mpy_mt.py module.',
-        'dbg_mpy_mt_next' : 'Starting a parallel prioritized task.',
-        'dbg_mpy_mt_name' : 'Name',
-        'dbg_mpy_mt_priority' : 'Priority',
-        'dbg_mpy_mt_task' : 'Task',
-        'dbg_mpy_mt_end' : 'Debugging of mpy_mt.py finished.',
-
-        # debug.py - dbg_mpy_fct(~)
-        'dbg_mpy_fct_start' : 'Start debugging of the mpy_morpy_fct.py module.',
-        'dbg_mpy_fct_end' : 'Debugging of mpy_morpy_fct.py finished.',
-
-        # debug.py - dbg_mpy_msg(~)
-        'dbg_mpy_msg_start' : 'Start debugging of the mpy_msg.py module.',
-        'dbg_mpy_msg_interrupt' : 'Simple Test of the interrupt functionality.',
-        'dbg_mpy_msg_end' : 'Debugging of mpy_msg.py finished.',
-
-        # debug.py - dbg_mpy_common(~)
-        'dbg_mpy_common_start' : 'Start debugging of the mpy_common.py module.',
-        'dbg_mpy_common_end' : 'Debugging of mpy_common.py finished.',
-
-        # debug.py - dbg_mpy_ui_tk(~)
-        'dbg_mpy_ui_tk_start' : 'Start debugging of the mpy_ui_tk.py module.',
-        'dbg_mpy_ui_tk_end' : 'Debugging of mpy_ui_tk.py finished.',
-
-        # debug.py - dbg_mpy_sqlite3(~)
-        'dbg_mpy_sqlite3_start' : 'Start debugging of the mpy_sqlite3.py module.',
-        'dbg_mpy_sqlite3_end' : 'Debugging of mpy_sqlite3.py finished.',
-
-        # debug.py - dbg_mpy_xl(~)
-        'dbg_mpy_xl_start' : 'Start debugging of the mpy_xl.py module.',
-        'dbg_mpy_xl_end' : 'Debugging of mpy_xl.py finished.',
-
-        # debug.py - dummy_process_list_append(~)
-        'dummy_process_list_append_start' : 'Start appending to a list. Simple benchmark.\nItems total',
-        'dummy_process_list_append_dict_conn' : 'Testing global dictionary connection. This number is supposed to always increment by 1.',
-        'dummy_process_list_append_items' : 'Items appended',
-        'dummy_process_list_append_progress' : 'Progress',
-        'dummy_process_list_append_end' : 'Finished appending to a list.',
-
-        # debug.py - dummy_process_math(~)
-        'dummy_process_math_start' : 'Start simple math benchmark.\nComplexity',
-        'dummy_process_math_end' : 'Finished simple math benchmark.',
-
-        # dbg.py - mpy_ut_call_test_op(~)
-        'ut_call_start' : 'START unit test of:',
-        'ut_call_pass' : 'PASSED:',
-        'ut_call_fail' : 'FAILED:',
     }
 
     return loc_morpy_dbg_dict
