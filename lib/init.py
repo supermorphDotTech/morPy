@@ -171,7 +171,8 @@ def init(morpy_trace):
 
         # Localization initialized.
         log_no_q(morpy_trace_init, init_dict, "init",
-        lambda: f'{init_dict["loc"]["morpy"]["init_loc_finished"]}')
+        lambda: f'{init_dict["loc"]["morpy"]["init_loc_finished"]}\n'
+                f'{init_dict["loc"]["morpy"]["init_loc_lang"]}: {init_dict["conf"]["language"]}')
 
         # Load init_dict as a string
         if init_dict["conf"]["print_init_vars"] or init_dict["conf"]["ref_create"]:

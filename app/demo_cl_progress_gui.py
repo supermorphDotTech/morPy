@@ -19,7 +19,6 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
-    :param app_init_return: Return value (dict) of the initialization process, returned by app_init
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -27,6 +26,7 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         app_run_return: Return value (dict) of the app process, handed to app_exit
 
     :example:
+        # Demonstrate how to use lib.ui_tk.cl_progress_gui()
         import app.demo_cl_progress_gui as demo_cl_progress_gui
         demo_cl_progress_gui.run(morpy_trace, app_dict)
     """
@@ -41,9 +41,10 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
 
     try:
         # Define repetitions and iterations of progress GUI demo
-        stages = 3
-        total_rep = 10 ** 3
+        stages = 5
+        total_rep = 10 ** 2
 
+        # No localization for demo module
         log(morpy_trace, app_dict, "info",
             lambda: f'Starting {module}.{operation}')
         task = partial(arbitrary_parallel_task, morpy_trace, app_dict, stages=stages, total_rep=total_rep, gui=None)
@@ -56,11 +57,12 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
                                          max_per_stage=total_rep,
                                          console=False,
                                          auto_close=True,
-                                         work=task  # run in a background thread
+                                         work=task  # run task in a background thread
                                          )
 
         progress.run(morpy_trace, app_dict)
 
+        # No localization for demo module
         log(morpy_trace, app_dict, "info",
             lambda: f'Finished {module}.{operation}')
 
@@ -128,10 +130,7 @@ def arbitrary_parallel_task(morpy_trace, app_dict, stages: int=0, total_rep: int
                     gui.update_text(morpy_trace, app_dict, description_stage=f'Currently at {i} - tmp_val is {tmp_val}')
                     gui.update_progress(morpy_trace, app_dict, current=i)
 
-
-        # Writing to app_dict for shared memory test
-        app_dict["global"]["app"]["parallel_finished"] = True
-
+        # No localization for demo module
         log(morpy_trace, app_dict, "info",
         lambda: f'Parallel task executed.')
 

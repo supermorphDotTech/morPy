@@ -86,7 +86,7 @@ def new_process(morpy_trace: dict, app_dict: dict, counter: int=0) -> dict:
     p = None
 
     try:
-        # # TODO port to it's own demo module
+        # TODO port to it's own demo module
         # log(morpy_trace, app_dict, "info",
         # lambda: "New process starting...")
         #

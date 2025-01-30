@@ -515,9 +515,8 @@ class cl_progress:
         check = False
 
         try:
-            # Null guard and evaluation
-            # TODO localization
-            if not total: raise ValueError('Missing total: {total}')
+            # Missing total count. Can not track progress if point of completion is unknown.
+            if not total: raise ValueError(f'{app_dict["loc"]["morpy"]["cl_progress_miss_total"]}')
 
             # Evaluate ticks
             if not ticks or ticks > 100:

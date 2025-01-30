@@ -22,21 +22,12 @@ TODO Interrupt and exit overhaul
 
 TODO define dependencies in one of the supported manifest file types, like package.json or Gemfile.
     > This will enable GitHub to show a dependency graph
-    
-TODO Make exit() more dynamic, so it is used instead of sys.exit
-    - Needed i.e. to release the log.db lock and other cleanups
-    - Needed also to release any db lock
 
-TODO chatGPT: make use of the "with" statement
+TODO make use of the "with" statement
     > Optimize own classes to be supported by with (i.e. __exit__() methods)
-TODO class/instantiate logging and sqlite3
-TODO class/instantiate excel
-TODO class/instantiate file operations
-TODO Check and complete function signatures
 
-TODO use app_exit and morPy exit accordingly (usually app_exit the exit point for .join() and terminate)
-    > search for sys.exit() and substitute it
-    > search for .exit and evaluate it
+TODO class/instantiate logging and sqlite3
+TODO class/instantiate file operations
 
 TODO use pyinstaller to generate standalone application
     > specify application icon
