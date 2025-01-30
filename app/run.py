@@ -7,15 +7,12 @@ Descr.:     DESCRIPTION
 """
 
 import lib.morPy as morPy
-import lib.mp as mp
 from lib.decorators import metrics, log
 
 import sys
-from math import sqrt
-from functools import partial
 
 @metrics
-def app_run( morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
+def app_run(morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
     r"""
     This function runs the main workflow of the app.
 
@@ -45,25 +42,9 @@ def app_run( morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
     app_run_return = {}
 
     try:
-        log(morpy_trace, app_dict, "info",
-        lambda: f'Starting {module}.{operation}')
-        task = partial(arbitrary_parallel_task, morpy_trace, app_dict, gui=None)
-
-        progress = morPy.cl_progress_gui(morpy_trace, app_dict,
-            frame_title="Progress Demo",
-            stages=2,
-            headline_stage="Stage 1",
-            description_stage="Currently at 0",
-            max_per_stage=10**2,
-            console=False,
-            auto_close=True,
-            work=task  # run in a background thread
-        )
-
-        progress.run(morpy_trace, app_dict)
-
-        log(morpy_trace, app_dict, "info",
-        lambda: f'Finished {module}.{operation}')
+        # Demonstrate how to use lib.ui_tk.cl_progress_gui()
+        import app.demo_cl_progress_gui as demo_cl_progress_gui
+        demo_cl_progress_gui.run(morpy_trace, app_dict)
 
         check = True
 
@@ -105,16 +86,17 @@ def new_process(morpy_trace: dict, app_dict: dict, counter: int=0) -> dict:
     p = None
 
     try:
-        log(morpy_trace, app_dict, "info",
-        lambda: "New process starting...")
-
-        task = (arbitrary_parallel_task, morpy_trace, app_dict)  # Memory reference to app_dict
-        priority = 100
-        morPy.process_q(task=task, priority=priority)
-
-        task_dqued = app_dict["proc"]["morpy"]["process_q"].dequeue(morpy_trace, app_dict)
-
-        mp.run_parallel(morpy_trace, app_dict, task=task_dqued["task"], priority=task_dqued["priority"])
+        # # TODO port to it's own demo module
+        # log(morpy_trace, app_dict, "info",
+        # lambda: "New process starting...")
+        #
+        # task = (arbitrary_parallel_task, morpy_trace, app_dict)  # Memory reference to app_dict
+        # priority = 100
+        # morPy.process_q(task=task, priority=priority)
+        #
+        # task_dqued = app_dict["proc"]["morpy"]["process_q"].dequeue(morpy_trace, app_dict)
+        #
+        # mp.run_parallel(morpy_trace, app_dict, task=task_dqued["task"], priority=task_dqued["priority"])
 
         check = True
 
@@ -127,69 +109,4 @@ def new_process(morpy_trace: dict, app_dict: dict, counter: int=0) -> dict:
         'morpy_trace' : morpy_trace,
         'check' : check,
         'process' : p
-        }
-
-@metrics
-def arbitrary_parallel_task(morpy_trace, app_dict, gui=None):
-    r"""
-    This function runs the entire app using user input to specify
-    the actions performed.
-
-    :param morpy_trace: operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
-    :param gui: GUI object (cl_progress_gui)
-
-    :return: dict
-        morpy_trace: Operation credentials and tracing
-        check: Indicates whether the function ended without errors
-
-    :example:
-        arbitrary_parallel_task(morpy_trace, app_dict)
-    """
-
-    # morPy credentials (see init.init_cred() for all dict keys)
-    module = 'app.run'
-    operation = 'arbitrary_parallel_task(~)'
-    morpy_trace = morPy.tracing(module, operation, morpy_trace)
-
-    check = False
-
-    try:
-        if not morpy_trace or not app_dict:
-            raise RuntimeError
-
-        total = 10**2
-        tmp_val = 0
-        lst = []
-
-        for stage in range(1, 3):
-            i = 0
-            # Start new stage
-            gui.update_text(morpy_trace, app_dict, headline_stage=f'Stage {stage}', description_stage=f'Currently at {i} - tmp_val is {tmp_val}')
-            gui.update_progress(morpy_trace, app_dict, current=0)
-            while i < total:
-                i += 1
-                while tmp_val < total:
-                    tmp_val += sqrt(i)
-                    lst.append(tmp_val)
-                # print(f'Progress {i} / {total} :: {tmp_val}')
-                if gui:
-                    gui.update_text(morpy_trace, app_dict, description_stage=f'Currently at {i} - tmp_val is {tmp_val}')
-                    gui.update_progress(morpy_trace, app_dict, current=i)
-
-
-        # Writing to app_dict for shared memory test
-        app_dict["global"]["app"]["parallel_finished"] = True
-
-        log(morpy_trace, app_dict, "info",
-        lambda: f'Parallel task executed.')
-
-    except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{type(e).__name__}: {e}')
-
-    return{
-        'morpy_trace' : morpy_trace,
-        'check' : check,
         }

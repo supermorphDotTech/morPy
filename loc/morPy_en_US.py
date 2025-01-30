@@ -1,20 +1,12 @@
 r"""
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
 Author:     Bastian Neuwirth
-Date:       29.06.2021
-Version:    0.1
-Descr.:     This module defines all descriptive strings as a dictionary. This
-            dictionary will be initialized, if localization was set accordingly
-            in mpy_param.py. The function localization_mpy() is reserved for the
-            morPy framework. You may add app specific definitions,
-            explanations and whatever you need within the function
-            localization_app(). Both of the dictionaries will be initialized
-            and may be accessed via app_dict throughout the program.
+Descr.:     This module defines all descriptive, localized strings for use in the developed app.
+            It is loaded during initialization.
 
-            The main idea and purpose of this module is to provide a single file
-            for later translation that may be translated to other languages.
-
-            The dictionaries defined here are not intended to hold larger texts.
-            You may create your own modules for that purpose.
+            TODO remove mpy_ as prefixes
 """
 
 def loc_morpy() -> dict:
@@ -755,70 +747,3 @@ def loc_morpy_dbg() -> dict:
     }
 
     return loc_morpy_dbg_dict
-
-def loc_app() -> dict:
-
-    r"""
-    This dictionary defines all messages for app functions localized to a
-    specific language.
-
-    :param:
-        -
-
-    :return: dict
-        loc_app_dict: Localization dictionary for app functions. All keys
-            will be copied to app_dict during morPy initialization.
-
-    :example:
-        app_dict["loc"]["app"][KEY]
-    """
-
-    loc_app_dict = {
-
-        # App specific area - BEGIN
-
-        "app_run_choose_program" : "What do you want to do?",
-        "app_run_option1_tag_eval" : "Evaluate Tag Comments",
-        "app_run_option2_alm_mngmt" : "Alarm Management (under construction)",
-        "app_run_critical" : "Something during the selection went wrong.",
-
-        "program_tag_eval_run" : "Running tag evaluation.",
-        "program_tag_eval_tag" : "Tag",
-        "program_tag_eval_csv_select" : "Choose a csv file for tag evaluation.",
-        "program_tag_eval_gr24char" : "Tag comment shortened to 24 characters.",
-        "program_tag_eval_gr24_orig" : "Original tag comment",
-        "program_tag_eval_gr24_new" : "New tag comment",
-
-        "comment_prefix_warn" : "Tag comment prefix evaluation skipped. Source format not compatible.",
-        "comment_prefix_str" : "Source",
-
-        # App specific area - END
-    }
-
-    return loc_app_dict
-
-def loc_app_dbg() -> dict:
-
-    r"""
-    This dictionary defines all messages for debugging app functions localized to a
-    specific language.
-
-    :param:
-        -
-
-    :return: dict
-        loc_app_dbg_dict: Localization dictionary for app functions. All keys
-            will be copied to app_dict during morPy initialization.
-
-    :example:
-        app_dict["loc"]["app"][KEY]
-    """
-
-    loc_app_dbg_dict = {
-
-        # App specific area - BEGIN
-
-        # App specific area - END
-    }
-
-    return loc_app_dbg_dict

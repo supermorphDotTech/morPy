@@ -103,8 +103,8 @@ def init(morpy_trace):
         morpy_trace_init["log_enable"] = init_dict["conf"]["log_enable"]
 
         # Import the morPy core functions localization into init_dict.
-        mpy_loc = importlib.import_module(init_dict["conf"]["localization"])
-        init_dict["loc"]["morpy"].update(getattr(mpy_loc, 'loc_morpy')())
+        morpy_loc = importlib.import_module(init_dict["conf"]["localization"])
+        init_dict["loc"]["morpy"].update(getattr(morpy_loc, 'loc_morpy')())
 
         # Build nested dictionary for log generation
         log_levels = ("init", "debug", "info", "warning", "denied", "error", "critical", "exit")
@@ -158,14 +158,14 @@ def init(morpy_trace):
         # mt.mt_init(morpy_trace_init, init_dict)
 
         # Initialize the morPy debug-specific localization
-        init_dict["loc"]["morpy_dgb"].update(getattr(mpy_loc, 'loc_morpy_dbg')())
+        init_dict["loc"]["morpy_dgb"].update(getattr(morpy_loc, 'loc_morpy_dbg')())
         log_no_q(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_dbg_loaded"]}')
 
         # Initialize the app-specific localization
-        # TODO split app localization from morPy localization to allow for rolling updates
-        init_dict["loc"]["app"].update(getattr(mpy_loc, 'loc_app')())
-        init_dict["loc"]["app_dbg"].update(getattr(mpy_loc, 'loc_app_dbg')())
+        app_loc = importlib.import_module(f'loc.app_{init_dict["conf"]["language"]}')
+        init_dict["loc"]["app"].update(getattr(app_loc, 'loc_app')())
+        init_dict["loc"]["app_dbg"].update(getattr(app_loc, 'loc_app_dbg')())
         log_no_q(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_app_loaded"]}')
 
