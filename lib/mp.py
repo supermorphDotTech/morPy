@@ -600,7 +600,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                 f'priority: {priority}\n'
                 f'task_sys_id: {task_sys_id}')
 
-        from lib.types_dict import cl_types_dict_ultra
+        from lib.types_dict import cl_morpy_dict_ultra
 
         # Fetch the maximum processes to be utilized by morPy
         processes_max = app_dict["proc"]["morpy"]["cl_orchestrator"].processes_max
@@ -796,12 +796,12 @@ def spawn(task: list):
         from lib.init import types_dict_build
         from lib.init import types_dict_finalize
 
-        from lib.types_dict import cl_types_dict, cl_types_dict_ultra
+        from lib.types_dict import cl_morpy_dict, cl_morpy_dict_ultra
 
         process_id = task[1]["process_id"]
 
         # Link to shared memory
-        app_dict = cl_types_dict_ultra(
+        app_dict = cl_morpy_dict_ultra(
             name="app_dict",
             create=False,
         )
@@ -810,19 +810,19 @@ def spawn(task: list):
         app_dict["proc"]["morpy"]._update_self(_access="normal")
         app_dict["proc"]["app"]._update_self(_access="normal")
 
-        app_dict["proc"]["morpy"][f'P{process_id}'] = cl_types_dict_ultra(
+        app_dict["proc"]["morpy"][f'P{process_id}'] = cl_morpy_dict_ultra(
             name=f'app_dict[proc][morPy][P{process_id}]',
             create=True,
         )
-        app_dict["proc"]["morpy"][f'P{process_id}']["T0"] = cl_types_dict_ultra(
+        app_dict["proc"]["morpy"][f'P{process_id}']["T0"] = cl_morpy_dict_ultra(
             name=f'app_dict[proc][morPy][P{process_id}][T0]',
             create=True,
         )
-        app_dict["proc"]["app"][f'P{process_id}'] = cl_types_dict_ultra(
+        app_dict["proc"]["app"][f'P{process_id}'] = cl_morpy_dict_ultra(
             name=f'app_dict[proc][app][P{process_id}]',
             create=True,
         )
-        app_dict["proc"]["app"][f'P{process_id}']["T0"] = cl_types_dict_ultra(
+        app_dict["proc"]["app"][f'P{process_id}']["T0"] = cl_morpy_dict_ultra(
             name=f'app_dict[proc][app][P{process_id}][T0]',
             create=True,
         )
