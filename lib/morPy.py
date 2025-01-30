@@ -78,7 +78,8 @@ def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None):
+def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
+                verbose: bool=False):
     r"""
     This class instantiates a progress counter. If ticks, total or counter
     are floats, progress of 100 % may not be displayed.
@@ -89,9 +90,15 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
     :param total: Mandatory - The total count for completion
     :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
         10.7% progress exceeded the exact progress will be logged.
+    :param verbose: If True, progress is only logged in verbose mode except for the 100% mark. Defaults to False.
 
-    .update(morpy_trace: dict, app_dict: dict, current: float=None)
+    .update(morpy_trace: dict, app_dict: dict, current: float=None, verbose: bool=False)
         Method to update current progress and log progress if tick is passed.
+
+        :param current: Current progress count. If None, each call of this method will add +1
+            to the progress count. Defaults to None.
+        :param verbose: If True, progress is only logged in verbose mode except for the 100% mark.
+                            Defaults to False.
 
         :return: dict
             prog_rel: Relative progress, float between 0 and 1
@@ -103,7 +110,8 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
     """
 
     try:
-        return common.cl_progress(morpy_trace, app_dict, description, total, ticks)
+        return common.cl_progress(morpy_trace, app_dict, description=description, total=total, ticks=ticks,
+                                  verbose=verbose)
 
     except Exception as e:
         import lib.fct as morpy_fct
@@ -266,8 +274,9 @@ def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: boo
               data_only: bool=False, keep_vba: bool=True):
     r"""
     This class constructs an API to an Excel workbook and delivers methods
-    to read from and write to the workbook. It uses OpenPyXL and all those
-    methods can be used on self.wb_obj if a more versatile API is required.
+    to read from and write to the workbook. It uses OpenPyXL and all it's
+    methods can be used on cl_xl_workbook.wb_obj if a more versatile API is
+    required.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -1552,9 +1561,6 @@ def app_dict_to_string(app_dict):
     This function creates a string for the entire app_dict. May exceed memory.
 
     :param app_dict: morPy global dictionary
-    :param depth: Tracks the current indentation level for formatting the dictionary structure.
-                  Increases with each nested dictionary. Not intended to be used when calling
-                  it first.
 
     :return app_dict_str: morPy global dictionary as a UTF-8 string
 
@@ -1581,11 +1587,6 @@ def tracing(module, operation, morpy_trace):
     :param module: Name of the module, the operation is defined in (i.e. 'common')
     :param operation: Name of the operation executed (i.e. 'tracing(~)')
     :param morpy_trace: operation credentials and tracing
-    :param clone: If true (default), a clone of the trace will be created ensuring the tracing
-        within morPy. If false, the parent trace will be altered directly (intended for
-        initialization only).
-    :param process_id: Adjust the process ID of the trace. Intended to be used by morPy
-        orchestrator only.
 
     :return morpy_trace_passdown: operation credentials and tracing
     """

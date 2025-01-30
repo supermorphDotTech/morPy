@@ -55,7 +55,8 @@ def app_run( morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
             headline_stage="Stage 1",
             description_stage="Currently at 0",
             max_per_stage=10**2,
-            console=True,
+            console=False,
+            auto_close=True,
             work=task  # run in a background thread
         )
 
@@ -163,19 +164,19 @@ def arbitrary_parallel_task(morpy_trace, app_dict, gui=None):
 
         for stage in range(1, 3):
             i = 0
+            # Start new stage
+            gui.update_text(morpy_trace, app_dict, headline_stage=f'Stage {stage}', description_stage=f'Currently at {i} - tmp_val is {tmp_val}')
+            gui.update_progress(morpy_trace, app_dict, current=0)
             while i < total:
                 i += 1
                 while tmp_val < total:
-                    tmp_val = (sqrt(sqrt(i)*i) / i) + tmp_val**2
-                lst.append(i)
+                    tmp_val += sqrt(i)
+                    lst.append(tmp_val)
                 # print(f'Progress {i} / {total} :: {tmp_val}')
                 if gui:
-                    gui.update_text(morpy_trace, app_dict, description_stage=f'Currently at {i}')
+                    gui.update_text(morpy_trace, app_dict, description_stage=f'Currently at {i} - tmp_val is {tmp_val}')
                     gui.update_progress(morpy_trace, app_dict, current=i)
 
-            # Start new stage
-            gui.update_text(morpy_trace, app_dict, headline_stage="Stage 2", description_stage=f'Currently at 0')
-            gui.update_progress(morpy_trace, app_dict, current=0)
 
         # Writing to app_dict for shared memory test
         app_dict["global"]["app"]["parallel_finished"] = True

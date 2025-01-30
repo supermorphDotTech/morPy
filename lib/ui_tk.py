@@ -6,15 +6,12 @@ Author:     Bastian Neuwirth
 Descr.:     This module provides UI-building functions using the TKinter
             libraries.
 
-ToDo:       - GUI Instanz im app_dict anmelden
-                > Referenzierung durch Unterprogramme ermöglichen
-                > Bei Error, Critical oder sonstige das Fenster schließen
-                > Bei Exit-Routine schließen
+TODO: close GUI if global exit is raised
+    > GUI needs to register in app_dict and be closed by global exit-routine
 """
 
 import lib.fct as morpy_fct
 import lib.common as common
-import lib.exit as exit
 from lib.decorators import metrics, log
 
 import threading
@@ -157,6 +154,8 @@ class cl_progress_gui:
         for the @metrics decorator to work. It relies on the returned
         {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
 
+        :param: See ._init() for details
+
         :return: self
         """
 
@@ -287,7 +286,8 @@ class cl_progress_gui:
 
                 # Construct the overall progress tracker
                 self.overall_progress_tracker = common.cl_progress(
-                    morpy_trace, app_dict, description=self.headline_total_nocol, total=self.stages, ticks=.01
+                    morpy_trace, app_dict, description=self.headline_total_nocol, total=self.stages, ticks=.01,
+                    verbose=True
                 )
 
                 # Finalize overall headline
@@ -304,7 +304,8 @@ class cl_progress_gui:
 
                 # Construct the stage progress tracker
                 self.stage_progress_tracker = common.cl_progress(
-                    morpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage, ticks=.01
+                    morpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage, ticks=.01,
+                    verbose=True
                 )
 
                 # Finalize stage headline
@@ -798,7 +799,7 @@ class cl_progress_gui:
                 if self.stage_progress_on and reset_stage_progress:
                     self.stage_progress_tracker._init(
                         morpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage,
-                        ticks=.01
+                        ticks=.01, verbose=True
                     )
                     if self.stages_finished < self.stages:
                         if self.stage_progress is not None:

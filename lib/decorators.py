@@ -11,7 +11,7 @@ import time
 
 from functools import wraps
 
-def log(morpy_trace: dict, app_dict: dict, log_level: str, message_func: callable):
+def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
     r"""
     Wrapper for conditional logging based on log level. To benefit from
     this logic, it is necessary to construct "message" in the lambda shown
@@ -22,7 +22,8 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message_func: callabl
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
     :param log_level: Severity: debug/info/warning/error/critical/denied
-    :param message_func: A callable (e.g., lambda or function) that returns the log message.
+    :param message: A callable (e.g., lambda or function) that returns the log message.
+    :param verbose: If True, message is only logged in verbose mode.
 
     :example:
         from lib.decorators import log
@@ -34,14 +35,15 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message_func: callabl
     import lib.fct as morpy_fct
 
     try:
-        log_level = log_level.lower()
+        # Skip logging, if message is verbose and verbose is disabled
+        if verbose and app_dict["conf"].get("msg_verbose", False):
+            pass
+        else:
+            log_level = log_level.lower()
 
-        if app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
             # Evaluate the message only when logging is demanded
-            message = message_func()
-
-            if app_dict["proc"]["morpy"]["process_q"]:
-                task = (msg.log, morpy_trace, app_dict, message, log_level)
+            if message and app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+                task = (msg.log, morpy_trace, app_dict, log_level, message(), verbose)
 
                 # Enqueue the orchestrator task
                 app_dict["proc"]["morpy"]["process_q"].enqueue(
@@ -54,7 +56,7 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message_func: callabl
         # Quit the program
         sys.exit()
 
-def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message_func: callable):
+def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
     r"""
     Wrapper for conditional logging based on log level. This decorator does not enqueue
     logs and is intended for use by morPy orchestrator only.
@@ -64,7 +66,8 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message_func: ca
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
     :param log_level: Severity: debug/info/warning/error/critical/denied
-    :param message_func: A callable (e.g., lambda or function) that returns the log message.
+    :param message: A callable (e.g., lambda or function) that returns the log message.
+    :param verbose: If True, message is only logged in verbose mode.
 
     :example:
         from lib.decorators import log_no_q
@@ -76,10 +79,14 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message_func: ca
     import lib.fct as morpy_fct
 
     try:
-        log_level = log_level.lower()
+        # Skip logging, if message is verbose and verbose is disabled
+        if verbose and app_dict["conf"].get("msg_verbose", False):
+            pass
+        else:
+            log_level = log_level.lower()
 
-        if app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
-            msg.log(morpy_trace, app_dict, message_func(), log_level)
+            if app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+                msg.log(morpy_trace, app_dict, log_level, message(), verbose)
 
     except Exception as e:
         morpy_fct.handle_exception_decorator(e)

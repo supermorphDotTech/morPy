@@ -69,11 +69,7 @@ class cl_priority_queue:
         the @metrics decorator to work. It relies on the returned
         {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
 
-        :param morpy_trace: Operation credentials and tracing information
-        :param app_dict: morPy global dictionary containing app configurations
-        :param name: Name or description of the instance
-        :param is_manager: If True, priority queue is worked on as a manger. Intended
-            for morPy orchestrator only.
+        :param: See ._init() for details
 
         :return: self
 
@@ -86,10 +82,8 @@ class cl_priority_queue:
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
-            self.is_manager = is_manager
-
             # Use _init() for initialization to apply @metrics
-            self._init(morpy_trace, app_dict, name)
+            self._init(morpy_trace, app_dict, name, is_manager=is_manager)
 
         except Exception as e:
             err_msg = (
@@ -103,13 +97,15 @@ class cl_priority_queue:
                 log(morpy_trace, app_dict, "critical", err_msg)
 
     @metrics
-    def _init(self, morpy_trace: dict, app_dict: dict, name: str) -> dict:
+    def _init(self, morpy_trace: dict, app_dict: dict, name: str, is_manager: bool=False) -> dict:
         r"""
         Helper method for initialization to ensure @metrics decorator functionality.
 
         :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
-        :param name: Name of the instance
+        :param name: Name or description of the instance
+        :param is_manager: If True, priority queue is worked on as a manger. Intended
+            for morPy orchestrator only.
 
         :return: dict
             morpy_trace: Operation credentials and tracing
@@ -124,6 +120,7 @@ class cl_priority_queue:
 
         try:
             self.name = name if name else 'queue'
+            self.is_manager = is_manager
             self.heap = []
             self.counter = 0 # Task counter. Starts at 0, increments by 1
             self.task_lookup = set() # Set for quick task existence check
@@ -376,16 +373,15 @@ class cl_priority_queue:
                 priority, counter, task_sys_id, task, is_process = task_dqed
 
                 # Pulling task from NAME priority: INT counter: INT
-                # TODO mark verbose
                 log_msg = (
                     lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_start"]} {self.name}.\n'
                             f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_priority"]}: {priority}\n'
                             f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_cnt"]}: {counter}'
                 )
                 if self.is_manager:
-                    log_no_q(morpy_trace_dequeue, app_dict, "debug", log_msg)
+                    log_no_q(morpy_trace_dequeue, app_dict, "debug", log_msg, verbose=True)
                 else:
-                    log(morpy_trace_dequeue, app_dict, "debug", log_msg)
+                    log(morpy_trace_dequeue, app_dict, "debug", log_msg, verbose=True)
 
                 check = True
 
@@ -459,19 +455,14 @@ class cl_progress:
         progress.update(morpy_trace, app_dict, current=current_count)
     """
 
-    def __init__(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None) -> None:
+    def __init__(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
+                 verbose: bool=False) -> None:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
         {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
 
-        :param morpy_trace: operation credentials and tracing information
-        :param app_dict: morPy global dictionary containing app configurations
-        :param description: Describe, what is being processed (i.e. file path or calculation)
-        :param total: Mandatory - The total count for completion
-        :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
-            10.7% progress exceeded the exact progress will be logged. Independent of the ticks, at
-            100.0% an update is always logged.
+        :param: See ._init() for details
 
         :return:
             -
@@ -487,7 +478,7 @@ class cl_progress:
 
         try:
             # Use self._init() for initialization
-            self._init(morpy_trace, app_dict, description=description, total=total, ticks=ticks)
+            self._init(morpy_trace, app_dict, description=description, total=total, ticks=ticks, verbose=verbose)
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -495,7 +486,8 @@ class cl_progress:
                     f'{type(e).__name__}: {e}')
 
     @metrics
-    def _init(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None) -> dict:
+    def _init(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
+              verbose: bool=False) -> dict:
         r"""
         Helper method for initialization to ensure @metrics decorator usage.
 
@@ -505,6 +497,7 @@ class cl_progress:
         :param total: Mandatory - The total count for completion
         :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
             10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
+        :param verbose: If True, progress is only logged in verbose mode except for the 100% mark. Defaults to False.
 
         :return: dict
             morpy_trace: Operation credentials and tracing
@@ -537,6 +530,13 @@ class cl_progress:
             self.description = f'{description}' if description else ''
             self.update_counter = 0
             self.stop_updates = False
+            self.done = False
+
+            # Evaluate verbose mode
+            if not verbose or verbose and app_dict["conf"]["msg_verbose"]:
+                self.verbose_check = True
+            else:
+                self.verbose_check = False
 
             # Determine absolute progress ticks
             self._init_ticks(morpy_trace, app_dict)
@@ -567,8 +567,6 @@ class cl_progress:
 
         :example:
             self._init_ticks(morpy_trace, app_dict)
-
-        TODO mark progress log as verbose
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -680,10 +678,15 @@ class cl_progress:
                 prog_rel = current_fac / self.total_fac
                 prog_abs_short = round(prog_rel * 100, 2)
 
-                # Processing DESCRIPTION
-                log(morpy_trace, app_dict, "info",
-                lambda: f'{app_dict["loc"]["morpy"]["cl_progress_proc"]}: {self.description}\n'
-                        f'{prog_abs_short}% ({self.update_counter} of {self.total})')
+                # Evaluate, if 100% reached
+                self.done = True if prog_rel >= 1 else False
+
+                # Check for verbose logging
+                if self.verbose_check or self.done:
+                    # Processing DESCRIPTION
+                    log(morpy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["morpy"]["cl_progress_proc"]}: {self.description}\n'
+                            f'{prog_abs_short}% ({self.update_counter} of {self.total})')
 
             check = True
 

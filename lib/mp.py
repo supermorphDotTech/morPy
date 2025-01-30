@@ -897,11 +897,11 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
 
             # If process is still alive enqueue watcher again
             if is_active:
-                # # Process Watcher: Process still alive.
-                # # TODO mark verbose
-                # log(morpy_trace, app_dict, "debug",
-                # lambda: f'{app_dict["loc"]["morpy"]["watcher_is_alive"]}:\n'
-                #         f'{app_dict["proc"]["morpy"]["proc_refs"]}')
+                # Process Watcher: Process still alive.
+                log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["watcher_is_alive"]}:\n'
+                        f'{app_dict["proc"]["morpy"]["proc_refs"]}',
+                        verbose=True)
 
                 if not single_check:
                     task = (watcher, morpy_trace_in, app_dict, task)
@@ -911,11 +911,11 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
 
             # Clean up process references, if process is not running.
             else:
-                # # Process Watcher: Process ended, cleaning up.
-                # # TODO mark verbose
-                # log(morpy_trace, app_dict, "debug",
-                # lambda: f'{app_dict["loc"]["morpy"]["watcher_end"]}:\n'
-                #         f'{app_dict["proc"]["morpy"]["proc_refs"]}')
+                # Process Watcher: Process ended, cleaning up.
+                log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["watcher_end"]}:\n'
+                        f'{app_dict["proc"]["morpy"]["proc_refs"]}',
+                        verbose=True)
 
                 # Cleanup app_dict
                 app_dict["proc"]["morpy"]._update_self(_access="normal")

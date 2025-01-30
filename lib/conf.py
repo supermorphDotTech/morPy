@@ -30,8 +30,7 @@ def settings(start_time=None):
     :return: dict
         > See through the function for detailed descriptions of every morPy setting.
 
-    TODO update return parameters in description
-    TODO change variable names and remove "morpy" from it (dict nesting circumvents name collisions)
+    TODO change variable names and remove "mpy" from it (dict nesting circumvents name collisions)
     """
 
     import pathlib, os
@@ -84,12 +83,12 @@ def settings(start_time=None):
     # Called by: throughout msg operations
     msg_print = True
 
-    # Set the messages to verbose. THis means, that the full logg message will contain technical
+    # Activate verbose logging/printing. This means, that the full log message will contain technical
     # data helpful for tracing and context. This option comes with additional storage requirement
     # for logging. If logging to db is activated, there is no need for this option, as all
     # relevant data is stored in the db. When logging to textfile, verbose messages are the only way
     # to get a detailed context of a log message.
-    msg_verbose = True
+    msg_verbose = False
 
     # Print the initialized app dictionary to console.
     # Called by: init.init(~)
@@ -132,7 +131,7 @@ def settings(start_time=None):
 
     r"""
 >>> MEMORY <<<
-    TODO
+    TODO implement memory management with custom dict-like types
     """
 
     # Select the way, how the available RAM is determined. If absolute, an integer

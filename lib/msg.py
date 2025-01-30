@@ -17,7 +17,7 @@ from lib.decorators import metrics
 import sys
 
 @metrics
-def log(morpy_trace, app_dict, message, level):
+def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbose: bool) -> None:
     r"""
     This function writes an event to a specified file and/or prints it out
     according to it's severity (level).
@@ -25,7 +25,8 @@ def log(morpy_trace, app_dict, message, level):
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
     :param level: Severity: debug/info/warning/error/critical/denied
-    :param message: The message to be logged
+    :param message: A callable (e.g., lambda or function) that returns the log message.
+    :param verbose: If True, message is only logged in verbose mode.
 
     :return
         -
@@ -61,6 +62,7 @@ def log(morpy_trace, app_dict, message, level):
         # Prepare a passthrough dictionary for logging operations
         log_dict = {
             'level' : log_event_dict["level"],
+            'verbose' : verbose,
             'datetimestamp' : datetimestamp,
             'datetime_value' : datetime_value,
             'module' : morpy_trace_eval["module"],
@@ -108,7 +110,7 @@ def log(morpy_trace, app_dict, message, level):
         # Severe morPy logging error.
         raise RuntimeError(f'{app_dict["loc"]["morpy"]["log_crit_fail"]}')
 
-def log_eval(morpy_trace, app_dict, level, level_dict) -> dict:
+def log_eval(morpy_trace: dict, app_dict: dict, level: str, level_dict: dict) -> dict:
     r"""
     This function evaluates the log level and makes manipulation of morpy_trace
     possible for passdown only. That means, for the purpose of logging, certain
@@ -175,14 +177,15 @@ def log_eval(morpy_trace, app_dict, level, level_dict) -> dict:
 
     return morpy_trace_eval
 
-def log_event_handler(app_dict, message, level):
+def log_event_handler(app_dict: dict, message: str, level: str) -> dict:
+    r"""
+    This function handles the log levels by formatting and counting events.
 
-    r""" This function handles the log levels by formatting and counting events.
-    :param
-        app_dict - morPy global dictionary
-        message - The message to be logged
-        level - Defines the log level as handed by the calling function
-    :return - dictionary
+    :param app_dict: morPy global dictionary
+    :param message: The message to be logged
+    :param level: Defines the log level as handed by the calling function
+
+    :return: dict
         level - uppercase formatted level
         level_dict - Dictionary defining all possible log levels of the morPy framework
     """
@@ -212,18 +215,18 @@ def log_event_handler(app_dict, message, level):
             'level_dict' : level_dict
             }
 
-def log_interrupt(morpy_trace, app_dict):
+def log_interrupt(morpy_trace: dict, app_dict: dict) -> None:
+    r"""
+    This function handles the interrupt routine of morPy.
 
-    r""" This function handles the interrupt routine of morPy.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+
     :return
         -
 
-    #TODO
-    Change the way an interrupt is displayed. Working threads should somehow
-    not overwrite the interrupt message or copy it or something.
+    TODO Change the way an interrupt is displayed. Working threads should somehow
+        not overwrite the interrupt message or copy it or something.
         > use condition objects i.e. notify()
         > see https://docs.python.org/2/library/threading.html#condition-objects
     """
@@ -243,16 +246,14 @@ def log_interrupt(morpy_trace, app_dict):
     # Reset the global interrupt flag
     app_dict["global"]["morpy"]["interrupt"] = False
 
-def log_msg_builder(app_dict, log_dict):
+def log_msg_builder(app_dict: dict, log_dict: dict) -> str:
+    r"""
+    This function formats a complete log message ready to print.
 
-    # TODO add "verbose" to switch trace/process/thread/task on and off in full message
+    :param app_dict: morPy global dictionary
+    :param log_dict: Passthrough dictionary for logging operations
 
-    r""" This function formats a complete log message ready to print.
-    :param
-        app_dict - morPy global dictionary
-        log_dict - Passthrough dictionary for logging operations
-    :return
-        msg - hand back the standardized and complete log message
+    :return msg: hand back the standardized and complete log message
     """
 
     # Apply standard formats
@@ -263,13 +264,13 @@ def log_msg_builder(app_dict, log_dict):
 
     # Indentation
     for line in message.splitlines():
-        line_Indented = f'\t{line}'
+        line_indented = f'\t{line}'
 
         # Check, if msg_indented is an empty string
         if msg_indented:
-            msg_indented = f'{msg_indented}\n{line_Indented}'
+            msg_indented = f'{msg_indented}\n{line_indented}'
         else:
-            msg_indented = line_Indented
+            msg_indented = line_indented
 
     # Build the log message
     if app_dict["conf"]["msg_verbose"]:
@@ -284,27 +285,19 @@ def log_msg_builder(app_dict, log_dict):
 
     return msg
 
-def msg_print(morpy_trace, app_dict, log_dict):
+def msg_print(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
+    r"""
+    This function prints logs on screen according to their log level. For
+    further debugging an interrupt can be enabled for the according log
+    levels.
 
-    r""" This function prints logs on screen according to their log level. For
-        further debugging an interrupt can be enabled for the according log
-        levels.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        log_dict - Passthrough dictionary for logging operations
-    :return
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param log_dict: Passthrough dictionary for logging operations
+
+    :return:
         -
-
-    TODO
-    Also Enable an Interrupt with TKinter (not just console)
     """
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    # module = 'msg'
-    # operation = 'msg_print(~)'
-    # morpy_trace = morpy_fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
-    # morpy_trace["log_enable"] = False
 
     # print messages according to their log level
     pnt = True
@@ -324,14 +317,16 @@ def msg_print(morpy_trace, app_dict, log_dict):
     if log_dict["interrupt_enable"]:
         log_interrupt(morpy_trace, app_dict)
 
-def log_txt(morpy_trace, app_dict, log_dict):
+def log_txt(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
 
-    r""" This function writes the logs into the defined textfile.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        log_dict - Passthrough dictionary for logging operations
-    :return
+    r"""
+    This function writes the logs into the defined textfile.
+
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param log_dict: Passthrough dictionary for logging operations
+
+    :return:
         -
     """
 
@@ -347,14 +342,16 @@ def log_txt(morpy_trace, app_dict, log_dict):
     filepath = app_dict["conf"]["log_txt_path"]
     morpy_fct.txt_write(morpy_trace, app_dict, filepath, log_dict["log_msg_complete"])
 
-def log_db(morpy_trace, app_dict, log_dict):
+def log_db(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
 
-    r""" This function writes the logs into the defined logging database.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        log_dict - Passthrough dictionary for logging operations
-    :return
+    r"""
+    This function writes the logs into the defined logging database.
+
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param log_dict: Passthrough dictionary for logging operations
+
+    :return:
         -
     """
 
@@ -388,15 +385,16 @@ def log_db(morpy_trace, app_dict, log_dict):
     # Insert the actual log into the logging database table.
     log_db_row_insert(morpy_trace, app_dict, db_path, table_name, columns, log_dict)
 
-def log_db_connect(morpy_trace, app_dict, db_path):
+def log_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> object | None:
+    r"""
+    This function connects to a SQLite database. The database will be
+    created if it does not exist already.
 
-    r""" This function connects to a SQLite database. The database will be
-        created if it does not exist already.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        db_path - Path to the db to be adressed or altered
-    :return
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param db_path: Path to the db to be addressed or altered
+
+    :return:
         conn - Connection object or None
     """
 
@@ -409,8 +407,6 @@ def log_db_connect(morpy_trace, app_dict, db_path):
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
-
-    conn = None
     try:
         conn = sqlite3.connect(db_path)
 
@@ -424,14 +420,15 @@ def log_db_connect(morpy_trace, app_dict, db_path):
                 f'{app_dict["loc"]["morpy"]["log_db_connect_excpt"]}\n'
                 f'db_path: {db_path}')
 
-def log_db_disconnect(morpy_trace, app_dict, db_path):
+def log_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> None:
+    r"""
+    This function disconnects a SQLite database.
 
-    r""" This function disconnects a SQLite database.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        db_path - Path to the db to be adressed or altered
-    :return
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param db_path: Path to the db to be addressed or altered
+
+    :return:
         -
     """
 
@@ -460,15 +457,16 @@ def log_db_disconnect(morpy_trace, app_dict, db_path):
         if conn:
             conn.close()
 
-def log_db_table_create(morpy_trace, app_dict, db_path, table_name):
+def log_db_table_create(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> None:
+    r"""
+    This function creates a table inside a SQLite database.
 
-    r""" This function creates a table inside a SQLite database.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be created
-    :return
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param db_path: Path to the db to be addressed or altered
+    :param table_name: Name of the database table to be created
+
+    :return:
         -
     """
 
@@ -513,17 +511,17 @@ def log_db_table_create(morpy_trace, app_dict, db_path, table_name):
                 f'{app_dict["loc"]["morpy"]["log_db_table_create_excpt"]}\n'
                 f'{app_dict["loc"]["morpy"]["log_db_table_create_stmt"]}: {exec_statement}')
 
-def log_db_table_check(morpy_trace, app_dict, db_path, table_name):
+def log_db_table_check(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> bool | None:
+    r"""
+    This function checks on the existence of a table inside a given SQLite
+    database.
 
-    r""" This function checks on the existence of a table inside a given SQLite
-        database.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be checked on
-    :return (dictionary)
-        check - If TRUE, the table was found
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param db_path: Path to the db to be addressed or altered
+    :param table_name: Name of the database table to be created
+
+    :return check: If TRUE, the table was found
     """
 
     import lib.fct as morpy_fct
@@ -572,19 +570,20 @@ def log_db_table_check(morpy_trace, app_dict, db_path, table_name):
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def log_db_table_add_column(morpy_trace, app_dict, db_path, table_name, columns, col_types):
+def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list,
+                            col_types: list) -> bool | None:
+    r"""
+    This function inserts a column into a table inside a given SQLite
+    database.
 
-    r""" This function inserts a column into a table inside a given SQLite
-        database.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be created
-        columns - List of the columns to be added
-        col_types - List of datatypes for the columns as specified for SQLite
-    :return
-        check - If TRUE, the function was successful
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param db_path: Path to the db to be adressed or altered
+    :param table_name: Name of the database table to be created
+    :param columns: List of the columns to be added
+    :param col_types: List of datatypes for the columns as specified for SQLite
+
+    :return check: If TRUE, the function was successful
     """
 
     import lib.fct as morpy_fct
@@ -651,20 +650,20 @@ def log_db_table_add_column(morpy_trace, app_dict, db_path, table_name, columns,
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def log_db_row_insert(morpy_trace, app_dict, db_path, table_name, columns, log_dict):
+def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list,
+                      log_dict: dict) -> dict[str, int | bool | None] | None:
+    r"""
+    This function inserts a row into a table inside a given SQLite
+    database.
 
-    r""" This function inserts a row into a table inside a given SQLite
-        database.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        db_path - Path to the db to be adressed or altered
-        table_name - Name of the database table to be created
-        columns - List with the names of the columns to be written into. You
-                  may reference a number of columns within that list. Number
-                  of columns has to match number of data written to cells.
-        log_dict - Passthrough dictionary for logging operations
-    :return (dictionary)
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param db_path: Path to the db to be adressed or altered
+    :param table_name: Name of the database table to be created
+    :param columns: List of the columns to be added
+    :param log_dict: Passthrough dictionary for logging operations
+
+    :return: dict
         check - If TRUE, the function was successful
         row_id - ID of the row inserted
     """
@@ -749,53 +748,17 @@ def log_db_row_insert(morpy_trace, app_dict, db_path, table_name, columns, log_d
         lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
                 f'{type(e).__name__}: {e}')
 
-def log_regex_replace(morpy_trace, app_dict, search_obj, search_for, replace_by):
+def log_wait_for_input(morpy_trace: dict, app_dict: dict, msg_text: str) -> str | None:
 
-    r""" This function substitutes characters or strings in an input object.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        search_obj - Any given object to search in for a regular expression (will be converted to a string)
-        search_for - The character or string to be replaced
-        replace_by - The character or string to substitute
+    r"""
+    This function makes the program wait until a user input was made.
+    The user input can be returned to the calling module.
 
-    :return
-        result - The substituted chracter or string
-    """
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: morPy global dictionary
+    :param msg_text: The text to be displayed before user input
 
-    import lib.fct as morpy_fct
-    import sys, re
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_regex_replace(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
-
-    # Apply standard formats
-    search_obj = f'{search_obj}'
-    search_for = f'{search_for}'
-    replace_by = f'{replace_by}'
-
-    try:
-        result = re.sub(search_for, replace_by, search_obj)
-
-        return result
-
-    except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                f'{type(e).__name__}: {e}')
-
-def log_wait_for_input(morpy_trace, app_dict, msg_text):
-
-    r""" This function makes the program wait until a user input was made.
-        The user input can be returned to the calling module.
-    :param
-        morpy_trace - operation credentials and tracing
-        app_dict - morPy global dictionary
-        msg_text - The text to be displayed before user input
-    :return
-        usr_input - Returns the input of the user
+    :return usr_input: Returns the input of the user
     """
 
     import lib.fct as morpy_fct
@@ -807,7 +770,6 @@ def log_wait_for_input(morpy_trace, app_dict, msg_text):
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
-
         usr_input = input(f'{msg_text}\n')
 
         return usr_input
