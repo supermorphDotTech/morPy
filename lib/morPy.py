@@ -147,11 +147,10 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
                           Defaults to morPy localization.
     :param headline_font_size: Font size for both, overall and stage descriptive names.
                                Defaults to 10.
-    :param description_stage: Description or status. Should be written whenever there is a progress update. Will
-                             not be shown if None at construction.
+    :param description_stage: Description or status. Will not be shown if None at construction.
                              Defaults to None.
     :param description_font_size: Font size for description/status.
-                                  Defaults to 8.
+                                  Defaults to 10.
     :param font: Font to be used in the GUI, except for the title bar and console widget.
                  Defaults to "Arial".
     :param stages: Sum of stages until complete. Will not show progress bar for overall progress if equal to 1.
@@ -173,7 +172,8 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
 
         .update_progress(morpy_trace: dict, app_dict: dict, current: float = None, max_per_stage: int = None)
             Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
-            switch button text to "Close" and stop console redirection.
+            switch button text to "Close" and stop console redirection. Enqueues a UI request for the
+            main thread to process. Safe to call from any thread.
 
             :param current: Current progress count. If None, each call of this method will add +1
                 to the progress count. Defaults to None.
@@ -188,7 +188,8 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
 
         .update_text(morpy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
                     description_stage: str = None)
-            Update the headline texts or description at runtime.
+            Update the headline texts or description at runtime. Enqueues a UI request for the
+            main thread to process. Safe to call from any thread.
 
             :param headline_total: If not None, sets the overall progress headline text.
             :param headline_stage: If not None, sets the stage progress headline text.
@@ -206,14 +207,14 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
             inner_loop_count = 10 # Increments in the stage, i.e. files modified
 
             if gui:
-                gui.update_text(headline_total=f'My Demo')
+                gui.update_text(morpy_trace, app_dict, headline_total=f'My Demo')
 
             # Loop to demo amount of stages
             for i in range(outer_loop_count):
                 # Update Headline for overall progress
                 if gui:
-                    gui.update_text(headline_stage=f'Stage {i}')
-                    gui.update_progress(current=0, max_per_stage=10) # Setup stage progress, "max_per_stage" may be dynamic
+                    gui.update_text(morpy_trace, app_dict, headline_stage=f'Stage {i}')
+                    gui.update_progress(morpy_trace, app_dict, current=0, max_per_stage=10) # Setup stage progress, "max_per_stage" may be dynamic
 
                 time.sleep(.5) # Wait time, so progress can be viewed (mocking execution time)
 
@@ -223,7 +224,7 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
 
                     # Update progress and text for actual stage
                     if gui:
-                        gui.update_text(description_stage=f'This describes progress no. {j} of the stage.')
+                        gui.update_text(morpy_trace, app_dict, description_stage=f'This describes progress no. {j} of the stage.')
                         gui.update_progress(morpy_trace, app_dict)
 
         if name == "__main__":

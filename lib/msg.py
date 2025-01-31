@@ -319,7 +319,6 @@ def msg_print(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
         log_interrupt(morpy_trace, app_dict)
 
 def log_txt(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
-
     r"""
     This function writes the logs into the defined textfile.
 
@@ -344,7 +343,6 @@ def log_txt(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     textfile_write(morpy_trace, app_dict, filepath, log_dict["log_msg_complete"])
 
 def log_db(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
-
     r"""
     This function writes the logs into the defined logging database.
 

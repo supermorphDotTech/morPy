@@ -11,12 +11,11 @@ import lib.fct as morpy_fct
 import lib.common as common
 from lib.decorators import metrics, log
 
-import threading
 import sys
-import queue
+from tkinter import filedialog
 import tkinter as tk
 from tkinter import ttk
-from tkinter import filedialog
+import threading, queue
 
 class cl_progress_gui:
     r"""
@@ -36,7 +35,7 @@ class cl_progress_gui:
                           Defaults to morPy localization.
     :param headline_font_size: Font size for both, overall and stage descriptive names.
                                Defaults to 10.
-    :param description_stage: Description or status. Should be written whenever there is a progress update. Will
+    :param description_stage: Description or status. Will
                              not be shown if None at construction.
                              Defaults to None.
     :param description_font_size: Font size for description/status.
@@ -62,7 +61,8 @@ class cl_progress_gui:
 
         .update_progress(morpy_trace: dict, app_dict: dict, current: float = None, max_per_stage: int = None)
             Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
-            switch button text to "Close" and stop console redirection.
+            switch button text to "Close" and stop console redirection. Enqueues a UI request for the
+            main thread to process. Safe to call from any thread.
 
             :param current: Current progress count. If None, each call of this method will add +1
                 to the progress count. Defaults to None.
@@ -77,7 +77,8 @@ class cl_progress_gui:
 
         .update_text(morpy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
                     description_stage: str = None)
-            Update the headline texts or description at runtime.
+            Update the headline texts or description at runtime. Enqueues a UI request for the
+            main thread to process. Safe to call from any thread.
 
             :param headline_total: If not None, sets the overall progress headline text.
             :param headline_stage: If not None, sets the stage progress headline text.
@@ -95,14 +96,14 @@ class cl_progress_gui:
             inner_loop_count = 10 # Increments in the stage, i.e. files modified
 
             if gui:
-                gui.update_text(headline_total=f'My Demo')
+                gui.update_text(morpy_trace, app_dict, headline_total=f'My Demo')
 
             # Loop to demo amount of stages
             for i in range(outer_loop_count):
                 # Update Headline for overall progress
                 if gui:
-                    gui.update_text(headline_stage=f'Stage {i}')
-                    gui.update_progress(current=0, max_per_stage=10) # Setup stage progress, "max_per_stage" may be dynamic
+                    gui.update_text(morpy_trace, app_dict, headline_stage=f'Stage {i}')
+                    gui.update_progress(morpy_trace, app_dict, current=0, max_per_stage=10) # Setup stage progress, "max_per_stage" may be dynamic
 
                 time.sleep(.5) # Wait time, so progress can be viewed (mocking execution time)
 
@@ -112,7 +113,7 @@ class cl_progress_gui:
 
                     # Update progress and text for actual stage
                     if gui:
-                        gui.update_text(description_stage=f'This describes progress no. {j} of the stage.')
+                        gui.update_text(morpy_trace, app_dict, description_stage=f'This describes progress no. {j} of the stage.')
                         gui.update_progress(morpy_trace, app_dict)
 
         if name == "__main__":
@@ -195,7 +196,7 @@ class cl_progress_gui:
                               Defaults to morPy localization.
         :param headline_font_size: Font size for both, overall and stage descriptive names.
                                    Defaults to 10.
-        :param description_stage: Description or status. Should be written whenever there is a progress update. Will
+        :param description_stage: Description or status. Will
                                  not be shown if None at construction.
                                  Defaults to None.
         :param description_font_size: Font size for description/status.
@@ -241,7 +242,7 @@ class cl_progress_gui:
             self.console_on = console
             self.auto_close = auto_close
             self.done = False  # Will be True once overall progress is 100%
-            self.main_loop_interval = 100  # ms, how often we do the main loop
+            self.main_loop_interval = 50 # ms, how often we do the main loop
 
             # Default texts
             self.frame_title = (app_dict["loc"]["morpy"]["cl_progress_gui_prog"]
@@ -258,6 +259,8 @@ class cl_progress_gui:
             self.font = font
             self.button_text_abort = f'{app_dict["loc"]["morpy"]["cl_progress_gui_abort"]}'
             self.button_text_close = f'{app_dict["loc"]["morpy"]["cl_progress_gui_close"]}'
+
+            self.ui_calls = queue.Queue()  # Queue for collecting UI update requests from background thread
 
             # Progress tracking
             self.stages = stages
@@ -383,41 +386,33 @@ class cl_progress_gui:
         self.stage_progress_text = None
 
         try:
-            # Grid config
-            self.root.rowconfigure(3, weight=1)
+            # Check, if running in main thread (if you have that function)
+            check_main_thread(app_dict)
+
+            # Grid config - columns
             self.root.columnconfigure(0, weight=0)
             self.root.columnconfigure(1, weight=0)
             self.root.columnconfigure(2, weight=1)
 
-            # Close/Abort button
-            self.button_text = tk.StringVar(value=self.button_text_abort)
-            self.close_button = tk.Button(
-                self.root,
-                textvariable=self.button_text,
-                command=lambda: self._on_close(morpy_trace, app_dict)
-            )
-            self.close_button.grid(row=4, column=2, columnspan=1, padx=10, pady=(0, 10), sticky="nse")
-
             # Overall Progress
             if self.overall_progress_on:
-
                 # Grid config
                 self.root.rowconfigure(0, weight=0)
 
-                # Overall headline
-                self.total_headline_label = tk.Label(
+                # Overall headline (ttk.Label)
+                self.total_headline_label = ttk.Label(
                     self.root,
                     text=self.headline_total,
                     font=(self.font, self.headline_font_size)
                 )
                 self.total_headline_label.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nse")
 
-                # Overall percentage
+                # Overall percentage (ttk.Label)
                 self.overall_label_var = tk.StringVar(value="0.00%")
-                self.overall_label = tk.Label(self.root, textvariable=self.overall_label_var, width=6)
+                self.overall_label = ttk.Label(self.root, textvariable=self.overall_label_var)
                 self.overall_label.grid(row=0, column=1, padx=0, pady=(10, 0), sticky="nsw")
 
-                # Overall progress bar
+                # Overall progress bar (ttk.Progressbar)
                 self.overall_progress = ttk.Progressbar(
                     self.root,
                     orient=tk.HORIZONTAL,
@@ -433,24 +428,22 @@ class cl_progress_gui:
 
             # Stage Progress
             if self.stage_progress_on:
-
-                # Grid config
                 self.root.rowconfigure(1, weight=0)
 
-                # stage headline
-                self.stage_headline_label = tk.Label(
+                # Stage headline (ttk.Label)
+                self.stage_headline_label = ttk.Label(
                     self.root,
                     text=self.headline_stage,
                     font=(self.font, self.headline_font_size)
                 )
                 self.stage_headline_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="nse")
 
-                # stage percentage
+                # Stage percentage (ttk.Label)
                 self.stage_label_var = tk.StringVar(value="0.00%")
-                self.stage_label = tk.Label(self.root, textvariable=self.stage_label_var, width=6)
-                self.stage_label.grid(row=1, column=1, padx=0, pady=(5, 0), sticky="nsw")
+                self.stage_label = ttk.Label(self.root, textvariable=self.stage_label_var)
+                self.stage_label.grid(row=1, column=1, padx=0, pady=(5, 0), sticky="nsew")
 
-                # stage progress bar
+                # Stage progress bar (ttk.Progressbar)
                 self.stage_progress = ttk.Progressbar(
                     self.root,
                     orient=tk.HORIZONTAL,
@@ -466,31 +459,43 @@ class cl_progress_gui:
 
             # Detail description at progress update
             if self.description_stage_on:
-
-                # Grid config
                 self.root.rowconfigure(2, weight=0)
-
-                # stage detailed description
-                self.stage_description_label = tk.Label(
+                # Still a ttk.Label
+                self.stage_description_label = ttk.Label(
                     self.root,
                     text=self.description_stage,
                     font=(self.font, self.description_font_size)
                 )
                 self.stage_description_label.grid(row=2, column=0, columnspan=3, padx=10, pady=(5, 5), sticky="nsw")
 
-            # Console widget
+            # Console widget (tk.Text has no direct TTK equivalent)
             if self.console_on:
-                # Console text
+                self.root.rowconfigure(3, weight=1)
                 self.console_output = tk.Text(self.root, height=10, wrap="word")
                 self.console_output.grid(row=3, column=0, columnspan=3, padx=10, pady=5, sticky="nsew")
                 self.console_output.configure(bg="black", fg="white")
 
                 # Create a vertical Scrollbar
-                self.console_scrollbar = tk.Scrollbar(self.root, orient="vertical", command=self.console_output.yview)
+                self.console_scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=self.console_output.yview)
                 self.console_scrollbar.grid(row=3, column=3, sticky="ns", padx=(0, 10), pady=5)
                 self.console_output["yscrollcommand"] = self.console_scrollbar.set
             else:
                 self.console_output = None
+
+            # Grid config - Bottom row
+            self.root.rowconfigure(4, weight=0)
+
+            # Close/Abort button (ttk.Button)
+            self.button_text = tk.StringVar(value=self.button_text_abort)
+            self.close_button = ttk.Button(
+                self.root,
+                textvariable=self.button_text,
+                command=lambda: self._on_close(morpy_trace, app_dict)
+            )
+            self.close_button.grid(row=4, column=2, columnspan=1, padx=10, pady=(0, 10), sticky="nse")
+
+            # Enforce an update on the GUI
+            self._enforce_update()
 
             check = True
 
@@ -504,6 +509,18 @@ class cl_progress_gui:
             "morpy_trace" : morpy_trace,
             "check" : check,
         }
+
+    def _enforce_update(self):
+        r"""
+        Enforce an update of the GUI. If not leveraged after GUI update, might not display.
+
+        :example:
+            # Enforce an update on the GUI
+            self._enforce_update()
+        """
+
+        self.root.update_idletasks()
+        self.root.update()
 
     @metrics
     def _redirect_console(self, morpy_trace: dict, app_dict: dict):
@@ -535,9 +552,9 @@ class cl_progress_gui:
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}')
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
 
         return {
             "morpy_trace": morpy_trace,
@@ -550,6 +567,7 @@ class cl_progress_gui:
 
         :param message: Message to be printed to console
         """
+
         if self.console_queue is not None:
             self.console_queue.put(message)
 
@@ -623,12 +641,19 @@ class cl_progress_gui:
 
         try:
             # Process console output if needed
-            if (self.console_on and not self.done):
-                # If done & auto_close=False, console redirection presumably stopped.
-                # Skip reading from the queue to avoid confusion.
+            if self.console_on and not self.done:
                 self._update_console(morpy_trace, app_dict)
 
-            # Schedule again
+            # Process any pending UI updates from the background thread
+            while not self.ui_calls.empty():
+                call_type, kwargs = self.ui_calls.get_nowait()
+
+                if call_type == "update_text":
+                    self._real_update_text(morpy_trace, app_dict, **kwargs)
+                elif call_type == "update_progress":
+                    self._real_update_progress(morpy_trace, app_dict, **kwargs)
+
+            # Schedule next loop
             self.root.after(self.main_loop_interval, lambda: self._main_loop(morpy_trace, app_dict))
 
             check = True
@@ -667,11 +692,17 @@ class cl_progress_gui:
         check = False
 
         try:
+            # Check, if running in main thread
+            check_main_thread(app_dict)
+
             while not self.console_queue.empty():
                 msg = self.console_queue.get_nowait()
                 if self.console_output is not None:
                     self.console_output.insert(tk.END, msg)
                     self.console_output.see(tk.END)
+
+                # Enforce an update on the GUI
+                self._enforce_update()
 
             check = True
 
@@ -690,7 +721,8 @@ class cl_progress_gui:
     def update_progress(self, morpy_trace: dict, app_dict: dict, current: float = None, max_per_stage: int = None):
         r"""
         Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
-        switch button text to "Close" and stop console redirection.
+        switch button text to "Close" and stop console redirection. Enqueues a UI request for the
+        main thread to process. Safe to call from any thread.
 
         :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -746,11 +778,66 @@ class cl_progress_gui:
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
+
+        try:
+            call_kwargs = {
+                "current" : current,
+                "max_per_stage" : max_per_stage,
+            }
+            self.ui_calls.put(("update_progress", call_kwargs))
+
+            check = True
+
+        except Exception as e:
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
+
+        return {
+            "morpy_trace" : morpy_trace,
+            "check" : check,
+        }
+
+    def _real_update_progress(self, morpy_trace: dict, app_dict: dict, current: float = None,
+                              max_per_stage: int = None):
+        """
+        Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
+        switch button text to "Close" and stop console redirection. Enqueues a UI request for the
+        main thread to process. Safe to call from any thread. Actually updates Tk widgets. Must be called only
+        from the main thread.
+
+        :param morpy_trace: Operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+        :param current: Current progress count. If None, each call of this method will add +1
+            to the progress count. Defaults to None.
+        :param max_per_stage: If the current stage to be finished has got a different amount of increments than the former
+                             stage, this value needs to be set when starting a new stage.
+
+                             This is the maximum value of the stage progress. Set it to 0 to turn off the stage progress.
+                             It represents the maximum value the stage progress will reach until 100%, which is
+                             determined by which value you choose to increment the progress with (defaults to 1 per
+                             increment). A value of 10 for example amounts to 10% per increment.
+                             Defaults to 0.
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether initialization completed without errors
+        """
+
+        module = 'ui_tk'
+        operation = 'cl_progress_gui._real_update_progress(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        check = False
         stage_abs = None
         overall_progress = None
         reset_stage_progress = False
 
         try:
+            # Check, if running in main thread
+            check_main_thread(app_dict)
+
             if max_per_stage and max_per_stage != self.max_per_stage:
                 self.max_per_stage = max_per_stage
 
@@ -759,6 +846,10 @@ class cl_progress_gui:
                 if self.overall_progress_on and self.overall_progress is not None:
                     self.overall_progress["value"] = 100.0
                     self.overall_label_var.set("100.00%")
+
+                    # Enforce an update on the GUI
+                    self._enforce_update()
+
             else:
                 # 1) stage progress
                 if self.stage_progress_on:
@@ -772,8 +863,26 @@ class cl_progress_gui:
 
                     # If stage hits 100%, increment the stage count, reset stage bar
                     if stage_abs and stage_abs >= 100.0:
-                        reset_stage_progress = True
-                        self.stages_finished += 1
+                        if self.overall_progress_on:
+                            reset_stage_progress = True
+                            self.stages_finished += 1
+                        else:
+                            self.stages_finished += 1
+                            # If all stages are finished, mark as done
+                            self.done = True
+                            if self.auto_close:
+                                self._stop_console_redirection(morpy_trace, app_dict)
+                                self._on_close(morpy_trace, app_dict)
+                            else:
+                                self.button_text.set(self.button_text_close)
+                                self._enforce_update()
+                                self._stop_console_redirection(morpy_trace, app_dict)
+
+                    # Decrement self.unfinished_tasks
+                    self.ui_calls.task_done()
+
+                    # Enforce an update on the GUI
+                    self._enforce_update()
 
                 # 2) Overall fraction
                 if self.overall_progress_on:
@@ -799,6 +908,12 @@ class cl_progress_gui:
                             self.button_text.set(self.button_text_close)
                             self._stop_console_redirection(morpy_trace, app_dict)
 
+                    # Decrement self.unfinished_tasks
+                    self.ui_calls.task_done()
+
+                    # Enforce an update on the GUI
+                    self._enforce_update()
+
                 # 3) Reset stage progress last to avoid lag in between update of stage and overall progress.
                 if self.stage_progress_on and reset_stage_progress:
                     self.stage_progress_tracker._init(
@@ -813,6 +928,15 @@ class cl_progress_gui:
                     else:
                         # If all stages are finished, mark as done
                         self.done = True
+
+                    # Decrement self.unfinished_tasks
+                    self.ui_calls.task_done()
+
+                    # Enforce an update on the GUI
+                    self._enforce_update()
+
+            # Enforce an update on the GUI
+            self._enforce_update()
 
             check = True
 
@@ -831,7 +955,8 @@ class cl_progress_gui:
     def update_text(self, morpy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
                     description_stage: str = None):
         r"""
-        Update the headline texts or description at runtime.
+        Update the headline texts or description at runtime. Enqueues a UI request for the
+        main thread to process. Safe to call from any thread.
 
         :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -858,6 +983,62 @@ class cl_progress_gui:
         check = False
 
         try:
+            # Send text updates to the queue
+            call_kwargs = {
+                "headline_total" : headline_total,
+                "headline_stage" : headline_stage,
+                "description_stage" : description_stage,
+            }
+            self.ui_calls.put(("update_text", call_kwargs))
+
+            check = True
+
+        except Exception as e:
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
+
+        return {
+            "morpy_trace": morpy_trace,
+            "check": check,
+        }
+
+    @metrics
+    def _real_update_text(self, morpy_trace: dict, app_dict: dict, headline_total: str = None,
+                          headline_stage: str = None, description_stage: str = None):
+        r"""
+        Update the headline texts or description at runtime. Actually updates Tk widgets.
+        Must be called only from the main thread.
+
+        :param morpy_trace: Operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+        :param headline_total: If not None, sets the overall progress headline text.
+        :param headline_stage: If not None, sets the stage progress headline text.
+        :param description_stage: If not None, sets the description text beneath the stage headline.
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether text update completed without errors
+
+        :example:
+            gui.update_text(morpy_trace, app_dict,
+                headline_total="Processing Outer Loop 3",
+                headline_stage="Processing File 5",
+                description_stage="Now copying data...",
+            )
+        """
+
+        module = 'ui_tk'
+        operation = 'cl_progress_gui._real_update_text(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        check = False
+
+        try:
+            # Check, if running in main thread
+            check_main_thread(app_dict)
+
             # Update overall headline
             if headline_total is not None and self.overall_progress_on:
                 # Retain the final colon to stay consistent with constructor
@@ -866,6 +1047,9 @@ class cl_progress_gui:
                 self.overall_progress_tracker.description = self.headline_total_nocol
                 if self.total_headline_label is not None:
                     self.total_headline_label.config(text=self.headline_total)
+
+                # Enforce an update on the GUI
+                self._enforce_update()
 
             # Update stage headline
             if headline_stage is not None and self.stage_progress_on:
@@ -876,6 +1060,9 @@ class cl_progress_gui:
                 if self.stage_headline_label is not None:
                     self.stage_headline_label.config(text=self.headline_stage)
 
+                # Enforce an update on the GUI
+                self._enforce_update()
+
             # Update description
             if description_stage is not None:
                 self.description_stage = description_stage
@@ -883,6 +1070,9 @@ class cl_progress_gui:
                 # We only update if the widget is already present:
                 if self.stage_description_label is not None:
                     self.stage_description_label.config(text=self.description_stage)
+
+                # Enforce an update on the GUI
+                self._enforce_update()
 
             check = True
 
@@ -974,7 +1164,8 @@ class cl_progress_gui:
                 # Exception in the worker thread.
                 log(morpy_trace, app_dict, "error",
                 lambda: f'{app_dict["loc"]["morpy"]["cl_progress_gui_start_work_thread_err"]}\n'
-                        f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+                        f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno} '
+                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}')
 
         try:
@@ -1017,6 +1208,9 @@ class cl_progress_gui:
         check = False
 
         try:
+            # Print console to __stdout__
+            print(self.get_console_output(morpy_trace, app_dict)["console_output"])
+
             # Restore original console if not already done
             self._stop_console_redirection(morpy_trace, app_dict)
             self.root.quit()
@@ -1083,6 +1277,26 @@ class cl_progress_gui:
             "check" : check,
             "console_output" : console_text,
         }
+
+def check_main_thread(app_dict: dict):
+    r"""
+    Check, if GUI runs in main thread. Otherwise, instabilities are introduced
+    with tkinter.
+
+    :param app_dict: morPy global dictionary containing app configurations
+
+    :return:
+        -
+
+    :example:
+        check_main_thread(app_dict)
+    """
+
+    # UI must run in main thread. Currently in ###
+    if threading.current_thread() is not threading.main_thread():
+        raise RuntimeError(
+            f'{app_dict["loc"]["morpy"]["cl_progress_gui_check_main"]}: {threading.current_thread()}'
+        )
 
 @metrics
 def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None) -> dict:
@@ -1157,7 +1371,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftype
                     f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_open"]}')
 
             # Create a path object
-            morpy_fct.pathtool(morpy_trace, file_path)
+            morpy_fct.pathtool(file_path)
 
         check = True
 
@@ -1240,7 +1454,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
                     f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_open"]}')
 
             # Create a path object
-            morpy_fct.pathtool(morpy_trace, dir_path)
+            morpy_fct.pathtool(dir_path)
 
         check = True
 

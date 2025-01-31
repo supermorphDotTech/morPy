@@ -507,7 +507,7 @@ class cl_orchestrator:
         check = False
 
         try:
-            while not self._terminate or len(self.process_q.heap) > 0:
+            while (not self._terminate) or (len(self.process_q.heap) > 0):
                 # Check process queue for tasks
                 if self.process_q.heap:
                     task_dqued = self.process_q.dequeue(morpy_trace, app_dict)
@@ -523,6 +523,7 @@ class cl_orchestrator:
                     # Run an orchestrator task internally
                     else:
                         retval = func(*args)
+
                         # Introduce wait time, if waiting for processes
                         if priority == -20:
                             time.sleep(0.02)  # 0.02 seconds = 20 milliseconds
@@ -535,8 +536,8 @@ class cl_orchestrator:
                     self._terminate = True
 
                 # Evaluate if spawned processes need to end. As long as the app is running in
-                # a different process, the orchestrator will not terminate. A critical exception
-                # may end the app, too.
+                # a different process, the orchestrator will not terminate. Also, a critical exception
+                # may end the app.
                 if len(app_dict["proc"]["morpy"]["proc_busy"]) == 0:
                     self._terminate = True
 

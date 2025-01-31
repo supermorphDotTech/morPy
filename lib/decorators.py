@@ -140,23 +140,19 @@ def metrics(func):
             except KeyError:
                 raise IndexError("Positional arguments morpy_trace and/or app_dict are missing or at wrong position!")
 
-            try:
-                if enable_metrics:
-                    start_time = time.perf_counter()
-                    retval = func(*args, **kwargs)
-                    end_time = time.perf_counter()
-                    run_time = end_time - start_time
+            if enable_metrics:
+                start_time = time.perf_counter()
+                retval = func(*args, **kwargs)
+                end_time = time.perf_counter()
+                run_time = end_time - start_time
 
-                    # Performance Mode vs. Full Mode
-                    if perf_mode:
-                        metrics_perf(morpy_trace, run_time)
-                    else:
-                        metrics_full(morpy_trace, run_time)
+                # Performance Mode vs. Full Mode
+                if perf_mode:
+                    metrics_perf(morpy_trace, run_time)
                 else:
-                    retval = func(*args, **kwargs)
-
-            except Exception as e:
-                morpy_fct.handle_exception_decorator(e)
+                    metrics_full(morpy_trace, run_time)
+            else:
+                retval = func(*args, **kwargs)
 
         return retval
 
