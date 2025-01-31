@@ -78,7 +78,7 @@ def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
                 f'{type(e).__name__}: {e}')
 
 def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
-                verbose: bool=False):
+                float_progress: bool=False, verbose: bool=False):
     r"""
     This class instantiates a progress counter. If ticks, total or counter
     are floats, progress of 100 % may not be displayed.
@@ -89,6 +89,9 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
     :param total: Mandatory - The total count for completion
     :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
         10.7% progress exceeded the exact progress will be logged.
+    :param float_progress: For efficient progress tracking, by default the progress is not tracked with
+        floats. If True, the amount of ticks at which to update progress may be a lot more expensive.
+        Defaults to False.
     :param verbose: If True, progress is only logged in verbose mode except for the 100% mark. Defaults to False.
 
     .update(morpy_trace: dict, app_dict: dict, current: float=None, verbose: bool=False)
@@ -110,7 +113,7 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
 
     try:
         return common.cl_progress(morpy_trace, app_dict, description=description, total=total, ticks=ticks,
-                                  verbose=verbose)
+                                  float_progress=float_progress, verbose=verbose)
 
     except Exception as e:
         import lib.fct as morpy_fct

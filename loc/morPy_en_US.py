@@ -508,6 +508,8 @@ def loc_morpy() -> dict:
         'cl_progress_gui_close': 'Close',
         'cl_progress_gui_done': 'All operations finished successfully.',
         'cl_progress_gui_start_work_thread_err': 'Exception in the worker thread.',
+        'cl_progress_gui_check_main': 'UI must run in main thread. Currently in',
+        'cl_progress_gui_exit_dirty': 'GUI ended ungracefully.',
 
         # #################
         # Area: lib.xl.py

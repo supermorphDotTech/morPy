@@ -12,10 +12,11 @@ import lib.common as common
 from lib.decorators import metrics, log
 
 import sys
-from tkinter import filedialog
-import tkinter as tk
-from tkinter import ttk
 import threading, queue
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import ttk
+from tkinter import TclError
 
 class cl_progress_gui:
     r"""
@@ -390,9 +391,9 @@ class cl_progress_gui:
             check_main_thread(app_dict)
 
             # Grid config - columns
-            self.root.columnconfigure(0, weight=0)
+            self.root.columnconfigure(0, weight=1)
             self.root.columnconfigure(1, weight=0)
-            self.root.columnconfigure(2, weight=1)
+            self.root.columnconfigure(2, weight=0)
 
             # Overall Progress
             if self.overall_progress_on:
@@ -405,7 +406,7 @@ class cl_progress_gui:
                     text=self.headline_total,
                     font=(self.font, self.headline_font_size)
                 )
-                self.total_headline_label.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nse")
+                self.total_headline_label.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsw")
 
                 # Overall percentage (ttk.Label)
                 self.overall_label_var = tk.StringVar(value="0.00%")
@@ -436,12 +437,12 @@ class cl_progress_gui:
                     text=self.headline_stage,
                     font=(self.font, self.headline_font_size)
                 )
-                self.stage_headline_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="nse")
+                self.stage_headline_label.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="nsw")
 
                 # Stage percentage (ttk.Label)
                 self.stage_label_var = tk.StringVar(value="0.00%")
                 self.stage_label = ttk.Label(self.root, textvariable=self.stage_label_var)
-                self.stage_label.grid(row=1, column=1, padx=0, pady=(5, 0), sticky="nsew")
+                self.stage_label.grid(row=1, column=1, padx=0, pady=(10, 0), sticky="nsew")
 
                 # Stage progress bar (ttk.Progressbar)
                 self.stage_progress = ttk.Progressbar(
@@ -450,7 +451,7 @@ class cl_progress_gui:
                     length=int(self.frame_width * 0.6),
                     mode="determinate"
                 )
-                self.stage_progress.grid(row=1, column=2, padx=10, pady=(5, 0), sticky="nsew")
+                self.stage_progress.grid(row=1, column=2, padx=10, pady=(10, 0), sticky="nsew")
             else:
                 self.stage_headline_label = None
                 self.stage_progress = None
@@ -566,6 +567,8 @@ class cl_progress_gui:
         Captured print statements go into a queue.
 
         :param message: Message to be printed to console
+
+        TODO fix writes to console. Somehow not arriving at GUI.
         """
 
         if self.console_queue is not None:
@@ -835,39 +838,71 @@ class cl_progress_gui:
         reset_stage_progress = False
 
         try:
-            # Check, if running in main thread
-            check_main_thread(app_dict)
+            # Avoid updates after "abort"
+            if not self.done:
+                # Check, if running in main thread
+                check_main_thread(app_dict)
 
-            if max_per_stage and max_per_stage != self.max_per_stage:
-                self.max_per_stage = max_per_stage
+                if max_per_stage and max_per_stage != self.max_per_stage:
+                    self.max_per_stage = max_per_stage
 
-            # If we're already done, just clamp visually
-            if self.done:
-                if self.overall_progress_on and self.overall_progress is not None:
-                    self.overall_progress["value"] = 100.0
-                    self.overall_label_var.set("100.00%")
+                # If we're already done, just clamp visually
+                if self.done:
+                    if self.overall_progress_on and self.overall_progress is not None:
+                        self.overall_progress["value"] = 100.0
+                        self.overall_label_var.set("100.00%")
 
-                    # Enforce an update on the GUI
-                    self._enforce_update()
+                        # Enforce an update on the GUI
+                        self._enforce_update()
+                else:
+                    # 1) stage progress
+                    if self.stage_progress_on:
+                        stage_info = self.stage_progress_tracker.update(morpy_trace, app_dict, current=current)
+                        stage_abs = stage_info["prog_abs"]  # 0..100.0%
 
-            else:
-                # 1) stage progress
-                if self.stage_progress_on:
-                    stage_info = self.stage_progress_tracker.update(morpy_trace, app_dict, current=current)
-                    stage_abs = stage_info["prog_abs"]  # 0..100.0%
+                        if self.stage_progress is not None and stage_abs:
+                            self.stage_progress["value"] = stage_abs
+                        if self.stage_label_var is not None and stage_abs:
+                            self.stage_label_var.set(f"{stage_abs:.2f}%")
 
-                    if self.stage_progress is not None and stage_abs:
-                        self.stage_progress["value"] = stage_abs
-                    if self.stage_label_var is not None and stage_abs:
-                        self.stage_label_var.set(f"{stage_abs:.2f}%")
+                        # If stage hits 100%, increment the stage count, reset stage bar
+                        if stage_abs and stage_abs >= 100.0:
+                            if self.overall_progress_on:
+                                reset_stage_progress = True
+                                self.stages_finished += 1
+                            else:
+                                self.stages_finished += 1
+                                # If all stages are finished, mark as done
+                                self.done = True
+                                if self.auto_close:
+                                    self._stop_console_redirection(morpy_trace, app_dict)
+                                    self._on_close(morpy_trace, app_dict)
+                                else:
+                                    self.button_text.set(self.button_text_close)
+                                    self._enforce_update()
+                                    self._stop_console_redirection(morpy_trace, app_dict)
 
-                    # If stage hits 100%, increment the stage count, reset stage bar
-                    if stage_abs and stage_abs >= 100.0:
-                        if self.overall_progress_on:
-                            reset_stage_progress = True
-                            self.stages_finished += 1
-                        else:
-                            self.stages_finished += 1
+                        # Decrement self.unfinished_tasks
+                        self.ui_calls.task_done()
+
+                        # Enforce an update on the GUI
+                        self._enforce_update()
+
+                    # 2) Overall fraction
+                    if self.overall_progress_on:
+                        # Add fraction of stage to overall progress
+                        if self.stage_progress_on:
+                            overall_progress = self.stages_finished * self.fraction_per_stage
+                            if stage_abs:
+                                if self.stage_progress_on and stage_abs < 100.0:
+                                    overall_progress += (stage_abs / 100.0) * self.fraction_per_stage
+
+                        # Update the GUI elements for overall progress
+                        self.overall_progress["value"] = overall_progress
+                        self.overall_label_var.set(f"{overall_progress:.2f}%")
+
+                        # If overall progress reaches 100%, handle completion
+                        if overall_progress >= 100.0:
                             # If all stages are finished, mark as done
                             self.done = True
                             if self.auto_close:
@@ -875,70 +910,46 @@ class cl_progress_gui:
                                 self._on_close(morpy_trace, app_dict)
                             else:
                                 self.button_text.set(self.button_text_close)
-                                self._enforce_update()
                                 self._stop_console_redirection(morpy_trace, app_dict)
 
-                    # Decrement self.unfinished_tasks
-                    self.ui_calls.task_done()
+                        # Decrement self.unfinished_tasks
+                        self.ui_calls.task_done()
 
-                    # Enforce an update on the GUI
-                    self._enforce_update()
+                        # Enforce an update on the GUI
+                        self._enforce_update()
 
-                # 2) Overall fraction
-                if self.overall_progress_on:
-                    # Add fraction of stage to overall progress
-                    if self.stage_progress_on:
-                        overall_progress = self.stages_finished * self.fraction_per_stage
-                        if stage_abs:
-                            if self.stage_progress_on and stage_abs < 100.0:
-                                overall_progress += (stage_abs / 100.0) * self.fraction_per_stage
-
-                    # Update the GUI elements for overall progress
-                    self.overall_progress["value"] = overall_progress
-                    self.overall_label_var.set(f"{overall_progress:.2f}%")
-
-                    # If overall progress reaches 100%, handle completion
-                    if overall_progress >= 100.0:
-                        # If all stages are finished, mark as done
-                        self.done = True
-                        if self.auto_close:
-                            self._stop_console_redirection(morpy_trace, app_dict)
-                            self._on_close(morpy_trace, app_dict)
+                    # 3) Reset stage progress last to avoid lag in between update of stage and overall progress.
+                    if self.stage_progress_on and reset_stage_progress:
+                        self.stage_progress_tracker._init(
+                            morpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage,
+                            ticks=.01, verbose=True
+                        )
+                        if self.stages_finished < self.stages:
+                            if self.stage_progress is not None:
+                                self.stage_progress["value"] = 0.0
+                            if self.stage_label_var is not None:
+                                self.stage_label_var.set("0.00%")
                         else:
-                            self.button_text.set(self.button_text_close)
-                            self._stop_console_redirection(morpy_trace, app_dict)
+                            # If all stages are finished, mark as done
+                            self.done = True
 
-                    # Decrement self.unfinished_tasks
-                    self.ui_calls.task_done()
+                        # Decrement self.unfinished_tasks
+                        self.ui_calls.task_done()
 
-                    # Enforce an update on the GUI
-                    self._enforce_update()
+                        # Enforce an update on the GUI
+                        self._enforce_update()
 
-                # 3) Reset stage progress last to avoid lag in between update of stage and overall progress.
-                if self.stage_progress_on and reset_stage_progress:
-                    self.stage_progress_tracker._init(
-                        morpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage,
-                        ticks=.01, verbose=True
-                    )
-                    if self.stages_finished < self.stages:
-                        if self.stage_progress is not None:
-                            self.stage_progress["value"] = 0.0
-                        if self.stage_label_var is not None:
-                            self.stage_label_var.set("0.00%")
-                    else:
-                        # If all stages are finished, mark as done
-                        self.done = True
-
-                    # Decrement self.unfinished_tasks
-                    self.ui_calls.task_done()
-
-                    # Enforce an update on the GUI
-                    self._enforce_update()
-
-            # Enforce an update on the GUI
-            self._enforce_update()
+                # Enforce an update on the GUI
+                self._enforce_update()
 
             check = True
+
+        # Handle errors from GUI after aborting
+        except TclError as tcl_e:
+            # GUI ended ungracefully.
+            log(morpy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morpy"]["cl_progress_gui_exit_dirty"]}\n'
+                    f'{type(tcl_e).__name__}: {tcl_e}')
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1036,45 +1047,54 @@ class cl_progress_gui:
         check = False
 
         try:
-            # Check, if running in main thread
-            check_main_thread(app_dict)
+            # Avoid updates after "abort"
+            if not self.done:
+                # Check, if running in main thread
+                check_main_thread(app_dict)
 
-            # Update overall headline
-            if headline_total is not None and self.overall_progress_on:
-                # Retain the final colon to stay consistent with constructor
-                self.headline_total_nocol = headline_total
-                self.headline_total = self.headline_total_nocol + ":"
-                self.overall_progress_tracker.description = self.headline_total_nocol
-                if self.total_headline_label is not None:
-                    self.total_headline_label.config(text=self.headline_total)
+                # Update overall headline
+                if headline_total is not None and self.overall_progress_on:
+                    # Retain the final colon to stay consistent with constructor
+                    self.headline_total_nocol = headline_total
+                    self.headline_total = self.headline_total_nocol + ":"
+                    self.overall_progress_tracker.description = self.headline_total_nocol
+                    if self.total_headline_label is not None:
+                        self.total_headline_label.config(text=self.headline_total)
 
-                # Enforce an update on the GUI
-                self._enforce_update()
+                    # Enforce an update on the GUI
+                    self._enforce_update()
 
-            # Update stage headline
-            if headline_stage is not None and self.stage_progress_on:
-                # Retain the final colon to stay consistent with constructor
-                self.headline_stage_nocol = headline_stage
-                self.headline_stage = self.headline_stage_nocol + ":"
-                self.stage_progress_tracker.description = self.headline_stage_nocol
-                if self.stage_headline_label is not None:
-                    self.stage_headline_label.config(text=self.headline_stage)
+                # Update stage headline
+                if headline_stage is not None and self.stage_progress_on:
+                    # Retain the final colon to stay consistent with constructor
+                    self.headline_stage_nocol = headline_stage
+                    self.headline_stage = self.headline_stage_nocol + ":"
+                    self.stage_progress_tracker.description = self.headline_stage_nocol
+                    if self.stage_headline_label is not None:
+                        self.stage_headline_label.config(text=self.headline_stage)
 
-                # Enforce an update on the GUI
-                self._enforce_update()
+                    # Enforce an update on the GUI
+                    self._enforce_update()
 
-            # Update description
-            if description_stage is not None:
-                self.description_stage = description_stage
-                # If the label didn't exist but was called, we don't create it on the fly.
-                # We only update if the widget is already present:
-                if self.stage_description_label is not None:
-                    self.stage_description_label.config(text=self.description_stage)
+                # Update description
+                if description_stage is not None:
+                    self.description_stage = description_stage
+                    # If the label didn't exist but was called, we don't create it on the fly.
+                    # We only update if the widget is already present:
+                    if self.stage_description_label is not None:
+                        self.stage_description_label.config(text=self.description_stage)
 
-                # Enforce an update on the GUI
-                self._enforce_update()
+                    # Enforce an update on the GUI
+                    self._enforce_update()
 
             check = True
+
+        # Handle errors from GUI after aborting
+        except TclError as tcl_e:
+            # GUI ended ungracefully.
+            log(morpy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morpy"]["cl_progress_gui_exit_dirty"]}\n'
+                    f'{type(tcl_e).__name__}: {tcl_e}')
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1208,9 +1228,6 @@ class cl_progress_gui:
         check = False
 
         try:
-            # Print console to __stdout__
-            print(self.get_console_output(morpy_trace, app_dict)["console_output"])
-
             # Restore original console if not already done
             self._stop_console_redirection(morpy_trace, app_dict)
             self.root.quit()
@@ -1223,6 +1240,9 @@ class cl_progress_gui:
 
                 # Release the global interrupts
                 app_dict["global"]["morpy"]["interrupt"] = False
+
+                # Set done to omit pulling from GUI queue after close
+                self.done = True
 
             check = True
 

@@ -447,6 +447,10 @@ class cl_progress:
     :param total: Mandatory - The total count for completion
     :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
         10.7% progress exceeded the exact progress will be logged.
+    :param float_progress: For efficient progress tracking, by default the progress is not tracked with
+        floats. If True, the amount of ticks at which to update progress may be a lot more expensive.
+        Defaults to False.
+    :param verbose: If True, progress is only logged in verbose mode except for the 100% mark. Defaults to False.
 
     .update(morpy_trace: dict, app_dict: dict, current: float=None)
         Method to update current progress and log progress if tick is passed.
@@ -461,7 +465,7 @@ class cl_progress:
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
-                 verbose: bool=False) -> None:
+                 float_progress: bool=False, verbose: bool=False) -> None:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
@@ -483,7 +487,8 @@ class cl_progress:
 
         try:
             # Use self._init() for initialization
-            self._init(morpy_trace, app_dict, description=description, total=total, ticks=ticks, verbose=verbose)
+            self._init(morpy_trace, app_dict, description=description, total=total, ticks=ticks,
+                       float_progress=float_progress, verbose=verbose)
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -493,7 +498,7 @@ class cl_progress:
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
-              verbose: bool=False) -> dict:
+              float_progress: bool=False, verbose: bool=False) -> dict:
         r"""
         Helper method for initialization to ensure @metrics decorator usage.
 
@@ -503,6 +508,9 @@ class cl_progress:
         :param total: Mandatory - The total count for completion
         :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
             10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
+        :param float_progress: For efficient progress tracking, by default the progress is not tracked with
+            floats. If True, the amount of ticks at which to update progress may be a lot more expensive.
+            Defaults to False.
         :param verbose: If True, progress is only logged in verbose mode except for the 100% mark. Defaults to False.
 
         :return: dict
@@ -531,7 +539,18 @@ class cl_progress:
                 self.ticks = ticks
 
             self.total = total
-            self.ticks_rel = self.ticks / 100
+
+            # self.ticks_rel = self.ticks / 100
+            # Determine relative progress ticks
+            if float_progress:
+                self.ticks_rel = self.ticks / 100
+            else:
+                # If progress is tracked with integers and ticks smaller than they can possibly be, correct
+                # the relative ticks for inexpensive tracking.
+                ticks_rel_full = self.ticks / 100
+                ticks_rel_reduced = 1 / self.total
+                self.ticks_rel = ticks_rel_reduced if ticks_rel_reduced > ticks_rel_full else ticks_rel_full
+
             self.description = f'{description}' if description else ''
             self.update_counter = 0
             self.stop_updates = False
@@ -584,7 +603,7 @@ class cl_progress:
 
         try:
             # Convert total to integer and determine the factor
-            factor = 1
+            factor: int = 1
             total_fac = self.total
             if isinstance(total_fac, float):
                 while not total_fac.is_integer():
@@ -594,13 +613,13 @@ class cl_progress:
             self.factor = factor
 
             # Determine the absolute ticks
-            abs_tick = 0
-            cnt_ticks = 0
+            abs_tick: int = 0
+            cnt_ticks: int = 0
             ticks_lst = [self.total_fac]
             while abs_tick < self.total_fac:
                 cnt_ticks += 1
                 abs_tick = self.total_fac * self.ticks_rel * cnt_ticks
-                if abs_tick not in ticks_lst and abs_tick < self.total_fac:
+                if (abs_tick not in ticks_lst) and (abs_tick < self.total_fac):
                     ticks_lst.append(int(abs_tick))
             ticks_lst.sort()
             self.ticks_lst = ticks_lst
