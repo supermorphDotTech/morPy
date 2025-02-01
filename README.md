@@ -200,10 +200,10 @@ This is merely an example, of how parallelization may look like. There is still 
 
 At the heart of the morPy framework a program wide dictionary is available. Within this dictionary, all morPy functions and classes store their data to be used either globally, process-, thread, or task-wide. This dictionary is further divided into dictionaries to avoid naming conflicts and provide a categorization to potentially organize data in a streamlined way. Nested dictionaries were divided into `app` and `mpy`, whereas the latter is reserved for the morPy framework.
 
-The `app_dict` is an instanciated custom subclass of the Python `dict`\-class. For details on the sub-class `cl_morpy_dict` see it's own section. The pattern of instanciating such dictionary is
+The `app_dict` is an instanciated custom subclass of the Python `dict`\-class. For details on the sub-class `MorPyDict` see it's own section. The pattern of instanciating such dictionary is
 
 ```Python
-app_dict = cl_morpy_dict(name="app_dict", access="locked")
+app_dict = MorPyDict(name="app_dict", access="locked")
 app_dict._update_self(access="tightened")
 ```
 
@@ -211,7 +211,7 @@ Developer created sub-dictionaries may mirror this way of dictionary creation, i
 
 ```Python
 # Examplary dev dictionary nesting
-app_dict["run"]["add_data"] = cl_morpy_dict(name="app_dict[run][add_data]")
+app_dict["run"]["add_data"] = MorPyDict(name="app_dict[run][add_data]")
 ```
 
 ## 4.2 Navigating the App Dictionary [⇧](#toc)[](#)

@@ -84,31 +84,31 @@ def loc_morpy() -> dict:
         # Area: lib.common.py
         # #################
 
-        # common.py - cl_priority_queue.__init__(~)
-        'cl_priority_queue_name' : 'Entity name',
-        'cl_priority_queue_init_done' : 'Priority queue initialized.',
+        # common.py - PriorityQueue.__init__(~)
+        'PriorityQueue_name' : 'Entity name',
+        'PriorityQueue_init_done' : 'Priority queue initialized.',
 
-        # common.py - cl_priority_queue.enqueue(~)
-        'cl_priority_queue_enqueue_task' : 'Task',
-        'cl_priority_queue_enqueue_prio_corr' : 'Invalid argument given to process queue. Autocorrected.',
-        'cl_priority_queue_enqueue_start' : 'Pushing task to',
-        'cl_priority_queue_enqueue_priority' : 'Priority',
-        'cl_priority_queue_enqueue_none' : 'Task can not be None. Skipping enqueue.',
+        # common.py - PriorityQueue.enqueue(~)
+        'PriorityQueue_enqueue_task' : 'Task',
+        'PriorityQueue_enqueue_prio_corr' : 'Invalid argument given to process queue. Autocorrected.',
+        'PriorityQueue_enqueue_start' : 'Pushing task to',
+        'PriorityQueue_enqueue_priority' : 'Priority',
+        'PriorityQueue_enqueue_none' : 'Task can not be None. Skipping enqueue.',
 
-        # common.py - cl_priority_queue.dequeue(~)
-        'cl_priority_queue_dequeue_task' : 'Task',
-        'cl_priority_queue_dequeue_start' : 'Pulling task from',
-        'cl_priority_queue_dequeue_name' : 'Task name',
-        'cl_priority_queue_dequeue_priority' : 'Priority',
-        'cl_priority_queue_dequeue_cnt' : 'Counter',
-        'cl_priority_queue_dequeue_void' : 'Can not dequeue from an empty priority queue. Skipped...',
+        # common.py - PriorityQueue.dequeue(~)
+        'PriorityQueue_dequeue_task' : 'Task',
+        'PriorityQueue_dequeue_start' : 'Pulling task from',
+        'PriorityQueue_dequeue_name' : 'Task name',
+        'PriorityQueue_dequeue_priority' : 'Priority',
+        'PriorityQueue_dequeue_cnt' : 'Counter',
+        'PriorityQueue_dequeue_void' : 'Can not dequeue from an empty priority queue. Skipped...',
 
-        # common.py - cl_progress._init(~)
-        'cl_progress_miss_total': 'Missing total count. Can not track progress if point of completion is unknown.',
+        # common.py - ProgressTracker._init(~)
+        'ProgressTracker_miss_total': 'Missing total count. Can not track progress if point of completion is unknown.',
 
-        # common.py - cl_progress.update(~)
-        'cl_progress_upd_stopped': 'Current progress exceeded total. Progress updates stopped.',
-        'cl_progress_proc': 'Processing',
+        # common.py - ProgressTracker.update(~)
+        'ProgressTracker_upd_stopped': 'Current progress exceeded total. Progress updates stopped.',
+        'ProgressTracker_proc': 'Processing',
 
         # common.py - decode_to_plain_text(~)
         'decode_to_plain_text_from' : 'Decoded from',
@@ -475,41 +475,41 @@ def loc_morpy() -> dict:
         # Area: lib.types_dict.py
         # #################
 
-        # types_dict.py - cl_attr_guard(~)
-        'cl_attr_guard' : {
-            'cl_attr_guard_no_mod' : 'can not modify an attribute of',
-            'cl_attr_guard_no_del': 'Deletion prohibited!',
+        # types_dict.py - AttributeGuard(~)
+        'AttributeGuard' : {
+            'AttributeGuard_no_mod' : 'can not modify an attribute of',
+            'AttributeGuard_no_del': 'Deletion prohibited!',
         },
 
-        # types_dict.py - cl_morpy_dict(~)
-        'cl_morpy_dict' : {
-            'cl_morpy_dict_denied' : 'Prohibited method',
-            'cl_morpy_dict_new_key' : 'Keys can not be added.',
-            'cl_morpy_dict_del_key' : 'Keys can not be deleted.',
-            'cl_morpy_dict_clear' : 'Dictionary can not be cleared.',
-            'cl_morpy_dict_lock' : 'Dictionary is locked.',
-            'cl_morpy_dict_item' : 'Item',
-            'cl_morpy_dict_key' : 'Key',
-            'cl_morpy_dict_val' : 'Value',
-            "cl_morpy_dict_key_str" : "Keys must be strings.",
-            "cl_morpy_dict_empty" : "Dictionary is empty.",
-            "cl_morpy_dict_err_unlink" : "Error unlinking UltraDict instance",
+        # types_dict.py - MorPyDict(~)
+        'MorPyDict' : {
+            'MorPyDict_denied' : 'Prohibited method',
+            'MorPyDict_new_key' : 'Keys can not be added.',
+            'MorPyDict_del_key' : 'Keys can not be deleted.',
+            'MorPyDict_clear' : 'Dictionary can not be cleared.',
+            'MorPyDict_lock' : 'Dictionary is locked.',
+            'MorPyDict_item' : 'Item',
+            'MorPyDict_key' : 'Key',
+            'MorPyDict_val' : 'Value',
+            "MorPyDict_key_str" : "Keys must be strings.",
+            "MorPyDict_empty" : "Dictionary is empty.",
+            "MorPyDict_err_unlink" : "Error unlinking UltraDict instance",
         },
 
         # #################
         # Area: lib.ui_tk.py
         # #################
 
-        # ui_tk.py - cl_progress_gui._init(~)
-        'cl_progress_gui_prog': 'Progress',
-        'cl_progress_gui_overall': 'Overall Progress',
-        'cl_progress_gui_curr': 'Current Stage',
-        'cl_progress_gui_abort': 'Abort',
-        'cl_progress_gui_close': 'Close',
-        'cl_progress_gui_done': 'All operations finished successfully.',
-        'cl_progress_gui_start_work_thread_err': 'Exception in the worker thread.',
-        'cl_progress_gui_check_main': 'UI must run in main thread. Currently in',
-        'cl_progress_gui_exit_dirty': 'GUI ended ungracefully.',
+        # ui_tk.py - ProgressTrackerTk._init(~)
+        'ProgressTrackerTk_prog': 'Progress',
+        'ProgressTrackerTk_overall': 'Overall Progress',
+        'ProgressTrackerTk_curr': 'Current Stage',
+        'ProgressTrackerTk_abort': 'Abort',
+        'ProgressTrackerTk_close': 'Close',
+        'ProgressTrackerTk_done': 'All operations finished successfully.',
+        'ProgressTrackerTk_start_work_thread_err': 'Exception in the worker thread.',
+        'ProgressTrackerTk_check_main': 'UI must run in main thread. Currently in',
+        'ProgressTrackerTk_exit_dirty': 'GUI ended ungracefully.',
 
         # #################
         # Area: lib.xl.py

@@ -109,7 +109,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
             # Track progress
             if log_progress:
                 prog_total = len(delimiters) * r_tot
-                csv_read_progress = common.cl_progress(morpy_trace, app_dict,
+                csv_read_progress = common.ProgressTracker(morpy_trace, app_dict,
                     description='CSV Read Progress', total=prog_total, ticks=progress_ticks)
 
             # Determine delimiters, header and data rows
@@ -318,7 +318,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
                         lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_fail"]}')
 
             # Instantiate progress logging
-            progress = common.cl_progress(morpy_trace, app_dict,
+            progress = common.ProgressTracker(morpy_trace, app_dict,
                                           description=f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_descr"]}',
                                           total=total_prog_count,
                                           ticks=progress_ticks)

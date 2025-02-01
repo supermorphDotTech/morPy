@@ -18,7 +18,7 @@ from tkinter import filedialog
 from tkinter import ttk
 from tkinter import TclError
 
-class cl_progress_gui:
+class ProgressTrackerTk:
     r"""
     A progress tracking GUI using tkinter to visualize the progress of a background task. The GUI can
     be adjusted with the arguments during construction.
@@ -119,7 +119,7 @@ class cl_progress_gui:
 
         if name == "__main__":
             # Run function with GUI. For full customization during construction see the
-            # cl_progress_gui.__init__() description.
+            # ProgressTrackerTk.__init__() description.
 
             # In this example the outer and inner loop stop values are set two times manually. However, you may
             # want to set it only a single time and point to these, but that depends on the use case.
@@ -130,7 +130,7 @@ class cl_progress_gui:
             work = partial(my_func, morpy_trace, app_dict)
 
             # Construct the GUI
-            progress = morPy.cl_progress_gui(morpy_trace, app_dict,
+            progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Generic Progress stage",
                 stages=outer_loop_count,
@@ -159,7 +159,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui.__init__(~)'
+        operation = 'ProgressTrackerTk.__init__(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
@@ -222,7 +222,7 @@ class cl_progress_gui:
             check: Indicates whether initialization completed without errors
 
         :example:
-            progress = morPy.cl_progress_gui(morpy_trace: dict, app_dict,
+            progress = morPy.ProgressTrackerTk(morpy_trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Generic Progress stage",
                 stages=outer_loop_count,
@@ -231,7 +231,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._init(~)'
+        operation = 'ProgressTrackerTk._init(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -246,20 +246,20 @@ class cl_progress_gui:
             self.main_loop_interval = 50 # ms, how often we do the main loop
 
             # Default texts
-            self.frame_title = (app_dict["loc"]["morpy"]["cl_progress_gui_prog"]
+            self.frame_title = (app_dict["loc"]["morpy"]["ProgressTrackerTk_prog"]
                                 if not frame_title else frame_title)
             self.frame_width = frame_width
             self.frame_height = frame_height
-            self.headline_total_nocol = (f'{app_dict["loc"]["morpy"]["cl_progress_gui_overall"]}'
+            self.headline_total_nocol = (f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_overall"]}'
                              if not headline_total else f'{headline_total}')
-            self.headline_stage_nocol = (f'{app_dict["loc"]["morpy"]["cl_progress_gui_curr"]}'
+            self.headline_stage_nocol = (f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_curr"]}'
                              if not headline_stage else f'{headline_stage}')
             self.description_stage = description_stage
             self.headline_font_size = headline_font_size
             self.description_font_size = description_font_size
             self.font = font
-            self.button_text_abort = f'{app_dict["loc"]["morpy"]["cl_progress_gui_abort"]}'
-            self.button_text_close = f'{app_dict["loc"]["morpy"]["cl_progress_gui_close"]}'
+            self.button_text_abort = f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_abort"]}'
+            self.button_text_close = f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_close"]}'
 
             self.ui_calls = queue.Queue()  # Queue for collecting UI update requests from background thread
 
@@ -287,7 +287,7 @@ class cl_progress_gui:
                     self.frame_height += height_factor_headlines
 
                 # Construct the overall progress tracker
-                self.overall_progress_tracker = common.cl_progress(
+                self.overall_progress_tracker = common.ProgressTracker(
                     morpy_trace, app_dict, description=self.headline_total_nocol, total=self.stages, ticks=.01,
                     verbose=True
                 )
@@ -305,7 +305,7 @@ class cl_progress_gui:
                     self.frame_height += height_factor_headlines
 
                 # Construct the stage progress tracker
-                self.stage_progress_tracker = common.cl_progress(
+                self.stage_progress_tracker = common.ProgressTracker(
                     morpy_trace, app_dict, description=self.headline_stage_nocol, total=self.max_per_stage, ticks=.01,
                     verbose=True
                 )
@@ -379,7 +379,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._create_widgets(~)'
+        operation = 'ProgressTrackerTk._create_widgets(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -540,7 +540,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._redirect_console(~)'
+        operation = 'ProgressTrackerTk._redirect_console(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -597,7 +597,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._stop_console_redirection(~)'
+        operation = 'ProgressTrackerTk._stop_console_redirection(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -637,7 +637,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._main_loop(~)'
+        operation = 'ProgressTrackerTk._main_loop(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -689,7 +689,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._update_console(~)'
+        operation = 'ProgressTrackerTk._update_console(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -745,7 +745,7 @@ class cl_progress_gui:
             check: Indicates whether initialization completed without errors
 
         :example:
-            progress = morPy.cl_progress_gui(morpy_trace: dict, app_dict,
+            progress = morPy.ProgressTrackerTk(morpy_trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Starting stage 1",
                 stages=2,
@@ -777,7 +777,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui.update_progress(~)'
+        operation = 'ProgressTrackerTk.update_progress(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -829,7 +829,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._real_update_progress(~)'
+        operation = 'ProgressTrackerTk._real_update_progress(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -948,7 +948,7 @@ class cl_progress_gui:
         except TclError as tcl_e:
             # GUI ended ungracefully.
             log(morpy_trace, app_dict, "warning",
-            lambda: f'{app_dict["loc"]["morpy"]["cl_progress_gui_exit_dirty"]}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_exit_dirty"]}\n'
                     f'{type(tcl_e).__name__}: {tcl_e}')
 
         except Exception as e:
@@ -988,7 +988,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui.update_text(~)'
+        operation = 'ProgressTrackerTk.update_text(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -1041,7 +1041,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._real_update_text(~)'
+        operation = 'ProgressTrackerTk._real_update_text(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -1093,7 +1093,7 @@ class cl_progress_gui:
         except TclError as tcl_e:
             # GUI ended ungracefully.
             log(morpy_trace, app_dict, "warning",
-            lambda: f'{app_dict["loc"]["morpy"]["cl_progress_gui_exit_dirty"]}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_exit_dirty"]}\n'
                     f'{type(tcl_e).__name__}: {tcl_e}')
 
         except Exception as e:
@@ -1117,7 +1117,7 @@ class cl_progress_gui:
             check: Indicates whether initialization completed without errors
 
         :example:
-            progress = morPy.cl_progress_gui(morpy_trace: dict, app_dict,
+            progress = morPy.ProgressTrackerTk(morpy_trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Generic Progress stage",
                 stages=1,
@@ -1128,7 +1128,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui.run(~)'
+        operation = 'ProgressTrackerTk.run(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -1171,7 +1171,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._start_work_thread(~)'
+        operation = 'ProgressTrackerTk._start_work_thread(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -1183,7 +1183,7 @@ class cl_progress_gui:
             except Exception as e:
                 # Exception in the worker thread.
                 log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["cl_progress_gui_start_work_thread_err"]}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_start_work_thread_err"]}\n'
                         f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno} '
                         f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}')
@@ -1222,7 +1222,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui._on_close(~)'
+        operation = 'ProgressTrackerTk._on_close(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -1274,7 +1274,7 @@ class cl_progress_gui:
         """
 
         module = 'ui_tk'
-        operation = 'cl_progress_gui.get_console_output(~)'
+        operation = 'ProgressTrackerTk.get_console_output(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -1315,7 +1315,7 @@ def check_main_thread(app_dict: dict):
     # UI must run in main thread. Currently in ###
     if threading.current_thread() is not threading.main_thread():
         raise RuntimeError(
-            f'{app_dict["loc"]["morpy"]["cl_progress_gui_check_main"]}: {threading.current_thread()}'
+            f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_check_main"]}: {threading.current_thread()}'
         )
 
 @metrics

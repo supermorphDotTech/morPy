@@ -62,7 +62,7 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
         'check' : check,
         }
 
-class cl_template:
+class TemplateClass:
     r"""
     This class is a template.
     """
@@ -80,12 +80,12 @@ class cl_template:
             -
 
         :example:
-            instance = cl_template(morpy_trace, app_dict)
+            instance = TemplateClass(morpy_trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'app.my_module'
-        operation = 'cl_template.__init__(~)'
+        operation = 'TemplateClass.__init__(~)'
         morpy_trace = morPy.tracing(module, operation, morpy_trace)
 
         # OPTION enable/disable logging
@@ -119,7 +119,7 @@ class cl_template:
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'app.my_module'
-        operation = 'cl_template._init(~)'
+        operation = 'TemplateClass._init(~)'
         morpy_trace = morPy.tracing(module, operation, morpy_trace)
 
         # OPTION enable/disable logging
@@ -162,7 +162,7 @@ class cl_template:
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'app.my_module'
-        operation = 'cl_template.method(~)'
+        operation = 'TemplateClass.method(~)'
         morpy_trace = morPy.tracing(module, operation, morpy_trace)
 
         # OPTION enable/disable logging

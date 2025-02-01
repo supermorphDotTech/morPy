@@ -29,7 +29,7 @@ from itertools import count
 def mpy_thread_queue(morpy_trace: dict, app_dict: dict, name: str, priority: int, task: str) -> dict:
 
     r"""
-    Handles the task queue (`mt_priority_queue` instance of `cl_priority_queue`)
+    Handles the task queue (`mt_priority_queue` instance of `PriorityQueue`)
     for this framework. It simplifies multithreaded programming by allowing the developer
     to fill the queue with tasks and configure threading parameters. In single-threaded
     mode, tasks are executed sequentially while still prioritizing based on the queue.
@@ -261,7 +261,7 @@ def mt_abort(morpy_trace: dict, app_dict: dict) -> dict:
         'check' : check
         }
 
-class cl_priority_queue(object):
+class PriorityQueue(object):
 
     r"""
     Defines the globally used priority queue for this framework. Supports queue
@@ -285,12 +285,12 @@ class cl_priority_queue(object):
         :return: None
 
         :example:
-            queue = cl_priority_queue(morpy_trace, app_dict, "MainQueue")
+            queue = PriorityQueue(morpy_trace, app_dict, "MainQueue")
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mt'
-        operation = 'cl_priority_queue.__init__(~)'
+        operation = 'PriorityQueue.__init__(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         name = f'{name}'
@@ -306,8 +306,8 @@ class cl_priority_queue(object):
 
             # Priority queue initialized.
             log(morpy_trace, app_dict, "init",
-            lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_init_done"]}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}')
+            lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_init_done"]}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}')
 
         except Exception as e:
             log(morpy_trace, app_dict, "critical",
@@ -318,7 +318,7 @@ class cl_priority_queue(object):
     def enqueue(self, morpy_trace: dict, app_dict: dict, name: str, priority: int, task: str) -> dict:
 
         r"""
-        Adds items/tasks to the `cl_priority_queue`.
+        Adds items/tasks to the `PriorityQueue`.
 
         :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
@@ -338,7 +338,7 @@ class cl_priority_queue(object):
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mt'
-        operation = 'cl_priority_queue.enqueue(~)'
+        operation = 'PriorityQueue.enqueue(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -348,10 +348,10 @@ class cl_priority_queue(object):
         try:
             # Pushing task to priority queue.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_start"]}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_priority"]}: {priority}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_task"]}: {task}')
+            lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_start"]}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_task"]}: {task}')
 
             # Define the task to be queued
             task_qed = (name, -priority, next(self.counter), task)
@@ -375,7 +375,7 @@ class cl_priority_queue(object):
     def dequeue(self, morpy_trace: dict, app_dict: dict) -> dict:
 
         r"""
-        Pops a task from the `cl_priority_queue` and returns it for execution.
+        Pops a task from the `PriorityQueue` and returns it for execution.
 
         :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
@@ -395,7 +395,7 @@ class cl_priority_queue(object):
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'mt'
-        operation = 'cl_priority_queue.dequeue(~)'
+        operation = 'PriorityQueue.dequeue(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -423,12 +423,12 @@ class cl_priority_queue(object):
 
             # Pushing task to priority queue.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_start"]}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_name"]}: {name}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_priority"]}: {priority}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_cnt"]}: {counter}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_task"]}: {task}')
+            lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_start"]}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_name"]}: {name}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_priority"]}: {priority}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_cnt"]}: {counter}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_task"]}: {task}')
 
             check = False
 
@@ -536,7 +536,7 @@ def mt_init(morpy_trace: dict, app_dict: dict) -> dict:
                 f'{app_dict["loc"]["morpy"]["mt_init_thr_max"]}: {max_threads}')
 
         # Initialize and create the queue instance for this frameworks runtime
-        cl_priority_queue(morpy_trace, app_dict, 'mtPriorityQueue')
+        PriorityQueue(morpy_trace, app_dict, 'mtPriorityQueue')
 
         check = True
 

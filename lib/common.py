@@ -19,7 +19,7 @@ import os.path
 import re
 from heapq import heappush, heappop
 
-class cl_priority_queue:
+class PriorityQueue:
     r"""
     This class delivers a priority queue solution. Any task may be enqueued.
     When dequeuing, the highest priority task (lowest number) is dequeued
@@ -55,7 +55,7 @@ class cl_priority_queue:
     :example:
         from functools import partial
         # Create queue instance
-        queue = morPy.cl_priority_queue(morpy_trace, app_dict, name="example_queue")
+        queue = morPy.PriorityQueue(morpy_trace, app_dict, name="example_queue")
         # Add a task to the queue
         queue.enqueue(morpy_trace, app_dict, priority=25, task=partial(task, morpy_trace, app_dict))
         # Fetch a task and run it
@@ -74,11 +74,11 @@ class cl_priority_queue:
         :return: self
 
         :example:
-            queue = cl_priority_queue(morpy_trace, app_dict, name="example_queue")
+            queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
         """
 
         module = 'lib.common'
-        operation = 'cl_priority_queue.__init__(~)'
+        operation = 'PriorityQueue.__init__(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
@@ -90,7 +90,7 @@ class cl_priority_queue:
                 lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
                         f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
             )
             if self.is_manager:
                 log_no_q(morpy_trace, app_dict, "critical", err_msg)
@@ -114,7 +114,7 @@ class cl_priority_queue:
         """
 
         module = 'lib.common'
-        operation = 'cl_priority_queue._init(~)'
+        operation = 'PriorityQueue._init(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -135,8 +135,8 @@ class cl_priority_queue:
 
             # Priority queue initialized.
             log_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_init_done"]}\n'
-                        f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}'
+                lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_init_done"]}\n'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
             )
             if self.is_manager:
                 log_no_q(morpy_trace, app_dict, "debug", log_msg)
@@ -150,7 +150,7 @@ class cl_priority_queue:
                 lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
                         f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
             )
             if self.is_manager:
                 log_no_q(morpy_trace, app_dict, "critical", err_msg)
@@ -177,7 +177,7 @@ class cl_priority_queue:
         """
 
         module = 'lib.common'
-        operation = 'cl_priority_queue._init_mp(~)'
+        operation = 'PriorityQueue._init_mp(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -193,7 +193,7 @@ class cl_priority_queue:
                 lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
                         f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
             )
             if self.is_manager:
                 log_no_q(morpy_trace, app_dict, "critical", err_msg)
@@ -230,7 +230,7 @@ class cl_priority_queue:
         """
 
         module = 'lib.common'
-        operation = 'cl_priority_queue.enqueue(~)'
+        operation = 'PriorityQueue.enqueue(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -247,8 +247,8 @@ class cl_priority_queue:
                     if priority < 0 and autocorrect:
                         # Invalid argument given to process queue. Autocorrected.
                         log_msg = (
-                            lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_prio_corr"]}\n'
-                                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_priority"]}: {priority} to 0'
+                            lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_prio_corr"]}\n'
+                                    f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority} to 0'
                         )
                         if self.is_manager:
                             log_no_q(morpy_trace, app_dict, "debug", log_msg)
@@ -259,8 +259,8 @@ class cl_priority_queue:
 
                     # Pushing task to priority queue.
                         log_msg = (
-                            lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_start"]} {self.name}\n'
-                                    f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_priority"]}: {priority}'
+                            lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_start"]} {self.name}\n'
+                                    f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority}'
                         )
                         if self.is_manager:
                             log_no_q(morpy_trace, app_dict, "debug", log_msg)
@@ -281,7 +281,7 @@ class cl_priority_queue:
                         if task_sys_id in self.task_lookup:
                             # Task is already enqueued. Referencing in queue.
                             log_msg = (
-                                lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_task_duplicate"]}\n'
+                                lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_task_duplicate"]}\n'
                                         f'Task system ID: {task_sys_id}'
                             )
                             if self.is_manager:
@@ -300,13 +300,13 @@ class cl_priority_queue:
 
                     else:
                         # Task not enqueued. Task ID mismatch or conflict.
-                        raise RuntimeError(f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_id_conflict"]}\nID: {self.counter}<>{morpy_trace["task_id"]}')
+                        raise RuntimeError(f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_id_conflict"]}\nID: {self.counter}<>{morpy_trace["task_id"]}')
 
                     check = True
             else:
                 # Task can not be None. Skipping enqueue.
                 log_msg = (
-                    lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_none"]}'
+                    lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_none"]}'
                 )
                 if self.is_manager:
                     log_no_q(morpy_trace, app_dict, "debug", log_msg)
@@ -318,8 +318,8 @@ class cl_priority_queue:
                 lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
                         f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}\n'
-                        f'{app_dict["loc"]["morpy"]["cl_priority_queue_enqueue_priority"]}: {priority}'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}\n'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority}'
             )
             if self.is_manager:
                 log_no_q(morpy_trace, app_dict, "critical", err_msg)
@@ -357,7 +357,7 @@ class cl_priority_queue:
         """
 
         module = 'mt'
-        operation = 'cl_priority_queue.dequeue(~)'
+        operation = 'PriorityQueue.dequeue(~)'
         morpy_trace_dequeue = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -378,9 +378,9 @@ class cl_priority_queue:
 
                 # Pulling task from NAME priority: INT counter: INT
                 log_msg = (
-                    lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_start"]} {self.name}.\n'
-                            f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_priority"]}: {priority}\n'
-                            f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_cnt"]}: {counter}'
+                    lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_start"]} {self.name}.\n'
+                            f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_priority"]}: {priority}\n'
+                            f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_cnt"]}: {counter}'
                 )
                 if self.is_manager:
                     log_no_q(morpy_trace_dequeue, app_dict, "debug", log_msg, verbose=True)
@@ -392,7 +392,7 @@ class cl_priority_queue:
             else:
                 # Can not dequeue from an empty priority queue. Skipped...
                 log_msg = (
-                    lambda: f'{app_dict["loc"]["morpy"]["cl_priority_queue_dequeue_void"]}'
+                    lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_void"]}'
                 )
                 if self.is_manager:
                     log_no_q(morpy_trace_dequeue, app_dict, "debug", log_msg)
@@ -404,7 +404,7 @@ class cl_priority_queue:
                 lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
                         f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                         f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["cl_priority_queue_name"]}: {self.name}'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
             )
             if self.is_manager:
                 log_no_q(morpy_trace_dequeue, app_dict, "critical", err_msg)
@@ -436,7 +436,7 @@ class cl_priority_queue:
 
         return id(task) in self.task_lookup
 
-class cl_progress:
+class ProgressTracker:
     r"""
     This class instantiates a progress counter. If ticks, total or counter
     are floats, progress of 100 % may not be displayed.
@@ -460,7 +460,7 @@ class cl_progress:
             message: Message generated. None, if no tick was hit.
 
     :example:
-        progress = cl_progress(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)["prog_rel"]
+        progress = ProgressTracker(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)["prog_rel"]
         progress.update(morpy_trace, app_dict, current=current_count)
     """
 
@@ -477,12 +477,12 @@ class cl_progress:
             -
 
         :example:
-            instance = cl_progress(morpy_trace, app_dict, description='App Progress', total=100, ticks=10)
+            instance = ProgressTracker(morpy_trace, app_dict, description='App Progress', total=100, ticks=10)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'lib.common'
-        operation = 'cl_progress.__init__(~)'
+        operation = 'ProgressTracker.__init__(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
@@ -523,14 +523,14 @@ class cl_progress:
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'lib.common'
-        operation = 'cl_progress._init(~)'
+        operation = 'ProgressTracker._init(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
 
         try:
             # Missing total count. Can not track progress if point of completion is unknown.
-            if not total: raise ValueError(f'{app_dict["loc"]["morpy"]["cl_progress_miss_total"]}')
+            if not total: raise ValueError(f'{app_dict["loc"]["morpy"]["ProgressTracker_miss_total"]}')
 
             # Evaluate ticks
             if not ticks or ticks > 100:
@@ -596,7 +596,7 @@ class cl_progress:
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'lib.common'
-        operation = 'cl_progress._init_ticks(~)'
+        operation = 'ProgressTracker._init_ticks(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -657,7 +657,7 @@ class cl_progress:
         :example:
             tot_cnt = 100
             tks = 12.5
-            progress = morPy.cl_progress(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=tks)
+            progress = morPy.ProgressTracker(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=tks)
 
             curr_cnt = 37
             progress.update(morpy_trace, app_dict, current=curr_cnt)
@@ -665,7 +665,7 @@ class cl_progress:
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'lib.common'
-        operation = 'cl_progress.update(~)'
+        operation = 'ProgressTracker.update(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -686,7 +686,7 @@ class cl_progress:
 
                 # Current progress exceeded total. Progress updates stopped.
                 log(morpy_trace, app_dict, "warning",
-                lambda: f'{app_dict["loc"]["morpy"]["cl_progress_upd_stopped"]}: {current} > {self.total}')
+                lambda: f'{app_dict["loc"]["morpy"]["ProgressTracker_upd_stopped"]}: {current} > {self.total}')
 
             # Factor the current value
             current_fac = self.update_counter * self.factor
@@ -711,7 +711,7 @@ class cl_progress:
                 if self.verbose_check or self.done:
                     # Processing DESCRIPTION
                     log(morpy_trace, app_dict, "info",
-                    lambda: f'{app_dict["loc"]["morpy"]["cl_progress_proc"]}: {self.description}\n'
+                    lambda: f'{app_dict["loc"]["morpy"]["ProgressTracker_proc"]}: {self.description}\n'
                             f'{prog_abs_short}% ({self.update_counter} of {self.total})')
 
             check = True

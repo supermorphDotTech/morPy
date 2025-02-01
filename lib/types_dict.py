@@ -13,12 +13,12 @@ import sys
 
 from UltraDict import UltraDict
 
-class cl_attr_guard:
+class AttributeGuard:
 
     r"""
     This class serves to guard attributes of a base class against
-    attribute changes of sub-classes, which would detach the attribute
-    in the sub-class from the base class.
+    attribute changes of subclasses, which would detach the attribute
+    in the subclass from the base class.
     """
 
     def __init__(self, value, root):
@@ -40,15 +40,15 @@ class cl_attr_guard:
         try:
             self.lang = conf.settings().get('localization', '')
             loc_morpy = importlib.import_module(self.lang)
-            messages = getattr(loc_morpy, 'loc_morpy')().get('cl_attr_guard', {})
+            messages = getattr(loc_morpy, 'loc_morpy')().get('AttributeGuard', {})
             for key, value in messages.items():
                 self.loc.update({key: value})
         # Fallback to english if localization is not available
         except (AttributeError, ImportError):
             self.lang = 'en_US'
             messages = {
-                "cl_attr_guard_no_mod": "can not modify an attribute of",
-                "cl_attr_guard_no_del": "Deletion prohibited!",
+                "AttributeGuard_no_mod": "can not modify an attribute of",
+                "AttributeGuard_no_del": "Deletion prohibited!",
             }
             for key, value in messages.items():
                 self.loc.update({key: value})
@@ -64,17 +64,17 @@ class cl_attr_guard:
     def __set__(self, instance, value):
         # Only allow setting the value from the root class
         if instance is None:
-            raise AttributeError(f'None {self.loc["cl_attr_guard_no_mod"]} {self._root}')
+            raise AttributeError(f'None {self.loc["AttributeGuard_no_mod"]} {self._root}')
         else:
             if type(instance).__name__ != self._root:
-                raise AttributeError(f'{type(instance).__name__} {self.loc["cl_attr_guard_no_mod"]} {self._root}')
+                raise AttributeError(f'{type(instance).__name__} {self.loc["AttributeGuard_no_mod"]} {self._root}')
         self._value = value
 
     def __delete__(self, instance):
         # Prohibit deletion
-        raise AttributeError(f'{self.loc["cl_attr_guard_no_del"]}')
+        raise AttributeError(f'{self.loc["AttributeGuard_no_del"]}')
 
-class cl_morpy_dict(dict):
+class MorPyDict(dict):
 
     r"""
 	This is the dictionary class for the morPy framework and provides all key functions
@@ -105,7 +105,7 @@ class cl_morpy_dict(dict):
         app_dict._types_dict_map = ()
     """
 
-    def __init__(self, name: str='Instance of cl_morpy_dict', access: str='normal'):
+    def __init__(self, name: str='Instance of MorPyDict', access: str='normal'):
 
         r"""
         :param name: Name of the dictionary for tracing
@@ -118,7 +118,7 @@ class cl_morpy_dict(dict):
             -
 
         :example:
-            app_dict["global"]["app"]["my_dict"] = cl_morpy_dict(
+            app_dict["global"]["app"]["my_dict"] = MorPyDict(
                 morPy_trace,
                 app_dict["conf"],
                 access="tightened",
@@ -155,7 +155,7 @@ class cl_morpy_dict(dict):
 
         except Exception as e:
             raise RuntimeError(
-                f'CRITICAL {self._name}.__init__(): Failed to initialize cl_morpy_dict.\n'
+                f'CRITICAL {self._name}.__init__(): Failed to initialize MorPyDict.\n'
                 f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
             )
             sys.exit()
@@ -166,23 +166,23 @@ class cl_morpy_dict(dict):
         try:
             self.lang = conf.settings().get('localization', '')
             loc_morpy = importlib.import_module(self.lang)
-            messages = getattr(loc_morpy, 'loc_morpy')().get('cl_morpy_dict', {})
+            messages = getattr(loc_morpy, 'loc_morpy')().get('MorPyDict', {})
             for key, value in messages.items():
                 self.loc.update({key: value})
         # Fallback to english if localization is not available
         except (AttributeError, ImportError):
             self.lang = 'en_US'
             messages = {
-                'cl_morpy_dict_denied' : 'Prohibited method',
-                'cl_morpy_dict_new_key' : 'Keys can not be added.',
-                'cl_morpy_dict_del_key' : 'Keys can not be deleted.',
-                'cl_morpy_dict_clear' : 'Dictionary can not be cleared.',
-                'cl_morpy_dict_lock' : 'Dictionary is locked.',
-                'cl_morpy_dict_item' : 'Item',
-                'cl_morpy_dict_key' : 'Key',
-                'cl_morpy_dict_val' : 'Value',
-                "cl_morpy_dict_key_str": "Keys must be strings.",
-                "cl_morpy_dict_empty": "Dictionary is empty.",
+                'MorPyDict_denied' : 'Prohibited method',
+                'MorPyDict_new_key' : 'Keys can not be added.',
+                'MorPyDict_del_key' : 'Keys can not be deleted.',
+                'MorPyDict_clear' : 'Dictionary can not be cleared.',
+                'MorPyDict_lock' : 'Dictionary is locked.',
+                'MorPyDict_item' : 'Item',
+                'MorPyDict_key' : 'Key',
+                'MorPyDict_val' : 'Value',
+                "MorPyDict_key_str": "Keys must be strings.",
+                "MorPyDict_empty": "Dictionary is empty.",
             }
             for key, value in messages.items():
                 self.loc.update({key : value})
@@ -220,8 +220,8 @@ class cl_morpy_dict(dict):
             # Define localized messages for prohibited actions based on the dictionary access level
             # Error Guard and fallback messages for testing
             self.loc = {} if not self.loc else self.loc
-            self.loc["cl_morpy_dict_key_str"] = "Keys must be strings."
-            self.loc["cl_morpy_dict_empty"] = "Dictionary is empty."
+            self.loc["MorPyDict_key_str"] = "Keys must be strings."
+            self.loc["MorPyDict_empty"] = "Dictionary is empty."
             self.msg__setitem__ = ''
             self.msg__delitem__ = ''
             self.msg_clear = ''
@@ -229,96 +229,96 @@ class cl_morpy_dict(dict):
             self.msg_popitem = ''
             self.msg_update = ''
             self.msg_setdefault = ''
-            self.loc["cl_morpy_dict_err_unlink"] = "Error unlinking UltraDict instance"
+            self.loc["MorPyDict_err_unlink"] = "Error unlinking UltraDict instance"
 
             if self._access == 'tightened':
                 # Prohibited method .setitem() Keys cannot be added.
                 self.msg__setitem__ = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.setitem()\n'
-                    f'{self.loc["cl_morpy_dict_new_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setitem()\n'
+                    f'{self.loc["MorPyDict_new_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .delitem() Keys cannot be deleted.
                 self.msg__delitem__ = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.delitem()\n'
-                    f'{self.loc["cl_morpy_dict_del_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.delitem()\n'
+                    f'{self.loc["MorPyDict_del_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .clear() Dictionary cannot be cleared.
                 self.msg_clear = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.clear()\n'
-                    f'{self.loc["cl_morpy_dict_clear"]}'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.clear()\n'
+                    f'{self.loc["MorPyDict_clear"]}'
                 )
                 # Prohibited method .pop() Keys cannot be deleted.
                 self.msg_pop = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.pop()\n'
-                    f'{self.loc["cl_morpy_dict_del_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.pop()\n'
+                    f'{self.loc["MorPyDict_del_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .popitem() Keys cannot be deleted.
                 self.msg_popitem = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.popitem()\n'
-                    f'{self.loc["cl_morpy_dict_del_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.popitem()\n'
+                    f'{self.loc["MorPyDict_del_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .update() Keys cannot be added.
                 self.msg_update = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.update()\n'
-                    f'{self.loc["cl_morpy_dict_new_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.update()\n'
+                    f'{self.loc["MorPyDict_new_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .setdefault() Keys cannot be added.
                 self.msg_setdefault = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.setdefault()\n'
-                    f'{self.loc["cl_morpy_dict_new_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setdefault()\n'
+                    f'{self.loc["MorPyDict_new_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
             elif self._access == 'locked':
                 # Prohibited method .setitem() Dictionary is locked.
                 self.msg__setitem__ = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.setitem()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setitem()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .delitem() Dictionary is locked.
                 self.msg__delitem__ = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.delitem()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.delitem()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .clear() Dictionary is locked.
                 self.msg_clear = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.clear()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.clear()\n'
+                    f'{self.loc["MorPyDict_lock"]}'
                 )
                 # Prohibited method .pop() Dictionary is locked.
                 self.msg_pop = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.pop()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.pop()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .popitem() Dictionary is locked.
                 self.msg_popitem = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.popitem()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.popitem()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .update() Dictionary is locked.
                 self.msg_update = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.update()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.update()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .setdefault() Dictionary is locked.
                 self.msg_setdefault = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.setdefault()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setdefault()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Error unlinking UltraDict instance
                 self.err_unlink = (
-                    f'{self.loc["cl_morpy_dict_err_unlink"]}: {self._name}.setdefault()\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_err_unlink"]}: {self._name}.setdefault()\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
         except Exception as e:
             raise RuntimeError(
@@ -346,7 +346,7 @@ class cl_morpy_dict(dict):
     def __setitem__(self, key, value):
         if not isinstance(key, str):
             # Keys must be strings.
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access == 'tightened':
             msg = f'{self.msg__setitem__} {key}'
             if key not in super().keys():
@@ -362,13 +362,13 @@ class cl_morpy_dict(dict):
 
     def __getitem__(self, key):
         if not isinstance(key, str):
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         return super().__getitem__(key)
 
     def __delitem__(self, key):
         if not isinstance(key, str):
             # Keys must be strings.
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access in ('tightened', 'locked'):
             msg = f'{self.msg__delitem__} {key}'
             raise PermissionError(msg)
@@ -385,7 +385,7 @@ class cl_morpy_dict(dict):
     def pop(self, key, default=None):
         if not isinstance(key, str):
             # Keys must be strings.
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access in ('tightened', 'locked'):
             msg = f'{self.msg_pop} {key}'
             raise PermissionError(msg)
@@ -400,7 +400,7 @@ class cl_morpy_dict(dict):
                 raise PermissionError(msg)
             else:
                 # Dictionary is empty.
-                raise TypeError(f'{self.loc["cl_morpy_dict_empty"]}:')
+                raise TypeError(f'{self.loc["MorPyDict_empty"]}:')
         else:
             return super().popitem()
 
@@ -421,7 +421,7 @@ class cl_morpy_dict(dict):
     def setdefault(self, key, default=None):
         if not isinstance(key, str):
             # Keys must be strings.
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access == 'tightened':
             if key not in super().keys():
                 msg = f'{self.msg_setdefault} {key}'
@@ -439,7 +439,7 @@ class cl_morpy_dict(dict):
         else:
             return super().setdefault(key, default)
 
-class cl_morpy_dict_ultra(UltraDict):
+class MorPyDictUltra(UltraDict):
 
     r"""
 	This is the dictionary class for the morPy framework and provides all key functions
@@ -473,10 +473,10 @@ class cl_morpy_dict_ultra(UltraDict):
             -
 
         :example 1: Create a root dictionary
-            app_dict = cl_morpy_dict_ultra(create=True)
+            app_dict = MorPyDictUltra(create=True)
 
         :example 2: Create a nested dictionary
-            app_dict["global"]["app"]["my_dict"] = cl_morpy_dict_ultra(
+            app_dict["global"]["app"]["my_dict"] = MorPyDictUltra(
                 name = app_dict[global][app][my_dict],
                 access="tightened"
             )
@@ -536,23 +536,23 @@ class cl_morpy_dict_ultra(UltraDict):
         try:
             self.lang = conf.settings().get('localization', '')
             loc_morpy = importlib.import_module(self.lang)
-            messages = getattr(loc_morpy, 'loc_morpy')().get('cl_morpy_dict', {})
+            messages = getattr(loc_morpy, 'loc_morpy')().get('MorPyDict', {})
             for key, value in messages.items():
                 self.loc.update({key: value})
         # Fallback to english if localization is not available
         except (AttributeError, ImportError):
             self.lang = 'en_US'
             messages = {
-                'cl_morpy_dict_denied' : 'Prohibited method',
-                'cl_morpy_dict_new_key' : 'Keys can not be added.',
-                'cl_morpy_dict_del_key' : 'Keys can not be deleted.',
-                'cl_morpy_dict_clear' : 'Dictionary can not be cleared.',
-                'cl_morpy_dict_lock' : 'Dictionary is locked.',
-                'cl_morpy_dict_item' : 'Item',
-                'cl_morpy_dict_key' : 'Key',
-                'cl_morpy_dict_val' : 'Value',
-                "cl_morpy_dict_key_str": "Keys must be strings.",
-                "cl_morpy_dict_empty": "Dictionary is empty.",
+                'MorPyDict_denied' : 'Prohibited method',
+                'MorPyDict_new_key' : 'Keys can not be added.',
+                'MorPyDict_del_key' : 'Keys can not be deleted.',
+                'MorPyDict_clear' : 'Dictionary can not be cleared.',
+                'MorPyDict_lock' : 'Dictionary is locked.',
+                'MorPyDict_item' : 'Item',
+                'MorPyDict_key' : 'Key',
+                'MorPyDict_val' : 'Value',
+                "MorPyDict_key_str": "Keys must be strings.",
+                "MorPyDict_empty": "Dictionary is empty.",
             }
             for key, value in messages.items():
                 self.loc.update({key : value})
@@ -590,8 +590,8 @@ class cl_morpy_dict_ultra(UltraDict):
             # Define localized messages for prohibited actions based on the dictionary access level
             # Error Guard and fallback messages for testing
             self.loc = {} if not self.loc else self.loc
-            self.loc["cl_morpy_dict_key_str"] = "Keys must be strings."
-            self.loc["cl_morpy_dict_empty"] = "Dictionary is empty."
+            self.loc["MorPyDict_key_str"] = "Keys must be strings."
+            self.loc["MorPyDict_empty"] = "Dictionary is empty."
             self.msg__setitem__ = ''
             self.msg__delitem__ = ''
             self.msg_clear = ''
@@ -599,96 +599,96 @@ class cl_morpy_dict_ultra(UltraDict):
             self.msg_popitem = ''
             self.msg_update = ''
             self.msg_setdefault = ''
-            self.loc["cl_morpy_dict_err_unlink"] = "Error unlinking UltraDict instance"
+            self.loc["MorPyDict_err_unlink"] = "Error unlinking UltraDict instance"
 
             if self._access == 'tightened':
                 # Prohibited method .setitem() Keys cannot be added.
                 self.msg__setitem__ = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.setitem()\n'
-                    f'{self.loc["cl_morpy_dict_new_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setitem()\n'
+                    f'{self.loc["MorPyDict_new_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .delitem() Keys cannot be deleted.
                 self.msg__delitem__ = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.delitem()\n'
-                    f'{self.loc["cl_morpy_dict_del_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.delitem()\n'
+                    f'{self.loc["MorPyDict_del_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .clear() Dictionary cannot be cleared.
                 self.msg_clear = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.clear()\n'
-                    f'{self.loc["cl_morpy_dict_clear"]}'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.clear()\n'
+                    f'{self.loc["MorPyDict_clear"]}'
                 )
                 # Prohibited method .pop() Keys cannot be deleted.
                 self.msg_pop = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.pop()\n'
-                    f'{self.loc["cl_morpy_dict_del_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.pop()\n'
+                    f'{self.loc["MorPyDict_del_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .popitem() Keys cannot be deleted.
                 self.msg_popitem = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.popitem()\n'
-                    f'{self.loc["cl_morpy_dict_del_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.popitem()\n'
+                    f'{self.loc["MorPyDict_del_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .update() Keys cannot be added.
                 self.msg_update = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.update()\n'
-                    f'{self.loc["cl_morpy_dict_new_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.update()\n'
+                    f'{self.loc["MorPyDict_new_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .setdefault() Keys cannot be added.
                 self.msg_setdefault = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.setdefault()\n'
-                    f'{self.loc["cl_morpy_dict_new_key"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setdefault()\n'
+                    f'{self.loc["MorPyDict_new_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
             elif self._access == 'locked':
                 # Prohibited method .setitem() Dictionary is locked.
                 self.msg__setitem__ = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.setitem()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setitem()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .delitem() Dictionary is locked.
                 self.msg__delitem__ = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.delitem()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.delitem()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .clear() Dictionary is locked.
                 self.msg_clear = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.clear()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.clear()\n'
+                    f'{self.loc["MorPyDict_lock"]}'
                 )
                 # Prohibited method .pop() Dictionary is locked.
                 self.msg_pop = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.pop()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.pop()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .popitem() Dictionary is locked.
                 self.msg_popitem = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.popitem()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.popitem()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .update() Dictionary is locked.
                 self.msg_update = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.update()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.update()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Prohibited method .setdefault() Dictionary is locked.
                 self.msg_setdefault = (
-                    f'{self.loc["cl_morpy_dict_denied"]}: {self._name}.setdefault()\n'
-                    f'{self.loc["cl_morpy_dict_lock"]}\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setdefault()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
                 # Error unlinking UltraDict instance
                 self.err_unlink = (
-                    f'{self.loc["cl_morpy_dict_err_unlink"]}: {self._name}.setdefault()\n'
-                    f'{self.loc["cl_morpy_dict_key"]}:'
+                    f'{self.loc["MorPyDict_err_unlink"]}: {self._name}.setdefault()\n'
+                    f'{self.loc["MorPyDict_key"]}:'
                 )
         except Exception as e:
             raise RuntimeError(
@@ -734,7 +734,7 @@ class cl_morpy_dict_ultra(UltraDict):
         lock, super_class = self._get_super()
         if not isinstance(key, str):
             # Keys must be strings.
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access == 'tightened':
             msg = f'{self.msg__setitem__} {key}'
             if key not in super_class.keys():
@@ -760,7 +760,7 @@ class cl_morpy_dict_ultra(UltraDict):
     def __getitem__(self, key):
         lock, super_class = self._get_super()
         if not isinstance(key, str):
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         with lock:
             return super_class.__getitem__(key)
 
@@ -768,7 +768,7 @@ class cl_morpy_dict_ultra(UltraDict):
         lock, super_class = self._get_super()
         if not isinstance(key, str):
             # Keys must be strings.
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access in ('tightened', 'locked'):
             msg = f'{self.msg__delitem__} {key}'
             raise PermissionError(msg)
@@ -780,7 +780,7 @@ class cl_morpy_dict_ultra(UltraDict):
         lock, super_class = self._get_super()
         if not isinstance(key, str):
             # Keys must be strings.
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         with lock:
             return super_class.get(key, default)
 
@@ -797,7 +797,7 @@ class cl_morpy_dict_ultra(UltraDict):
         lock, super_class = self._get_super()
         if not isinstance(key, str):
             # Keys must be strings.
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access in ('tightened', 'locked'):
             msg = f'{self.msg_pop} {key}'
             raise PermissionError(msg)
@@ -814,7 +814,7 @@ class cl_morpy_dict_ultra(UltraDict):
                 raise PermissionError(msg)
             else:
                 # Dictionary is empty.
-                raise TypeError(f'{self.loc["cl_morpy_dict_empty"]}:')
+                raise TypeError(f'{self.loc["MorPyDict_empty"]}:')
         else:
             with lock:
                 key, item = super_class.popitem()
@@ -841,7 +841,7 @@ class cl_morpy_dict_ultra(UltraDict):
         lock, super_class = self._get_super()
         if not isinstance(key, str):
             # Keys must be strings.
-            raise TypeError(f'{self.loc["cl_morpy_dict_key_str"]}:')
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access == 'tightened':
             if key not in super_class.keys():
                 msg = f'{self.msg_setdefault} {key}'
@@ -874,4 +874,4 @@ class cl_morpy_dict_ultra(UltraDict):
 
     def __repr__(self):
         lock, super_class = self._get_super()
-        return f'cl_morpy_dict(name={self._name}, access={self._access}, data={super_class.__repr__()})'
+        return f'MorPyDict(name={self._name}, access={self._access}, data={super_class.__repr__()})'

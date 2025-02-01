@@ -3,7 +3,7 @@ morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
-Descr.:     This module demonstrates how to use lib.ui_tk.cl_progress_gui()
+Descr.:     This module demonstrates how to use lib.ui_tk.ProgressTrackerTk()
 """
 
 import lib.morPy as morPy
@@ -26,14 +26,14 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         app_run_return: Return value (dict) of the app process, handed to app_exit
 
     :example:
-        # Demonstrate how to use lib.ui_tk.cl_progress_gui()
-        import app.demo_cl_progress_gui as demo_cl_progress_gui
-        demo_cl_progress_gui.run(morpy_trace, app_dict)
+        # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
+        import app.demo_ProgressTrackerTk as demo_ProgressTrackerTk
+        demo_ProgressTrackerTk.run(morpy_trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
-    module = 'app.run'
-    operation = 'app_run(~)'
+    module = 'demo.ProgressTrackerTk'
+    operation = 'run(~)'
     morpy_trace = morPy.tracing(module, operation, morpy_trace)
 
     check = False
@@ -47,9 +47,9 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         # No localization for demo module
         log(morpy_trace, app_dict, "info",
             lambda: f'Starting {module}.{operation}')
-        task = partial(arbitrary_parallel_task, morpy_trace, app_dict, stages=stages, total_rep=total_rep, gui=None)
+        task = partial(arbitrary_task, morpy_trace, app_dict, stages=stages, total_rep=total_rep, gui=None)
 
-        progress = morPy.cl_progress_gui(morpy_trace, app_dict,
+        progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
                                          frame_title="Progress Demo",
                                          stages=stages,
                                          headline_stage="Stage 1",
@@ -81,7 +81,7 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
     }
 
 @metrics
-def arbitrary_parallel_task(morpy_trace, app_dict, stages: int=0, total_rep: int=0, gui=None):
+def arbitrary_task(morpy_trace, app_dict, stages: int=0, total_rep: int=0, gui=None):
     r"""
     This function runs the entire app using user input to specify
     the actions performed.
@@ -90,19 +90,19 @@ def arbitrary_parallel_task(morpy_trace, app_dict, stages: int=0, total_rep: int
     :param app_dict: morPy global dictionary containing app configurations
     :param stages: Number of stages/repetitions
     :param total_rep: Iterations per stage
-    :param gui: GUI object (cl_progress_gui)
+    :param gui: GUI object (ProgressTrackerTk)
 
     :return: dict
         morpy_trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
 
     :example:
-        arbitrary_parallel_task(morpy_trace, app_dict)
+        arbitrary_task(morpy_trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
-    module = 'app.run'
-    operation = 'arbitrary_parallel_task(~)'
+    module = 'demo.ProgressTrackerTk'
+    operation = 'arbitrary_task(~)'
     morpy_trace = morPy.tracing(module, operation, morpy_trace)
 
     check = False

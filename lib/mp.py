@@ -99,7 +99,7 @@ class cl_orchestrator:
         :param app_dict: morPy global dictionary containing app configurations
 
         TODO make compatible with forking/free-threading
-        TODO when made compatible, take care of self._run(), init.init() and common.cl_priority_queue._init()
+        TODO when made compatible, take care of self._run(), init.init() and common.PriorityQueue._init()
         """
 
         module = 'mp'
@@ -574,7 +574,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
 
     :example:
         # The priority, counter, task_sys_id and task arguments are passed directly to the
-        # process_control decorator and are delivered by common.cl_priority_queue.dequeue().
+        # process_control decorator and are delivered by common.PriorityQueue.dequeue().
 
         dequeued = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
         priority = dequeued["priority"]
@@ -606,7 +606,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                 f'priority: {priority}\n'
                 f'task_sys_id: {task_sys_id}')
 
-        from lib.types_dict import cl_morpy_dict_ultra
+        from lib.types_dict import MorPyDictUltra
 
         # Fetch the maximum processes to be utilized by morPy
         processes_max = app_dict["proc"]["morpy"]["cl_orchestrator"].processes_max
@@ -803,12 +803,12 @@ def spawn(task: list):
         from lib.init import types_dict_build
         from lib.init import types_dict_finalize
 
-        from lib.types_dict import cl_morpy_dict, cl_morpy_dict_ultra
+        from lib.types_dict import MorPyDict, MorPyDictUltra
 
         process_id = task[1]["process_id"]
 
         # Link to shared memory
-        app_dict = cl_morpy_dict_ultra(
+        app_dict = MorPyDictUltra(
             name="app_dict",
             create=False,
         )
@@ -817,19 +817,19 @@ def spawn(task: list):
         app_dict["proc"]["morpy"]._update_self(_access="normal")
         app_dict["proc"]["app"]._update_self(_access="normal")
 
-        app_dict["proc"]["morpy"][f'P{process_id}'] = cl_morpy_dict_ultra(
+        app_dict["proc"]["morpy"][f'P{process_id}'] = MorPyDictUltra(
             name=f'app_dict[proc][morPy][P{process_id}]',
             create=True,
         )
-        app_dict["proc"]["morpy"][f'P{process_id}']["T0"] = cl_morpy_dict_ultra(
+        app_dict["proc"]["morpy"][f'P{process_id}']["T0"] = MorPyDictUltra(
             name=f'app_dict[proc][morPy][P{process_id}][T0]',
             create=True,
         )
-        app_dict["proc"]["app"][f'P{process_id}'] = cl_morpy_dict_ultra(
+        app_dict["proc"]["app"][f'P{process_id}'] = MorPyDictUltra(
             name=f'app_dict[proc][app][P{process_id}]',
             create=True,
         )
-        app_dict["proc"]["app"][f'P{process_id}']["T0"] = cl_morpy_dict_ultra(
+        app_dict["proc"]["app"][f'P{process_id}']["T0"] = MorPyDictUltra(
             name=f'app_dict[proc][app][P{process_id}][T0]',
             create=True,
         )

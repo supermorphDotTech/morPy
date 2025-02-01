@@ -17,7 +17,7 @@ from lib.decorators import log
 
 import sys
 
-def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
+def PriorityQueue(morpy_trace: dict, app_dict: dict, name: str=None):
     r"""
     This class delivers a priority queue solution. Any task may be enqueued.
     When dequeuing, the highest priority task (lowest number) is dequeued
@@ -53,7 +53,7 @@ def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
     :example:
         from functools import partial
         # Create queue instance
-        queue = morPy.cl_priority_queue(morpy_trace, app_dict, name="example_queue")
+        queue = morPy.PriorityQueue(morpy_trace, app_dict, name="example_queue")
         # Add a task to the queue
         queue.enqueue(morpy_trace, app_dict, priority=25, task=partial(task, morpy_trace, app_dict))
         # Fetch a task and run it
@@ -62,14 +62,14 @@ def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
     """
 
     try:
-        return common.cl_priority_queue(morpy_trace, app_dict, name)
+        return common.PriorityQueue(morpy_trace, app_dict, name)
 
     except Exception as e:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'lib.morPy'
-        operation = 'cl_priority_queue(~)'
+        operation = 'PriorityQueue(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
@@ -77,7 +77,7 @@ def cl_priority_queue(morpy_trace: dict, app_dict: dict, name: str=None):
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
-def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
+def ProgressTracker(morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
                 float_progress: bool=False, verbose: bool=False):
     r"""
     This class instantiates a progress counter. If ticks, total or counter
@@ -107,12 +107,12 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
             message: Message generated. None, if no tick was hit.
 
     :example:
-        progress = cl_progress(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)["prog_rel"]
+        progress = ProgressTracker(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)["prog_rel"]
         progress.update(morpy_trace, app_dict, current=current_count)
     """
 
     try:
-        return common.cl_progress(morpy_trace, app_dict, description=description, total=total, ticks=ticks,
+        return common.ProgressTracker(morpy_trace, app_dict, description=description, total=total, ticks=ticks,
                                   float_progress=float_progress, verbose=verbose)
 
     except Exception as e:
@@ -120,7 +120,7 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'lib.morPy'
-        operation = 'cl_progress(~)'
+        operation = 'ProgressTracker(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
@@ -128,7 +128,7 @@ def cl_progress(morpy_trace: dict, app_dict: dict, description: str=None, total:
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
-def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
+def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
                  frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
                  headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
                  font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
@@ -232,7 +232,7 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
 
         if name == "__main__":
             # Run function with GUI. For full customization during construction see the
-            # cl_progress_gui.__init__() description.
+            # ProgressTrackerTk.__init__() description.
 
             # In this example the outer and inner loop stop values are set two times manually. However, you may
             # want to set it only a single time and point to these, but that depends on the use case.
@@ -243,7 +243,7 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
             work = partial(my_func, morpy_trace, app_dict)
 
             # Construct the GUI
-            progress = morPy.cl_progress_gui(morpy_trace, app_dict,
+            progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
                 frame_title="My Demo Progress GUI",
                 description_stage="Generic Progress stage",
                 stages=outer_loop_count,
@@ -255,7 +255,7 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
     """
 
     try:
-        return ui_tk.cl_progress_gui(morpy_trace, app_dict, frame_title=frame_title, frame_width=frame_width,
+        return ui_tk.ProgressTrackerTk(morpy_trace, app_dict, frame_title=frame_title, frame_width=frame_width,
                 frame_height=frame_height, headline_total=headline_total, headline_stage=headline_stage,
                 headline_font_size=headline_font_size, description_stage=description_stage,
                 description_font_size=description_font_size, font=font, stages=stages,
@@ -267,7 +267,7 @@ def cl_progress_gui(morpy_trace: dict, app_dict: dict, frame_title: str = None, 
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'lib.morPy'
-        operation = 'cl_progress_gui(~)'
+        operation = 'ProgressTrackerTk(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",

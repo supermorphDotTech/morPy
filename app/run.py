@@ -42,9 +42,9 @@ def app_run(morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
     app_run_return = {}
 
     try:
-        # Demonstrate how to use lib.ui_tk.cl_progress_gui()
-        import app.demo_cl_progress_gui as demo_cl_progress_gui
-        demo_cl_progress_gui.run(morpy_trace, app_dict)
+        # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
+        import demo.ProgressTrackerTk as demo_ProgressTrackerTk
+        demo_ProgressTrackerTk.run(morpy_trace, app_dict)
 
         check = True
 
