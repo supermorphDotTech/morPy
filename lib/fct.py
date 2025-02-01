@@ -134,10 +134,28 @@ def sysinfo():
     homedir = os.path.expanduser("~")
     hostname = socket.gethostname()
 
-    root = Tk()
-    res_height = root.winfo_screenheight()
-    res_width = root.winfo_screenwidth()
-    root.destroy()
+    # Try to get main monitor info
+    try:
+        import ctypes
+        # Make process DPI aware
+        try:
+            # For Windows 8.1 or later
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)  # or use 2 for per-monitor DPI awareness
+        except Exception:
+            # Fallback for older systems or if the call fails.
+            ctypes.windll.user32.SetProcessDPIAware()
+        # Get primary monitor resolution using Windows API
+        user32 = ctypes.windll.user32
+        res_width = user32.GetSystemMetrics(0)
+        res_height = user32.GetSystemMetrics(1)
+    # Fallback to tkinter, if ctypes is not supported. May not return info of main monitor.
+    except Exception:
+        # Fallback: use tkinter to get the resolution
+        from tkinter import Tk
+        root = Tk()
+        res_width = root.winfo_screenwidth()
+        res_height = root.winfo_screenheight()
+        root.destroy()
 
     return{
         'os' : system,

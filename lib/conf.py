@@ -222,16 +222,16 @@ def settings(start_time=None):
     # Create the path, if not existing.
     os.makedirs(log_path, exist_ok=True)
 
-    # Path to the database holding all logs.
-    log_db_path = pathlib.Path(os.path.join(f'{main_path}', 'log', 'log.db'))
+    # Path to the logging database.
+    log_db_path = pathlib.Path(os.path.join(f'{log_path}', 'log.db'))
 
-    # Path to the textfile holding all logs
+    # Path to the logging textfile.
     log_txt_path = os.path.join(f'{log_path}', f'{start_time}.log')
 
-    # Path to the modules folder
-    app_files_path = pathlib.Path(os.path.join(f'{main_path}', 'data'))
+    # Path to the data folder
+    data_path = pathlib.Path(os.path.join(f'{main_path}', 'data'))
     # Create the path, if not existing.
-    os.makedirs(app_files_path, exist_ok=True)
+    os.makedirs(data_path, exist_ok=True)
 
     # Path to the main database of the app
     main_db_path = pathlib.Path(os.path.join(f'{main_path}', 'db', 'main.db'))
@@ -281,7 +281,7 @@ def settings(start_time=None):
         'log_path' : log_path,
         'log_db_path' : log_db_path,
         'log_txt_path' : log_txt_path,
-        'app_files_path' : app_files_path,
+        'data_path' : data_path,
         'main_db_path' : main_db_path,
         'app_path' : app_path,
         'app_icon' : app_icon,

@@ -128,7 +128,7 @@ def ProgressTracker(morpy_trace: dict, app_dict: dict, description: str=None, to
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
-def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
+def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 1080,
                  frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
                  headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
                  font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
@@ -141,7 +141,7 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
     :param app_dict: morPy global dictionary containing app configurations
     :param frame_title: Window frame title as shown in the title bar.
     :param frame_width: Frame width in pixels.
-                        Defaults to 800.
+                        Defaults to 1080.
     :param frame_height: Frame height in pixels.
                          Defaults to a value depending on which widgets are displayed.
     :param headline_total: Descriptive name for the overall progress.
@@ -275,12 +275,74 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
-def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
+def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile_size: tuple=None):
+    """
+    A tkinter GUI displaying a dynamic grid of image tiles. Each tile shows an image
+    with a text label below it. Clicking a tile returns its associated value.
+
+    :param morpy_trace: Operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param tile_data: Dictionary containing configuration for each tile.
+        The expected structure is:
+        {
+            "tile_name" : {
+                "row_column" : (row, column),         # grid placement
+                "img_path" : "path/to/image.png",     # image file path
+                "text" : "Descriptive text",          # label under the image
+                "return_value" : some_value,          # value returned when clicked
+                "tile_size" : (width, height),        # (optional) size for the image tile
+            },
+            ...
+        }
+    :param title: Title of the tkinter window.
+    :param default_tile_size: Default (width, height) if a tile does not specify its own size.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether initialization completed without errors
+
+    :example:
+        import lib.morPy
+
+        tile_data = {
+            "start" : {
+                "row_column" : (row, column),
+                "img_path" : "path/to/image.png",
+                "text" : "Start the App",
+                "return_value" : 1,
+            },
+            ...
+        }
+        gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
+            title="Start Menu",
+            default_tile_size=(128, 128),
+        )
+        result = gui.run(morpy_trace, app_dict)["choice"]
+    """
+
+    try:
+        return ui_tk.GridChoiceTk(morpy_trace, app_dict, tile_data, title=title,
+                                  default_tile_size=default_tile_size)
+
+    except Exception as e:
+        import lib.fct as morpy_fct
+
+        # Define operation credentials (see init.init_cred() for all dict keys)
+        module = 'lib.morPy'
+        operation = 'GridChoiceTk(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        log(morpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                f'{type(e).__name__}: {e}')
+
+def XlWorkbook(morpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
               data_only: bool=False, keep_vba: bool=True):
     r"""
     This class constructs an API to an Excel workbook and delivers methods
     to read from and write to the workbook. It uses OpenPyXL and all it's
-    methods can be used on cl_xl_workbook.wb_obj if a more versatile API is
+    methods can be used on XlWorkbook.wb_obj if a more versatile API is
     required.
 
     :param morpy_trace: operation credentials and tracing information
@@ -387,7 +449,7 @@ def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: boo
 
             :example:
                 wb_path = "C:\my.xlsx"
-                wb = morPy.cl_xl_workbook(morpy_trace, app_dict, wb_path)
+                wb = morPy.XlWorkbook(morpy_trace, app_dict, wb_path)
                 cl_dict = wb.read_cells(morpy_trace, app_dict, "Sheet1", ["A1", "B2:C3"])["cl_dict"]
                 print(f'{cl_dict}')
 
@@ -488,7 +550,7 @@ def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: boo
     :example:
         # Construct a workbook instance
         wb_path = "C:\my.xlsx"
-        wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
+        wb = XlWorkbook(morpy_trace, app_dict, wb_path)
 
         # Activate a certain worksheet
         worksheet1 = "Sheet1"
@@ -514,7 +576,7 @@ def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: boo
     """
 
     try:
-        return xl.cl_xl_workbook(morpy_trace, app_dict, workbook, create=create,
+        return xl.XlWorkbook(morpy_trace, app_dict, workbook, create=create,
                                      data_only=data_only, keep_vba=keep_vba)
 
     except Exception as e:
@@ -522,7 +584,7 @@ def cl_xl_workbook(morpy_trace: dict, app_dict: dict, workbook: str, create: boo
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'lib.morPy'
-        operation = 'cl_xl_workbook(~)'
+        operation = 'XlWorkbook(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         log(morpy_trace, app_dict, "critical",
@@ -635,7 +697,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
     :return: dict
         morpy_trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
-        wb_obj: Returns None, if the object was closed. Else returns an instance of "xl.cl_xl_workbook()".
+        wb_obj: Returns None, if the object was closed. Else returns an instance of "xl.XlWorkbook()".
             Used to delete the reference to an instance.
 
     :example:

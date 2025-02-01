@@ -3,8 +3,7 @@ morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
-Descr.:     This module provides UI-building functions using the TKinter
-            libraries.
+Descr.:     This module provides UI-building functions using the Tkinter.
 """
 
 import lib.fct as morpy_fct
@@ -17,6 +16,394 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import TclError
+from PIL import Image, ImageTk
+
+class GridChoiceTk:
+    """
+    A tkinter GUI displaying a dynamic grid of image tiles. Each tile shows an image
+    with a text label below it. Clicking a tile returns its associated value.
+
+    :param morpy_trace: Operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param tile_data: Dictionary containing configuration for each tile.
+        The expected structure is:
+        {
+            "tile_name" : {
+                "row_column" : (row, column),         # grid placement
+                "img_path" : "path/to/image.png",     # image file path
+                "text" : "Descriptive text",          # label under the image
+                "return_value" : some_value,          # value returned when clicked
+                "tile_size" : (width, height),        # (optional) size for the image tile
+            },
+            ...
+        }
+    :param title: Title of the tkinter window.
+    :param default_tile_size: Default (width, height) if a tile does not specify its own size.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether initialization completed without errors
+
+    :example:
+        import lib.morPy
+
+        tile_data = {
+            "start" : {
+                "row_column" : (row, column),
+                "img_path" : "path/to/image.png",
+                "text" : "Start the App",
+                "return_value" : 1,
+            },
+            ...
+        }
+        gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
+            title="Start Menu",
+            default_tile_size=(128, 128),
+        )
+        result = gui.run(morpy_trace, app_dict)["choice"]
+    """
+
+    def __init__(self, morpy_trace: dict, app_dict: dict, tile_data: dict, title: str=None,
+                 default_tile_size: tuple=None):
+        r"""
+        Initializes the GUI for grid of image tiles.
+
+        In order to get metrics for __init__(), call helper method _init()
+        for the @metrics decorator to work. It relies on the returned
+        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+
+        :param: See ._init() for details
+
+        :return: self
+        """
+
+        module = 'ui_tk'
+        operation = 'ProgressTrackerTk.__init__(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        try:
+            self._init(morpy_trace, app_dict, tile_data, title=title, default_tile_size=default_tile_size)
+
+        except Exception as e:
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
+
+    @metrics
+    def _init(self, morpy_trace: dict, app_dict: dict, tile_data: dict, title: str=None,
+              default_tile_size: tuple=(256, 256)):
+        """
+        Initialize GUI with support for metrics collection.
+
+        :param morpy_trace: Operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+        :param tile_data: Dictionary containing configuration for each tile.
+            The expected structure is:
+            {
+                "tile_name" : {
+                    "row_column" : (row, column),         # grid placement
+                    "img_path" : "path/to/image.png",     # image file path
+                    "text" : "Descriptive text",          # label under the image
+                    "return_value" : some_value,          # value returned when clicked
+                    "tile_size" : (width, height),        # (optional) size for the image tile
+                },
+                ...
+            }
+        :param title: Title of the tkinter window. Defaults to morPy localization.
+        :param default_tile_size: Default (width, height) if a tile does not specify its own size.
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether initialization completed without errors
+
+        :example:
+            import lib.morPy
+
+            tile_data = {
+                "start" : {
+                    "row_column" : (row, column),
+                    "img_path" : "path/to/image.png",
+                    "text" : "Start the App",
+                    "return_value" : 1,
+                },
+                ...
+            }
+            gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
+                title="Start Menu",
+                default_tile_size=(128, 128),
+            )
+            result = gui.run()
+        """
+
+        module = 'ui_tk'
+        operation = 'ProgressTrackerTk.__init__(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        check = False
+
+        try:
+            self.tile_data = tile_data
+            self.title = title if title else app_dict["loc"]["morpy"]["GridChoiceTk_title"]
+            self.default_tile_size = default_tile_size
+            self.choice = None
+            self.frame_width = 0
+            self.frame_height = 0
+
+            # Create the main tkinter window.
+            self.root = tk.Tk()
+            self.root.iconbitmap(app_dict["conf"]["app_icon"])
+            self.root.title(self.title)
+
+            # A dictionary to keep references to PhotoImage objects. Prevents garbage collection of images.
+            self._photos = {}
+
+            self._setup_ui(morpy_trace, app_dict)
+
+            # Calculate coordinates for the window to be centered.
+            x = (app_dict["sys"]["resolution_width"] // 2) - (self.frame_width // 2)
+            y = (app_dict["sys"]["resolution_height"] * 2 // 5) - (self.frame_height // 2)
+            self.root.geometry(f'{self.frame_width}x{self.frame_height}+{x}+{y}')
+
+            # Bind the _on_close() method to closing the window
+            self.root.protocol("WM_DELETE_WINDOW", lambda: self._on_close(morpy_trace, app_dict))
+
+            # Fix the frame size, since it's contents do not resize.
+            self.root.resizable(False, False)
+
+            check = True
+
+        except Exception as e:
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
+
+        finally:
+            return {
+                "morpy_trace" : morpy_trace,
+                "check" : check,
+            }
+
+    def _setup_ui(self, morpy_trace: dict, app_dict: dict):
+        """
+        Constructs the grid layout with the provided tile data.
+
+        :param morpy_trace: Operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether initialization completed without errors
+        """
+
+        module = 'ui_tk'
+        operation = 'ProgressTrackerTk._setup_ui(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        check = False
+
+        try:
+            container = tk.Frame(self.root)
+            container.pack(padx=20, pady=20)
+
+            for tile_name, config in self.tile_data.items():
+                row, column = config.get("row_column", (0, 0))
+                img_path = morpy_fct.pathtool(config.get("img_path"))["out_path"]
+                text = config.get("text", "")
+                return_value = config.get("return_value")
+                tile_size = config.get("tile_size", self.default_tile_size)
+
+                # Create a frame for this tile.
+                tile_frame = tk.Frame(container)
+                tile_frame.grid(row=row, column=column, padx=10, pady=10)
+
+                # Determine the appropriate resampling filter.
+                if hasattr(Image, "Resampling"):
+                    resample_filter = Image.Resampling.LANCZOS
+                else:
+                    resample_filter = Image.ANTIALIAS
+
+                # Load and resize the image.
+                try:
+                    img = Image.open(img_path)
+                except Exception as e:
+                    # Failed to load image.
+                    raise RuntimeError(
+                        f'{app_dict["loc"]["morpy"]["GridChoiceTk_img_fail"]}\n'
+                        f'{app_dict["loc"]["morpy"]["GridChoiceTk_path"]}: {img_path}\n'
+                        f'{app_dict["loc"]["morpy"]["GridChoiceTk_tile"]}: {tile_name}'
+                    )
+
+                img = img.resize(tile_size, resample_filter)
+                photo = ImageTk.PhotoImage(img)
+                self._photos[tile_name] = photo  # Save a reference to avoid garbage collection.
+
+                # Create a button with the image.
+                btn = tk.Button(tile_frame, image=photo,
+                    command=lambda val=return_value: self._on_select(morpy_trace, app_dict, val)
+                )
+                btn.pack()
+
+                # Create a label below the image.
+                lbl = tk.Label(tile_frame, text=text)
+                lbl.pack(pady=(5, 0))
+
+                # Get frame width and height
+                self.root.update_idletasks()  # Process pending geometry updates
+                self.frame_width = self.root.winfo_width()
+                self.frame_height = self.root.winfo_height()
+
+                check = True
+
+        except Exception as e:
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
+
+        finally:
+            return {
+                "morpy_trace" : morpy_trace,
+                "check" : check,
+            }
+
+    def _on_select(self, morpy_trace: dict, app_dict: dict, value):
+        """
+        Callback when a tile is clicked. Sets the selected value and quits the mainloop.
+
+        :param morpy_trace: Operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+        :param value: Selected value relating to the clicked tile.
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether initialization completed without errors
+        """
+
+        module = 'ui_tk'
+        operation = 'ProgressTrackerTk._on_select(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        check = False
+
+        try:
+            self.choice = value
+            self.root.quit()
+
+            check = True
+
+        except Exception as e:
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
+
+        finally:
+            return {
+                "morpy_trace" : morpy_trace,
+                "check" : check,
+            }
+
+    @metrics
+    def _on_close(self, morpy_trace: dict, app_dict: dict):
+        r"""
+        Close or abort the GUI.
+
+        :param morpy_trace: Operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether initialization completed without errors
+
+        :example:
+            self._on_close(morpy_trace, app_dict)
+        """
+
+        module = 'ui_tk'
+        operation = 'GridChoiceTk._on_close(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        check = False
+
+        try:
+            self.root.quit()
+
+            # Initiate program exit
+            app_dict["global"]["morpy"]["exit"] = True
+
+            # Release the global interrupts
+            app_dict["global"]["morpy"]["interrupt"] = False
+
+            check = True
+
+        except Exception as e:
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
+
+        return {
+            "morpy_trace" : morpy_trace,
+            "check" : check,
+        }
+
+    def run(self, morpy_trace: dict, app_dict: dict):
+        """
+        Launches the GUI and waits for the user to make a selection.
+
+        :param morpy_trace: Operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether initialization completed without errors
+            choice: The value associated with the selected tile.
+
+        :example:
+            import lib.morPy
+
+            tile_data = {
+                "start" : {
+                    "row_column" : (row, column),
+                    "img_path" : "path/to/image.png",
+                    "text" : "Start the App",
+                    "return_value" : 1,
+                },
+                ...
+            }
+            gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
+                title="Start Menu",
+                default_tile_size=(128, 128),
+            )
+            result = gui.run(morpy_trace, app_dict)["choice"]
+        """
+
+        module = 'ui_tk'
+        operation = 'ProgressTrackerTk.run(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        check = False
+
+        try:
+            self.root.mainloop()
+            self.root.destroy()
+
+            check = True
+
+        except Exception as e:
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
+
+        finally:
+            return {
+                "morpy_trace" : morpy_trace,
+                "check" : check,
+                "choice" : self.choice
+            }
 
 class ProgressTrackerTk:
     r"""
@@ -27,7 +414,7 @@ class ProgressTrackerTk:
     :param app_dict: morPy global dictionary containing app configurations
     :param frame_title: Window frame title as shown in the title bar.
     :param frame_width: Frame width in pixels.
-                        Defaults to 800.
+                        Defaults to 1080.
     :param frame_height: Frame height in pixels.
                          Defaults to a value depending on which widgets are displayed.
     :param headline_total: Descriptive name for the overall progress.
@@ -141,7 +528,7 @@ class ProgressTrackerTk:
             progress.run(morpy_trace, app_dict)
     """
 
-    def __init__(self, morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 800,
+    def __init__(self, morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 1080,
                  frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
                  headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
                  font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
@@ -188,7 +575,7 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
         :param frame_title: Window frame title as shown in the title bar.
         :param frame_width: Frame width in pixels.
-                            Defaults to 800.
+                            Defaults to 1080.
         :param frame_height: Frame height in pixels.
                              Defaults to a value depending on which widgets are displayed.
         :param headline_total: Descriptive name for the overall progress.
@@ -332,11 +719,18 @@ class ProgressTrackerTk:
                 if frame_height_sizing:
                     self.frame_height += 375
 
+            # Calculate coordinates for the window to be centered.
+            x = (app_dict["sys"]["resolution_width"] // 2) - (self.frame_width // 2)
+            y = (app_dict["sys"]["resolution_height"] * 2 // 5) - (self.frame_height // 2)
+
             # Tk window
             self.root = tk.Tk()
             self.root.iconbitmap(app_dict["conf"]["app_icon"])
             self.root.title(self.frame_title)
-            self.root.geometry(f'{self.frame_width}x{self.frame_height}')
+            self.root.geometry(f'{self.frame_width}x{self.frame_height}+{x}+{y}')
+
+            # Bind the _on_close() method to closing the window
+            self.root.protocol("WM_DELETE_WINDOW", lambda: self._on_close(morpy_trace, app_dict))
 
             self._create_widgets(morpy_trace, app_dict)
 

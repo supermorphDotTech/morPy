@@ -22,7 +22,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Protection
 import openpyxl.utils.cell
 
-class cl_xl_workbook:
+class XlWorkbook:
     r"""
     This class constructs an API to an Excel workbook and delivers methods
     to read from and write to the workbook. It uses OpenPyXL and all those
@@ -132,7 +132,7 @@ class cl_xl_workbook:
 
             :example:
                 wb_path = "C:\my.xlsx"
-                wb = morPy.cl_xl_workbook(morpy_trace, app_dict, wb_path)
+                wb = morPy.XlWorkbook(morpy_trace, app_dict, wb_path)
                 cl_dict = wb.read_cells(morpy_trace, app_dict, "Sheet1", ["A1", "B2:C3"])["cl_dict"]
                 print(f'{cl_dict}')
 
@@ -233,7 +233,7 @@ class cl_xl_workbook:
     :example:
         # Construct a workbook instance
         wb_path = "C:\my.xlsx"
-        wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
+        wb = XlWorkbook(morpy_trace, app_dict, wb_path)
 
         # Activate a certain worksheet
         worksheet1 = "Sheet1"
@@ -292,12 +292,12 @@ class cl_xl_workbook:
 
         :example:
             wb_path = "C:\projects\my.xlsx"
-            wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
+            wb = XlWorkbook(morpy_trace, app_dict, wb_path)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook.__init__(~)'
+        operation = 'XlWorkbook.__init__(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
@@ -306,7 +306,7 @@ class cl_xl_workbook:
 
             if not check:
                 # Instance construction aborted.
-                raise RuntimeError(f'{app_dict["loc"]["morpy"]["cl_xl_workbook_inst_abort"]}')
+                raise RuntimeError(f'{app_dict["loc"]["morpy"]["XlWorkbook_inst_abort"]}')
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -341,7 +341,7 @@ class cl_xl_workbook:
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook._init(~)'
+        operation = 'XlWorkbook._init(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -369,8 +369,8 @@ class cl_xl_workbook:
                 else:
                     # File does not exist and was not created.
                     raise LookupError(
-                        f'{app_dict["loc"]["morpy"]["cl_xl_workbook_not_create"]}\n'
-                        f'{app_dict["loc"]["morpy"]["cl_xl_workbook_create"]}: {create}'
+                        f'{app_dict["loc"]["morpy"]["XlWorkbook_not_create"]}\n'
+                        f'{app_dict["loc"]["morpy"]["XlWorkbook_create"]}: {create}'
                     )
 
             # Re-evaluate file creation
@@ -379,8 +379,8 @@ class cl_xl_workbook:
             if not is_file:
                 # The path to the workbook is invalid.
                 raise LookupError(
-                    f'{app_dict["loc"]["morpy"]["cl_xl_workbook_path_invalid"]}\n'
-                    f'{app_dict["loc"]["morpy"]["cl_xl_workbook_path"]}: {self.wb_path}'
+                    f'{app_dict["loc"]["morpy"]["XlWorkbook_path_invalid"]}\n'
+                    f'{app_dict["loc"]["morpy"]["XlWorkbook_path"]}: {self.wb_path}'
                 )
 
             # Evaluate, if file type supports vba
@@ -395,8 +395,8 @@ class cl_xl_workbook:
 
             # MS Excel workbook instantiated.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["cl_xl_workbook_inst"]}'
-                    f'{app_dict["loc"]["morpy"]["cl_xl_workbook_wb"]}: {self.wb_path}')
+            lambda: f'{app_dict["loc"]["morpy"]["XlWorkbook_inst"]}'
+                    f'{app_dict["loc"]["morpy"]["XlWorkbook_wb"]}: {self.wb_path}')
 
             check = True
 
@@ -429,7 +429,7 @@ class cl_xl_workbook:
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook._create_workbook(~)'
+        operation = 'XlWorkbook._create_workbook(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -480,7 +480,7 @@ class cl_xl_workbook:
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook._update_meta(~)'
+        operation = 'XlWorkbook._update_meta(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -563,7 +563,7 @@ class cl_xl_workbook:
     
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook._cell_ref_autoformat(~)'
+        operation = 'XlWorkbook._cell_ref_autoformat(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     
         check = False
@@ -741,7 +741,7 @@ class cl_xl_workbook:
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
+            wb = XlWorkbook(morpy_trace, app_dict, wb_path)
 
             # Save and close the workbook. Write "None" to the reference "wb".
             wb = wb.save_workbook(morpy_trace, app_dict, close=True)["wb_obj"]
@@ -750,7 +750,7 @@ class cl_xl_workbook:
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook.save_workbook(~)'
+        operation = 'XlWorkbook.save_workbook(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -795,7 +795,7 @@ class cl_xl_workbook:
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
+            wb = XlWorkbook(morpy_trace, app_dict, wb_path)
 
             # Close the workbook. Write "None" to the reference "wb".
             wb = wb.close_workbook(morpy_trace, app_dict)["wb_obj"]
@@ -804,7 +804,7 @@ class cl_xl_workbook:
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook.close_workbook(~)'
+        operation = 'XlWorkbook.close_workbook(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -850,14 +850,14 @@ class cl_xl_workbook:
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = cl_xl_workbook(morpy_trace, app_dict, wb_path)
+            wb = XlWorkbook(morpy_trace, app_dict, wb_path)
             w_sht = "Sheet1"
             wb.activate_worksheet(morpy_trace, app_dict, w_sht)
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook.activate_worksheet(~)'
+        operation = 'XlWorkbook.activate_worksheet(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -978,14 +978,14 @@ class cl_xl_workbook:
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = morPy.cl_xl_workbook(morpy_trace, app_dict, wb_path)
+            wb = morPy.XlWorkbook(morpy_trace, app_dict, wb_path)
             cl_dict = wb.read_cells(morpy_trace, app_dict, worksheet="Sheet1", cell_range=["A1", "B2:C3"])["cl_dict"]
             print(f'{cl_dict}')
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook.read_cells(~)'
+        operation = 'XlWorkbook.read_cells(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False
@@ -1334,13 +1334,13 @@ class cl_xl_workbook:
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = morPy.cl_xl_workbook(morpy_trace, app_dict, wb_path)
+            wb = morPy.XlWorkbook(morpy_trace, app_dict, wb_path)
             table_attr = wb.get_table_attributes(morpy_trace, app_dict, "Table1")["table_attr"]
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
         module = 'xl'
-        operation = 'cl_xl_workbook.get_table_attributes(~)'
+        operation = 'XlWorkbook.get_table_attributes(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
         check = False

@@ -264,7 +264,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
     :return: dict
         morpy_trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
-        wb_obj: Returns None, if the object was closed. Else returns an instance of "xl.cl_xl_workbook()".
+        wb_obj: Returns None, if the object was closed. Else returns an instance of "xl.XlWorkbook()".
             Used to delete the reference to an instance.
 
     :example:
@@ -338,7 +338,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         # If we have a valid path and a dictionary with data, attempt to write
         if xl_write and csv_dict:
             # Instantiate workbook API
-            wb = xl.cl_xl_workbook(morpy_trace, app_dict, xl_path, create=not xl_exists)
+            wb = xl.XlWorkbook(morpy_trace, app_dict, xl_path, create=not xl_exists)
 
             row_index = 1  # Starting row
 
