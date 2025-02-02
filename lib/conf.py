@@ -24,8 +24,7 @@ def settings(start_time=None):
         app_dict["conf"]['my_param'] = 'my_value'
         param_to_json(morpy_trace, app_dict)
 
-    :param
-        start_time - Datetime stamp of runtime start. Defaults to None.
+    :param start_time: Datetime stamp of runtime start. Defaults to None.
 
     :return: dict
         > See through the function for detailed descriptions of every morPy setting.
@@ -120,7 +119,7 @@ def settings(start_time=None):
     # Turn on metrics for the code executed.
     # Data collected: function name, trace, runtime, start time, end time, process ID, task ID
     # >REINITIALIZE<
-    metrics_enable = True
+    metrics_enable = False
 
     # Perform metrics gathering in performance mode.
     # Data collected: function name, trace, runtime
@@ -140,15 +139,18 @@ def settings(start_time=None):
     # Absolute amount of RAM to be utilized. This value will by default not exceed
     # the memory available on the system. If None, all RAM can be utilized.
     # Default: None
+    # >REINITIALIZE<
     memory_absolute = None
 
     # Set the relative maximum amount of RAM to be utilized, where 1 resembles 100%
     # utilization and 0 resembles 0% utilization. If None, all RAM can be utilized.
     # Default: None or 1.0
+    # >REINITIALIZE<
     memory_relative = None
 
     # Set the Minimum amount of memory in MB, that app_dict has to have reserved.
     # Default: None or 200
+    # >REINITIALIZE<
     memory_min_MB = None
 
     r"""
@@ -179,11 +181,6 @@ def settings(start_time=None):
     r"""
 >>> MULTITHREADING <<<
     """
-
-    # Enable or disable multithreading. Have in mind, that during initialization
-    # the available threads will be determined and this option may be overwritten
-    # if there is only a single thread available.
-    mt_enabled = True
 
     # Select how the maximum threads will be determined. If true, you must set
     # an integer value greater than 1 for mt_max_threads_cnt_abs. Ultimately,
@@ -241,7 +238,7 @@ def settings(start_time=None):
     # Create the path, if not existing.
     os.makedirs(app_path, exist_ok=True)
 
-    # Set the app icon
+    # Set the app icon (must be .ico)
     app_icon = pathlib.Path(os.path.join(f'{main_path}', 'res', 'icons', 'smph.ico'))
 
     # Set the GUI background
@@ -272,7 +269,6 @@ def settings(start_time=None):
         'processes_absolute' : processes_absolute,
         'processes_relative' : processes_relative,
         'processes_relative_math' : processes_relative_math,
-        'mt_enabled' : mt_enabled,
         'mt_max_threads_set_abs' : mt_max_threads_set_abs,
         'mt_max_threads_cnt_abs' : mt_max_threads_cnt_abs,
         'mt_max_threads_cnt_rel' : mt_max_threads_cnt_rel,

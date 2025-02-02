@@ -128,6 +128,89 @@ def ProgressTracker(morpy_trace: dict, app_dict: dict, description: str=None, to
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
+def FileDirSelectTk(morpy_trace: dict, app_dict: dict, rows_data: dict, title: str = None,
+                 icon_data: dict = None):
+    r"""
+    A tkinter GUI for file and directory selection. Each row represents a file or directory selection.
+    Optionally displays a top row of icons (display only).
+    selection rows.
+
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: morPy global dictionary containing app configurations.
+    :param rows_data: Dictionary defining the selection rows.
+        Expected structure:
+            {
+                "selection_name" : {
+                    "is_dir" : True | False,  # True for directory selection, False for file selection.
+                    "file_types" : (('PDF','*.pdf'), ('Textfile','*.txt'), ('All Files','*.*')),  # For file dialogs.
+                    "image_path" : "path/to/image.png",  # Optional custom image.
+                    "image_size" : (width, height),  # Optional; defaults to (48, 48) if not provided.
+                    "default_path" : "prefilled/default/path"  # Optional prefill for the input.
+                },
+                ...
+            }
+    :param title: Title of the tkinter window. Defaults to morPy localization if not provided.
+    :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
+        Expected structure:
+        {
+            "icon_name" : {
+                "position" : 1,         # placement, order (lowest first)
+                "img_path" : "path/to/image.png",     # image file path
+                "icon_size" : (width, height),        # (optional) size for the icon
+            },
+            ...
+        }
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether initialization completed without errors
+        selections: Dictionary with selections made, keyed with the row name. Example:
+            {"selection_name" : value}
+
+    :example:
+        import lib.morPy
+
+        icon_data = {
+            "company_logo1" : {
+                "position" : 1,                       # placement, order (lowest first)
+                "img_path" : "path/to/image.png",     # image file path
+            }
+        }
+
+        selection_config = {
+            "file_select" : {
+                "is_dir" : False,
+                "file_types" : (('Textfile','*.txt'), ('All Files','*.*')),
+                "default_path" : "prefilled/default/path"
+            },
+            "dir_select" : {
+                "is_dir" : True,
+                "default_path" : "prefilled/default/path"
+            }
+        }
+
+        gui = morPy.FileDirSelectTk(morpy_trace, app_dict, rows_data, title="Select...")
+        results = gui.run(morpy_trace, app_dict)["selections"]
+        file = results["file_selected"]
+        dir = results["dir_selected"]
+    """
+
+    try:
+        return ui_tk.FileDirSelectTk(morpy_trace, app_dict, rows_data, title=title, icon_data=icon_data)
+
+    except Exception as e:
+        import lib.fct as morpy_fct
+
+        # Define operation credentials (see init.init_cred() for all dict keys)
+        module = 'lib.morPy'
+        operation = 'FileDirSelectTk(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        log(morpy_trace, app_dict, "critical",
+        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                f'{type(e).__name__}: {e}')
+
 def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 1080,
                  frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
                  headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
@@ -275,7 +358,8 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
-def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile_size: tuple=None):
+def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile_size: tuple=(256, 256),
+                 icon_data: dict=None):
     """
     A tkinter GUI displaying a dynamic grid of image tiles. Each tile shows an image
     with a text label below it. Clicking a tile returns its associated value.
@@ -294,8 +378,18 @@ def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile
             },
             ...
         }
-    :param title: Title of the tkinter window.
+    :param title: Title of the tkinter window. Defaults to morPy localization.
     :param default_tile_size: Default (width, height) if a tile does not specify its own size.
+    :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
+        Expected structure:
+        {
+            "icon_name" : {
+                "position" : 1,         # placement, order (lowest first)
+                "img_path" : "path/to/image.png",     # image file path
+                "icon_size" : (width, height),        # (optional) size for the icon
+            },
+            ...
+        }
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -303,6 +397,13 @@ def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile
 
     :example:
         import lib.morPy
+
+        icon_data = {
+            "company_logo1" : {
+                "position" : 1,                       # placement, order (lowest first)
+                "img_path" : "path/to/image.png",     # image file path
+            }
+        }
 
         tile_data = {
             "start" : {
@@ -316,13 +417,14 @@ def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile
         gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
             title="Start Menu",
             default_tile_size=(128, 128),
+            icon_data=icon_data
         )
         result = gui.run(morpy_trace, app_dict)["choice"]
     """
 
     try:
         return ui_tk.GridChoiceTk(morpy_trace, app_dict, tile_data, title=title,
-                                  default_tile_size=default_tile_size)
+                                  default_tile_size=default_tile_size, icon_data=icon_data)
 
     except Exception as e:
         import lib.fct as morpy_fct
@@ -776,14 +878,14 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, enco
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
-def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftypes: tuple=None, title: str=None):
+def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_types: tuple=None, title: str=None):
     r"""
     This function opens a dialog for the user to select a file.
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
     :param init_dir: The directory in which the dialog will initially be opened
-    :param ftypes: This tuple of 2-tuples specifies, which filetypes will be
+    :param file_types: This tuple of 2-tuples specifies, which filetypes will be
         selectable in the dialog box.
     :param title: Title of the open file dialog
 
@@ -795,13 +897,14 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, ftype
 
     :example:
         init_dir = "C:\"
-        ftypes = (('PDF','*.pdf'),('Textfile','*.txt'),('All Files','*.*'))
+        file_types = (('PDF','*.pdf'),('Textfile','*.txt'),('All Files','*.*'))
         title = 'Select a file...'
-        file_path = morPy.dialog_sel_file(morpy_trace, app_dict, init_dir, ftypes, title)["file_path"]
+        file_path = morPy.dialog_sel_file(morpy_trace, app_dict, init_dir=init_dir,
+                        file_types=file_types, title=title)["file_path"]
     """
 
     try:
-        return ui_tk.dialog_sel_file(morpy_trace, app_dict, init_dir, ftypes, title)
+        return ui_tk.dialog_sel_file(morpy_trace, app_dict, init_dir, file_types, title)
 
     except Exception as e:
         import lib.fct as morpy_fct
@@ -834,7 +937,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
     :example:
         init_dir = "C:\"
         title = 'Select a directory...'
-        dir_path = morPy.dialog_sel_dir(morpy_trace, app_dict, init_dir, title)["dir_path"]
+        dir_path = morPy.dialog_sel_dir(morpy_trace, app_dict, init_dir=init_dir, title=title)["dir_path"]
     """
 
     try:

@@ -500,34 +500,56 @@ def loc_morpy() -> dict:
         # Area: lib.ui_tk.py
         # #################
 
+        # ui_tk.py - FileDirSelectTk._init(~)
+        'FileDirSelectTk_title': 'Selection Menu',
+
+        # ui_tk.py - FileDirSelectTk._setup_ui(~)
+        'FileDirSelectTk_img_fail': 'Failed to load image.',
+        'FileDirSelectTk_row_name': 'Row Name',
+        'FileDirSelectTk_img': 'Image',
+        'FileDirSelectTk_confirm': 'Confirm',
+
+        # ui_tk.py - GridChoiceTk._init(~)
+        'GridChoiceTk_title': 'morPy Grid Menu',
+
+        # ui_tk.py - GridChoiceTk._setup_ui(~)
+        'GridChoiceTk_img_fail': 'Failed to load image.',
+        'GridChoiceTk_path': 'Image Path',
+        'GridChoiceTk_tile': 'Tile',
+
         # ui_tk.py - ProgressTrackerTk._init(~)
         'ProgressTrackerTk_prog': 'Progress',
         'ProgressTrackerTk_overall': 'Overall Progress',
         'ProgressTrackerTk_curr': 'Current Stage',
         'ProgressTrackerTk_abort': 'Abort',
         'ProgressTrackerTk_close': 'Close',
-        'ProgressTrackerTk_done': 'All operations finished successfully.',
+
+        # ui_tk.py - ProgressTrackerTk._start_work_thread(~)
         'ProgressTrackerTk_start_work_thread_err': 'Exception in the worker thread.',
+
+        # ui_tk.py - ProgressTrackerTk.check_main_thread(~)
         'ProgressTrackerTk_check_main': 'UI must run in main thread. Currently in',
+
+        # ui_tk.py - ProgressTrackerTk._real_update_progress(~)
         'ProgressTrackerTk_exit_dirty': 'GUI ended ungracefully.',
 
         # #################
         # Area: lib.xl.py
         # #################
 
-        # xl.py - XlWorkbook._init(~)
-        'XlWorkbook_inst': 'MS Excel workbook instantiated.',
-        'XlWorkbook_wb': 'Workbook',
-        'XlWorkbook_path_invalid': 'The path to the workbook is invalid.',
-        'XlWorkbook_path': 'Path',
-        'XlWorkbook_inst_abort': 'Instance construction aborted.',
-        'XlWorkbook_not_create': 'File does not exist and was not created.',
-        'XlWorkbook_create': 'Create',
+        # xl.py - cl_xl_workbook._init(~)
+        'cl_xl_workbook_inst': 'MS Excel workbook instantiated.',
+        'cl_xl_workbook_wb': 'Workbook',
+        'cl_xl_workbook_path_invalid': 'The path to the workbook is invalid.',
+        'cl_xl_workbook_path': 'Path',
+        'cl_xl_workbook_inst_abort': 'Instance construction aborted.',
+        'cl_xl_workbook_not_create': 'File does not exist and was not created.',
+        'cl_xl_workbook_create': 'Create',
 
-        # xl.py - XlWorkbook._create_workbook(~)
+        # xl.py - cl_xl_workbook._create_workbook(~)
         'create_workbook_done': 'MS Excel workbook created.',
 
-        # xl.py - XlWorkbook._cell_ref_autoformat(~)
+        # xl.py - cl_xl_workbook._cell_ref_autoformat(~)
         'cell_ref_autoformat_1cell' : 'A single cell was added to the dictionary.',
         'cell_ref_autoformat_cl' : 'Cell',
         'cell_ref_autoformat_done' : 'A range of cells was added to the dictionary.',
@@ -535,17 +557,17 @@ def loc_morpy() -> dict:
         'cell_ref_autoformat_invalid' : 'The cell value is invalid. Autoformatting aborted.',
         'cell_ref_autoformat_cls' : 'Cells',
 
-        # xl.py - XlWorkbook.close_workbook(~)
+        # xl.py - cl_xl_workbook.close_workbook(~)
         'close_workbook_done': 'The workbook object was closed.',
         'close_workbook_path': 'Path',
 
-        # xl.py - XlWorkbook.activate_worksheet(~)
+        # xl.py - cl_xl_workbook.activate_worksheet(~)
         'activate_worksheet_done': 'The worksheet was successfully activated.',
         'activate_worksheet_nfnd': 'The requested sheet was not found.',
         'activate_worksheet_file': 'Workbook',
         'activate_worksheet_req_sht': 'Sheet requested',
 
-        # xl.py - XlWorkbook.read_cells(~)
+        # xl.py - cl_xl_workbook.read_cells(~)
         'read_cells_file' : 'File',
         'read_cells_sht' : 'Sheet',
         'read_cells_nfnd' : 'Could not find the requested worksheet.',
@@ -554,11 +576,11 @@ def loc_morpy() -> dict:
         'read_cells_cls' : 'Cells',
         'read_cells_no_range' : 'Missing cell range. Skipped reading cells.',
 
-        # xl.py - XlWorkbook.write_cells(~)
+        # xl.py - cl_xl_workbook.write_cells(~)
         'write_cells_done': 'Cells written to.',
         'write_cells_range': 'Range',
 
-        # xl.py - XlWorkbook.edit_worksheet(~)
+        # xl.py - cl_xl_workbook.edit_worksheet(~)
         'edit_worksheet_found' : 'The requested worksheet was found.',
         'edit_worksheet_nfnd' : 'Could not find the requested worksheet.',
         'edit_worksheet_file' : 'File',
@@ -573,7 +595,7 @@ def loc_morpy() -> dict:
         'edit_worksheet_rename_sheet_done' : 'Worksheet renamed.',
         'edit_worksheet_duplicate_sheet_done' : 'Worksheet duplicated.',
 
-        # xl.py - XlWorkbook.get_table_attributes(~)
+        # xl.py - cl_xl_workbook.get_table_attributes(~)
         'get_table_attributes_retr' : 'Retrieved all values of an MS Excel table.',
         'get_table_attributes_path' : 'Path',
         'get_table_attributes_sheet' : 'Sheet',
