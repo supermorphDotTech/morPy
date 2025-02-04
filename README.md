@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/27710e8b-258d-439c-a62c-593644db3577" alt="morPy_more_pie_02" style="max-width:50%; height:auto;">
+<img src="https://github.com/user-attachments/assets/27710e8b-258d-439c-a62c-593644db3577" alt="morPy_more_pie_02" width="700" height="700">
 
 More solutions. More insights. morPy.
 
@@ -7,7 +7,7 @@ Multiprocessing aided Python framework with integrated logging to database. Be t
 Feel free to comment, share and support this project.  
 Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with me.
 
-# v1.0.0c - Table of contents [≛](#4.) [⇩](#6.) <a name="toc"></a>
+# v1.0.0c - Table of contents [≛](#2.) [⇩](#6.) <a name="toc"></a>
 
 `1.` [Requirements and Dependencies](#1.)  
 `1.1` [Microsoft Windows](#1.1)  
