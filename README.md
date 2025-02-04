@@ -1,5 +1,4 @@
-[<img src="https://github.com/user-attachments/assets/0e92f76c-67db-4ff6-8e58-9ab77a9a6e8e" alt="supermorph_PixelSnake_logo_v001" width="812" height="182" class="jop-noMdConv">](https://www.supermorph.tech/)  
-<br/><br/><br/><br/><img src="https://github.com/user-attachments/assets/51fd6975-d4cd-4123-b708-552e8fee9c1a" alt="supermorph_morPy_github_v001" width="812" height="364" class="jop-noMdConv">
+<img src="https://github.com/user-attachments/assets/27710e8b-258d-439c-a62c-593644db3577" alt="morPy_more_pie_02" width="700" height="700">
 
 More solutions. More insights. morPy.
 
