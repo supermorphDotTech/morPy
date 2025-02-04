@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/27710e8b-258d-439c-a62c-593644db3577" alt="morPy_more_pie_02" width="700" height="700">
+<img src="https://github.com/user-attachments/assets/27710e8b-258d-439c-a62c-593644db3577" alt="morPy_more_pie_02" style="max-width:50%; height:auto;">
 
 More solutions. More insights. morPy.
 
