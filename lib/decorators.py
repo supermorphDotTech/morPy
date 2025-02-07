@@ -6,7 +6,6 @@ Author:     Bastian Neuwirth
 Descr.:     This module yields all decorators to be used with the morPy framework.
 """
 
-import sys
 import time
 
 from functools import wraps
@@ -32,26 +31,21 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, ve
     """
 
     import lib.msg as msg
-    import lib.fct as morpy_fct
 
-    try:
-        # Skip logging, if message is verbose and verbose is disabled
-        if verbose and app_dict["conf"].get("msg_verbose", False):
-            pass
-        else:
-            log_level = log_level.lower()
+    # Skip logging, if message is verbose and verbose is disabled
+    if verbose and app_dict["conf"].get("msg_verbose", False):
+        pass
+    else:
+        log_level = log_level.lower()
 
-            # Evaluate the message only when logging is demanded
-            if message and app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
-                task = (msg.log, morpy_trace, app_dict, log_level, message(), verbose)
+        # Evaluate the message only when logging is demanded
+        if message and app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+            task = (msg.log, morpy_trace, app_dict, log_level, message(), verbose)
 
-                # Enqueue the orchestrator task
-                app_dict["proc"]["morpy"]["process_q"].enqueue(
-                    morpy_trace, app_dict, priority=-100, task=task, autocorrect=False, is_process=False
-                )
-
-    except Exception as e:
-        morpy_fct.handle_exception_decorator(e)
+            # Enqueue the orchestrator task
+            app_dict["proc"]["morpy"]["process_q"].enqueue(
+                morpy_trace, app_dict, priority=-100, task=task, autocorrect=False, is_process=False
+            )
 
 def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
     r"""
@@ -73,20 +67,15 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callabl
     """
 
     import lib.msg as msg
-    import lib.fct as morpy_fct
 
-    try:
-        # Skip logging, if message is verbose and verbose is disabled
-        if verbose and app_dict["conf"].get("msg_verbose", False):
-            pass
-        else:
-            log_level = log_level.lower()
+    # Skip logging, if message is verbose and verbose is disabled
+    if verbose and app_dict["conf"].get("msg_verbose", False):
+        pass
+    else:
+        log_level = log_level.lower()
 
-            if app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
-                msg.log(morpy_trace, app_dict, log_level, message(), verbose)
-
-    except Exception as e:
-        morpy_fct.handle_exception_decorator(e)
+        if app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+            msg.log(morpy_trace, app_dict, log_level, message(), verbose)
 
 def metrics(func):
     r"""
@@ -102,8 +91,6 @@ def metrics(func):
         @metrics
         my_function_call(morpy_trace, app_dict, *args, **kwargs)
     """
-
-    import lib.fct as morpy_fct
 
     @wraps(func)
     def wrapper(*args, **kwargs):

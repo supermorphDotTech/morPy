@@ -175,8 +175,8 @@ class XlWorkbook:
                             "fill type" : None,         # Options: None|solid|darkGrid|darkTrellis|lightDown|lightGray
                                                         # > lightGrid|lightHorizontal|lightTrellis|lightUp
                                                         # > lightVertical|mediumGray
-                            "start color" : "307591",
-                            "end color" : "67CCCC",
+                            "start color" : "307591",   # This must exist in order for background to work
+                            "end color" : "67CCCC",     # This must exist in order for background to work
                         },
                         "border" : {
                             "edge" : "outline",         # Options: left|right|top|bottom|diagonal|outline
@@ -296,7 +296,7 @@ class XlWorkbook:
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook.__init__(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -340,7 +340,7 @@ class XlWorkbook:
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook._init(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -348,6 +348,12 @@ class XlWorkbook:
 
         try:
             self.wb_path = morpy_fct.pathtool(workbook)["out_path"]
+
+            # Opening MS Excel workbook.
+            log(morpy_trace, app_dict, "info",
+            lambda: f'{app_dict["loc"]["morpy"]["XlWorkbook_construct"]}\n'
+                    f'{app_dict["loc"]["morpy"]["XlWorkbook_wb"]}: {self.wb_path}')
+
             self.wb_sheets = []
             self.active_sheet = None
             self.active_sheet_title = ""
@@ -428,7 +434,7 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook._create_workbook(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -479,7 +485,7 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook._update_meta(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -515,10 +521,10 @@ class XlWorkbook:
                             table_list.append(table)
 
                         # Create a dictionary of tables and ranges
-                        table_range = {table: table_range} if not table_range else table_range.update({table: table_range})
+                        table_range = {table: table_range} if not isinstance(table_range, dict) else table_range.update({table: table_range})
 
                         # Create a dictionary of tables and sheets
-                        table_sheet = {table: sheet} if not table_sheet else table_sheet.update({table: sheet})
+                        table_sheet = {table: sheet} if not isinstance(table_sheet, dict) else table_sheet.update({table: sheet})
 
                 # Store table ranges table sheets
                 self.tables_ranges = table_range if table_range else {}
@@ -562,7 +568,7 @@ class XlWorkbook:
         """
     
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook._cell_ref_autoformat(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
     
@@ -574,7 +580,7 @@ class XlWorkbook:
     
             # Loop through every list item
             for cl in cell_range:
-    
+
                 # Harmonize cell letters
                 cl = cl.upper()
     
@@ -749,7 +755,7 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook.save_workbook(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -803,7 +809,7 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook.close_workbook(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -856,7 +862,7 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook.activate_worksheet(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -902,15 +908,15 @@ class XlWorkbook:
 
     @metrics
     def read_cells(self, morpy_trace: dict, app_dict: dict, cell_range: list=None,
-                   cell_styles: bool=False, worksheet: str=None) -> dict:
-
+                   cell_styles: bool=False, worksheet: str=None, gui=None) -> dict:
         r"""
         Reads the cells of MS Excel workbooks. Overlapping ranges will get auto-formatted
         to ensure every cell is addressed only once.
 
         :param morpy_trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
-        :param cell_range: The cell or range of cells to read from. Accepted formats:
+        :param cell_range: The cell or range of cells to read from. If cell range is None, will read all cells
+            inside the matrix of max_row and max_column (also empty ones). formats:
             - not case-sensitive
             - Single cell: ["A1"]
             - Range of cells: ["A1:ZZ1000"]
@@ -918,6 +924,7 @@ class XlWorkbook:
         :param cell_styles: If True, cell styles will be retrieved. If False, get value only.
         :param worksheet: Name of the worksheet, where the cell is located. If None, the
             active sheet is addressed.
+        :param gui: User Interface reference. Automatically referenced by morPy.ProgressTrackerTk()
 
         :return: dict
             morpy_trace: Operation credentials and tracing.
@@ -984,7 +991,7 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook.read_cells(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -995,17 +1002,13 @@ class XlWorkbook:
             # Update metadata of the workbook instance
             self._update_meta(morpy_trace, app_dict)
 
-            if not cell_range:
-                # Missing cell range. Skipped reading cells.
-                raise ValueError(f'{app_dict["loc"]["morpy"]["read_cells_no_range"]}')
-
             # Check if sheet is already active
             if self.active_sheet_title == worksheet:
                 worksheet_obj = self.active_sheet
 
             # Set the requested sheet active
             else:
-                # Check is sheet exists
+                # Check if sheet exists
                 if worksheet in self.wb_sheets:
                     self.activate_worksheet(morpy_trace, app_dict, worksheet)
                     worksheet_obj = self.active_sheet
@@ -1023,6 +1026,12 @@ class XlWorkbook:
                         f'{app_dict["loc"]["morpy"]["read_cells_sht"]}: {worksheet}\n'
                         f'{app_dict["loc"]["morpy"]["read_cells_av_shts"]}: {self.wb_sheets}'
                     )
+
+            if not cell_range:
+                cell_range = [
+                    f'{openpyxl.utils.cell.get_column_letter(self.active_sheet.min_column)}{self.active_sheet.min_row}:'
+                    f'{openpyxl.utils.cell.get_column_letter(self.active_sheet.max_column)}{self.active_sheet.max_row}'
+                ]
 
             # Autoformat cell reference(s)
             cl_dict = self._cell_ref_autoformat(morpy_trace, app_dict, cell_range)["cl_dict"]
@@ -1092,10 +1101,10 @@ class XlWorkbook:
 
             # The worksheet was read from.
             log(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["read_cells_read"]}\n'
-                    f'{app_dict["loc"]["morpy"]["read_cells_file"]}: {self.wb_path}\n'
-                    f'{app_dict["loc"]["morpy"]["read_cells_sht"]}: {worksheet}\n'
-                    f'{app_dict["loc"]["morpy"]["read_cells_cls"]}: {cell_range}')
+            lambda: f'{app_dict["loc"]["morpy"]["read_cells_read"]}\n'
+                f'{app_dict["loc"]["morpy"]["read_cells_file"]}: {self.wb_path}\n'
+                f'{app_dict["loc"]["morpy"]["read_cells_sht"]}: {worksheet}\n'
+                f'{app_dict["loc"]["morpy"]["read_cells_cls"]}: {cell_range}')
 
             check = True
 
@@ -1215,7 +1224,7 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'write_ranges(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1339,7 +1348,7 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'xl'
+        module = 'lib.xl'
         operation = 'XlWorkbook.get_table_attributes(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1403,7 +1412,7 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'xl'
+    module = 'lib.xl'
     operation = 'table_opyxl_datb_dict(~)'
     morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 

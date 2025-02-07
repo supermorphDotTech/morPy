@@ -128,8 +128,8 @@ def ProgressTracker(morpy_trace: dict, app_dict: dict, description: str=None, to
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
-def FileDirSelectTk(morpy_trace: dict, app_dict: dict, rows_data: dict, title: str = None,
-                 icon_data: dict = None):
+def FileDirSelectTk(morpy_trace: dict, app_dict: dict, rows_data: dict, title: str=None,
+                 icon_data: dict=None):
     r"""
     A tkinter GUI for file and directory selection. Each row represents a file or directory selection.
     Optionally displays a top row of icons (display only).
@@ -211,11 +211,10 @@ def FileDirSelectTk(morpy_trace: dict, app_dict: dict, rows_data: dict, title: s
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
-def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None, frame_width: int = 1080,
-                 frame_height: int = 0, headline_total: str = None, headline_stage: str = None,
-                 headline_font_size: int = 10, description_stage: str=None, description_font_size: int=8,
-                 font: str = "Arial", stages: int = 1, max_per_stage: int = 0, console: bool=False,
-                 auto_close: bool = False, work=None):
+def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str=None, frame_width: int=None,
+              frame_height: int=None, headline_total: str=None, headline_font_size: int=10,
+              detail_description_on: bool=False, description_font_size: int=8, font: str="Arial",
+              stages: int=1, console: bool=False, auto_close: bool=False, work=None):
     r"""
     A progress tracking GUI using tkinter to visualize the progress of a background task. The GUI can
     be adjusted with the arguments during construction.
@@ -224,28 +223,19 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
     :param app_dict: morPy global dictionary containing app configurations
     :param frame_title: Window frame title as shown in the title bar.
     :param frame_width: Frame width in pixels.
-                        Defaults to 1080.
+                        Defaults to 1/3rd of main monitor width.
     :param frame_height: Frame height in pixels.
                          Defaults to a value depending on which widgets are displayed.
     :param headline_total: Descriptive name for the overall progress.
                            Defaults to morPy localization.
-    :param headline_stage: Descriptive name for the actual stage.
-                          Defaults to morPy localization.
     :param headline_font_size: Font size for both, overall and stage descriptive names.
                                Defaults to 10.
-    :param description_stage: Description or status. Will not be shown if None at construction.
-                             Defaults to None.
     :param description_font_size: Font size for description/status.
-                                  Defaults to 10.
+                                  Defaults to 8.
     :param font: Font to be used in the GUI, except for the title bar and console widget.
                  Defaults to "Arial".
     :param stages: Sum of stages until complete. Will not show progress bar for overall progress if equal to 1.
-                  Defaults to 1.
-    :param max_per_stage: This is the maximum value of the stage progress. Set it to 0 to turn off the stage progress.
-                         It represents the maximum value the stage progress will reach until 100%, which is
-                         determined by which value you choose to increment the progress with (defaults to 1 per
-                         increment). A value of 10 for example amounts to 10% per increment.
-                         Defaults to 0.
+                   Defaults to 1.
     :param console: If True, will reroute console output to GUI.
                     Defaults to False.
     :param auto_close: If True, window automatically closes at 100%. If False, user must click "Close".
@@ -256,30 +246,43 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
         .run(morpy_trace: dict, app_dict: dict)
             Start the GUI main loop.
 
-        .update_progress(morpy_trace: dict, app_dict: dict, current: float = None, max_per_stage: int = None)
+        .begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: int = 1, headline_stage: str = None,
+                    detail_description: str=None)
+            Start a new stage of progress. Will set the stage prior to 100%, if
+            not already the case.
+
+            :param stage_limit: This is the maximum value of the stage progress. Set it to 0 to turn off the stage progress.
+                                It represents the maximum value the stage progress will reach until 100%, which is
+                                determined by which value you choose to increment the progress with (defaults to 1 per
+                                increment). A value of 10 for example amounts to 10% per increment.
+                                Defaults to 1.
+            :param headline_stage: Descriptive name for the actual stage.
+                                   Defaults to morPy localization.
+            :param detail_description: Description or status. Will
+                                       not be shown if None at construction.
+                                       Defaults to None.
+            :param ticks: [optional] Percentage of total to log the progress. I.e. at ticks=10.7 at every
+                          10.7% progress exceeded the exact progress will be logged. Defaults to 0.01.
+
+        .update_progress(morpy_trace: dict, app_dict: dict, current: float = None, stage_limit: int = None)
             Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
             switch button text to "Close" and stop console redirection. Enqueues a UI request for the
             main thread to process. Safe to call from any thread.
 
             :param current: Current progress count. If None, each call of this method will add +1
                 to the progress count. Defaults to None.
-            :param max_per_stage: If the current stage to be finished has got a different amount of increments than the former
-                                 stage, this value needs to be set when starting a new stage.
-
-                                 This is the maximum value of the stage progress. Set it to 0 to turn off the stage progress.
-                                 It represents the maximum value the stage progress will reach until 100%, which is
-                                 determined by which value you choose to increment the progress with (defaults to 1 per
-                                 increment). A value of 10 for example amounts to 10% per increment.
-                                 Defaults to 0.
 
         .update_text(morpy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
-                    description_stage: str = None)
+                    detail_description: str = None)
             Update the headline texts or description at runtime. Enqueues a UI request for the
             main thread to process. Safe to call from any thread.
 
             :param headline_total: If not None, sets the overall progress headline text.
             :param headline_stage: If not None, sets the stage progress headline text.
-            :param description_stage: If not None, sets the description text beneath the stage headline.
+            :param detail_description: If not None, sets the description text beneath the stage headline.
+
+        .end_stage(self, morpy_trace: dict, app_dict: dict)
+            End the current stage by setting it to 100%.
 
     :example:
         from functools import partial
@@ -297,10 +300,15 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
 
             # Loop to demo amount of stages
             for i in range(outer_loop_count):
+                # Begin a stage
+                headline = "Currently querying"
+                description = "Starting stage..."
+                progress.begin_stage(morpy_trace, app_dict, stage_limit=inner_loop_count, headline_stage=headline,
+                                     detail_description=description)
+
                 # Update Headline for overall progress
                 if gui:
                     gui.update_text(morpy_trace, app_dict, headline_stage=f'Stage {i}')
-                    gui.update_progress(morpy_trace, app_dict, current=0, max_per_stage=10) # Setup stage progress, "max_per_stage" may be dynamic
 
                 time.sleep(.5) # Wait time, so progress can be viewed (mocking execution time)
 
@@ -310,17 +318,12 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
 
                     # Update progress and text for actual stage
                     if gui:
-                        gui.update_text(morpy_trace, app_dict, description_stage=f'This describes progress no. {j} of the stage.')
+                        gui.update_text(morpy_trace, app_dict, detail_description=f'This describes progress no. {j} of the stage.')
                         gui.update_progress(morpy_trace, app_dict)
 
         if name == "__main__":
             # Run function with GUI. For full customization during construction see the
             # ProgressTrackerTk.__init__() description.
-
-            # In this example the outer and inner loop stop values are set two times manually. However, you may
-            # want to set it only a single time and point to these, but that depends on the use case.
-            outer_loop_count = 2 # same as the value set in my_func()
-            inner_loop_count = 10 # same as the value set in my_func()
 
             # Define a callable to be progress tracked
             work = partial(my_func, morpy_trace, app_dict)
@@ -328,9 +331,8 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
             # Construct the GUI
             progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
                 frame_title="My Demo Progress GUI",
-                description_stage="Generic Progress stage",
-                stages=outer_loop_count,
-                max_per_stage=inner_loop_count,
+                stages=2,
+                detail_description=True,
                 work=work)
 
             # Start GUI in main thread and run "work" in separate thread
@@ -339,11 +341,9 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
 
     try:
         return ui_tk.ProgressTrackerTk(morpy_trace, app_dict, frame_title=frame_title, frame_width=frame_width,
-                frame_height=frame_height, headline_total=headline_total, headline_stage=headline_stage,
-                headline_font_size=headline_font_size, description_stage=description_stage,
-                description_font_size=description_font_size, font=font, stages=stages,
-                max_per_stage=max_per_stage, console=console, auto_close=auto_close, work=work,
-            )
+                       frame_height=frame_height, headline_total=headline_total, headline_font_size=headline_font_size,
+                       detail_description_on=detail_description_on, description_font_size=description_font_size,
+                       font=font, stages=stages, console=console, auto_close=auto_close, work=work)
 
     except Exception as e:
         import lib.fct as morpy_fct
@@ -358,7 +358,7 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str = None
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
 
-def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile_size: tuple=(256, 256),
+def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile_size: tuple=None,
                  icon_data: dict=None):
     """
     A tkinter GUI displaying a dynamic grid of image tiles. Each tile shows an image
@@ -379,7 +379,8 @@ def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile
             ...
         }
     :param title: Title of the tkinter window. Defaults to morPy localization.
-    :param default_tile_size: Default (width, height) if a tile does not specify its own size.
+    :param default_tile_size: Default (width, height) if a tile does not specify its own size. Defaults to
+                              a fraction of main monitor height.
     :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
         Expected structure:
         {
@@ -520,8 +521,8 @@ def XlWorkbook(morpy_trace: dict, app_dict: dict, workbook: str, create: bool=Fa
                                 "fill type" : None,         # Options: None|solid|darkGrid|darkTrellis|lightDown|lightGray
                                                             # > lightGrid|lightHorizontal|lightTrellis|lightUp
                                                             # > lightVertical|mediumGray
-                                "start color" : "307591",
-                                "end color" : "67CCCC",
+                                "start color" : "307591",   # This must exist in order for background to work
+                                "end color" : "67CCCC",     # This must exist in order for background to work
                             },
                             "border" : {
                                 "edge" : "outline",         # Options: left|right|top|bottom|diagonal|outline
@@ -695,7 +696,7 @@ def XlWorkbook(morpy_trace: dict, app_dict: dict, workbook: str, create: bool=Fa
                 f'{type(e).__name__}: {e}')
 
 def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
-             print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None):
+             print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None, gui=None):
     r"""
     This function reads a csv file and returns a dictionary of
     dictionaries. The header row, first row of data and delimiter
@@ -710,6 +711,8 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
     :param log_progress: If True, logs the progress.
     :param progress_ticks: Percentage of total to log the progress. I.e. at ticks=10.7 at every
         10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
+        If gui is not None, may overwrite this setting.
+    :param gui: User Interface reference. Automatically referenced by morPy.ProgressTrackerTk()
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -744,7 +747,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
 
     try:
         return csv.csv_read(morpy_trace, app_dict, src_file_path=src_file_path, delimiter=delimiter,
-            print_csv_dict=print_csv_dict, log_progress=log_progress, progress_ticks=progress_ticks)
+            print_csv_dict=print_csv_dict, log_progress=log_progress, progress_ticks=progress_ticks, gui=gui)
 
     except Exception as e:
         import lib.fct as morpy_fct
@@ -1071,7 +1074,7 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str):
         check: Indicates whether the function executed successfully (True/False).
 
     :example:
-        result = fso_delete_file(morpy_trace, app_dict, "path/to/file_to_delete.txt")
+        result = morPy.fso_delete_file(morpy_trace, app_dict, "path/to/file_to_delete.txt")
     """
 
     try:
@@ -1362,7 +1365,7 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
     :example:
         string = "apple.orange.banana"
         split = r"\\."
-        result = regex_split(morpy_trace, app_dict, string, split)["result"]
+        result = morPy.regex_split(morpy_trace, app_dict, string, split)["result"]
     """
 
     try:

@@ -241,8 +241,8 @@ def settings(start_time=None):
     # Set the app icon (must be .ico)
     app_icon = pathlib.Path(os.path.join(f'{main_path}', 'res', 'icons', 'smph.ico'))
 
-    # Set the GUI background
-    app_banner = pathlib.Path(os.path.join(f'{main_path}', 'res', 'banners', 'smph.png'))
+    # Set a GUI banner
+    app_banner = pathlib.Path(os.path.join(f'{main_path}', 'res', 'banners', 'supermorph.png'))
 
     return{
         'language' : language,

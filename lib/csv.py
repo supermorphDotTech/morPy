@@ -7,16 +7,17 @@ Descr.:     Module of operations concerning csv-files.
 """
 
 import lib.fct as morpy_fct
-import lib.common as common
 import lib.xl as xl
 from lib.decorators import metrics, log
+from lib.common import ProgressTracker
+from lib.ui_tk import ProgressTrackerTk
 
 import sys
 from openpyxl.utils.cell import get_column_letter
 
 @metrics
 def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
-             print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None) -> dict:
+             print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None, gui=None) -> dict:
     r"""
     This function reads a csv file and returns a dictionary of
     dictionaries. The header row, first row of data and delimiter
@@ -31,6 +32,8 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
     :param log_progress: If True, logs the progress.
     :param progress_ticks: Percentage of total to log the progress. I.e. at ticks=10.7 at every
         10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
+        If gui is not None, may overwrite this setting.
+    :param gui: User Interface reference. Automatically referenced by morPy.ProgressTrackerTk()
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -100,7 +103,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
 
         if src_file_isfile and src_file_exists and src_file_ext == ".csv":
             r_tot = 0 # Total row counter
-            # Import the csv file as is
+            # Import the csv file as is and determine length
             with open(src_file_path, 'r') as csv_file:
                 for line in csv_file:
                     r_tot +=1
@@ -109,16 +112,31 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
             # Track progress
             if log_progress:
                 prog_total = len(delimiters) * r_tot
-                csv_read_progress = common.ProgressTracker(morpy_trace, app_dict,
-                    description='CSV Read Progress', total=prog_total, ticks=progress_ticks)
+                if gui:
+                    gui.begin_stage(morpy_trace, app_dict,
+                                    stage_limit=prog_total,
+                                    headline_stage=app_dict["loc"]["morpy"]["csv_read_start"],
+                                    detail_description=app_dict["loc"]["morpy"]["csv_read_stage"],
+                                    ticks=25)
+                    gui_msg_row = app_dict["loc"]["morpy"]["csv_read_row"]
+                else:
+                    csv_read_progress = ProgressTracker(morpy_trace, app_dict,
+                        description=app_dict["loc"]["morpy"]["csv_read_stage"], total=prog_total, ticks=progress_ticks)
 
             # Determine delimiters, header and data rows
             for d in delimiters:
                 r_det = 0 # Row counter for delimiter check
                 for row, line in csv_copy_dict.items():
                     r_det +=1
-                    if csv_read_progress:
-                        csv_read_progress.update(morpy_trace, app_dict, current=r_det)
+
+                    # Progress Tracking
+                    if log_progress:
+                        if gui:
+                            gui.update_text(morpy_trace, app_dict, detail_description=f'{gui_msg_row} {r_det}')
+                            gui.update_progress(morpy_trace, app_dict, current=r_det)
+                        else:
+                            csv_read_progress.update(morpy_trace, app_dict, current=r_det)
+
                     line = line.rstrip()
                     if d in line:
                         # Check, if header needs to be found
@@ -318,7 +336,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
                         lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_fail"]}')
 
             # Instantiate progress logging
-            progress = common.ProgressTracker(morpy_trace, app_dict,
+            progress = ProgressTracker(morpy_trace, app_dict,
                                           description=f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_descr"]}',
                                           total=total_prog_count,
                                           ticks=progress_ticks)
