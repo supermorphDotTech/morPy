@@ -1055,6 +1055,8 @@ class ProgressTrackerTk:
                            Defaults to morPy localization.
     :param headline_font_size: Font size for both, overall and stage descriptive names.
                                Defaults to 10.
+    :param detail_description_on: If True, a widget for the detail messages will be drawn to GUI.
+                                  Defaults to False.
     :param description_font_size: Font size for description/status.
                                   Defaults to 8.
     :param font: Font to be used in the GUI, except for the title bar and console widget.
@@ -1071,7 +1073,7 @@ class ProgressTrackerTk:
         .run(morpy_trace: dict, app_dict: dict)
             Start the GUI main loop.
 
-        .begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: int = 1, headline_stage: str = None,
+        .begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
                     detail_description: str=None)
             Start a new stage of progress. Will set the stage prior to 100%, if
             not already the case.
@@ -1154,14 +1156,14 @@ class ProgressTrackerTk:
             work = partial(my_func, morpy_trace, app_dict)
 
             # Construct the GUI
-            progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
+            gui = morPy.ProgressTrackerTk(morpy_trace, app_dict,
                 frame_title="My Demo Progress GUI",
                 stages=2,
-                detail_description=True,
+                detail_description_on=True,
                 work=work)
 
             # Start GUI in main thread and run "work" in separate thread
-            progress.run(morpy_trace, app_dict)
+            gui.run(morpy_trace, app_dict)
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, frame_title: str=None, frame_width: int=None,
@@ -1215,6 +1217,8 @@ class ProgressTrackerTk:
                                Defaults to morPy localization.
         :param headline_font_size: Font size for both, overall and stage descriptive names.
                                    Defaults to 10.
+        :param detail_description_on: If True, a widget for the detail messages will be drawn to GUI.
+                                      Defaults to False.
         :param description_font_size: Font size for description/status.
                                       Defaults to 8.
         :param font: Font to be used in the GUI, except for the title bar and console widget.
@@ -1234,7 +1238,7 @@ class ProgressTrackerTk:
             check: Indicates whether initialization completed without errors
 
         :example:
-            progress = morPy.ProgressTrackerTk(morpy_trace: dict, app_dict,
+            gui = morPy.ProgressTrackerTk(morpy_trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 detail_description="Generic Progress stage",
                 stages=outer_loop_count,
@@ -1287,7 +1291,7 @@ class ProgressTrackerTk:
 
             # Calculate factors for frame height
             sys_height = app_dict["sys"]["resolution_height"]
-            height_factor = sys_height // 32768 # Height of main monitor divided by (1024px * 32dpi)
+            height_factor = sys_height * .03125 # Height of main monitor * 32dpi // 1024px
             if not frame_height:
                 self.frame_height = 0
                 self.frame_height_sizing = True
@@ -1669,6 +1673,8 @@ class ProgressTrackerTk:
                     self._real_update_text(morpy_trace, app_dict, **kwargs)
                 elif call_type == "update_progress":
                     self._real_update_progress(morpy_trace, app_dict, **kwargs)
+                elif call_type == "begin_stage":
+                    self._real_begin_stage(morpy_trace, app_dict, **kwargs)
 
             # Only schedule the next loop if still alive
             if not self.done and self.root.winfo_exists():
@@ -1736,7 +1742,7 @@ class ProgressTrackerTk:
         }
 
     @metrics
-    def begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: int = 1, headline_stage: str = None,
+    def begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
                     detail_description: str=None, ticks: float=.01):
         r"""
         Start a new stage of progress. Will set the stage prior to 100%, if
@@ -1778,15 +1784,81 @@ class ProgressTrackerTk:
         try:
             # Prevent updates after the GUI is closed.
             if not self.done:
-                if self.stages_finished and self.stage_abs < 100.0:
-                    self._real_update_progress(morpy_trace, app_dict, current=ticks)
+
+                call_kwargs = {
+                    "stage_limit" : stage_limit,
+                    "detail_description" : detail_description,
+                    "ticks" : ticks
+                }
+                self.ui_calls.put(("begin_stage", call_kwargs))
+
+            check = True
+
+        except Exception as e:
+            log(morpy_trace, app_dict, "error",
+            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
+                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
+                    f'{type(e).__name__}: {e}')
+
+        return {
+            "morpy_trace" : morpy_trace,
+            "check" : check,
+        }
+
+    @metrics
+    def _real_begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
+                    detail_description: str=None, ticks: float=.01):
+        r"""
+        Start a new stage of progress. Will set the stage prior to 100%, if
+        not already the case.
+
+        :param morpy_trace: Operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+        :param stage_limit: This is the maximum value of the stage progress. Set it to 0 to turn off the stage progress.
+                            It represents the maximum value the stage progress will reach until 100%, which is
+                            determined by which value you choose to increment the progress with (defaults to 1 per
+                            increment). A value of 10 for example amounts to 10% per increment.
+                            Defaults to 1.
+        :param headline_stage: Descriptive name for the actual stage.
+                               Defaults to morPy localization.
+        :param detail_description: Description or status. Will
+                                   not be shown if None at construction.
+                                   Defaults to None.
+        :param ticks: [optional] Percentage of total to log the progress. I.e. at ticks=10.7 at every
+                      10.7% progress exceeded the exact progress will be logged. Defaults to 0.01.
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether initialization completed without errors
+
+        :example:
+            # Set up the next stage
+            headline = "Currently querying"
+            description = "Starting stage..."
+            progress.begin_stage(morpy_trace, app_dict, stage_limit=10, headline_stage=headline,
+            detail_description=description)
+        """
+
+        module = 'ui_tk'
+        operation = 'ProgressTrackerTk.begin_stage(~)'
+        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+
+        check = False
+
+        try:
+            # Prevent updates after the GUI is closed.
+            if not self.done:
+                # Try resetting progress
+                if hasattr(self, "stage_progress_tracker"):
+                    self._real_update_progress(morpy_trace, app_dict, current=0)
 
                 # Stage headline
                 self.headline_stage_nocol = (f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_curr"]}'
                                  if not headline_stage else f'{headline_stage}')
                 # Finalize stage headline
-                headline_stage = f'{self.headline_stage_nocol}:'
+                self.headline_stage = f'{self.headline_stage_nocol}:'
 
+                self.detail_description = detail_description
                 self.stage_limit = stage_limit
 
                 # Construct the stage progress tracker
@@ -1797,10 +1869,13 @@ class ProgressTrackerTk:
 
                 # Send text updates to the queue
                 call_kwargs = {
-                    "headline_stage" : headline_stage,
-                    "detail_description" : detail_description,
+                    "headline_stage" : self.headline_stage_nocol,
+                    "detail_description" : self.detail_description,
                 }
                 self.ui_calls.put(("update_text", call_kwargs))
+
+                # Enforce an update on the GUI
+                self._enforce_update()
 
             check = True
 
@@ -1968,7 +2043,7 @@ class ProgressTrackerTk:
             else:
                 # 1) stage progress
                 self.stage_info = self.stage_progress_tracker.update(morpy_trace, app_dict, current=current)
-                self.stage_abs = self.stage_info["prog_abs"]  # 0..100.0%
+                self.stage_abs = self.stage_info["prog_abs"]  # Absolute float value representing 0..100%
 
                 if self.stage_progress is not None and self.stage_abs:
                     self.stage_progress["value"] = self.stage_abs

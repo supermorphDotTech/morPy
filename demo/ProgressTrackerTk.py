@@ -6,7 +6,7 @@ Author:     Bastian Neuwirth
 Descr.:     This module demonstrates how to use lib.ui_tk.ProgressTrackerTk()
 """
 
-import lib.morPy as morPy
+import morPy
 from lib.decorators import metrics, log
 
 import sys
@@ -52,9 +52,7 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
                                          frame_title="Progress Demo",
                                          stages=stages,
-                                         headline_stage="Stage 1",
-                                         description_stage="Currently at 0",
-                                         max_per_stage=total_rep,
+                                         detail_description_on=True,
                                          console=False,
                                          auto_close=True,
                                          work=task  # run task in a background thread
@@ -81,7 +79,7 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
     }
 
 @metrics
-def arbitrary_task(morpy_trace, app_dict, stages: int=0, total_rep: int=0, gui=None):
+def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: int=0, gui=None):
     r"""
     This function runs the entire app using user input to specify
     the actions performed.
@@ -111,25 +109,26 @@ def arbitrary_task(morpy_trace, app_dict, stages: int=0, total_rep: int=0, gui=N
         if not morpy_trace or not app_dict:
             raise RuntimeError
 
-        tmp_val = 0
-        lst = []
-
         for stage in range(1, stages + 1):
-            i = 0
-            # Start new stage
-            gui.update_text(morpy_trace, app_dict, headline_stage=f'Stage {stage}', description_stage=f'Currently at {i} - tmp_val is {tmp_val}')
-            gui.update_progress(morpy_trace, app_dict, current=0)
-            while i < total_rep:
-                i += 1
+            # Begin a stage
+            headline = f'Running Stage {stage}'
+            description = "Starting stage..."
+            gui.begin_stage(morpy_trace, app_dict, stage_limit=total_rep, headline_stage=headline,
+                                 detail_description=description)
+
+            # Prepare the list to append to
+            lst = []
+
+            for i in range(1, total_rep + 1):
                 tmp_val = 0
                 while tmp_val < total_rep:
                     tmp_val += sqrt(i) + tmp_val
                     lst.append(tmp_val)
                     if gui:
-                        gui.update_text(morpy_trace, app_dict, description_stage=f'Currently at {i} - tmp_val is {tmp_val}')
+                        gui.update_text(morpy_trace, app_dict, detail_description=f'Currently at {i} - tmp_val is {tmp_val}')
                 if gui:
-                    gui.update_text(morpy_trace, app_dict, description_stage=f'Currently at {i} - tmp_val is {tmp_val}')
-                    gui.update_progress(morpy_trace, app_dict, current=i)
+                    gui.update_text(morpy_trace, app_dict, detail_description=f'Currently at {i} - tmp_val is {tmp_val}')
+                    gui.update_progress(morpy_trace, app_dict)
 
         # No localization for demo module
         log(morpy_trace, app_dict, "info",

@@ -230,6 +230,8 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str=None, 
                            Defaults to morPy localization.
     :param headline_font_size: Font size for both, overall and stage descriptive names.
                                Defaults to 10.
+    :param detail_description_on: If True, a widget for the detail messages will be drawn to GUI.
+                                  Defaults to False.
     :param description_font_size: Font size for description/status.
                                   Defaults to 8.
     :param font: Font to be used in the GUI, except for the title bar and console widget.
@@ -246,7 +248,7 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str=None, 
         .run(morpy_trace: dict, app_dict: dict)
             Start the GUI main loop.
 
-        .begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: int = 1, headline_stage: str = None,
+        .begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
                     detail_description: str=None)
             Start a new stage of progress. Will set the stage prior to 100%, if
             not already the case.
@@ -329,14 +331,14 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str=None, 
             work = partial(my_func, morpy_trace, app_dict)
 
             # Construct the GUI
-            progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
+            gui = morPy.ProgressTrackerTk(morpy_trace, app_dict,
                 frame_title="My Demo Progress GUI",
                 stages=2,
-                detail_description=True,
+                detail_description_on=True,
                 work=work)
 
             # Start GUI in main thread and run "work" in separate thread
-            progress.run(morpy_trace, app_dict)
+            gui.run(morpy_trace, app_dict)
     """
 
     try:

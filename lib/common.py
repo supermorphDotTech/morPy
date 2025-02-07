@@ -539,6 +539,7 @@ class ProgressTracker:
                 self.ticks = ticks
 
             self.total = total
+            self.ticks_lst = []
 
             # self.ticks_rel = self.ticks / 100
             # Determine relative progress ticks

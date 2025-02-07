@@ -6,7 +6,7 @@ Author:     AUTHOR
 Descr.:     DESCRIPTION
 """
 
-import lib.morPy as morPy
+import morPy
 import lib.mp as mp
 from lib.decorators import metrics, log
 
