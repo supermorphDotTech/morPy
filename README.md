@@ -7,27 +7,44 @@ Multiprocessing aided Python framework with integrated logging to database. Be t
 Feel free to comment, share and support this project.  
 Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with me.
 
-# v1.0.0c - Table of contents [≛](#2.) [⇩](#6.) <a name="toc"></a>
+# v1.0.0c - Table of contents [≛](#2.) [⇩](#7.) <a name="toc"></a>
 
 `1.` [Requirements and Dependencies](#1.)  
-`1.1` [Microsoft Windows](#1.1)  
-`1.1.1` [Software Requirements](#1.1.1)  
-`1.1.2` [Setup Guidance](#1.1.2)  
-`1.1.3` [Virtual Environment](#1.1.3)  
-`1.1.3.1` [Basic Setup](#1.1.3.1)  
-`1.1.3.2` [Install Dependencies](#1.1.3.2)  
-`1.1.3.3` [Copy Packages to Virtual Environment](#1.1.3.3)  
+└─│`1.1` [Microsoft Windows](#1.1)  
+&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`1.1.1` [Software Requirements](#1.1.1)  
+&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`1.1.2` [Setup Guidance](#1.1.2)  
+&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`1.1.3` [Virtual Environment](#1.1.3)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`1.1.3.1` [Basic Setup](#1.1.3.1)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`1.1.3.2` [Install Dependencies](#1.1.3.2)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`1.1.3.3` [Copy Packages to Virtual Environment](#1.1.3.3)  
 `2.` [Versioning - α.β.γλ](#2.)  
 `3.` [Parallelization](#3.)  
 `4.` [≛ Shared App Dictionary](#4.)  
-`4.1` [Introduction](#4.1)  
-`4.2` [Navigating the App Dictionary](#4.2)  
-`4.2.1` [Categorization & Sub-Dictionaries](#4.2.1)  
-`4.2.2` [App Dictionary Map](#4.2.2)  
+└─│`4.1` [Introduction](#4.1)  
+└─│`4.2` [Navigating the App Dictionary](#4.2)  
+&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`4.2.1` [Categorization & Sub-Dictionaries](#4.2.1)  
+&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`4.2.2` [App Dictionary Map](#4.2.2)  
 `5.` [Dependency Visualization](#5.)  
-`5.1` [Setup Dependency Visualization (Microsoft Windows)](#5.1)  
-`5.2` [Visualize Dependencies (Microsoft Windows)](#5.2)  
-`6.` [Abbreviations](#6.)
+└─│`5.1` [Setup Dependency Visualization (Microsoft Windows)](#5.1)  
+└─│`5.2` [Visualize Dependencies (Microsoft Windows)](#5.2)  
+`6.` [Dependency Analysis](#6.)  
+└─│`6.1` [Scan installed packages against known vulnerabilities](#6.1)  
+&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`6.1.1` [Preparation](#6.1.1)  
+&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`6.1.2` [Testing](#6.1.2)  
+└─│`6.2` [Security Guidance](#6.2)  
+&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`6.2.1` [Constant Security checks in productive environments](#6.2.1)  
+`7.` [Abbreviations](#7.)  
 
 # 1\. Requirements and Dependencies [⇧](#toc) <a name="1."></a>
 
@@ -539,7 +556,68 @@ pydeps --cluster --rankdir "LR" --include-missing ".\"
  pydeps --cluster --rankdir "LR" --include-missing --show-cycles ".\"
 ```
 
-# 6\. Abbreviations [⇧](#toc) <a name="6."></a>
+# 6. Dependency Analysis [⇧](#toc) <a name="6."></a>
+
+## 6.1 Scan installed packages against known vulnerabilities [⇧](#toc) <a name="6.1"></a>
+
+### 6.1.1 Preparation [⇧](#toc) <a name="6.1.1"></a>
+
+1.  Setup the path to the Python project as an environment variable (for this PowerShell session only), i.e.
+
+```PowerShell
+$env:PythonProject = "C:\Projects\morPy"
+```
+
+2.  Navigate to the root folder of the Python project, i.e.
+
+```PowerShell
+cd $env:PythonProject
+```
+
+3.  Activate the virtual environment:
+
+```PowerShell
+& "$env:PythonProject\.venv-win\scripts\activate.ps1"
+```
+
+4.  Install `pip-audit` (Scans your installed packages against known vulnerability databases):
+
+```PowerShell
+pip install pip-audit
+```
+
+5.  Install `safety` (Registration required):
+
+```PowerShell
+pip install safety; safety auth
+```
+
+### 6.1.2 Testing [⇧](#toc) <a name="6.1.2"></a>
+
+6.  Run `pip-audit`:
+
+```PowerShell
+pip-audit
+```
+
+7.  Run `safety`:
+
+```PowerShell
+safety scan
+```
+
+8.  Check for CVE's
+
+[CVEdetails.com - Python](https://www.cvedetails.com/version-list/10210/18230/1/Python-Python.html)
+[CVEdetails.com - Python Vulnerability Satistics](https://www.cvedetails.com/vendor/10210/Python.html)
+
+## 6.2 Security Guidance [⇧](#toc) <a name="6.2"></a>
+
+### 6.2.1 Constant Security checks in a productive environment [⇧](#toc) <a name="6.2.1"></a>
+
+It is advisable to keep a clone of the Python virtual environment including all dependencies used in the production code on a non-critical server. The vulnerability Checks may then be automated to run at least once a day and send reports to the security dev team.
+
+# 7. Abbreviations [⇧](#toc) <a name="7."></a>
 
 | **Abbreviation** | **Context** | **Description** |
 | --- | --- | --- |
