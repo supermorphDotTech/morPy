@@ -57,7 +57,7 @@ class FileDirSelectTk:
             {"selection_name" : value}
 
     :example:
-        import lib.morPy
+        import morPy
 
         icon_data = {
             "company_logo1" : {
@@ -152,7 +152,7 @@ class FileDirSelectTk:
                 {"selection_name" : value}
 
         :example:
-            import lib.morPy
+            import morPy
 
             icon_data = {
                 "company_logo1" : {
@@ -596,7 +596,7 @@ class GridChoiceTk:
         check: Indicates whether initialization completed without errors
 
     :example:
-        import lib.morPy
+        import morPy
 
         icon_data = {
             "company_logo1" : {
@@ -690,7 +690,7 @@ class GridChoiceTk:
             check: Indicates whether initialization completed without errors
 
         :example:
-            import lib.morPy
+            import morPy
 
             icon_data = {
                 "company_logo1" : {
@@ -996,7 +996,7 @@ class GridChoiceTk:
             choice: The value associated with the selected tile.
 
         :example:
-            import lib.morPy
+            import morPy
 
             tile_data = {
                 "start" : {
@@ -2092,9 +2092,9 @@ class ProgressTrackerTk:
                             self.button_text.set(self.button_text_close)
                             self._stop_console_redirection(morpy_trace, app_dict)
 
-                        # All done.
+                        # All done for ##
                         log(morpy_trace, app_dict, "info",
-                        lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_done"]}')
+                        lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_done"]} "{self.frame_title}".')
 
                     # Enforce an update on the GUI
                     self._enforce_update()
@@ -2124,7 +2124,7 @@ class ProgressTrackerTk:
         # Handle errors from GUI after aborting
         except TclError as tcl_e:
             # GUI ended ungracefully.
-            log(morpy_trace, app_dict, "warning",
+            log(morpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_exit_dirty"]}\n'
                     f'{type(tcl_e).__name__}: {tcl_e}')
 
@@ -2274,7 +2274,7 @@ class ProgressTrackerTk:
         # Handle errors from GUI after aborting
         except TclError as tcl_e:
             # GUI ended ungracefully.
-            log(morpy_trace, app_dict, "warning",
+            log(morpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_exit_dirty"]}\n'
                     f'{type(tcl_e).__name__}: {tcl_e}')
 

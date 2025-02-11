@@ -412,6 +412,10 @@ class cl_orchestrator:
             from app.run import app_run
             from app.exit import app_exit
 
+            # App starting.
+            log(morpy_trace, app_dict, "info",
+            lambda: f'{app_dict["loc"]["morpy"]["cl_orchestrator_app_run_start"]}')
+
             # Initialize and run the app
             app_init_return = app_init(morpy_trace, app_dict)["app_init_return"]
             app_run_return = app_run(morpy_trace, app_dict, app_init_return)["app_run_return"]
@@ -461,10 +465,6 @@ class cl_orchestrator:
             app_dict["proc"]["morpy"]["process_q"].enqueue(
                 morpy_trace, app_dict, priority=-1, task=app_task, autocorrect=False
             )
-
-            # App starting.
-            log(morpy_trace, app_dict, "info",
-            lambda: f'{app_dict["loc"]["morpy"]["cl_orchestrator_run_app_start"]}')
 
             if self.processes_max > 1:
                 while not self._terminate:

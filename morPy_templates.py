@@ -10,7 +10,7 @@ Annotations:
     #FIXME
 """
 
-import lib.morPy as morPy
+import morPy as morPy
 from lib.decorators import metrics, log
 
 import sys

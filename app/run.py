@@ -46,6 +46,8 @@ def app_run(morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
         import demo.ProgressTrackerTk as demo_ProgressTrackerTk
         demo_ProgressTrackerTk.run(morpy_trace, app_dict)
 
+        # app_dict["global"]["app"]["test"] = True
+
         check = True
 
     except Exception as e:

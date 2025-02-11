@@ -315,8 +315,8 @@ def loc_morpy() -> dict:
         'cl_orchestrator_init_memory_set': 'Maximum memory set.',
         'cl_orchestrator_init_done': 'Multiprocessing initialized.',
 
-        # mp.py - cl_orchestrator._run(~)
-        'cl_orchestrator_run_app_start': 'App starting.',
+        # mp.py - cl_orchestrator._app_run(~)
+        'cl_orchestrator_app_run_start': 'App starting.',
 
         # mp.py - join_processes(~)
         'join_processes_start': 'Joining processes',
@@ -525,7 +525,7 @@ def loc_morpy() -> dict:
         'ProgressTrackerTk_curr': 'Current Stage',
         'ProgressTrackerTk_abort': 'Abort',
         'ProgressTrackerTk_close': 'Close',
-        'ProgressTrackerTk_done': 'Close',
+        'ProgressTrackerTk_done': 'All done for',
 
         # ui_tk.py - ProgressTrackerTk._start_work_thread(~)
         'ProgressTrackerTk_start_work_thread_err': 'Exception in the worker thread.',

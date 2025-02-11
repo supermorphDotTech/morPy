@@ -68,7 +68,7 @@ def PriorityQueue(morpy_trace: dict, app_dict: dict, name: str=None):
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'PriorityQueue(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -119,7 +119,7 @@ def ProgressTracker(morpy_trace: dict, app_dict: dict, description: str=None, to
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'ProgressTracker(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -168,7 +168,7 @@ def FileDirSelectTk(morpy_trace: dict, app_dict: dict, rows_data: dict, title: s
             {"selection_name" : value}
 
     :example:
-        import lib.morPy
+        import morPy
 
         icon_data = {
             "company_logo1" : {
@@ -202,7 +202,7 @@ def FileDirSelectTk(morpy_trace: dict, app_dict: dict, rows_data: dict, title: s
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'FileDirSelectTk(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -351,7 +351,7 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str=None, 
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'ProgressTrackerTk(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -399,7 +399,7 @@ def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile
         check: Indicates whether initialization completed without errors
 
     :example:
-        import lib.morPy
+        import morPy
 
         icon_data = {
             "company_logo1" : {
@@ -433,7 +433,7 @@ def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'GridChoiceTk(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -688,7 +688,7 @@ def XlWorkbook(morpy_trace: dict, app_dict: dict, workbook: str, create: bool=Fa
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'XlWorkbook(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -755,7 +755,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'csv_read(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -834,7 +834,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'csv_dict_to_excel(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -874,7 +874,7 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, enco
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'decode_to_plain_text(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -915,7 +915,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'dialog_sel_file(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -952,7 +952,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'dialog_sel_dir(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -989,7 +989,7 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'fso_copy_file(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1021,7 +1021,7 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str):
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'fso_create_dir(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1054,7 +1054,7 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str):
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'fso_delete_dir(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1086,7 +1086,7 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str):
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'fso_delete_file(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1135,7 +1135,7 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'fso_walk(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1158,7 +1158,7 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
     :return: process_qed: If True, process was queued successfully. If False, an error occurred.
 
     :example:
-        from lib.morPy import process_q
+        from morPy import process_q
         message = "Gimme 5"
         def gimme_5(morpy_trace, app_dict, message):
             print(message)
@@ -1188,7 +1188,7 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
             import lib.fct as morpy_fct
 
             # Define operation credentials (see init.init_cred() for all dict keys)
-            module = 'lib.morPy'
+            module = 'morPy'
             operation = 'process_q(~)'
             morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1235,7 +1235,7 @@ def join_processes(morpy_trace: dict, app_dict: dict):
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'interrupt(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1267,7 +1267,7 @@ def interrupt(morpy_trace: dict, app_dict: dict):
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'interrupt(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1303,7 +1303,7 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'regex_findall(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1339,7 +1339,7 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'regex_find1st(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1377,7 +1377,7 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'regex_split(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1415,7 +1415,7 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'regex_replace(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1459,7 +1459,7 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'regex_remove_special(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1492,7 +1492,7 @@ def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: st
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'textfile_write(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1524,7 +1524,7 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str):
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'testprint(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1559,7 +1559,7 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str):
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'wait_for_input(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1598,7 +1598,7 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection:
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'wait_for_select(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 
@@ -1832,7 +1832,7 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         import lib.fct as morpy_fct
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.morPy'
+        module = 'morPy'
         operation = 'find_replace_saveas(~)'
         morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
 

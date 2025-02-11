@@ -4,6 +4,7 @@ __pycache__/
 # Ignore other and temporary data
 .idea/
 initialized_app_dict.txt
+.safety-project.ini
 
 # Ignore log and resource directories
 log/
@@ -16,4 +17,3 @@ res/
 
 # Ignore virtual environments
 .venv*/
-*.ini

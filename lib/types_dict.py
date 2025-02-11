@@ -439,24 +439,238 @@ class MorPyDict(dict):
         else:
             return super().setdefault(key, default)
 
-class MorPyDictUltra(UltraDict):
+class _MorPyNestedButFlatDictProxy:
+    """
+    A proxy object for a top-level UltraDict container in a MorPyNestedButFlatDict.
+
+    The proxy allows you to write:
+
+        app_dict["dict1"]["dict1.1"] = value
+
+    which is converted into the flat key:
+
+        "dict1::dict1.1" : value
+    """
+
+    def __init__(self, parent: MorPyNestedButFlatDict, prefix: str):
+        self._parent = parent
+        self._prefix = prefix
+
+    def _composite_key(self, key):
+        return f"{self._prefix}{self._parent.SEPARATOR}{key}"
+
+    def __getitem__(self, key):
+        comp_key = self._composite_key(key)
+        try:
+            return self._parent[comp_key]
+        except KeyError:
+            raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        comp_key = self._composite_key(key)
+        self._parent[comp_key] = value
+
+    def __delitem__(self, key):
+        comp_key = self._composite_key(key)
+        del self._parent[comp_key]
+
+    def __contains__(self, key):
+        comp_key = self._composite_key(key)
+        return comp_key in self._parent
+
+    def __iter__(self):
+        """
+        Iterate over “subkeys” in the container.
+        That is, return the parts after the separator for keys in the parent that start with prefix.
+        """
+        prefix = f"{self._prefix}{self._parent.SEPARATOR}"
+        for k in self._parent.keys():
+            if isinstance(k, str) and k.startswith(prefix):
+                # Return only the part after the separator.
+                yield k[len(prefix):]
+
+    def keys(self):
+        return list(iter(self))
+
+    def items(self):
+        return [(k, self[k]) for k in self]
+
+    def values(self):
+        return [self[k] for k in self]
+
+    def __len__(self):
+        prefix = f"{self._prefix}{self._parent.SEPARATOR}"
+        return sum(1 for k in self._parent.keys() if isinstance(k, str) and k.startswith(prefix))
+
+    def __repr__(self):
+        inner = ", ".join(f"{k!r}: {self[k]!r}" for k in self)
+        return f"{{{inner}}}"
+
+class MorPyNestedButFlatDict(dict):
+    """
+    A dictionary subclass that “flattens” nested UltraDict containers.
+
+    If you assign an UltraDict as a value for a top‐level key, its items
+    will be stored internally using composite keys separated by "::".
+
+    For example, doing:
+
+        app_dict["dict1"]["dict1.1"] = "value"
+
+    will (internally) store the pair:
+
+        "dict1::dict1.1" : "value"
+
+    Regular dict values (or UltraDicts that are manually set as plain values)
+    are stored as usual.
+
+    Note: Accessing a missing top‐level key will auto‐create an empty “container”
+    (a proxy) so that nested assignment works.
+    """
+    SEPARATOR = "::"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Keep track of top‐level keys that are “containers” (i.e. UltraDict namespaces)
+        self._ultra_keys = set()
+        # If some composite keys were already set, record their top-level name.
+        for key in super().keys():
+            if isinstance(key, str) and self.SEPARATOR in key:
+                top, _ = key.split(self.SEPARATOR, 1)
+                self._ultra_keys.add(top)
+
+    def __getitem__(self, key):
+        # If a composite key is requested (e.g. "dict1::subkey"), just return it.
+        if isinstance(key, str) and self.SEPARATOR in key:
+            return super().__getitem__(key)
+
+        # If key is known to be an UltraDict container, return a proxy.
+        if key in self._ultra_keys:
+            return _MorPyNestedButFlatDictProxy(self, key)
+
+        # Otherwise, try a normal lookup.
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            # Not present as a plain value.
+            # But if the user is about to do nested assignment like:
+            #    app_dict["somekey"]["child"] = value
+            # we want to auto-create a container.
+            #
+            # (Note: This behavior is not like a standard dict; it is here to support
+            # nested assignment.)
+            proxy = _MorPyNestedButFlatDictProxy(self, key)
+            self._ultra_keys.add(key)
+            return proxy
+
+    def __setitem__(self, key, value):
+        # If the key is a composite key (contains the separator) then simply store.
+        if isinstance(key, str) and self.SEPARATOR in key:
+            super().__setitem__(key, value)
+            return
+
+        # Otherwise, key is a top-level key.
+        if isinstance(value, UltraDict):
+            # When a value is an UltraDict, we “flatten” it.
+            # All items from the UltraDict are stored with composite keys.
+            for subkey, subvalue in value.items():
+                composite_key = f"{key}{self.SEPARATOR}{subkey}"
+                super().__setitem__(composite_key, subvalue)
+            # Mark this key as an UltraDict container.
+            self._ultra_keys.add(key)
+        else:
+            # If value is a plain dict (or any other type) then store normally.
+            super().__setitem__(key, value)
+
+    def __delitem__(self, key):
+        # If key is a composite key, just delete it.
+        if isinstance(key, str) and self.SEPARATOR in key:
+            super().__delitem__(key)
+            return
+
+        # If key is an UltraDict container, remove all composite keys that start with key.
+        if key in self._ultra_keys:
+            prefix = f"{key}{self.SEPARATOR}"
+            keys_to_delete = [k for k in list(super().keys())
+                              if isinstance(k, str) and k.startswith(prefix)]
+            for k in keys_to_delete:
+                super().__delitem__(k)
+            self._ultra_keys.remove(key)
+        else:
+            # Otherwise delete as usual.
+            super().__delitem__(key)
+
+    def __contains__(self, key):
+        # For composite keys, check normally.
+        if isinstance(key, str) and self.SEPARATOR in key:
+            return super().__contains__(key)
+        # If the key is an ultra container, report it as present.
+        if key in self._ultra_keys:
+            return True
+        return super().__contains__(key)
+
+    def __iter__(self):
+        """
+        Iterate over top-level keys.
+        Composite keys (those containing the separator) are internal and hidden.
+        """
+        seen = set()
+        # Yield keys that were stored directly.
+        for k in super().__iter__():
+            if isinstance(k, str) and self.SEPARATOR in k:
+                continue
+            yield k
+            seen.add(k)
+        # Also yield keys known to be ultra containers.
+        for k in self._ultra_keys:
+            if k not in seen:
+                yield k
+
+    def keys(self):
+        return list(iter(self))
+
+    def items(self):
+        return [(k, self[k]) for k in self]
+
+    def values(self):
+        return [self[k] for k in self]
+
+    def __repr__(self):
+        pairs = ", ".join(f"{k!r}: {self[k]!r}" for k in self)
+        return f"MorPyNestedButFlatDict({{{pairs}}})"
+
+class MorPyDictUltra(MorPyNestedButFlatDict):
 
     r"""
 	This is the dictionary class for the morPy framework and provides all key functions
     of it. It utilizes an instance of UltraDict to provide inter-process shared
     dictionary capabilities and memory management.
 
-    This subclass of UltraDict handles access control and localization. Take note, that
-    this subclass is rebuilt by a spawned process and not referenced from the host
-    process. Therefore, if the orchestrator manipulates access control, it is not reflected
-    in spawned processes, therefore further hardening access.
-
-    Instances work like standard Python dictionaries, despite security features
+    Instances work like standard Python dictionaries and deliver security features
     to tighten or lock the dictionaries, restricting modifications.
+
+    TODO flat setup of app_dict with a map to imitate nesting
+    TODO set up the map(reference to dicts) as a tuple of immutables to "share" in memory (more like save in UltraDict without pickling)
+    TODO write a reduced map to the created UltraDict, to only reflect it's own nesting
+    TODO Find a way to keep all maps updated
+
+    MAP:
+    app_dict._types_dict_map = ()
+
+    # __setitem__ logic
+    if isinstance(key, dict):
+        branch_update = False # Prepare the flag to signal, whether a branch needs to be updated
+        udict_name = f'app_dict[{key}]'
+        for path in app_dict._types_dict_map:
+            if key == path[0]:
+                branch_update = True # Proactive branch update, even if no further nesting, because there is no other comm between UltraDict and app_dict
+                udict_inst = UltraDict(create=False, name=udict_name)
+
+
+        app_dict._types_dict_map = ()
     """
 
-    def __init__(self, *args, name: str='app_dict', access: str='normal',
-                 create: bool=False, recurse_register=None, **kwargs):
+    def __init__(self, name: str='Instance of MorPyDict', access: str='normal'):
 
         r"""
         :param name: Name of the dictionary for tracing
@@ -464,25 +678,23 @@ class MorPyDictUltra(UltraDict):
             'normal' (default) - works like any Python dictionary
             'tightened' - Keys may not be altered (no delete or add)
             'locked' - Keys and values are locked, changes are prohibited entirely
-        :param create: If True, a (nested) dictionary is created. Otherwise, purely
-            references to the UltraDict.
-        :param recurse_register: If not None, recursion is activated for UltraDict. Expects
-            the recurse_register of the root UltraDict.
 
         :return:
             -
 
-        :example 1: Create a root dictionary
-            app_dict = MorPyDictUltra(create=True)
-
-        :example 2: Create a nested dictionary
-            app_dict["global"]["app"]["my_dict"] = MorPyDictUltra(
-                name = app_dict[global][app][my_dict],
-                access="tightened"
+        :example:
+            app_dict["global"]["app"]["my_dict"] = MorPyDict(
+                morPy_trace,
+                app_dict["conf"],
+                access="tightened",
+                recurse_register = app_dict[global][app]._name
             )
         """
 
         try:
+            super().__init__()
+            self._name = name  # Name variable for messages
+
             # Initialize a mock morPy_trace
             self.morPy_trace = {
                 'module': '',
@@ -495,22 +707,6 @@ class MorPyDictUltra(UltraDict):
                 'interrupt_enable': False,
             }
 
-            # Pass initialization arguments to UltraDict
-            self._name = kwargs.setdefault('name', name)
-            self.create = kwargs.setdefault('create', create)
-            self.shared_lock = kwargs.setdefault('shared_lock', True)
-            self.recurse = kwargs.setdefault('recurse', False)
-            self.shared_lock = kwargs.setdefault('shared_lock', True)
-            self.buffer_size = kwargs.setdefault('buffer_size', 10_000_000)
-            self.full_dump_size = kwargs.setdefault('full_dump_size', 10_000_000)
-            self.auto_unlink = kwargs.setdefault('auto_unlink', False)
-            # self.recurse_register = kwargs.setdefault('recurse_register', name)
-            # self.serializer = kwargs.setdefault('serializer', dill)
-
-            # Initialize the UltraDict super class
-            super().__init__(*args, **kwargs)
-            self._name = self.name
-
             # Initialize localization and app configuration
             self._init_conf()
 
@@ -520,15 +716,14 @@ class MorPyDictUltra(UltraDict):
             # Initialize localization messages
             self._init_loc()
 
-            if not self.lock:
-                raise RuntimeError(f'UltraDict ERROR\nself.lock')
-                sys.exit()
+            self._flat_store = {}
 
         except Exception as e:
-            msg = (f'CRITICAL {self._name}.__init__(): Failed to initialize UltraDict.\n'
-                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n')
-
-            raise RuntimeError(msg)
+            raise RuntimeError(
+                f'CRITICAL {self._name}.__init__(): Failed to initialize MorPyDict.\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
+            sys.exit()
 
     def _init_conf(self):
         # Initialize localization and app configuration
@@ -697,75 +892,45 @@ class MorPyDictUltra(UltraDict):
             )
 
     def _update_self(self, _access=None, localization_force=False):
-        lock = self._get_lock()
         # Allow for reinitialization without data loss.
 
         # Evaluate access type change
         if _access == self._access:
             pass
         else:
-            with lock:
-                self._set_access(_access=_access)
+            self._set_access(_access=_access)
 
         # Evaluate localization reinitialization
         if conf.settings:
             loc_conf = conf.settings().get('localization', '')
             if loc_conf != self.lang or localization_force:
-                with lock:
-                    self._init_loc()
+                self._init_loc()
         else:
             pass  # Handle cases where conf.settings() is not available
 
-    def _get_lock(self):
-        r""" Retrieve lock depending on super class """
-        if isinstance(self, UltraDict):
-            return self.lock
-        else:
-            return None
-
-    def _get_super(self):
-        r""" Setup methods depending on super class """
-        if isinstance(self, UltraDict):
-            return self.lock, super()
-        else:
-            return None, None
-
     def __setitem__(self, key, value):
-        lock, super_class = self._get_super()
         if not isinstance(key, str):
             # Keys must be strings.
             raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access == 'tightened':
             msg = f'{self.msg__setitem__} {key}'
-            if key not in super_class.keys():
+            if key not in super().keys():
                 raise KeyError(msg)
             else:
-                with lock:
-                    super_class.__setitem__(key, value)
+                super().__setitem__(key, value)
 
         elif self._access == 'locked':
             msg = f'{self.msg__setitem__} {key}'
             raise PermissionError(msg)
         else:
-            with lock:
-                super_class.__setitem__(key, value)
-
-    def __contains__(self, key):
-        lock, super_class = self._get_super()
-        if not isinstance(key, str):
-            raise TypeError("Keys must be strings.")
-        with lock:
-            return key in super_class.keys()
+            super().__setitem__(key, value)
 
     def __getitem__(self, key):
-        lock, super_class = self._get_super()
         if not isinstance(key, str):
             raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
-        with lock:
-            return super_class.__getitem__(key)
+        return super().__getitem__(key)
 
     def __delitem__(self, key):
-        lock, super_class = self._get_super()
         if not isinstance(key, str):
             # Keys must be strings.
             raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
@@ -773,28 +938,16 @@ class MorPyDictUltra(UltraDict):
             msg = f'{self.msg__delitem__} {key}'
             raise PermissionError(msg)
         else:
-            with lock:
-                super_class.__delitem__(key)
-
-    def get(self, key, default=None):
-        lock, super_class = self._get_super()
-        if not isinstance(key, str):
-            # Keys must be strings.
-            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
-        with lock:
-            return super_class.get(key, default)
+            super().__delitem__(key)
 
     def clear(self):
-        lock, super_class = self._get_super()
         if self._access in ('tightened', 'locked'):
             msg = f'{self.msg_clear}'
             raise PermissionError(msg)
         else:
-            with lock:
-                super_class.clear()
+            super().clear()
 
     def pop(self, key, default=None):
-        lock, super_class = self._get_super()
         if not isinstance(key, str):
             # Keys must be strings.
             raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
@@ -802,11 +955,9 @@ class MorPyDictUltra(UltraDict):
             msg = f'{self.msg_pop} {key}'
             raise PermissionError(msg)
         else:
-            with lock:
-                return super_class.pop(key, default)
+            return super().pop(key, default)
 
     def popitem(self):
-        lock, super_class = self._get_super()
         if self._access in ('tightened', 'locked'):
             if self:
                 last_key = next(reversed(self))
@@ -816,62 +967,39 @@ class MorPyDictUltra(UltraDict):
                 # Dictionary is empty.
                 raise TypeError(f'{self.loc["MorPyDict_empty"]}:')
         else:
-            with lock:
-                key, item = super_class.popitem()
-                return key, item
+            return super().popitem()
 
     def update(self, *args, **kwargs):
-        lock, super_class = self._get_super()
         if self._access == 'tightened':
             new_items = dict(*args, **kwargs)
-            with lock:
-                for key in new_items.keys():
-                    if key not in super_class.keys():
-                        msg = f'{self.msg_update} {key}'
-                        raise PermissionError(msg)
-                super_class.update(*args, **kwargs)
+            for key in new_items.keys():
+                if key not in super().keys():
+                    msg = f'{self.msg_update} {key}'
+                    raise PermissionError(msg)
+            super().update(*args, **kwargs)
         elif self._access == 'locked':
             msg = f'{self.msg_update}'
             raise PermissionError(msg)
         else:
-            with lock:
-                super_class.update(*args, **kwargs)
+            super().update(*args, **kwargs)
 
     def setdefault(self, key, default=None):
-        lock, super_class = self._get_super()
         if not isinstance(key, str):
             # Keys must be strings.
             raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
         if self._access == 'tightened':
-            if key not in super_class.keys():
+            if key not in super().keys():
                 msg = f'{self.msg_setdefault} {key}'
                 raise PermissionError(msg)
             else:
-                with lock:
-                    return super_class.setdefault(key, default)
+                return super().setdefault(key, default)
         elif self._access == 'locked':
             msg = f'{self.msg_setdefault} {key}'
-            if key not in super_class.keys():
+            if key not in super().keys():
                 raise PermissionError(msg)
             else:
                 if msg:
                     msg.log(self._morPy_trace, self.loc, msg, 'warning')
-                with lock:
-                    return super_class.__getitem__(key)
+                return super().__getitem__(key)
         else:
-            with lock:
-                return super_class.setdefault(key, default)
-
-    def get_recurse_register(self):
-        # Access the recurse_register attribute if available.
-        if hasattr(self, 'recurse_register'):
-            return self.recurse_register
-        return None
-
-    def print_status(self):
-        lock, super_class = self._get_super()
-        return super_class.print_status()
-
-    def __repr__(self):
-        lock, super_class = self._get_super()
-        return f'MorPyDict(name={self._name}, access={self._access}, data={super_class.__repr__()})'
+            return super().setdefault(key, default)

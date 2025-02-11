@@ -7,46 +7,53 @@ Multiprocessing aided Python framework with integrated logging to database. Be t
 Feel free to comment, share and support this project.  
 Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with me.
 
-# v1.0.0c - Table of contents [≛](#2.) [⇩](#7.) <a name="toc"></a>
+# v1.0.0c - Table of contents [≛](#4.) [⇩](#7.) <a name="toc"></a>
 
 `1.` [Requirements and Dependencies](#1.)  
+&nbsp;
 └─│`1.1` [Microsoft Windows](#1.1)  
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`1.1.1` [Software Requirements](#1.1.1)  
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`1.1.2` [Setup Guidance](#1.1.2)  
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`1.1.3` [Virtual Environment](#1.1.3)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`1.1.3.1` [Basic Setup](#1.1.3.1)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`1.1.3.2` [Install Dependencies](#1.1.3.2)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`1.1.3.3` [Copy Packages to Virtual Environment](#1.1.3.3)  
 `2.` [Versioning - α.β.γλ](#2.)  
 `3.` [Parallelization](#3.)  
 `4.` [≛ Shared App Dictionary](#4.)  
+&nbsp;
 └─│`4.1` [Introduction](#4.1)  
+&nbsp;
 └─│`4.2` [Navigating the App Dictionary](#4.2)  
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`4.2.1` [Categorization & Sub-Dictionaries](#4.2.1)  
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`4.2.2` [App Dictionary Map](#4.2.2)  
 `5.` [Dependency Visualization](#5.)  
+&nbsp;
 └─│`5.1` [Setup Dependency Visualization (Microsoft Windows)](#5.1)  
+&nbsp;
 └─│`5.2` [Visualize Dependencies (Microsoft Windows)](#5.2)  
 `6.` [Dependency Analysis](#6.)  
+&nbsp;
 └─│`6.1` [Scan installed packages against known vulnerabilities](#6.1)  
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`6.1.1` [Preparation](#6.1.1)  
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`6.1.2` [Testing](#6.1.2)  
+&nbsp;
 └─│`6.2` [Security Guidance](#6.2)  
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`6.2.1` [Constant Security checks in productive environments](#6.2.1)  
 `7.` [Abbreviations](#7.)  
 
-# 1\. Requirements and Dependencies [⇧](#toc) <a name="1."></a>
+# 1. Requirements and Dependencies [⇧](#toc) <a name="1."></a>
 
 ## 1.1 Microsoft Windows [⇧](#toc) <a name="1.1"></a>
 
@@ -193,7 +200,7 @@ $env:PythonProject\.venv-win\Lib\site-packages\Tcl
 
 *Create the* `tcl` *subfolder if it does not exist.*
 
-# 2\. Versioning - α.β.γλ [⇧](#toc) <a name="2."></a>
+# 2. Versioning - α.β.γλ [⇧](#toc) <a name="2."></a>
 
 | Symbol | Description |
 | --- | --- |
@@ -202,7 +209,7 @@ $env:PythonProject\.venv-win\Lib\site-packages\Tcl
 | γ   | Bugfix Version.  <br>Full downward compatibility. |
 | λ   | Version status.  <br>*None*: Release version  <br>*a*: Alpha version with minor bugs for public testing.  <br>*b*: Beta version with potential showstopper bugs for internal testing.  <br>*c*: Gamma version. Development. Not presentable to public. |
 
-# 3\. Parallelization [⇧](#toc) <a name="3."></a>
+# 3. Parallelization [⇧](#toc) <a name="3."></a>
 
 The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends. The process ID "0" is always reserved for the orchestration process. It will take care of logging and is reserved for tasks with a priority in between 0 and 10 (smaller numbers for higher priority). All app tasks will automatically receive a higher number (lower priority) than morPy reserved tasks. In case a priority is corrected, a warning will be raised.
 
@@ -210,7 +217,7 @@ This is merely an example, of how parallelization may look like. There is still 
 
 ![EN-morPy-parallelization-scheme-v1 0 0-darkmode](https://github.com/user-attachments/assets/4f460193-7a01-4c78-a501-16b99aea747b)
 
-# 4\. Shared App Dictionary [⇧](#toc) <a name="4."></a>
+# 4. Shared App Dictionary [⇧](#toc) <a name="4."></a>
 
 ## 4.1 Introduction [⇧](#toc) <a name="4.1"></a>
 
@@ -464,7 +471,7 @@ app_dict = [dict]{
 }
 ```
 
-# 5\. Dependency Visualization [⇧](#toc) <a name="5."></a>
+# 5. Dependency Visualization [⇧](#toc) <a name="5."></a>
 
 For dependency visualization `pydeps` is used, which itself requires `graphviz` for the actual visualization.
 
@@ -608,7 +615,7 @@ safety scan
 
 8.  Check for CVE's
 
-[CVEdetails.com - Python](https://www.cvedetails.com/version-list/10210/18230/1/Python-Python.html)
+[CVEdetails.com - Python](https://www.cvedetails.com/version-list/10210/18230/1/Python-Python.html)  
 [CVEdetails.com - Python Vulnerability Satistics](https://www.cvedetails.com/vendor/10210/Python.html)
 
 ## 6.2 Security Guidance [⇧](#toc) <a name="6.2"></a>

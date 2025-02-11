@@ -675,45 +675,46 @@ class ProgressTracker:
         message = None
 
         try:
-            # Evaluate current progress absolute count
-            if not current:
-                self.update_counter += 1
-                current = self.update_counter
-            elif current > self.update_counter:
-                self.update_counter = current
+            if not self.done:
+                # Evaluate current progress absolute count
+                if not current:
+                    self.update_counter += 1
+                    current = self.update_counter
+                elif current > self.update_counter:
+                    self.update_counter = current
 
-            if current > self.total:
-                self.stop_updates = True
+                if current > self.total:
+                    self.stop_updates = True
 
-                # Current progress exceeded total. Progress updates stopped.
-                log(morpy_trace, app_dict, "warning",
-                lambda: f'{app_dict["loc"]["morpy"]["ProgressTracker_upd_stopped"]}: {current} > {self.total}')
+                    # Current progress exceeded total. Progress updates stopped.
+                    log(morpy_trace, app_dict, "warning",
+                    lambda: f'{app_dict["loc"]["morpy"]["ProgressTracker_upd_stopped"]}: {current} > {self.total}')
 
-            # Factor the current value
-            current_fac = self.update_counter * self.factor
+                # Factor the current value
+                current_fac = self.update_counter * self.factor
 
-            # Loop through the absolute ticks, delete them and return the highest tick matched or exceeded
-            log_tick = False
-            for tick in self.ticks_lst:
-                if current_fac >= tick:
-                    self.ticks_lst.pop(0)
-                    log_tick = True
-                else:
-                    pass
+                # Loop through the absolute ticks, delete them and return the highest tick matched or exceeded
+                log_tick = False
+                for tick in self.ticks_lst:
+                    if current_fac >= tick:
+                        self.ticks_lst.pop(0)
+                        log_tick = True
+                    else:
+                        pass
 
-            if log_tick:
-                prog_rel = current_fac / self.total_fac
-                prog_abs_short = round(prog_rel * 100, 2)
+                if log_tick:
+                    prog_rel = current_fac / self.total_fac
+                    prog_abs_short = round(prog_rel * 100, 2)
 
-                # Evaluate, if 100% reached
-                self.done = True if prog_rel >= 1 else False
+                    # Evaluate, if 100% reached
+                    self.done = True if prog_rel >= 1 else False
 
-                # Check for verbose logging
-                if self.verbose_check or self.done:
-                    # Processing DESCRIPTION
-                    log(morpy_trace, app_dict, "info",
-                    lambda: f'{app_dict["loc"]["morpy"]["ProgressTracker_proc"]}: {self.description}\n'
-                            f'{prog_abs_short}% ({self.update_counter} of {self.total})')
+                    # Check for verbose logging
+                    if self.verbose_check or self.done:
+                        # Processing DESCRIPTION
+                        log(morpy_trace, app_dict, "info",
+                        lambda: f'{app_dict["loc"]["morpy"]["ProgressTracker_proc"]}: {self.description}\n'
+                                f'{prog_abs_short}% ({self.update_counter} of {self.total})')
 
             check = True
 
