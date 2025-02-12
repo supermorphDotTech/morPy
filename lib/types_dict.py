@@ -439,73 +439,6 @@ class MorPyDict(dict):
         else:
             return super().setdefault(key, default)
 
-class _MorPyNestedButFlatDictProxy:
-    """
-    A proxy object for a top-level UltraDict container in a MorPyNestedButFlatDict.
-
-    The proxy allows you to write:
-
-        app_dict["dict1"]["dict1.1"] = value
-
-    which is converted into the flat key:
-
-        "dict1::dict1.1" : value
-    """
-
-    def __init__(self, parent: MorPyNestedButFlatDict, prefix: str):
-        self._parent = parent
-        self._prefix = prefix
-
-    def _composite_key(self, key):
-        return f"{self._prefix}{self._parent.SEPARATOR}{key}"
-
-    def __getitem__(self, key):
-        comp_key = self._composite_key(key)
-        try:
-            return self._parent[comp_key]
-        except KeyError:
-            raise KeyError(key)
-
-    def __setitem__(self, key, value):
-        comp_key = self._composite_key(key)
-        self._parent[comp_key] = value
-
-    def __delitem__(self, key):
-        comp_key = self._composite_key(key)
-        del self._parent[comp_key]
-
-    def __contains__(self, key):
-        comp_key = self._composite_key(key)
-        return comp_key in self._parent
-
-    def __iter__(self):
-        """
-        Iterate over “subkeys” in the container.
-        That is, return the parts after the separator for keys in the parent that start with prefix.
-        """
-        prefix = f"{self._prefix}{self._parent.SEPARATOR}"
-        for k in self._parent.keys():
-            if isinstance(k, str) and k.startswith(prefix):
-                # Return only the part after the separator.
-                yield k[len(prefix):]
-
-    def keys(self):
-        return list(iter(self))
-
-    def items(self):
-        return [(k, self[k]) for k in self]
-
-    def values(self):
-        return [self[k] for k in self]
-
-    def __len__(self):
-        prefix = f"{self._prefix}{self._parent.SEPARATOR}"
-        return sum(1 for k in self._parent.keys() if isinstance(k, str) and k.startswith(prefix))
-
-    def __repr__(self):
-        inner = ", ".join(f"{k!r}: {self[k]!r}" for k in self)
-        return f"{{{inner}}}"
-
 class MorPyNestedButFlatDict(dict):
     """
     A dictionary subclass that “flattens” nested UltraDict containers.
@@ -514,11 +447,9 @@ class MorPyNestedButFlatDict(dict):
     will be stored internally using composite keys separated by "::".
 
     For example, doing:
-
         app_dict["dict1"]["dict1.1"] = "value"
 
     will (internally) store the pair:
-
         "dict1::dict1.1" : "value"
 
     Regular dict values (or UltraDicts that are manually set as plain values)
@@ -639,38 +570,84 @@ class MorPyNestedButFlatDict(dict):
         pairs = ", ".join(f"{k!r}: {self[k]!r}" for k in self)
         return f"MorPyNestedButFlatDict({{{pairs}}})"
 
+class _MorPyNestedButFlatDictProxy:
+    """
+    A proxy object for a top-level UltraDict container in a MorPyNestedButFlatDict.
+
+    The proxy allows you to write:
+        app_dict["dict1"]["dict1.1"] = value
+
+    which is converted into the flat key:
+        "dict1::dict1.1" : value
+    """
+
+    def __init__(self, parent: MorPyNestedButFlatDict, prefix: str):
+        self._parent = parent
+        self._prefix = prefix
+
+    def _composite_key(self, key):
+        return f"{self._prefix}{self._parent.SEPARATOR}{key}"
+
+    def __getitem__(self, key):
+        comp_key = self._composite_key(key)
+        try:
+            return self._parent[comp_key]
+        except KeyError:
+            raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        comp_key = self._composite_key(key)
+        self._parent[comp_key] = value
+
+    def __delitem__(self, key):
+        comp_key = self._composite_key(key)
+        del self._parent[comp_key]
+
+    def __contains__(self, key):
+        comp_key = self._composite_key(key)
+        return comp_key in self._parent
+
+    def __iter__(self):
+        """
+        Iterate over “subkeys” in the container.
+        That is, return the parts after the separator for keys in the parent that start with prefix.
+        """
+        prefix = f"{self._prefix}{self._parent.SEPARATOR}"
+        for k in self._parent.keys():
+            if isinstance(k, str) and k.startswith(prefix):
+                # Return only the part after the separator.
+                yield k[len(prefix):]
+
+    def keys(self):
+        return list(iter(self))
+
+    def items(self):
+        return [(k, self[k]) for k in self]
+
+    def values(self):
+        return [self[k] for k in self]
+
+    def __len__(self):
+        prefix = f"{self._prefix}{self._parent.SEPARATOR}"
+        return sum(1 for k in self._parent.keys() if isinstance(k, str) and k.startswith(prefix))
+
+    def __repr__(self):
+        inner = ", ".join(f"{k!r}: {self[k]!r}" for k in self)
+        return f"{{{inner}}}"
+
 class MorPyDictUltra(MorPyNestedButFlatDict):
 
     r"""
-	This is the dictionary class for the morPy framework and provides all key functions
-    of it. It utilizes an instance of UltraDict to provide inter-process shared
-    dictionary capabilities and memory management.
+	This is the dictionary-like class for the morPy framework required for
+	multiprocessing. It is subclassed from MorPyNestedButFlatDict() which
+	omits reinitialization of UltraDict.__init__(), which in turn may lead
+	to recursion issues.
 
     Instances work like standard Python dictionaries and deliver security features
     to tighten or lock the dictionaries, restricting modifications.
-
-    TODO flat setup of app_dict with a map to imitate nesting
-    TODO set up the map(reference to dicts) as a tuple of immutables to "share" in memory (more like save in UltraDict without pickling)
-    TODO write a reduced map to the created UltraDict, to only reflect it's own nesting
-    TODO Find a way to keep all maps updated
-
-    MAP:
-    app_dict._types_dict_map = ()
-
-    # __setitem__ logic
-    if isinstance(key, dict):
-        branch_update = False # Prepare the flag to signal, whether a branch needs to be updated
-        udict_name = f'app_dict[{key}]'
-        for path in app_dict._types_dict_map:
-            if key == path[0]:
-                branch_update = True # Proactive branch update, even if no further nesting, because there is no other comm between UltraDict and app_dict
-                udict_inst = UltraDict(create=False, name=udict_name)
-
-
-        app_dict._types_dict_map = ()
     """
 
-    def __init__(self, name: str='Instance of MorPyDict', access: str='normal'):
+    def __init__(self, name: str='Instance of MorPyDictUltra', access: str='normal'):
 
         r"""
         :param name: Name of the dictionary for tracing

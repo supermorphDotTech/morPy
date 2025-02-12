@@ -249,7 +249,7 @@ def types_dict_build(morpy_trace: dict):
 
     try:
         # With GIL, use a flat app_dict referencing UltraDict instances and mask it as nested.
-        if gil or False:
+        if gil or True:
             from lib.types_dict import MorPyDictUltra
 
             init_dict = MorPyDictUltra(
