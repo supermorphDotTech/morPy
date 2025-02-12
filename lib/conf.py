@@ -165,7 +165,7 @@ def settings(start_time=None):
     # Absolute amount of processes to run parallel. This value will by default not exceed
     # the logical cores available on the system. If None, all CPUs can be utilized.
     # Default: None
-    processes_absolute = 2
+    processes_absolute = 1
 
     # Set the relative maximum amount of processes to be utilized, where 1 resembles 100%
     # utilization and 0 resembles 0% utilization. If None, all CPUs can be utilized.

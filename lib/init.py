@@ -207,15 +207,15 @@ def init(morpy_trace):
         lambda: f'{init_dict["loc"]["morpy"]["init_finished"]}\n'
             f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["run"]["init_rnt_delta"]}')
 
+        # Set an initialization complete flag
+        init_dict["run"]["init_complete"] = True
+
         # Lock and tighten nested dictionaries
         types_dict_finalize(morpy_trace_init, init_dict)
 
         # Write app_dict to file: initialized_app_dict.txt
         if init_dict["conf"]["ref_create"]:
             morpy_ref(morpy_trace_init, init_dict, init_dict_str)
-
-        # Set an initialization complete flag
-        init_dict["run"]["init_complete"] = True
 
         # Exit initialization
         retval = init_dict, init_dict["proc"]["morpy"]["cl_orchestrator"]
@@ -248,8 +248,11 @@ def types_dict_build(morpy_trace: dict):
     init_dict = None
 
     try:
+        # Get configured max processes
+        processes = conf.settings().get('localization', '')
+
         # With GIL, use a flat app_dict referencing UltraDict instances and mask it as nested.
-        if gil or True:
+        if gil:
             from lib.types_dict import MorPyDictUltra
 
             init_dict = MorPyDictUltra(
@@ -417,10 +420,8 @@ def types_dict_build(morpy_trace: dict):
 
     # Error detection
     except Exception as e:
-        log_no_q(morpy_trace, init_dict, "error",
-        lambda: f'{init_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{init_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
+        morpy_fct.handle_exception_init(e)
+        raise
 
     finally:
         return init_dict

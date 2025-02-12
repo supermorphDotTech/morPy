@@ -59,10 +59,10 @@ Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with
 
 ### 1.1.1 Software Requirements [⇧](#toc) <a name="1.1.1"></a>
 
-| Depency | Requirements |
-| --- | --- |
-| Python | [Python 3.10.11](https://www.python.org/downloads/release/python-31011/) |
-| UltraDict | [Microsoft Visual C++ BuildTools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) |
+| Dependency                                                                                                                                                                    | Requirement Description                                      |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| [![Python 3.10.11](https://img.shields.io/badge/Python-3.10.11+-blue.svg)](https://www.python.org/downloads/release/python-31011/)                                            | Oldest supported Python version. Predetermined by UltraDict. |
+| [![Microsoft Visual C++ BuildTools](https://img.shields.io/badge/Microsoft-Visual%20C++%20BuildTools-orange.svg)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) | Build tools required for UltraDict pip install.              |
 
 ### 1.1.2 Setup Guidance [⇧](#toc) <a name="1.1.2"></a>
 

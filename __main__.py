@@ -70,6 +70,7 @@ def finalize_morpy(morpy_trace, app_dict):
     r"""
     Finalize morPy components.
     """
+
     import lib.exit as exit
     exit._exit(morpy_trace, app_dict)
 
