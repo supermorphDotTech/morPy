@@ -139,20 +139,6 @@
       names, trademarks, service marks, or product names of the Licensor,
       except as required for reasonable and customary use in describing the
       origin of the Work and reproducing the content of the NOTICE file.
-	  
-	  6.1 Permitted Use of Branding Materials. Notwithstanding the
-	      foregoing, any trademarks, images, icons, or other branding
-		  materials (collectively, "Branding Materials") that are included
-		  as part of the Work (for example, those appearing in default GUI
-		  images) may be used by You solely in connection with the use,
-		  reproduction, and distribution of the Work as provided. Such
-		  Branding Materials must remain in their original form and context
-		  as included in the Work. You are not permitted to extract, modify,
-		  repurpose, or otherwise use these Branding Materials in any new or
-		  separate context (including for new products, advertising, or
-		  branding purposes) that would imply endorsement, association,
-		  or affiliation with any product or service other than the Work,
-		  without the express prior written permission of the Licensor.
 
    7. Disclaimer of Warranty. Unless required by applicable law or
       agreed to in writing, Licensor provides the Work (and each
