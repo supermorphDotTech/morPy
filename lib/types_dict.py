@@ -649,12 +649,11 @@ class MorPyDictUltra(MorPyNestedButFlatDict):
             # Initialize the base dictionary.
             super().__init__()
 
-            # Set up the protected UltraDict for flat key references.
-            # We bypass our overridden __setitem__ so that protected keys can be set.
-            if "_flat_key_references" not in self:
-                super().__setitem__("_flat_key_references", UltraDict(name="app_dict::_flat_key_references"))
-
             self._name = name  # Name variable for messages
+
+            # Always create the protected UltraDict for flat key references—
+            # bypassing any overridden __setitem__ by calling the built-in dict.__setitem__
+            dict.__setitem__(self, "_flat_key_references", UltraDict(name=f"{self._name}::_flat_key_references"))
 
             # Initialize a mock morPy_trace
             self.morPy_trace = {
@@ -966,10 +965,26 @@ class MorPyDictUltra(MorPyNestedButFlatDict):
 
     @property
     def _access(self):
-        # Retrieve the current access mode from the protected UltraDict.
-        return self["_flat_key_references"].get("_access", "normal")
+        # Attempt to retrieve the protected UltraDict using the built-in dict method.
+        try:
+            ut = dict.__getitem__(self, "_flat_key_references")
+            # Verify that the retrieved object is indeed an UltraDict.
+            if not isinstance(ut, UltraDict):
+                raise TypeError("Protected store is not an UltraDict")
+        except (KeyError, TypeError):
+            # If missing or wrong type, recreate it.
+            ut = UltraDict(name=f"{self._name}::_flat_key_references")
+            dict.__setitem__(self, "_flat_key_references", ut)
+        # Return the access value stored in it (default to "normal").
+        return ut.get("_access", "normal")
 
     @_access.setter
     def _access(self, value):
-        # Set the access mode inside the protected UltraDict.
-        self["_flat_key_references"]["_access"] = value
+        try:
+            ut = dict.__getitem__(self, "_flat_key_references")
+            if not isinstance(ut, UltraDict):
+                raise TypeError("Protected store is not an UltraDict")
+        except (KeyError, TypeError):
+            ut = UltraDict(name=f"{self._name}::_flat_key_references")
+            dict.__setitem__(self, "_flat_key_references", ut)
+        ut["_access"] = value

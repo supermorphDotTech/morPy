@@ -4,8 +4,10 @@ More solutions. More insights. morPy.
 
 Multiprocessing aided Python framework with integrated logging to database. Be the master of your app by analyzing runtime. Enjoy the comfort of runtime documentation ready for use in validated environments.
 
-Feel free to comment, share and support this project.  
-Visit me on [supermorph.tech](https://www.supermorph.tech/) to get in touch with me.
+Feel free to comment, share and support this project!  
+
+![License](https://img.shields.io/github/license/supermorphDotTech/morPy)
+![GitHub commit activity (monthly)](https://img.shields.io/github/commit-activity/m/supermorphDotTech/morPy)
 
 # v1.0.0c - Table of contents [≛](#4.) [⇩](#7.) <a name="toc"></a>
 
