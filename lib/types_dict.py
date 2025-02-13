@@ -926,6 +926,31 @@ class MorPyDictUltra(MorPyNestedButFlatDict):
         else:
             super().__delitem__(key)
 
+    def __reduce_ex__(self, protocol):
+        """ Modify unpickling behaviour """
+        # Capture instance state and items but remove _access to avoid conflicts
+        state = self.__dict__.copy()
+        state.pop('_access', None)
+        items = list(self.items())
+        # Return a tuple that tells pickle to call our custom _reconstruct method
+        return (self.__class__._reconstruct, (state, items))
+
+    @classmethod
+    def _reconstruct(cls, state, items):
+        """ Modify unpickling behaviour """
+        # Use dict.__new__ to bypass __init__ and avoid unexpected keyword arguments
+        obj = dict.__new__(cls)
+        # First action: force _access to 'normal' to allow item insertion
+        obj._access = 'normal'
+        # Restore the instance’s attribute state
+        obj.__dict__.update(state)
+        # Insert dictionary items bypassing our overridden __setitem__
+        for key, value in items:
+            dict.__setitem__(obj, key, value)
+        # Final action: reset _access to the value stored in ATTR_STORE (or 'normal')
+        obj._access = obj.ATTR_STORE.get('_access', 'normal')
+        return obj
+
     def clear(self):
         if self._access in ('tightened', 'locked'):
             raise PermissionError(f'{self.msg_clear}')

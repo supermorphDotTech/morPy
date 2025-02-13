@@ -15,7 +15,8 @@ from functools import partial
 
 def run(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
-    This function runs the main workflow of the app.
+    This is a demo of ProgressTrackerTk(), a preconfigured GUI for progress
+    tracking. At it's base, it uses tkinter to render the Window displayed.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -53,7 +54,7 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
                                          frame_title="Progress Demo",
                                          stages=stages,
                                          detail_description_on=True,
-                                         console=False,
+                                         console=True,
                                          auto_close=True,
                                          work=task  # run task in a background thread
                                          )

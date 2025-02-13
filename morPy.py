@@ -1,8 +1,9 @@
 r"""
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
 Author:     Bastian Neuwirth
-Date:       12.08.2023
-Version:    0.1
-Descr.:     This module is the interface to the morPy framework.
+Descr.:     This module delivers functions to handle exiting the app.
 """
 
 import lib.bulk_ops as bulk_ops
