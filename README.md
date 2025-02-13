@@ -176,6 +176,10 @@ pip install ultradict
 pip install ultraimport
 ```
 
+```PowerShell
+pip install pillow
+```
+
 #### 1.1.3.3 Copy Packages to Virtual Environment [⇧](#toc) <a name="1.1.3.3"></a>
 
 *Manual installation of* `tcl` *and* `tk` *in the virtual environment. This needed, as tcl does not install correctly, otherwise.*

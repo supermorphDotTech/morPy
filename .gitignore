@@ -8,7 +8,6 @@ initialized_app_dict.txt
 
 # Ignore log and resource directories
 log/
-res/
 
 # Ignore compiled Python files
 *.pyc

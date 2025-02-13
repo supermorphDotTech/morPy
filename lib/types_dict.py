@@ -102,6 +102,7 @@ class MorPyDict(dict):
         app_dict._types_dict_map = ()
     """
 
+    # Set access supported types
     _access_types = ('normal', 'tightened', 'locked')
 
     def __init__(self, name: str='Instance of MorPyDict', access: str='normal'):
@@ -455,10 +456,14 @@ class MorPyNestedButFlatDict(dict):
     # String separator used to identify composite keys for simulated deep nesting
     SEPARATOR = "::"
 
+    # Store attributes in an UltraDict to be rebuilt by spawned processes
+    ATTR_STORE_NAME = "app_dict::_attribute_store"
+    ATTR_STORE = UltraDict(name=ATTR_STORE_NAME)
+    # Keep track of top‐level keys that are “containers”
+    _ultra_keys = ATTR_STORE["_ultra_keys"] = set()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Keep track of top‐level keys that are “containers”
-        self._ultra_keys = set()
         # If some composite keys were already set, record their top-level name.
         for key in super().keys():
             if isinstance(key, str) and self.SEPARATOR in key:
@@ -623,6 +628,24 @@ class MorPyDictUltra(MorPyNestedButFlatDict):
     to tighten or lock the dictionaries, restricting modifications.
     """
 
+    # Store attributes in an UltraDict to be rebuilt by spawned processes
+    ATTR_STORE_NAME = "app_dict::_attribute_store"
+    ATTR_STORE = UltraDict(name=ATTR_STORE_NAME)
+    _access = ATTR_STORE["_access"] = ""
+    _name = ATTR_STORE["_name"] = ""
+    err_unlink = ATTR_STORE["err_unlink"] = ""
+    lang = ATTR_STORE["lang"] = ""
+    loc = ATTR_STORE["loc"] = {}
+    morPy_trace = ATTR_STORE["morPy_trace"] = ""
+    msg__delitem__ = ATTR_STORE["msg__delitem__"] = ""
+    msg__setitem__ = ATTR_STORE["msg__setitem__"] = ""
+    msg_clear = ATTR_STORE["msg_clear"] = ""
+    msg_pop = ATTR_STORE["msg_pop"] = ""
+    msg_popitem = ATTR_STORE["msg_popitem"] = ""
+    msg_setdefault = ATTR_STORE["msg_setdefault"] = ""
+    msg_update = ATTR_STORE["msg_update"] = ""
+
+    # Set access supported types
     _access_types = ('normal', 'tightened', 'locked')
 
     def __init__(self, name: str='Instance of MorPyDictUltra', access: str='normal'):
@@ -861,10 +884,13 @@ class MorPyDictUltra(MorPyNestedButFlatDict):
                 self._init_loc()
 
     def __setitem__(self, key, value):
-        # Allow direct modification of the protected key.
-        if key == "_flat_key_references":
-            super().__setitem__(key, value)
-            return
+        # Allow direct modification of internal keys
+        # TODO specify general access override when unpickling
+        if key in ("_flat_key_references", "_access", "_access_types", "_name", "err_unlink", "lang", "loc"
+                  "morPy_trace", "msg__delitem__", "msg__setitem__", "msg_clear", "msg_pop", "msg_popitem"
+                  "msg_setdefault", "msg_update"):
+                super().__setitem__(key, value)
+                return
         if not isinstance(key, str):
             # Keys must be strings.
             raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
