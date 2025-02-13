@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/fe782e6c-f429-4f4e-955c-ad6ed4378cd7" alt="morPy_more_pie_02" style="max-width:66%; height:auto;">
+<img src="https://github.com/user-attachments/assets/38a7a1e8-2a55-4f42-95a8-691a1cd77586" alt="supermorph_morPy_alpha_badge_v001" style="max-width:66%; height:auto;">
 
 More solutions. More insights. morPy.
 
