@@ -52,6 +52,10 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
                 f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{type(e).__name__}: {e}')
     finally:
+        # Initialization complete flag
+        # Up until this point prints to console are mirrored on splash screen
+        app_dict["run"]["init_complete"] = True
+
         return{
             'morpy_trace' : morpy_trace,
             'check' : check,

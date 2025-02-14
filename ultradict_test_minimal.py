@@ -23,7 +23,7 @@ def main():
     ref_dict = {"d" : d, "d3" : d3}
 
     processes = []
-    for i in range(50):
+    for i in range(110):
         p = Process(target=child_task)
         p.start()
         processes.append(p)

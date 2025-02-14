@@ -705,7 +705,8 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                     # Enqueue a process watcher
                     process_watcher = (watcher, morpy_trace, app_dict, task)
                     app_dict["proc"]["morpy"]["process_q"].enqueue(
-                        morpy_trace, app_dict, priority=priority, task=process_watcher, autocorrect=False, is_process=False
+                        morpy_trace, app_dict, priority=priority, task=process_watcher,
+                        autocorrect=False, is_process=False
                     )
 
             else:
@@ -717,7 +718,10 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                         f'{app_dict["loc"]["morpy"]["run_parallel_task_sys_id"]}: {task}\n'
                         f'{app_dict["loc"]["morpy"]["run_parallel_task"]}: {task_sys_id}')
                 else:
-                    app_dict["proc"]["morpy"]["queue"].enqueue(morpy_trace, app_dict, priority=priority, task=partial(task, morpy_trace, app_dict))
+                    app_dict["proc"]["morpy"]["queue"].enqueue(
+                        morpy_trace, app_dict, priority=priority,
+                        task=partial(task, morpy_trace, app_dict)
+                    )
 
                 # Could not get process ID. Task was enqueued again. Issues encountered:
                 # [CONDITIONAL] Process ID conflict. Possible concurrent process creation. Process creation skipped.
@@ -794,6 +798,7 @@ def spawn(task: list):
         p.start()
     """
 
+    module = 'lib.mp'
     app_dict = {}
 
     try:
@@ -802,16 +807,20 @@ def spawn(task: list):
         # TODO solve app_dict sharing - implement nested-but-flat solution here
         from lib.init import types_dict_build
         from lib.init import types_dict_finalize
-
-        from lib.types_dict import MorPyDict, MorPyDictUltra
+        from lib.types_dict import MorPyDictUltra
 
         process_id = task[1]["process_id"]
 
+        # Recreate shared root dictionary
+        # app_dict = types_dict_build(task[1])
+
         # Link to shared memory
-        app_dict = MorPyDictUltra(
-            name="app_dict",
-            create=False,
-        )
+        # app_dict = MorPyDictUltra(
+        #     name="app_dict",
+        #     create=False
+        # )
+        # Rebuild morPy dictionary
+        app_dict = types_dict_build(task[1])
 
         # Add process specific dictionaries to app_dict
         app_dict["proc"]["morpy"]._update_self(_access="normal")
@@ -819,37 +828,36 @@ def spawn(task: list):
 
         app_dict["proc"]["morpy"][f'P{process_id}'] = MorPyDictUltra(
             name=f'app_dict[proc][morPy][P{process_id}]',
-            create=True,
         )
         app_dict["proc"]["morpy"][f'P{process_id}']["T0"] = MorPyDictUltra(
             name=f'app_dict[proc][morPy][P{process_id}][T0]',
-            create=True,
         )
         app_dict["proc"]["app"][f'P{process_id}'] = MorPyDictUltra(
             name=f'app_dict[proc][app][P{process_id}]',
-            create=True,
         )
         app_dict["proc"]["app"][f'P{process_id}']["T0"] = MorPyDictUltra(
             name=f'app_dict[proc][app][P{process_id}][T0]',
-            create=True,
         )
 
         app_dict["proc"]["morpy"]._update_self(_access="tightened")
         app_dict["proc"]["app"]._update_self(_access="tightened")
 
-        app_dict = types_dict_build(task[1])
+        # Set access restrictions
         types_dict_finalize(task[1], app_dict)
 
+        # Assign referenced app_dict to task (process) and run it
         task[2] = app_dict
         func, *args = task
         result = func(*args)
 
     except Exception as e:
         try:
-            print(f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
+            print(f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
+                  f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
                   f'{type(e).__name__}: {e}')
         except KeyError:
             print(f'Line: {sys.exc_info()[-1].tb_lineno}\n'
+                  f'in module {module}\n'
                   f'{type(e).__name__}: {e}')
 
 @metrics

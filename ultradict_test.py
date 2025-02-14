@@ -17,7 +17,6 @@ def u_dict_build(create: bool=False):
         full_dump_size=1_000_000,
         auto_unlink=False
     )
-    # app_dict = {}
 
     app_dict["nested_udict"] = UltraDict(
         name="nested_udict",
@@ -27,9 +26,6 @@ def u_dict_build(create: bool=False):
         full_dump_size=1_000_000,
         auto_unlink=False
     )
-    # app_dict["nested_udict"] = {}
-
-    app_dict["nested_dict"] = {}
 
     return app_dict
 
@@ -48,7 +44,7 @@ def parallel_task(app_dict):
 
         # Hold on until all processes are ready
         while not app_dict["run"]:
-            pass
+            time.sleep(.1)
 
         while i < total:
             i += 1
@@ -92,7 +88,6 @@ if __name__ == '__main__':
     j = 50 # Processes to be started
     processes = []
     while i < j:
-        # TODO mitigate in main
         p = Process(target=partial(spawn_wrapper, task))
         p.start()
         processes.append(p)

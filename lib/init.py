@@ -68,7 +68,7 @@ def init(morpy_trace):
         # ############################################
 
         # Build the app_dict
-        init_dict = types_dict_build(morpy_trace_init)
+        init_dict = types_dict_build(morpy_trace_init, create=True)
 
         init_dict["proc"]["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
         init_dict["proc"]["morpy"].update({"proc_available" : set()})
@@ -207,9 +207,6 @@ def init(morpy_trace):
         lambda: f'{init_dict["loc"]["morpy"]["init_finished"]}\n'
             f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["run"]["init_rnt_delta"]}')
 
-        # Set an initialization complete flag
-        init_dict["run"]["init_complete"] = True
-
         # Lock and tighten nested dictionaries
         types_dict_finalize(morpy_trace_init, init_dict)
 
@@ -225,12 +222,14 @@ def init(morpy_trace):
         morpy_fct.handle_exception_init(e)
         raise
 
-def types_dict_build(morpy_trace: dict):
+def types_dict_build(morpy_trace: dict, create: bool=False):
     r"""
     This function builds the app_dict. This is needed in spawned processes, too
     to successfully link the nested dictionaries.
 
     :param morpy_trace: operation credentials and tracing
+    :param create: If True, a (nested) dictionary is created. Otherwise, purely
+        references to the UltraDict.
 
     :return init_dict: morPy global dictionary containing app configurations
 
@@ -251,86 +250,106 @@ def types_dict_build(morpy_trace: dict):
         # With GIL, use a flat app_dict referencing UltraDict instances and mask it as nested.
         # TODO remove branch force
         if gil or True:
-            from lib.types_dict import MorPyDictUltra
+            from lib.types_dict import MorPyDictUltraRoot, MorPyDictUltra
 
-            init_dict = MorPyDictUltra(
+            init_dict = MorPyDictUltraRoot(
                 name="app_dict",
+                create=create
             )
 
             init_dict["conf"] = MorPyDictUltra(
                 name="app_dict[conf]",
+                create=create
             )
 
             init_dict["sys"] = MorPyDictUltra(
                 name="app_dict[sys]",
+                create=create
             )
 
             init_dict["run"] = MorPyDictUltra(
                 name="app_dict[run]",
+                create=create
             )
 
             init_dict["global"] = MorPyDictUltra(
                 name="app_dict[global]",
+                create=create
             )
 
             init_dict["global"]["morpy"] = MorPyDictUltra(
                 name="app_dict[global][morPy]",
+                create=create
             )
 
             init_dict["global"]["app"] = MorPyDictUltra(
                 name="app_dict[global][app]",
+                create=create
             )
 
             init_dict["proc"] = MorPyDictUltra(
                 name="app_dict[proc]",
+                create=create
             )
 
             init_dict["proc"]["morpy"] = MorPyDictUltra(
                 name="app_dict[proc][morPy]",
+                create=create
             )
 
             init_dict["proc"]["morpy"][f'P{morpy_trace["process_id"]}'] = MorPyDictUltra(
                 name=f'app_dict[proc][morPy][P{morpy_trace["process_id"]}]',
+                create=create
             )
 
             init_dict["proc"]["morpy"][f'P{morpy_trace["process_id"]}'][f'T{morpy_trace["thread_id"]}'] = MorPyDictUltra(
                 name=f'app_dict[proc][morPy][P{morpy_trace["process_id"]}][T{morpy_trace["thread_id"]}]',
+                create=create
             )
 
             init_dict["proc"]["app"] = MorPyDictUltra(
                 name="app_dict[proc][app]",
+                create=create
             )
 
             init_dict["proc"]["app"][f'P{morpy_trace["process_id"]}'] = MorPyDictUltra(
                 name=f'app_dict[proc][app][P{morpy_trace["process_id"]}]',
+                create=create
             )
 
             init_dict["proc"]["app"][f'P{morpy_trace["process_id"]}'][f'T{morpy_trace["thread_id"]}'] = MorPyDictUltra(
                 name=f'app_dict[proc][app][P{morpy_trace["process_id"]}][T{morpy_trace["thread_id"]}]',
+                create=create
             )
 
             init_dict["loc"] = MorPyDictUltra(
                 name="app_dict[loc]",
+                create=create
             )
 
             init_dict["loc"]["morpy"] = MorPyDictUltra(
                 name="app_dict[loc][morPy]",
+                create=create
             )
 
             init_dict["loc"]["morpy_dgb"] = MorPyDictUltra(
                 name="app_dict[loc][mpy_dbg]",
+                create=create
             )
 
             init_dict["loc"]["app"] = MorPyDictUltra(
                 name="app_dict[loc][app]",
+                create=create
             )
 
             init_dict["loc"]["app_dbg"] = MorPyDictUltra(
                 name="app_dict[loc][app_dbg]",
+                create=create
             )
 
             init_dict["global"]["morpy"]["logs_generate"] = MorPyDictUltra(
                 name="app_dict[global][morPy][logs_generate]",
+                create=create
             )
         # Without GIL, allow for true nesting
         else:

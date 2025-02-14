@@ -7,9 +7,10 @@ Descr.:     Multiprocessing functionality for morPy.
 """
 
 import lib.conf as conf
+from lib.decorators import log
+
 import importlib
 import sys
-
 from UltraDict import UltraDict
 
 class AttributeGuard:
@@ -119,10 +120,8 @@ class MorPyDict(dict):
 
         :example:
             app_dict["global"]["app"]["my_dict"] = MorPyDict(
-                morPy_trace,
-                app_dict["conf"],
-                access="tightened",
-                recurse_register = app_dict[global][app]._name
+                name=app_dict["conf"],
+                access="tightened"
             )
         """
 
@@ -436,6 +435,433 @@ class MorPyDict(dict):
         else:
             return super().setdefault(key, default)
 
+class MorPyDictUltra(UltraDict):
+
+    r"""
+	morPy specific dictionary supporting multiprocessing.
+    """
+
+    # Set access supported types
+    _access_types = ('normal', 'tightened', 'locked')
+
+    def __init__(self, *args, name: str=None, access: str='normal',
+                 create: bool=False, recurse_register=None, **kwargs):
+        r"""
+        :param name: Name of the dictionary for tracing
+        :param access: Access types are
+            'normal' (default) - works like any Python dictionary
+            'tightened' - Keys may not be altered (no delete or add)
+            'locked' - Keys and values are locked, changes are prohibited entirely
+        :param create: If True, a (nested) dictionary is created. Otherwise, purely
+            references to the UltraDict.
+        :param recurse_register: If not None, recursion is activated for UltraDict. Expects
+            the recurse_register of the root UltraDict.
+
+        :example:
+            app_dict["global"]["app"]["my_dict"] = MorPyDict(
+                morPy_trace,
+                app_dict["conf"],
+                access="tightened",
+                recurse_register = app_dict[global][app]._name
+            )
+        """
+
+        try:
+            if name is not None:
+                # Initialize a mock mpy_trace
+                self.mpy_trace = {
+                    'module': '',
+                    'operation': name,
+                    'tracing': 'morPy',
+                    'process_id': None,
+                    'thread_id': None,
+                    'task_id': None,
+                    'log_enable': False,
+                    'interrupt_enable': False,
+                }
+
+                # Pass initialization arguments to UltraDict
+                self._name = kwargs.setdefault('name', name)
+                self.create = kwargs.setdefault('create', create)
+                self.shared_lock = kwargs.setdefault('shared_lock', True)
+                self.recurse = kwargs.setdefault('recurse', False)
+                self.buffer_size = kwargs.setdefault('buffer_size', 1_000_000)
+                self.full_dump_size = kwargs.setdefault('full_dump_size', 1_000_000)
+                self.auto_unlink = kwargs.setdefault('auto_unlink', False)
+                # self.recurse_register = kwargs.setdefault('recurse_register', name)
+                # self.serializer = kwargs.setdefault('serializer', dill)
+
+                # Initialize the UltraDict super class
+                super().__init__(*args, **kwargs)
+                self._name = name
+
+                # Initialize localization and app configuration
+                self._init_conf()
+
+                # Access control
+                self._set_access(access)
+
+                # Initialize localization messages
+                self._init_loc()
+
+                if not self.lock:
+                    raise RuntimeError("UltraDict ERROR\nself.lock")
+                    sys.exit()
+
+            else:
+                raise RuntimeError("UltraDict ERROR\nname=None")
+
+        except Exception as e:
+            msg = (f'CRITICAL {self._name}.__init__(): Failed to initialize.\n'
+                   f'Line: {sys.exc_info()[-1].tb_lineno}\n'
+                   f'{type(e).__name__}: {e}')
+
+            raise RuntimeError(msg)
+            sys.exit()
+
+    def _init_conf(self):
+        # Initialize localization and app configuration
+        self.loc = {}
+        try:
+            self.lang = conf.settings().get('localization', '')
+            loc_morpy = importlib.import_module(self.lang)
+            messages = getattr(loc_morpy, 'loc_morpy')().get('MorPyDict', {})
+            for key, value in messages.items():
+                self.loc.update({key: value})
+        # Fallback to english if localization is not available
+        except (AttributeError, ImportError):
+            self.lang = 'en_US'
+            messages = {
+                'MorPyDict_denied' : 'Prohibited method',
+                'MorPyDict_new_key' : 'Keys can not be added.',
+                'MorPyDict_del_key' : 'Keys can not be deleted.',
+                'MorPyDict_clear' : 'Dictionary can not be cleared.',
+                'MorPyDict_lock' : 'Dictionary is locked.',
+                'MorPyDict_item' : 'Item',
+                'MorPyDict_key' : 'Key',
+                'MorPyDict_val' : 'Value',
+                "MorPyDict_key_str": "Keys must be strings.",
+                "MorPyDict_empty": "Dictionary is empty.",
+            }
+            for key, value in messages.items():
+                self.loc.update({key : value})
+        except Exception as e:
+            raise RuntimeError(
+                f'CRITICAL {self._name}._init_conf(): Failed to initialize.\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
+
+    def _set_access(self, _access='normal'):
+        try:
+            # Evaluate access type
+            if _access not in self._access_types:
+                _access = 'normal'
+            self._access = _access
+        except Exception as e:
+            raise RuntimeError(
+                f'CRITICAL {self._name}._set_access():\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
+
+    def _init_loc(self):
+        # Define access level restrictions
+        try:
+            self._loc_msg()
+        except Exception as e:
+            raise RuntimeError(
+                f'CRITICAL {self._name}._init_loc():\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
+
+    def _loc_msg(self):
+        try:
+            # Define localized messages for prohibited actions based on the dictionary access level
+            # Error Guard and fallback messages for testing
+            self.loc = {} if not self.loc else self.loc
+            self.loc["MorPyDict_key_str"] = "Keys must be strings."
+            self.loc["MorPyDict_empty"] = "Dictionary is empty."
+            self.msg__setitem__ = ''
+            self.msg__delitem__ = ''
+            self.msg_clear = ''
+            self.msg_pop = ''
+            self.msg_popitem = ''
+            self.msg_update = ''
+            self.msg_setdefault = ''
+            self.loc["MorPyDict_err_unlink"] = "Error unlinking UltraDict instance"
+
+            if self._access == 'tightened':
+                # Prohibited method .setitem() Keys cannot be added.
+                self.msg__setitem__ = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setitem()\n'
+                    f'{self.loc["MorPyDict_new_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .delitem() Keys cannot be deleted.
+                self.msg__delitem__ = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.delitem()\n'
+                    f'{self.loc["MorPyDict_del_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .clear() Dictionary cannot be cleared.
+                self.msg_clear = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.clear()\n'
+                    f'{self.loc["MorPyDict_clear"]}'
+                )
+                # Prohibited method .pop() Keys cannot be deleted.
+                self.msg_pop = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.pop()\n'
+                    f'{self.loc["MorPyDict_del_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .popitem() Keys cannot be deleted.
+                self.msg_popitem = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.popitem()\n'
+                    f'{self.loc["MorPyDict_del_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .update() Keys cannot be added.
+                self.msg_update = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.update()\n'
+                    f'{self.loc["MorPyDict_new_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .setdefault() Keys cannot be added.
+                self.msg_setdefault = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setdefault()\n'
+                    f'{self.loc["MorPyDict_new_key"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+            elif self._access == 'locked':
+                # Prohibited method .setitem() Dictionary is locked.
+                self.msg__setitem__ = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setitem()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .delitem() Dictionary is locked.
+                self.msg__delitem__ = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.delitem()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .clear() Dictionary is locked.
+                self.msg_clear = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.clear()\n'
+                    f'{self.loc["MorPyDict_lock"]}'
+                )
+                # Prohibited method .pop() Dictionary is locked.
+                self.msg_pop = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.pop()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .popitem() Dictionary is locked.
+                self.msg_popitem = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.popitem()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .update() Dictionary is locked.
+                self.msg_update = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.update()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Prohibited method .setdefault() Dictionary is locked.
+                self.msg_setdefault = (
+                    f'{self.loc["MorPyDict_denied"]}: {self._name}.setdefault()\n'
+                    f'{self.loc["MorPyDict_lock"]}\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+                # Error unlinking UltraDict instance
+                self.err_unlink = (
+                    f'{self.loc["MorPyDict_err_unlink"]}: {self._name}.setdefault()\n'
+                    f'{self.loc["MorPyDict_key"]}:'
+                )
+        except Exception as e:
+            raise RuntimeError(
+                f'CRITICAL {self._name}._loc_msg():\n'
+                f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n'
+            )
+
+    def _update_self(self, _access=None, localization_force=False):
+        # Allow for reinitialization without data loss.
+
+        # Evaluate access type change
+        if _access == self._access:
+            pass
+        else:
+            self._set_access(_access=_access)
+
+        # Evaluate localization reinitialization
+        if conf.settings:
+            loc_conf = conf.settings().get('localization', '')
+            if loc_conf != self.lang or localization_force:
+                self._init_loc()
+        else:
+            pass  # Handle cases where conf.settings() is not available
+
+    def _get_lock(self):
+        r""" Retrieve lock depending on super class """
+        if isinstance(self, UltraDict):
+            return self.lock
+        else:
+            return None
+
+    def _get_super(self):
+        r""" Setup methods depending on super class """
+        if isinstance(self, UltraDict):
+            return self.lock, super()
+        else:
+            return None, None
+
+    def __setitem__(self, key, value):
+        lock, super_class = self._get_super()
+        if not isinstance(key, str):
+            # Keys must be strings.
+            raise TypeError(f'{self.loc["cl_mpy_dict_key_str"]}:')
+        # TODO make verbose warning for regular dict (can't be shared)
+        if self._access == 'tightened':
+            msg = f'{self.msg__setitem__} {key}'
+            if key not in super_class.keys():
+                raise KeyError(msg)
+            else:
+                with lock:
+                    super_class.__setitem__(key, value)
+
+        elif self._access == 'locked':
+            msg = f'{self.msg__setitem__} {key}'
+            raise PermissionError(msg)
+        else:
+            with lock:
+                super_class.__setitem__(key, value)
+
+    def __contains__(self, key):
+        lock, super_class = self._get_super()
+        if not isinstance(key, str):
+            raise TypeError("Keys must be strings.")
+        with lock:
+            return key in super_class.keys()
+
+    def __getitem__(self, key):
+        lock, super_class = self._get_super()
+        if not isinstance(key, str):
+            raise TypeError(f'{self.loc["cl_mpy_dict_key_str"]}:')
+        with lock:
+            return super_class.__getitem__(key)
+
+    def __delitem__(self, key):
+        lock, super_class = self._get_super()
+        if not isinstance(key, str):
+            # Keys must be strings.
+            raise TypeError(f'{self.loc["cl_mpy_dict_key_str"]}:')
+        if self._access in ('tightened', 'locked'):
+            msg = f'{self.msg__delitem__} {key}'
+            raise PermissionError(msg)
+        else:
+            with lock:
+                super_class.__delitem__(key)
+
+    def get(self, key, default=None):
+        lock, super_class = self._get_super()
+        if not isinstance(key, str):
+            # Keys must be strings.
+            raise TypeError(f'{self.loc["cl_mpy_dict_key_str"]}:')
+        with lock:
+            return super_class.get(key, default)
+
+    def clear(self):
+        lock, super_class = self._get_super()
+        if self._access in ('tightened', 'locked'):
+            msg = f'{self.msg_clear}'
+            raise PermissionError(msg)
+        else:
+            with lock:
+                super_class.clear()
+
+    def pop(self, key, default=None):
+        lock, super_class = self._get_super()
+        if not isinstance(key, str):
+            # Keys must be strings.
+            raise TypeError(f'{self.loc["cl_mpy_dict_key_str"]}:')
+        if self._access in ('tightened', 'locked'):
+            msg = f'{self.msg_pop} {key}'
+            raise PermissionError(msg)
+        else:
+            with lock:
+                return super_class.pop(key, default)
+
+    def popitem(self):
+        lock, super_class = self._get_super()
+        if self._access in ('tightened', 'locked'):
+            if self:
+                last_key = next(reversed(self))
+                msg = f'{self.msg_popitem} {last_key}'
+                raise PermissionError(msg)
+            else:
+                # Dictionary is empty.
+                raise TypeError(f'{self.loc["cl_mpy_dict_empty"]}:')
+        else:
+            with lock:
+                key, item = super_class.popitem()
+                return key, item
+
+    def update(self, *args, **kwargs):
+        lock, super_class = self._get_super()
+        if self._access == 'tightened':
+            new_items = dict(*args, **kwargs)
+            with lock:
+                for key in new_items.keys():
+                    if key not in super_class.keys():
+                        msg = f'{self.msg_update} {key}'
+                        raise PermissionError(msg)
+                super_class.update(*args, **kwargs)
+        elif self._access == 'locked':
+            msg = f'{self.msg_update}'
+            raise PermissionError(msg)
+        else:
+            with lock:
+                super_class.update(*args, **kwargs)
+
+    def setdefault(self, key, default=None):
+        lock, super_class = self._get_super()
+        if not isinstance(key, str):
+            # Keys must be strings.
+            raise TypeError(f'{self.loc["cl_mpy_dict_key_str"]}:')
+        if self._access == 'tightened':
+            if key not in super_class.keys():
+                msg = f'{self.msg_setdefault} {key}'
+                raise PermissionError(msg)
+            else:
+                with lock:
+                    return super_class.setdefault(key, default)
+        elif self._access == 'locked':
+            msg = f'{self.msg_setdefault} {key}'
+            if key not in super_class.keys():
+                raise PermissionError(msg)
+            else:
+                if log:
+                    log(self.mpy_trace, self.loc, msg, 'warning')
+                with lock:
+                    return super_class.__getitem__(key)
+        else:
+            with lock:
+                return super_class.setdefault(key, default)
+
+    def get_recurse_register(self):
+        # Access the recurse_register attribute if available.
+        if hasattr(self, 'recurse_register'):
+            return self.recurse_register
+        return None
+
+    def print_status(self):
+        lock, super_class = self._get_super()
+        return super_class.print_status()
+
+    def __repr__(self):
+        lock, super_class = self._get_super()
+        return f'cl_mpy_dict(name={self._name}, access={self._access}, data={super_class.__repr__()})'
+
 class MorPyNestedButFlatDict(dict):
     """
     A dictionary subclass that “flattens” nested UltraDict containers.
@@ -617,7 +1043,7 @@ class _MorPyNestedButFlatDictProxy:
         inner = ", ".join(f"{k!r}: {self[k]!r}" for k in self)
         return f"{{{inner}}}"
 
-class MorPyDictUltra(MorPyNestedButFlatDict):
+class MorPyDictUltraRoot(MorPyNestedButFlatDict):
     r"""
 	This is the dictionary-like class for the morPy framework required for
 	multiprocessing. It is subclassed from MorPyNestedButFlatDict() which
@@ -648,13 +1074,14 @@ class MorPyDictUltra(MorPyNestedButFlatDict):
     # Set access supported types
     _access_types = ('normal', 'tightened', 'locked')
 
-    def __init__(self, name: str='Instance of MorPyDictUltra', access: str='normal'):
+    def __init__(self, name: str='app_dict', access: str='normal', create: bool=True):
         r"""
         :param name: Name of the dictionary for tracing
         :param access: Access types are
             'normal' (default) - works like any Python dictionary
             'tightened' - Keys may not be altered (no delete or add)
             'locked' - Keys and values are locked, changes are prohibited entirely
+        :param create: If True, new UltraDict's will be created.
 
         :return:
             -
@@ -950,6 +1377,20 @@ class MorPyDictUltra(MorPyNestedButFlatDict):
         # Final action: reset _access to the value stored in ATTR_STORE (or 'normal')
         obj._access = obj.ATTR_STORE.get('_access', 'normal')
         return obj
+
+    def update(self, *args, **kwargs):
+        if self._access == 'tightened':
+            new_items = dict(*args, **kwargs)
+            for key in new_items.keys():
+                if key not in super().keys():
+                    msg = f'{self.msg_update} {key}'
+                    raise PermissionError(msg)
+            super().update(*args, **kwargs)
+        elif self._access == 'locked':
+            msg = f'{self.msg_update}'
+            raise PermissionError(msg)
+        else:
+            super().update(*args, **kwargs)
 
     def clear(self):
         if self._access in ('tightened', 'locked'):
