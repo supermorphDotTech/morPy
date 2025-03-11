@@ -98,9 +98,9 @@ class FileDirSelectTk:
         :return: self
         """
 
-        module = 'ui_tk'
-        operation = 'FileDirSelectTk.__init__(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'FileDirSelectTk.__init__(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             self._init(morpy_trace, app_dict, rows_data, title=title, icon_data=icon_data)
@@ -179,11 +179,11 @@ class FileDirSelectTk:
             dir = results["dir_selected"]
         """
 
-        module = 'ui_tk'
-        operation = 'FileDirSelectTk._init(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'FileDirSelectTk._init(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             self.rows_data = rows_data
@@ -236,7 +236,7 @@ class FileDirSelectTk:
             # Bind the _on_close() method to closing the window
             self.root.protocol("WM_DELETE_WINDOW", lambda: self._on_close(morpy_trace, app_dict))
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -262,11 +262,11 @@ class FileDirSelectTk:
             check: Indicates whether initialization completed without errors
         """
 
-        module = 'ui_tk'
-        operation = 'FileDirSelectTk._setup_ui(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'FileDirSelectTk._setup_ui(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Optional top icon row.
@@ -368,7 +368,7 @@ class FileDirSelectTk:
             self.frame_width = self.root.winfo_width()
             self.frame_height = self.root.winfo_height()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -395,11 +395,11 @@ class FileDirSelectTk:
             check: Indicates whether initialization completed without errors
         """
 
-        module = 'ui_tk'
-        operation = 'FileDirSelectTk._on_select(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'FileDirSelectTk._on_select(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = True
+        check: bool = True
 
         try:
             if config.get("is_dir", False):
@@ -423,7 +423,7 @@ class FileDirSelectTk:
                 self.row_widgets[row_name]["entry"].delete(0, tk.END)
                 self.row_widgets[row_name]["entry"].insert(0, path)
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -450,18 +450,18 @@ class FileDirSelectTk:
             check: Indicates whether initialization completed without errors
         """
 
-        module = 'ui_tk'
-        operation = 'FileDirSelectTk._on_confirm(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'FileDirSelectTk._on_confirm(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             for row_name, widgets in self.row_widgets.items():
                 self.selections[row_name] = widgets["entry"].get()
             self.root.quit()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -491,11 +491,11 @@ class FileDirSelectTk:
             self._on_close(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'FileDirSelectTk._on_close(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'FileDirSelectTk._on_close(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             self.root.quit()
@@ -506,7 +506,7 @@ class FileDirSelectTk:
             # Release the global interrupts
             app_dict["global"]["morpy"]["interrupt"] = False
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -532,18 +532,18 @@ class FileDirSelectTk:
             selections: A dictionary of user inputs keyed by row name.
         """
 
-        module = 'ui_tk'
-        operation = 'FileDirSelectTk.run(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'FileDirSelectTk.run(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             self.root.mainloop()
             # After mainloop, destroy the window.
             self.root.destroy()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -636,9 +636,9 @@ class GridChoiceTk:
         :return: self
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.__init__(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.__init__(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             self._init(morpy_trace, app_dict, tile_data, title=title, default_tile_size=default_tile_size,
@@ -716,11 +716,11 @@ class GridChoiceTk:
             result = gui.run(morpy_trace, app_dict)["choice"]
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.__init__(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.__init__(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             self.tile_data = tile_data
@@ -770,7 +770,7 @@ class GridChoiceTk:
             # Fix the frame size, since it's contents do not resize.
             self.root.resizable(False, False)
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -796,11 +796,11 @@ class GridChoiceTk:
             check: Indicates whether initialization completed without errors
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._setup_ui(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._setup_ui(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # If icon_data is provided, create a top row for icons.
@@ -888,7 +888,7 @@ class GridChoiceTk:
                 self.frame_width = self.root.winfo_width()
                 self.frame_height = self.root.winfo_height()
 
-                check = True
+                check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -915,17 +915,17 @@ class GridChoiceTk:
             check: Indicates whether initialization completed without errors
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._on_select(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._on_select(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             self.choice = value
             self.root.quit()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -955,11 +955,11 @@ class GridChoiceTk:
             self._on_close(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'GridChoiceTk._on_close(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'GridChoiceTk._on_close(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             self.root.quit()
@@ -970,7 +970,7 @@ class GridChoiceTk:
             # Release the global interrupts
             app_dict["global"]["morpy"]["interrupt"] = False
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1014,17 +1014,17 @@ class GridChoiceTk:
             result = gui.run(morpy_trace, app_dict)["choice"]
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.run(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.run(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             self.root.mainloop()
             self.root.destroy()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1182,9 +1182,9 @@ class ProgressTrackerTk:
         :return: self
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.__init__(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.__init__(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             self._init(morpy_trace, app_dict, frame_title=frame_title, frame_width=frame_width,
@@ -1246,11 +1246,11 @@ class ProgressTrackerTk:
                 work=work)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._init(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._init(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         self.frame_height_sizing = False
         self.height_factor_headlines = 0
         self.height_factor_description = 0
@@ -1392,11 +1392,11 @@ class ProgressTrackerTk:
             self._create_widgets(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._create_widgets(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._create_widgets(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         self.overall_progress_text = None
         self.stage_progress_text = None
 
@@ -1510,7 +1510,7 @@ class ProgressTrackerTk:
             if self.console_on:
                 self._redirect_console(morpy_trace, app_dict)
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1553,17 +1553,17 @@ class ProgressTrackerTk:
             self._redirect_console(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._redirect_console(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._redirect_console(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             sys.stdout = self
             sys.stderr = self
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1610,17 +1610,17 @@ class ProgressTrackerTk:
             self._stop_console_redirection(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._stop_console_redirection(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._stop_console_redirection(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1650,11 +1650,11 @@ class ProgressTrackerTk:
             self._main_loop(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._main_loop(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._main_loop(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Immediately exit if done/closing.
@@ -1680,7 +1680,7 @@ class ProgressTrackerTk:
             if not self.done and self.root.winfo_exists():
                 self.root.after(self.main_loop_interval, lambda: self._main_loop(morpy_trace, app_dict))
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1709,11 +1709,11 @@ class ProgressTrackerTk:
             self._update_console(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._update_console(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._update_console(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Check, if running in main thread
@@ -1728,7 +1728,7 @@ class ProgressTrackerTk:
                 # Enforce an update on the GUI
                 self._enforce_update()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1775,11 +1775,11 @@ class ProgressTrackerTk:
             detail_description=description)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.begin_stage(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.begin_stage(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Prevent updates after the GUI is closed.
@@ -1792,7 +1792,7 @@ class ProgressTrackerTk:
                 }
                 self.ui_calls.put(("begin_stage", call_kwargs))
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1839,11 +1839,11 @@ class ProgressTrackerTk:
             detail_description=description)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.begin_stage(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.begin_stage(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Prevent updates after the GUI is closed.
@@ -1877,7 +1877,7 @@ class ProgressTrackerTk:
                 # Enforce an update on the GUI
                 self._enforce_update()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1906,16 +1906,16 @@ class ProgressTrackerTk:
             self.end_stage(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.end_stage(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.end_stage(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             self.update_progress(morpy_trace, app_dict, current=self.stage_limit)
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1976,11 +1976,11 @@ class ProgressTrackerTk:
             progress.update_progress(morpy_trace, app_dict, current=curr_cnt, detail_description=msg)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.update_progress(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.update_progress(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Prevent updates after the GUI is closed.
@@ -1991,7 +1991,7 @@ class ProgressTrackerTk:
                 }
                 self.ui_calls.put(("update_progress", call_kwargs))
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -2021,11 +2021,11 @@ class ProgressTrackerTk:
             check: Indicates whether initialization completed without errors
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._real_update_progress(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._real_update_progress(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         reset_stage_progress = False
 
         try:
@@ -2119,7 +2119,7 @@ class ProgressTrackerTk:
             # Enforce an update on the GUI
             self._enforce_update()
 
-            check = True
+            check: bool = True
 
         # Handle errors from GUI after aborting
         except TclError as tcl_e:
@@ -2164,11 +2164,11 @@ class ProgressTrackerTk:
             )
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.update_text(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.update_text(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Prevent updates after the GUI is closed.
@@ -2182,7 +2182,7 @@ class ProgressTrackerTk:
                 }
                 self.ui_calls.put(("update_text", call_kwargs))
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -2220,11 +2220,11 @@ class ProgressTrackerTk:
             )
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._real_update_text(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._real_update_text(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Avoid updates after "abort"
@@ -2269,7 +2269,7 @@ class ProgressTrackerTk:
                     # Enforce an update on the GUI
                     self._enforce_update()
 
-            check = True
+            check: bool = True
 
         # Handle errors from GUI after aborting
         except TclError as tcl_e:
@@ -2309,18 +2309,18 @@ class ProgressTrackerTk:
             progress.run(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.run(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.run(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Start our custom loop
             self._main_loop(morpy_trace, app_dict)
             self.root.mainloop()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -2352,11 +2352,11 @@ class ProgressTrackerTk:
             self._start_work_thread(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._start_work_thread(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._start_work_thread(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         def _thread_wrapper():
             try:
@@ -2374,7 +2374,7 @@ class ProgressTrackerTk:
             self.worker_thread = threading.Thread(target=_thread_wrapper, daemon=True)
             self.worker_thread.start()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -2403,11 +2403,11 @@ class ProgressTrackerTk:
             self._on_close(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk._on_close(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk._on_close(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # In case of aborting progress quit the program.
@@ -2443,7 +2443,7 @@ class ProgressTrackerTk:
             self.root.quit()
             self.root.destroy()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -2472,18 +2472,18 @@ class ProgressTrackerTk:
             self.get_console_output(morpy_trace, app_dict)
         """
 
-        module = 'ui_tk'
-        operation = 'ProgressTrackerTk.get_console_output(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'ui_tk'
+        operation: str = 'ProgressTrackerTk.get_console_output(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         console_text = ""
 
         try:
             if self.console_output is not None:
                 console_text = self.console_output.get("1.0", tk.END).strip()
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -2545,11 +2545,11 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'ui_tk'
-    operation = 'dialog_sel_file(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'ui_tk'
+    operation: str = 'dialog_sel_file(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
     file_path = None
     file_selected = False
 
@@ -2593,7 +2593,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
             # Create a path object
             morpy_fct.pathtool(file_path)
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
@@ -2632,11 +2632,11 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'ui_tk'
-    operation = 'dialog_sel_dir(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'ui_tk'
+    operation: str = 'dialog_sel_dir(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
     dir_path = None
     dir_selected = False
 
@@ -2676,7 +2676,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
             # Create a path object
             morpy_fct.pathtool(dir_path)
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",

@@ -58,32 +58,32 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
                 DATA2 : ...}
 
     :example:
-        src_file_path = 'C:\myfile.csv'
-        delimiter = '","'
-        csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
-        csv_dict = csv["csv_dict"]
-        csv_header1 = csv["csv_dict"]["DATA1"]["header"]
-        print(f'{csv_header1}')
+    >>> src_file_path = 'C:\myfile.csv'
+    >>> delimiter = '","'
+    >>> csv = csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+    >>> csv_dict = csv["csv_dict"]
+    >>> csv_header1 = csv["csv_dict"]["DATA1"]["header"]
+    >>> print(f'{csv_header1}')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'lib.csv'
-    operation = 'csv_read(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.csv'
+    operation: str = 'csv_read(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
-    csv_copy_dict = {}
-    csv_dict = {}
-    header = ()
-    data_table = ''
-    columns = 0
-    header_row = -1
-    data_rows = 0 # Sum of data rows in a data table
-    r_data = 0 # Row counter for file processing
-    delim_check = False # True, if delimiter identified
-    header_cnt_delimiters = -1 # Number of determined columns in header
-    data_subdict_nr = 0
-    data_cnt_row = 0 # Counter for printing the data row sub-dictionary
+    check: bool = False
+    csv_copy_dict: dict = {}
+    csv_dict: dict = {}
+    header: tuple = ()
+    data_table: str = ''
+    columns: int = 0
+    header_row: int = -1
+    data_rows: int = 0 # Sum of data rows in a data table
+    r_data: int = 0 # Row counter for file processing
+    delim_check: bool = False # True, if delimiter identified
+    header_cnt_delimiters: int = -1 # Number of determined columns in header
+    data_subdict_nr: int = 0
+    data_cnt_row: int = 0 # Counter for printing the data row sub-dictionary
     csv_read_progress = None
 
     try:
@@ -155,7 +155,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
                             if header_cnt_delimiters == data_cnt_delimiters:
                                 # Check, if new data table
                                 if data_row == header_row + 1:
-                                    delim_check = True
+                                    delim_check: bool = True
                                     data_subdict_nr += 1
                                     data_table = f'DATA{data_subdict_nr}'
                                     csv_dict[f'{data_table}'] = {}
@@ -227,7 +227,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
                     f'{app_dict["loc"]["morpy"]["csv_read_file_ext"]}: {src_file_ext}\n'
                     f'{app_dict["loc"]["morpy"]["csv_read_file_path"]}: {src_file_path}')
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
@@ -286,31 +286,31 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
             Used to delete the reference to an instance.
 
     :example:
-        src_file_path = 'C:\my.csv'
-        delimiter = '","'
-        csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+    >>> src_file_path = 'C:\my.csv'
+    >>> delimiter = '","'
+    >>> csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
 
-        # ... process data in csv["csv_dict"] ...
+    >>> # ... process data in csv["csv_dict"] ...
 
-        target_path = 'C:\my.xlsx'
-        wb_sht = 'Sheet1'
-        wb = csv_dict_to_excel(morpy_trace, app_dict, csv_dict=csv["csv_dict"], xl_path=target_path,
-            overwrite=True, worksheet=wb_sht)["wb_obj"]
+    >>> target_path = 'C:\my.xlsx'
+    >>> wb_sht = 'Sheet1'
+    >>> wb = csv_dict_to_excel(morpy_trace, app_dict, csv_dict=csv["csv_dict"], xl_path=target_path,
+    >>>     overwrite=True, worksheet=wb_sht)["wb_obj"]
 
-        # ... modify 'C:\my.xlsx' ...
+    >>> # ... modify 'C:\my.xlsx' ...
 
-        # Save and close workbook
-        wb.close_workbook(mpy_trac, app_dict, save_workbook=True, close_workbook=True)
+    >>> # Save and close workbook
+    >>> wb.close_workbook(mpy_trac, app_dict, save_workbook=True, close_workbook=True)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'lib.csv'
-    operation = 'csv_dict_to_excel(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.csv'
+    operation: str = 'csv_dict_to_excel(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
-    xl_exists = False
-    xl_write = False
+    check: bool = False
+    xl_exists: bool = False
+    xl_write: bool = False
     wb_obj = None
     progress = None
 
@@ -463,7 +463,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
                 close_workbook=close_workbook,
             )["wb_obj"]
 
-            check = True
+            check: bool = True
 
         if xl_exists and overwrite:
             # MS Excel file exists. Overwritten.

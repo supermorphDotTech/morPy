@@ -53,11 +53,11 @@ def mpy_thread_queue(morpy_trace: dict, app_dict: dict, name: str, priority: int
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'mt'
-    operation = 'thread_queue(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mt'
+    operation: str = 'thread_queue(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
     name = f'{name}'
     task = f'{task}'
     thr_available = app_dict["mt_max_threads"]
@@ -133,7 +133,7 @@ def mpy_thread_queue(morpy_trace: dict, app_dict: dict, name: str, priority: int
                             f'{app_dict["loc"]["morpy"]["thread_queue_dbg_threads_used"]}: {len(app_dict["mt_threads_id_lst"])}\n'
                             f'{app_dict["loc"]["morpy"]["thread_queue_dbg_threads_max"]}: {app_dict["mt_max_threads"]}')
 
-                check = True
+                check: bool = True
 
             except Exception as e:
                 log(morpy_trace, app_dict, "critical",
@@ -174,11 +174,11 @@ def mpy_threads_joinall(morpy_trace: dict, app_dict: dict) -> dict:
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'mt'
-    operation = 'threads_joinall(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mt'
+    operation: str = 'threads_joinall(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
 
     try:
         # Waiting for all threads to finish up their work.
@@ -197,7 +197,7 @@ def mpy_threads_joinall(morpy_trace: dict, app_dict: dict) -> dict:
         lambda: f'{app_dict["loc"]["morpy"]["threads_joinall_end"]}\n'
                 f'{app_dict["loc"]["morpy"]["threads_joinall_eval"]}: {app_dict["workers_running"]}')
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
@@ -228,11 +228,11 @@ def mt_abort(morpy_trace: dict, app_dict: dict) -> dict:
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'mt'
-    operation = 'mt_abort(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mt'
+    operation: str = 'mt_abort(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
 
     try:
         # Waiting for all threads to finish up their work.
@@ -248,7 +248,7 @@ def mt_abort(morpy_trace: dict, app_dict: dict) -> dict:
         # Reset the threads exit flag
         app_dict["mt_exit"] = False
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
@@ -289,9 +289,9 @@ class PriorityQueue(object):
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mt'
-        operation = 'PriorityQueue.__init__(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mt'
+        operation: str = 'PriorityQueue.__init__(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         name = f'{name}'
 
@@ -337,11 +337,11 @@ class PriorityQueue(object):
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mt'
-        operation = 'PriorityQueue.enqueue(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mt'
+        operation: str = 'PriorityQueue.enqueue(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         name = f'{name}'
         task = f'{task}'
 
@@ -359,7 +359,7 @@ class PriorityQueue(object):
             # Push the task to the actual heap
             heappush(self.elements, task_qed)
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "critical",
@@ -394,11 +394,11 @@ class PriorityQueue(object):
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mt'
-        operation = 'PriorityQueue.dequeue(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mt'
+        operation: str = 'PriorityQueue.dequeue(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
 
@@ -430,7 +430,7 @@ class PriorityQueue(object):
                     f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_cnt"]}: {counter}\n'
                     f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_task"]}: {task}')
 
-            check = False
+            check: bool = False
 
         except Exception as e:
             log(morpy_trace, app_dict, "critical",
@@ -464,11 +464,11 @@ def mt_init(morpy_trace: dict, app_dict: dict) -> dict:
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'mt'
-    operation = 'mt_init(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mt'
+    operation: str = 'mt_init(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
     sys_threads = app_dict["sys"]["threads"] # Total threads available to the system
 
     try:
@@ -538,7 +538,7 @@ def mt_init(morpy_trace: dict, app_dict: dict) -> dict:
         # Initialize and create the queue instance for this frameworks runtime
         PriorityQueue(morpy_trace, app_dict, 'mtPriorityQueue')
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
@@ -573,9 +573,9 @@ class cl_thread(threading.Thread):
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mt'
-        operation = 'cl_thread.__init__(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mt'
+        operation: str = 'cl_thread.__init__(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             # A worker thread is being created.
@@ -626,12 +626,12 @@ class cl_thread(threading.Thread):
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'mt'
-        operation = 'cl_thread.run(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, self.trace)
+        module: str = 'mt'
+        operation: str = 'cl_thread.run(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, self.trace)
         log_enable = morpy_trace["log_enable"]
 
-        check = False
+        check: bool = False
         task_ID = -1
         task = None
 
@@ -733,7 +733,7 @@ class cl_thread(threading.Thread):
                           f'ID: {self.ID}\n'
                           f'{self.app_dict["cl_thread_name"]}: {self.name}')
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "critical",
@@ -771,12 +771,12 @@ def prio_correction(morpy_trace: dict, app_dict: dict, priority: int, task: str)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'mt'
-    operation = 'prio_correction(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mt'
+    operation: str = 'prio_correction(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Preparing parameters
-    check = False
+    check: bool = False
     prio_in = priority
     task = f'{task}'
     prio_trusted = False
@@ -785,7 +785,7 @@ def prio_correction(morpy_trace: dict, app_dict: dict, priority: int, task: str)
     try:
         # Split the task and extract the module
         task_split = common.regex_split(morpy_trace, app_dict, task, r'.')
-        module = task_split[0]
+        module: str = task_split[0]
 
         for mod in prio_module_lst:
 
@@ -818,7 +818,7 @@ def prio_correction(morpy_trace: dict, app_dict: dict, priority: int, task: str)
                             f'{app_dict["loc"]["morpy"]["prio_correction_prio_in"]}: {prio_in}\n'
                             f'{app_dict["loc"]["morpy"]["prio_correction_prio_out"]}: {priority}')
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
@@ -852,11 +852,11 @@ def thread_id(morpy_trace: dict, app_dict: dict) -> dict:
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'mt'
-    operation = 'thread_id(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mt'
+    operation: str = 'thread_id(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
     max_threads = app_dict["mt_max_threads"]
     thread_id = 0
     threads_used = 0
@@ -915,7 +915,7 @@ def thread_id(morpy_trace: dict, app_dict: dict) -> dict:
                 f'{app_dict["loc"]["morpy"]["mt_init_thr_available"]}: {max_threads - threads_used}\n'
                 f'{app_dict["loc"]["morpy"]["cl_thread_id"]}: {thread_id}')
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
@@ -951,12 +951,12 @@ def thread_imports(morpy_trace: dict, app_dict: dict, task: str) -> dict:
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'mt'
-    operation = 'thread_imports(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mt'
+    operation: str = 'thread_imports(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Preparing parameters
-    check = False
+    check: bool = False
     imp_true = False
     imp_order = ''
 
@@ -968,7 +968,7 @@ def thread_imports(morpy_trace: dict, app_dict: dict, task: str) -> dict:
 
             # Split the task and extract the module
             task_split = common.regex_split(morpy_trace, app_dict, task, r'.')
-            module = task_split[0]
+            module: str = task_split[0]
 
             # Task split to identify module imports.
             log(morpy_trace, app_dict, "debug",
@@ -1002,7 +1002,7 @@ def thread_imports(morpy_trace: dict, app_dict: dict, task: str) -> dict:
                 lambda: f'{app_dict["loc"]["morpy"]["thread_imports_no"]}\n'
                         f'imp_order: {imp_order}')
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",

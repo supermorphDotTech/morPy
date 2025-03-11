@@ -26,25 +26,25 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
         app_init_return: Return value (dict) of the initialization process, handed to app_run
 
     :example:
-        from app import init as app_init
-        init_retval = app_init(morpy_trace, app_dict)
+    >>> from app import init as app_init
+    >>> init_retval = app_init(morpy_trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
-    module = 'app.init'
-    operation = 'app_init(~)'
-    morpy_trace = morPy.tracing(module, operation, morpy_trace)
+    module: str = 'app.init'
+    operation: str = 'app_init(~)'
+    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
     # OPTION enable/disable logging
     # ??? morpy_trace["log_enable"] = False
 
-    check = False
+    check: bool = False
     app_init_return = {}
 
     try:
         # TODO: MY CODE
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",

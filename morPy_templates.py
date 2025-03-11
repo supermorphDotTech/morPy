@@ -29,18 +29,18 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
         check: Indicates whether the function ended without errors
 
     :example:
-        template(morpy_trace, app_dict)
+    >>> template(morpy_trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
-    module = 'app.my_module'
-    operation = 'template(~)'
-    morpy_trace = morPy.tracing(module, operation, morpy_trace)
+    module: str = 'app.my_module'
+    operation: str = 'template(~)'
+    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
     # OPTION enable/disable logging
     # ??? morpy_trace["log_enable"] = False
 
-    check = False
+    check: bool = False
 
     try:
         # LOCALIZED_MESSAGE
@@ -49,7 +49,7 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
 
         # TODO: MY CODE
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
@@ -80,13 +80,13 @@ class TemplateClass:
             -
 
         :example:
-            instance = TemplateClass(morpy_trace, app_dict)
+        >>> instance = TemplateClass(morpy_trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
-        module = 'app.my_module'
-        operation = 'TemplateClass.__init__(~)'
-        morpy_trace = morPy.tracing(module, operation, morpy_trace)
+        module: str = 'app.my_module'
+        operation: str = 'TemplateClass.__init__(~)'
+        morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
         # OPTION enable/disable logging
         # ??? morpy_trace["log_enable"] = False
@@ -114,18 +114,18 @@ class TemplateClass:
             check: Indicates whether the function ended without errors
 
         :example:
-            self._init(morpy_trace, app_dict)
+        >>> self._init(morpy_trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
-        module = 'app.my_module'
-        operation = 'TemplateClass._init(~)'
-        morpy_trace = morPy.tracing(module, operation, morpy_trace)
+        module: str = 'app.my_module'
+        operation: str = 'TemplateClass._init(~)'
+        morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
         # OPTION enable/disable logging
         # ??? morpy_trace["log_enable"] = False
 
-        check = False
+        check: bool = False
 
         try:
             # TODO: MY INSTANCE INITIALIZATION
@@ -133,7 +133,7 @@ class TemplateClass:
             log(morpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -157,18 +157,18 @@ class TemplateClass:
             check: Indicates whether the function ended without errors
 
         :example:
-            self.method(morpy_trace, app_dict)
+        >>> self.method(morpy_trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
-        module = 'app.my_module'
-        operation = 'TemplateClass.method(~)'
-        morpy_trace = morPy.tracing(module, operation, morpy_trace)
+        module: str = 'app.my_module'
+        operation: str = 'TemplateClass.method(~)'
+        morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
         # OPTION enable/disable logging
         # ??? morpy_trace["log_enable"] = False
 
-        check = False
+        check: bool = False
 
         try:
             # TODO: MY CLASS METHOD
@@ -176,7 +176,7 @@ class TemplateClass:
             log(morpy_trace, app_dict, "info",
             lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",

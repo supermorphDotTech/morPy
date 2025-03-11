@@ -15,7 +15,6 @@ import sys
 
 @metrics
 def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict, orchestrator) -> dict:
-
     r"""
     This function runs the exit workflow of the app.
 
@@ -29,30 +28,31 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict, orchestrat
         check: Indicates whether the function ended without errors
 
     :example:
-        from app import init as app_init
-        from app import run as app_run
-        from app import exit as app_exit
+    >>> from app import init as app_init
+    >>> from app import run as app_run
+    >>> from app import exit as app_exit
 
-        orchestrator = app_dict["proc"]["morpy"]["cl_orchestrator"]
-        init_retval = app_init(morpy_trace, app_dict)
-        run_retval = app_run(morpy_trace, app_dict, init_retval)
-        app_exit(morpy_trace, app_dict, run_retval, orchestrator)
+    >>> # Assuming app_dict is initialized correctly
+    >>> orchestrator = app_dict["proc"]["morpy"]["cl_orchestrator"]
+    >>> init_retval = app_init(morpy_trace, app_dict)
+    >>> run_retval = app_run(morpy_trace, app_dict, init_retval)
+    >>> app_exit(morpy_trace, app_dict, run_retval, orchestrator)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
-    module = 'app.exit'
-    operation = 'app_exit(~)'
-    morpy_trace = morPy.tracing(module, operation, morpy_trace)
+    module: str = 'app.exit'
+    operation: str = 'app_exit(~)'
+    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
     # OPTION enable/disable logging
     # ??? morpy_trace["log_enable"] = False
 
-    check = False
+    check: bool = False
 
     try:
         # TODO: first statement .join()
         # TODO: MY CODE
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",

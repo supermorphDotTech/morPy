@@ -34,9 +34,9 @@ class cl_orchestrator:
         """
 
         # Setup morPy tracing
-        module = 'mp'
-        operation = 'cl_orchestrator.__init__(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mp'
+        operation: str = 'cl_orchestrator.__init__(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             # Initialize with self._init() for metrics decorator support
@@ -57,11 +57,11 @@ class cl_orchestrator:
         :param app_dict: morPy global dictionary containing app configurations
         """
 
-        module = 'mp'
-        operation = 'cl_orchestrator._init(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mp'
+        operation: str = 'cl_orchestrator._init(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Set app termination flag
@@ -77,7 +77,7 @@ class cl_orchestrator:
             log_no_q(morpy_trace, app_dict, "init",
             lambda: f'{app_dict["loc"]["morpy"]["cl_orchestrator_init_done"]}')
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
@@ -102,17 +102,17 @@ class cl_orchestrator:
         TODO when made compatible, take care of self._run(), init.init() and common.PriorityQueue._init()
         """
 
-        module = 'mp'
-        operation = 'cl_orchestrator._init_processes(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mp'
+        operation: str = 'cl_orchestrator._init_processes(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Set attributes for _run
-            self.ref_module = module
-            self.ref_operation = operation
-            self.morpy_trace = morpy_trace
+            self.ref_module: str = module
+            self.ref_operation: str = operation
+            self.morpy_trace: dict = morpy_trace
             self.app_dict = app_dict
             self.process_q = app_dict["proc"]["morpy"]["process_q"]
 
@@ -197,7 +197,7 @@ class cl_orchestrator:
             lambda: f'{app_dict["loc"]["morpy"]["cl_orchestrator_init_cpus_determined"]}\n'
                     f'Maximum parallel processes for runtime: {self.processes_max}')
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
@@ -219,11 +219,11 @@ class cl_orchestrator:
         :param app_dict: morPy global dictionary containing app configurations
         """
 
-        module = 'mp'
-        operation = 'cl_orchestrator._init_memory(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mp'
+        operation: str = 'cl_orchestrator._init_memory(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             sys_memory_bytes = int(app_dict["sys"]["sys_memory_bytes"])
@@ -296,7 +296,7 @@ class cl_orchestrator:
             lambda: f'{app_dict["loc"]["morpy"]["cl_orchestrator_init_memory_set"]}\n'
                 f'Maximum memory for runtime: {self.memory_max / 1024} KB / {self.memory_max / 1024**2} MB')
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
@@ -318,11 +318,11 @@ class cl_orchestrator:
         :param app_dict: morPy global dictionary containing app configurations
         """
 
-        module = 'mp'
-        operation = 'cl_orchestrator._init_app_dict(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mp'
+        operation: str = 'cl_orchestrator._init_app_dict(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Initialize the total task counter
@@ -347,7 +347,7 @@ class cl_orchestrator:
                     app_dict["proc"]["morpy"]["proc_available"].add(p)
                 p += 1
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
@@ -361,7 +361,7 @@ class cl_orchestrator:
         }
 
     @metrics
-    def _init_run(self, morpy_trace: dict, app_dict: dict):
+    def _init_run(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Setup attributes for cyclical orchestrator _run.
 
@@ -369,17 +369,17 @@ class cl_orchestrator:
         :param app_dict: morPy global dictionary containing app configurations
         """
 
-        module = 'mp'
-        operation = 'cl_orchestrator._init_run(~)'
+        module: str = 'mp'
+        operation: str = 'cl_orchestrator._init_run(~)'
         morpy_trace_init_run = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Set attributes for _run
             self.process_q = app_dict["proc"]["morpy"]["process_q"]
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log_no_q(morpy_trace_init_run, app_dict, "critical",
@@ -393,7 +393,7 @@ class cl_orchestrator:
         }
 
     @metrics
-    def _app_run(self, morpy_trace: dict, app_dict: dict):
+    def _app_run(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Sequential app init, run and exit routine.
 
@@ -401,11 +401,11 @@ class cl_orchestrator:
         :param app_dict: morPy global dictionary containing app configurations
         """
 
-        module = 'mp'
-        operation = 'cl_orchestrator._app_run(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mp'
+        operation: str = 'cl_orchestrator._app_run(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             from app.init import app_init
@@ -423,7 +423,7 @@ class cl_orchestrator:
             # Exit the app and signal morPy to exit
             app_exit(morpy_trace, app_dict, app_run_return, self)
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
@@ -437,7 +437,7 @@ class cl_orchestrator:
         }
 
     @metrics
-    def _run(self, morpy_trace: dict, app_dict: dict):
+    def _run(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Routine of the morPy orchestrator. Cyclic program.
 
@@ -445,14 +445,14 @@ class cl_orchestrator:
         :param app_dict: morPy global dictionary containing app configurations
         """
 
-        module = 'mp'
-        operation = 'cl_orchestrator._run(~)'
+        module: str = 'mp'
+        operation: str = 'cl_orchestrator._run(~)'
         # TODO Find out, why morpy_trace["process_id"] is overwritten in app trace
         # The enforced deepcopy morpy_fct.tracing() is a workaround.
         morpy_trace_app = morpy_fct.tracing(module, operation, morpy_trace)
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # TODO provide case for 2-core mode
@@ -470,7 +470,7 @@ class cl_orchestrator:
                 while not self._terminate:
                     self._main_loop(morpy_trace, app_dict)
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
@@ -500,11 +500,11 @@ class cl_orchestrator:
             self._main_loop(morpy_trace, app_dict)
         """
 
-        module = 'mp'
-        operation = 'cl_orchestrator._main_loop(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'mp'
+        operation: str = 'cl_orchestrator._main_loop(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             while (not self._terminate) or (len(self.process_q.heap) > 0):
@@ -541,7 +541,7 @@ class cl_orchestrator:
                 if len(app_dict["proc"]["morpy"]["proc_busy"]) == 0:
                     self._terminate = True
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log_no_q(morpy_trace, app_dict, "critical",
@@ -573,30 +573,30 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
         check: Indicates if the task was dequeued successfully
 
     :example:
-        # The priority, counter, task_sys_id and task arguments are passed directly to the
-        # process_control decorator and are delivered by common.PriorityQueue.dequeue().
+    >>> # The priority, counter, task_sys_id and task arguments are passed directly to the
+    >>> # process_control decorator and are delivered by common.PriorityQueue.dequeue().
 
-        dequeued = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
-        priority = dequeued["priority"]
-        counter = dequeued["counter"]
-        task_sys_id = dequeued["task_sys_id"]
-        task = dequeued["task"]
-        mp.run_parallel(morpy_trace, app_dict, task=task, priority=priority)
+    >>> dequeued = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
+    >>> priority = dequeued["priority"]
+    >>> counter = dequeued["counter"]
+    >>> task_sys_id = dequeued["task_sys_id"]
+    >>> task = dequeued["task"]
+    >>> run_parallel(morpy_trace, app_dict, task=task, priority=priority)
     """
 
     import lib.fct as morpy_fct
 
-    module = 'mp'
-    operation = 'run_parallel(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mp'
+    operation: str = 'run_parallel(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
-    id_check = False
-    id_search = 0
-    process_id = -1
-    id_err_avl = False
-    id_err_busy = False
-    id_err_dict = False
+    check: bool = False
+    id_check: bool = False
+    id_search: int = 0
+    process_id: int = -1
+    id_err_avl: bool = False
+    id_err_busy: bool = False
+    id_err_dict: bool = False
 
     try:
         # Starting process control with arguments:
@@ -661,7 +661,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                         app_dict["proc"]["morpy"]["proc_busy"].add(process_id)
                     id_err_dict = True
                 else:
-                    id_check = True
+                    id_check: bool = True
 
                 # Process ID determined.
                 log_no_q(morpy_trace, app_dict, "debug",
@@ -782,7 +782,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
             'check': check,
         }
 
-def spawn(task: list):
+def spawn(task: list) -> dict:
     r"""
     This function registers a task and executes it.
 
@@ -794,11 +794,13 @@ def spawn(task: list):
         process_partial: Process to be spawned, packed with partial
 
     :example:
-        p = Process(target=spawn, args=task,)
-        p.start()
+    >>> dequeued = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
+    >>> task = dequeued["task"]
+    >>> p = Process(target=spawn, args=task,)
+    >>> p.start()
     """
 
-    module = 'lib.mp'
+    module: str = 'lib.mp'
     app_dict = {}
 
     try:
@@ -874,13 +876,13 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
     :param single_check: If True, watcher() will not be enqueued again.
 
     :example 1:
-        process_watcher = (watcher, morpy_trace, app_dict, task)
-        app_dict["proc"]["morpy"]["process_q"].enqueue(
-            morpy_trace, app_dict, priority=priority, task=process_watcher, autocorrect=False, is_process=False
-        )
+    >>> process_watcher = (watcher, morpy_trace, app_dict, task)
+    >>> app_dict["proc"]["morpy"]["process_q"].enqueue(
+    >>>     morpy_trace, app_dict, priority=priority, task=process_watcher, autocorrect=False, is_process=False
+    >>> )
 
     :example 2:
-        watcher(morpy_trace, app_dict, task, single_check=True)
+    >>> watcher(morpy_trace, app_dict, task, single_check=True)
     """
 
     import lib.fct as morpy_fct
@@ -888,17 +890,17 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
     from multiprocessing import active_children
 
     morpy_trace_in = copy.deepcopy(morpy_trace)
-    module = 'mp'
-    operation = 'watcher(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mp'
+    operation: str = 'watcher(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
-    priority = -20
-    is_active = False
+    check: bool = False
+    priority: int = -20
+    is_active: bool = False
 
     try:
         active = active_children()
-        task_morpy_trace = task[1]
+        task_morpy_trace: dict = task[1]
         process_id = task_morpy_trace["process_id"]
 
         # Check, if process is still active
@@ -942,7 +944,7 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
                 app_dict["proc"]["morpy"]["proc_refs"].pop(f'{process_id}', None)
                 app_dict["proc"]["morpy"]._update_self(_access="tightened")
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "critical",
@@ -969,7 +971,7 @@ def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
         check: Indicates if the task was dequeued successfully
 
     :example:
-        mp.join_processes(morpy_trace, app_dict)
+    >>> join_processes(morpy_trace, app_dict)
 
     TODO allow for custom settings/options
     TODO do not wait for orchestrator
@@ -979,13 +981,13 @@ def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
     import lib.fct as morpy_fct
     from multiprocessing import active_children
 
-    module = 'mp'
-    operation = 'join_processes(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mp'
+    operation: str = 'join_processes(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
-    p_id = None
-    waiting_for_processes = True
+    check: bool = False
+    p_id: int = None
+    waiting_for_processes: bool = True
 
     try:
         # Get number of running processes
@@ -1043,17 +1045,17 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
         check: Indicates if the task was dequeued successfully
 
     :example:
-        mp.interrupt(morpy_trace, app_dict)
+    >>> interrupt(morpy_trace, app_dict)
 
 
     TODO finish this function
     """
 
-    module = 'mp'
-    operation = 'interrupt(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'mp'
+    operation: str = 'interrupt(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
 
     try:
         # TODO check for program exit as an exit point

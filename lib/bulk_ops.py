@@ -34,18 +34,18 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         morpy_trace - operation credentials and tracing
 
     :example:
-        search_obj = "Let's replace1 and replace2!"
-        replace_tpl = (("replace1", "with1"), ("replace2", "with2"))
-        save_as = "C:\my_replaced_strings.txt"
-        overwrite = True
-        retval = find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
+    >>> search_obj = "Let's replace1 and replace2!"
+    >>> replace_tpl = (("replace1", "with1"), ("replace2", "with2"))
+    >>> save_as = "C:\my_replaced_strings.txt"
+    >>> overwrite = True
+    >>> retval = find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
     """
 
-    module = 'lib.bulk_ops'
-    operation = 'find_replace_saveas(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.bulk_ops'
+    operation: str = 'find_replace_saveas(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
     search_obj = f'{search_obj}'
 
     try:
@@ -88,7 +88,7 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
                         new_line = common.regex_replace(morpy_trace, app_dict, line, tpl[0], tpl[1])["result"]
                         common.textfile_write(morpy_trace, app_dict, save_as, new_line)
 
-                check = True
+                check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",

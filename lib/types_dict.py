@@ -12,6 +12,7 @@ from lib.decorators import log
 import importlib
 import sys
 from UltraDict import UltraDict
+from collections.abc import MutableMapping
 
 class AttributeGuard:
     r"""
@@ -44,7 +45,7 @@ class AttributeGuard:
                 self.loc.update({key: value})
         # Fallback to english if localization is not available
         except (AttributeError, ImportError):
-            self.lang = 'en_US'
+            self.lang = 'lib.morPy_en_US'
             messages = {
                 "AttributeGuard_no_mod": "can not modify an attribute of",
                 "AttributeGuard_no_del": "Deletion prohibited!",
@@ -862,8 +863,151 @@ class MorPyDictUltra(UltraDict):
         lock, super_class = self._get_super()
         return f'cl_mpy_dict(name={self._name}, access={self._access}, data={super_class.__repr__()})'
 
+class FlatDict(MutableMapping):
+    SEPARATOR = "::"  # used to join names
+
+    def __init__(self, name, storage=None):
+        """
+        :param name: The name (or full name) for this dict, e.g. "app_dict".
+        :param storage: A shared dict where all nested dicts are stored.
+                        If None, a new storage dict is created.
+        """
+        self._name = name
+        self._storage = storage if storage is not None else {}
+        # The "local" container for leaf keys of this dict is stored under self._name.
+        if name not in self._storage:
+            self._storage[name] = {}
+
+    def _full_name(self, key):
+        """Compute the full qualified name for a nested dict with the given key."""
+        return f"{self._name}{self.SEPARATOR}{key}"
+
+    def __getitem__(self, key):
+        # Allow direct full-name access if the key contains the separator.
+        if self.SEPARATOR in key:
+            if key in self._storage:
+                return self._storage[key]
+            raise KeyError(key)
+        # First check the local (leaf) container.
+        local = self._storage[self._name]
+        if key in local:
+            return local[key]
+        # Then check whether a nested dict exists.
+        full = self._full_name(key)
+        if full in self._storage:
+            return self._storage[full]
+        raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        # Direct full-name assignment: if key contains the separator.
+        if self.SEPARATOR in key:
+            if isinstance(value, dict) and not isinstance(value, _NestedDict):
+                # Wrap the dict before storing.
+                value = _NestedDict(key, self._storage, initial=value)
+            self._storage[key] = value
+            # Also remove any leaf entry with that key in the local container.
+            self._storage[self._name].pop(key, None)
+            return
+
+        # For keys without separator: if assigning a mapping, wrap it.
+        if isinstance(value, dict) and not isinstance(value, _NestedDict):
+            full = self._full_name(key)
+            value = _NestedDict(full, self._storage, initial=value)
+            self._storage[full] = value
+            # Remove any previous leaf value for this key.
+            self._storage[self._name].pop(key, None)
+            # Also keep a pointer in the local container so that iteration works.
+            self._storage[self._name][key] = value
+        else:
+            # For non-dict values, store in the local container.
+            self._storage[self._name][key] = value
+            # And if a nested dict previously existed for that key, remove it.
+            full = self._full_name(key)
+            self._storage.pop(full, None)
+
+    def __delitem__(self, key):
+        if self.SEPARATOR in key:
+            if key in self._storage:
+                del self._storage[key]
+            else:
+                raise KeyError(key)
+            return
+
+        if key in self._storage[self._name]:
+            full = self._full_name(key)
+            self._storage[self._name].pop(key)
+            if full in self._storage:
+                del self._storage[full]
+        else:
+            raise KeyError(key)
+
+    def __iter__(self):
+        # Iterate over keys in the local container.
+        return iter(self._storage[self._name])
+
+    def __len__(self):
+        return len(self._storage[self._name])
+
+    def __contains__(self, key):
+        if self.SEPARATOR in key:
+            return key in self._storage
+        if key in self._storage[self._name]:
+            return True
+        full = self._full_name(key)
+        return full in self._storage
+
+    def __repr__(self):
+        # For display, rebuild a regular dict from the local container.
+        local = self._storage[self._name]
+        return f"{self.__class__.__name__}({local})"
+
+
+class _NestedDict(dict):
+    """
+    A helper dict subclass used for nested dictionaries.
+    It behaves just like a standard dict but intercepts assignments
+    so that any value assigned as a mapping is wrapped and recorded in the shared flat storage.
+    """
+    def __init__(self, qualified_name, flat_storage, initial=None):
+        """
+        :param qualified_name: The full qualified name (e.g. "app_dict::run_dict").
+        :param flat_storage: The shared storage dict from the root FlatDict.
+        :param initial: An optional initial dict to populate this _NestedDict.
+        """
+        self._qualified_name = qualified_name
+        self._flat_storage = flat_storage
+        # Initialize using the base dict.
+        super().__init__()
+        if initial is not None:
+            for key, value in initial.items():
+                # If a nested mapping is found, wrap it.
+                if isinstance(value, dict) and not isinstance(value, _NestedDict):
+                    new_qname = f"{self._qualified_name}{FlatDict.SEPARATOR}{key}"
+                    value = _NestedDict(new_qname, self._flat_storage, initial=value)
+                    self._flat_storage[new_qname] = value
+                super().__setitem__(key, value)
+
+    def __setitem__(self, key, value):
+        full = f"{self._qualified_name}{FlatDict.SEPARATOR}{key}"
+        if isinstance(value, dict) and not isinstance(value, _NestedDict):
+            # Wrap the nested dict.
+            value = _NestedDict(full, self._flat_storage, initial=value)
+            self._flat_storage[full] = value
+        else:
+            # If a non-dict is being assigned where a nested dict existed, remove the flat entry.
+            if full in self._flat_storage:
+                del self._flat_storage[full]
+        super().__setitem__(key, value)
+
+    def __delitem__(self, key):
+        full = f"{self._qualified_name}{FlatDict.SEPARATOR}{key}"
+        if full in self._flat_storage:
+            del self._flat_storage[full]
+        super().__delitem__(key)
+
 class MorPyNestedButFlatDict(dict):
     """
+    TODO Remove: DEPRECATED
     A dictionary subclass that “flattens” nested UltraDict containers.
 
     If you assign an UltraDict as a value for a top‐level key, its items
@@ -985,6 +1129,7 @@ class MorPyNestedButFlatDict(dict):
 
 class _MorPyNestedButFlatDictProxy:
     """
+    TODO Remove: DEPRECATED
     A proxy for a top-level UltraDict container in a MorPyNestedButFlatDict.
 
     The proxy allows you to write:
@@ -1045,6 +1190,7 @@ class _MorPyNestedButFlatDictProxy:
 
 class MorPyDictUltraRoot(MorPyNestedButFlatDict):
     r"""
+    TODO Remove: DEPRECATED
 	This is the dictionary-like class for the morPy framework required for
 	multiprocessing. It is subclassed from MorPyNestedButFlatDict() which
 	omits reinitialization of UltraDict.__init__(), which in turn may lead

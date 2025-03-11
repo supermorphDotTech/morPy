@@ -24,13 +24,13 @@ def _exit(morpy_trace: dict=None, app_dict: dict=None):
         -
 
     :example:
-        exit._exit(morpy_trace, app_dict)
+    >>> exit._exit(morpy_trace, app_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'lib.exit'
-    operation = '_exit(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.exit'
+    operation: str = '_exit(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
         # Retrieve exit time and date

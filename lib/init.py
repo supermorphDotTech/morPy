@@ -9,17 +9,17 @@ Descr.:     This module holds all functions used for initialization of the
 
 import lib.fct as morpy_fct
 import lib.conf as conf
-import lib.mp as mp
 
 from lib.common import PriorityQueue
 from lib.common import textfile_write
 from lib.decorators import log_no_q
+from lib.mp import cl_orchestrator
 
 import sys
 import os
 import importlib
 
-def init_cred():
+def init_cred() -> dict:
     r"""
     This function initializes the operation credentials and tracing.
 
@@ -32,9 +32,9 @@ def init_cred():
 
     # Initialize operation credentials and tracing.
     # Each operation/function/object will fill the dictionary with data
-    # by executing morpy_trace = morPy.tracing(module, operation, morpy_trace)
+    # by executing morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
     # as a first step before execution.
-    morpy_trace = {
+    morpy_trace: dict = {
         'module' : '__main__',
         'operation' : '',
         'tracing' : '__main__',
@@ -47,7 +47,7 @@ def init_cred():
 
     return morpy_trace
 
-def init(morpy_trace):
+def init(morpy_trace) -> (dict, cl_orchestrator):
     r"""
     This function initializes the app dictionary and yields app
     specific information to be handed down through called functions.
@@ -58,8 +58,8 @@ def init(morpy_trace):
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'lib.init'
-    operation = 'init(~)'
+    module: str = 'lib.init'
+    operation: str = 'init(~)'
     morpy_trace_init = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
@@ -180,7 +180,7 @@ def init(morpy_trace):
             print(init_dict_str)
 
         # Initialize the morPy orchestrator
-        init_dict["proc"]["morpy"]["cl_orchestrator"] = mp.cl_orchestrator(morpy_trace_init, init_dict)
+        init_dict["proc"]["morpy"]["cl_orchestrator"] = cl_orchestrator(morpy_trace_init, init_dict)
 
         # Activate priority queue
         init_dict["proc"]["morpy"]["process_q"]._init_mp(morpy_trace_init, init_dict)
@@ -222,7 +222,7 @@ def init(morpy_trace):
         morpy_fct.handle_exception_init(e)
         raise
 
-def types_dict_build(morpy_trace: dict, create: bool=False):
+def types_dict_build(morpy_trace: dict, create: bool=False) -> dict:
     r"""
     This function builds the app_dict. This is needed in spawned processes, too
     to successfully link the nested dictionaries.
@@ -234,13 +234,13 @@ def types_dict_build(morpy_trace: dict, create: bool=False):
     :return init_dict: morPy global dictionary containing app configurations
 
     :example:
-        init_dict = init.types_dict_build(morpy_trace, create=True)
+    >>> init_dict = types_dict_build(morpy_trace, create=True)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'lib.init'
-    operation = 'types_dict_build(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.init'
+    operation: str = 'types_dict_build(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Check for GIL and decide for an app_dict structure.
     gil = has_gil(morpy_trace)
@@ -443,7 +443,7 @@ def types_dict_build(morpy_trace: dict, create: bool=False):
     finally:
         return init_dict
 
-def types_dict_finalize(morpy_trace: dict, init_dict: dict):
+def types_dict_finalize(morpy_trace: dict, init_dict: dict) -> None:
     r"""
     This function locks parts of the global dictionary to streamline the use
     of app_dict as designed.
@@ -455,13 +455,13 @@ def types_dict_finalize(morpy_trace: dict, init_dict: dict):
         -
 
     :example:
-        init.types_dict_finalize(morpy_trace, init_dict)
+    >>> types_dict_finalize(morpy_trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'lib.init'
-    operation = 'types_dict_finalize(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.init'
+    operation: str = 'types_dict_finalize(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
         init_dict._update_self(_access="tightened")
@@ -487,7 +487,7 @@ def types_dict_finalize(morpy_trace: dict, init_dict: dict):
                 f'{init_dict["loc"]["morpy"]["err_module"]} {module}\n'
                 f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
 
-def morpy_log_header(morpy_trace: dict, init_dict: dict):
+def morpy_log_header(morpy_trace: dict, init_dict: dict) -> None:
     r"""
     This function writes the header for the logfile including app specific
     information.
@@ -499,13 +499,13 @@ def morpy_log_header(morpy_trace: dict, init_dict: dict):
         -
 
     :example:
-        morpy_log_header(morpy_trace, init_dict)
+    >>> morpy_log_header(morpy_trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'lib.init'
-    operation = 'log_header(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.init'
+    operation: str = 'log_header(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Create the app header
     content = (
@@ -528,7 +528,7 @@ def morpy_log_header(morpy_trace: dict, init_dict: dict):
     # Clean up
     del morpy_trace
 
-def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
+def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str) -> None:
     r"""
     This function documents the initialized dictionary (reference). It is stored
     in the same path as __main__.py and serves development purposes.
@@ -541,13 +541,13 @@ def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str):
         -
 
     :example:
-        morpy_ref(morpy_trace, init_dict)
+    >>> morpy_ref(morpy_trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'lib.init'
-    operation = 'ref(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.init'
+    operation: str = 'ref(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
         morpy_ref_path = os.path.join(f'{init_dict["conf"]["main_path"]}', 'initialized_app_dict.txt')
@@ -582,14 +582,14 @@ def has_gil(morpy_trace: dict) -> bool | None:
     :return gil_detected: If True, Python environment has GIL implemented. Process forking not supported.
 
     :example:
-        gil = init.has_gil(morpy_trace)
+    >>> gil = has_gil(morpy_trace)
     """
 
-    module = 'lib.init'
-    operation = 'has_gil(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.init'
+    operation: str = 'has_gil(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    gil_detected = False
+    gil_detected: bool = False
 
     try:
         # 1) Check if 'nogil' or 'free-threading' is in the version string

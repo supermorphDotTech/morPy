@@ -25,9 +25,9 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, ve
     :param verbose: If True, message is only logged in verbose mode.
 
     :example:
-        from lib.decorators import log
-        log(morpy_trace, app_dict, "info",
-        lambda: "Hello world!")
+    >>> from lib.decorators import log
+    >>> log(morpy_trace, app_dict, "info",
+    >>> lambda: "Hello world!")
     """
 
     import lib.msg as msg
@@ -61,9 +61,9 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callabl
     :param verbose: If True, message is only logged in verbose mode.
 
     :example:
-        from lib.decorators import log_no_q
-        log_no_q(morpy_trace, app_dict, level,
-        lambda: <message>)
+    >>> from lib.decorators import log_no_q
+    >>> log_no_q(morpy_trace, app_dict, level,
+    >>> lambda: <message>)
     """
 
     import lib.msg as msg
@@ -87,9 +87,9 @@ def metrics(func):
     :return retval: Return value of the wrapped function
 
     :example:
-        from lib.decorators import metrics
-        @metrics
-        my_function_call(morpy_trace, app_dict, *args, **kwargs)
+    >>> from lib.decorators import metrics
+    >>> @metrics
+    >>> my_function_call(morpy_trace, app_dict, *args, **kwargs)
     """
 
     @wraps(func)
@@ -97,7 +97,7 @@ def metrics(func):
 
         perf_mode = None
         enable_metrics = False
-        morpy_trace = None
+        morpy_trace: dict = None
         len_args = len(args)
 
         # Skip metrics, if arguments morpy_trace or app_dict are missing
@@ -112,7 +112,7 @@ def metrics(func):
 
             # Attempt to extract morpy_trace & app_dict from positional args
             try:
-                morpy_trace = args[offset]
+                morpy_trace: dict = args[offset]
                 app_dict = args[offset + 1]
 
                 # Now we decide if metrics are enabled
@@ -161,9 +161,9 @@ def metrics_perf(morpy_trace, run_time):
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    # module = 'decorators'
-    # operation = 'metrics_perf(~)'
-    # morpy_trace = morPy.tracing(module, operation, morpy_trace)
+    # module: str = 'decorators'
+    # operation: str = 'metrics_perf(~)'
+    # morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
 def metrics_full(morpy_trace, run_time):
     r"""
@@ -181,6 +181,6 @@ def metrics_full(morpy_trace, run_time):
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    # module = 'decorators'
-    # operation = 'metrics_full(~)'
-    # morpy_trace = morPy.tracing(module, operation, morpy_trace)
+    # module: str = 'decorators'
+    # operation: str = 'metrics_full(~)'
+    # morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)

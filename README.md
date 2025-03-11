@@ -42,17 +42,19 @@ Feel free to comment, share and support this project!
 └─│`5.1` [Setup Dependency Visualization (Microsoft Windows)](#5.1)  
 &nbsp;
 └─│`5.2` [Visualize Dependencies (Microsoft Windows)](#5.2)  
-`6.` [Dependency Analysis](#6.)  
+`6.` [Security and Dependency Analysis](#6.)  
 &nbsp;
 └─│`6.1` [Scan installed packages against known vulnerabilities](#6.1)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-└─│`6.1.1` [Preparation](#6.1.1)  
+└─│`6.1.1` [Install required libraries](#6.1.1)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-└─│`6.1.2` [Testing](#6.1.2)  
+└─│`6.1.2` [Scan Installed Packages](#6.1.2)  
 &nbsp;
 └─│`6.2` [Security Guidance](#6.2)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 └─│`6.2.1` [Constant Security checks in productive environments](#6.2.1)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`6.2.2` [Lock Down Virtual Environments](#6.2.2)  
 `7.` [Abbreviations](#7.)  
 
 # 1. Requirements and Dependencies [⇧](#toc) <a name="1."></a>
@@ -569,11 +571,11 @@ pydeps --cluster --rankdir "LR" --include-missing ".\"
  pydeps --cluster --rankdir "LR" --include-missing --show-cycles ".\"
 ```
 
-# 6. Dependency Analysis [⇧](#toc) <a name="6."></a>
+# 6. Security and Dependency Analysis [⇧](#toc) <a name="6."></a>
 
 ## 6.1 Scan installed packages against known vulnerabilities [⇧](#toc) <a name="6.1"></a>
 
-### 6.1.1 Preparation [⇧](#toc) <a name="6.1.1"></a>
+### 6.1.1 Install required libraries [⇧](#toc) <a name="6.1.1"></a>
 
 1.  Setup the path to the Python project as an environment variable (for this PowerShell session only), i.e.
 
@@ -605,7 +607,7 @@ pip install pip-audit
 pip install safety; safety auth
 ```
 
-### 6.1.2 Testing [⇧](#toc) <a name="6.1.2"></a>
+### 6.1.2 Scan Installed Packages [⇧](#toc) <a name="6.1.2"></a>
 
 6.  Run `pip-audit`:
 
@@ -629,6 +631,11 @@ safety scan
 ### 6.2.1 Constant Security checks in a productive environment [⇧](#toc) <a name="6.2.1"></a>
 
 It is advisable to keep a clone of the Python virtual environment including all dependencies used in the production code on a non-critical server. The vulnerability Checks may then be automated to run at least once a day and send reports to the security dev team.
+
+### 6.2.2 Lock Down Virtual Environments [⇧](#toc) <a name="6.2.2"></a>
+
+Disallow any changes in the virtual environment to prevent the use of dangerous libraries. To do this, make the virtual environment a read-only directory and only allow for write-access to patch vulnerabilities.   
+As an example, it is not advisory to allow installation of `jkuri/bore`, as it allows circumventing certain network security features.  
 
 # 7. Abbreviations [⇧](#toc) <a name="7."></a>
 

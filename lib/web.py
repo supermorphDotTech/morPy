@@ -57,12 +57,12 @@ def web_request(morpy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> 
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'web'
-    operation = 'web_request(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'web'
+    operation: str = 'web_request(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Preparing parameters
-    check = False
+    check: bool = False
 
     try:
 
@@ -121,7 +121,7 @@ def web_request(morpy_trace: dict, app_dict: dict, URL: str, req_dict: dict) -> 
                       f'HTML Response Code: {html_code}\n'
                       f'Requests:\n{requests_log}')
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",

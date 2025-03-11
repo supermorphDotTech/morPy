@@ -26,19 +26,19 @@ def app_run(morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
         app_run_return: Return value (dict) of the app process, handed to app_exit
 
     :example:
-        from app import init as app_init
-        from app import run as app_run
+    >>> from app import init as app_init
+    >>> from app import run as app_run
 
-        init_retval = app_init(morpy_trace, app_dict)
-        run_retval = app_run(morpy_trace, app_dict, init_retval)
+    >>> init_retval = app_init(morpy_trace, app_dict)
+    >>> run_retval = app_run(morpy_trace, app_dict, init_retval)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
-    module = 'app.run'
-    operation = 'app_run(~)'
-    morpy_trace = morPy.tracing(module, operation, morpy_trace)
+    module: str = 'app.run'
+    operation: str = 'app_run(~)'
+    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
     app_run_return = {}
 
     try:
@@ -48,7 +48,7 @@ def app_run(morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
 
         # app_dict["global"]["app"]["test"] = True
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",
@@ -81,11 +81,11 @@ def new_process(morpy_trace: dict, app_dict: dict, counter: int=0) -> dict:
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
-    module = 'app.run'
-    operation = 'new_process(~)'
-    morpy_trace = morPy.tracing(module, operation, morpy_trace)
+    module: str = 'app.run'
+    operation: str = 'new_process(~)'
+    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
     p = None
 
     try:
@@ -101,7 +101,7 @@ def new_process(morpy_trace: dict, app_dict: dict, counter: int=0) -> dict:
         #
         # mp.run_parallel(morpy_trace, app_dict, task=task_dqued["task"], priority=task_dqued["priority"])
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",

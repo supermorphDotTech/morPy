@@ -15,7 +15,7 @@ import sys
 import psutil
 import logging
 
-def datetime_now():
+def datetime_now() -> dict:
     r"""
     This function reads the current date and time and returns formatted
     stamps.
@@ -84,7 +84,7 @@ def datetime_now():
         'loggingstamp' : loggingstamp
     }
 
-def runtime(in_ref_time):
+def runtime(in_ref_time) -> dict:
     r"""
     This function calculates the time delta between now and a reference time.
 
@@ -102,7 +102,7 @@ def runtime(in_ref_time):
         'rnt_delta' : rnt_delta
     }
 
-def sysinfo():
+def sysinfo() -> dict:
     r"""
     This function returns various information about the hardware and operating system.
 
@@ -172,7 +172,7 @@ def sysinfo():
         'resolution_width' : res_width,
     }
 
-def pathtool(in_path):
+def pathtool(in_path) -> dict:
     r"""
     This function takes a string and converts it to a path. Additionally,
     it returns path components and checks.
@@ -191,8 +191,8 @@ def pathtool(in_path):
         parent_dir - Path of the parent directory.
 
     :example:
-        file_path = "C:\my_file.txt"
-        file_path = morPy.pathtool(file_path)["out_path"]
+    >>> file_path = "C:\my_file.txt"
+    >>> file_path = morPy.pathtool(file_path)["out_path"]
     """
 
     import pathlib
@@ -231,7 +231,7 @@ def pathtool(in_path):
 
 def path_join(path_parts, file_extension):
     r"""
-    This function joins components of a tuple to an OS path.
+    This function joins components of a tuple to a path with auto-detection of a file extension.
 
     :param path_parts: Tuple of parts to be joined. Exact order is critical. Examples:
                      ('C:', 'This', 'is', 'my', 'path', '.txt') - C:\This\is\my\path.txt
@@ -286,9 +286,9 @@ def path_join(path_parts, file_extension):
 
     return path_obj
 
-def perfinfo():
+def perfinfo() -> dict:
     r"""
-    This function returns performance metrics.
+    This function returns hardware stats relevant for performance.
 
     :return: dict
         boot_time - Timestamp of the latest recorded boot process.
@@ -348,7 +348,7 @@ def perfinfo():
         'mem_free_MB' : mem_free_MB,
     }
 
-def app_dict_to_string(app_dict, depth: int=0):
+def app_dict_to_string(app_dict, depth: int=0) -> str:
     r"""
     This function creates a string for the entire app_dict. May exceed memory.
 
@@ -360,7 +360,7 @@ def app_dict_to_string(app_dict, depth: int=0):
     :return app_dict_str: morPy global dictionary as a UTF-8 string
 
     :example:
-        morPy.app_dict_to_string(app_dict) # Do not specify depth!
+    >>> app_dict_to_string(app_dict) # Do not specify depth!
     """
 
     if isinstance(app_dict, dict):
@@ -387,7 +387,7 @@ def app_dict_to_string(app_dict, depth: int=0):
     else:
         return None
 
-def tracing(module, operation, morpy_trace, clone=True, process_id=None):
+def tracing(module, operation, morpy_trace, clone=True, process_id=None) -> dict:
     r"""
     This function formats the trace to any given operation. This function is
     necessary to alter the morpy_trace as a pass down rather than pointing to the
@@ -425,7 +425,7 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None):
 
     return morpy_trace_passdown
 
-def handle_exception_main(e, init=False, app_dict=None):
+def handle_exception_main(e, init=False, app_dict=None) -> None:
     r"""
     Handle any exception outside the scope of msg.py
     """
@@ -451,7 +451,7 @@ def handle_exception_main(e, init=False, app_dict=None):
     # Quit the program
     sys.exit()
 
-def handle_exception_init(e):
+def handle_exception_init(e) -> None:
     r"""
     Handle any exception outside the scope of msg.py
     """
@@ -465,7 +465,7 @@ def handle_exception_init(e):
     # Quit the program
     sys.exit()
 
-def handle_exception_decorator(e):
+def handle_exception_decorator(e) -> None:
     r"""
     Handle any exception outside the scope of msg.py
     """
@@ -479,7 +479,7 @@ def handle_exception_decorator(e):
     # Quit the program
     sys.exit()
 
-def handle_exception_mp(e):
+def handle_exception_mp(e) -> None:
     r"""
     Handle any exception outside the scope of msg.py
     """

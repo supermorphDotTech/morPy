@@ -296,13 +296,13 @@ class XlWorkbook:
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook.__init__(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook.__init__(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
             # Use self._init() for initialization
-            check = self._init(morpy_trace, app_dict, workbook, create)["check"]
+            check: bool = self._init(morpy_trace, app_dict, workbook, create)["check"]
 
             if not check:
                 # Instance construction aborted.
@@ -340,11 +340,11 @@ class XlWorkbook:
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook._init(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook._init(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             self.wb_path = morpy_fct.pathtool(workbook)["out_path"]
@@ -404,7 +404,7 @@ class XlWorkbook:
             lambda: f'{app_dict["loc"]["morpy"]["XlWorkbook_inst"]}'
                     f'{app_dict["loc"]["morpy"]["XlWorkbook_wb"]}: {self.wb_path}')
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -434,11 +434,11 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook._create_workbook(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook._create_workbook(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             wb = Workbook()
@@ -449,7 +449,7 @@ class XlWorkbook:
             lambda: f'{app_dict["loc"]["morpy"]["create_workbook_done"]}\n'
                     f'xl_path: {self.wb_path}')
 
-            check = True
+            check: bool = True
 
         # Error detection
         except Exception as e:
@@ -485,11 +485,11 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook._update_meta(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook._update_meta(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         table_range = None
         table_sheet = None
         table_list = None
@@ -530,7 +530,7 @@ class XlWorkbook:
                 self.tables_ranges = table_range if table_range else {}
                 self.tables_sheets = table_sheet if table_sheet else {}
 
-            check = True
+            check: bool = True
 
         # Error detection
         except Exception as e:
@@ -568,11 +568,11 @@ class XlWorkbook:
         """
     
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook._cell_ref_autoformat(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook._cell_ref_autoformat(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     
-        check = False
+        check: bool = False
         cl_valid = False
         cl_dict = {}
     
@@ -716,7 +716,7 @@ class XlWorkbook:
     
             # Evaluate the validity of the dictionary
             if cl_valid:
-                check = True
+                check: bool = True
     
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -755,11 +755,11 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook.save_workbook(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook.save_workbook(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         wb_obj_return = self
 
         try:
@@ -770,7 +770,7 @@ class XlWorkbook:
                 # Close the workbook
                 wb_obj_return = self.close_workbook(morpy_trace, app_dict)["wb_obj"]
 
-            check = True
+            check: bool = True
 
         # Error detection
         except Exception as e:
@@ -809,11 +809,11 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook.close_workbook(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook.close_workbook(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Close the workbook
@@ -825,7 +825,7 @@ class XlWorkbook:
                 lambda: f'{app_dict["loc"]["morpy"]["close_workbook_done"]}\n'
                         f'{app_dict["loc"]["morpy"]["close_workbook_path"]}: {wb_path}')
 
-            check = True
+            check: bool = True
 
         # Error detection
         except Exception as e:
@@ -862,11 +862,11 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook.activate_worksheet(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook.activate_worksheet(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
 
         try:
             # Check if the requested sheet exists in the workbook
@@ -885,7 +885,7 @@ class XlWorkbook:
                         lambda: f'{app_dict["loc"]["morpy"]["activate_worksheet_done"]}\n'
                                 f'{app_dict["loc"]["morpy"]["activate_worksheet_sht"]}: {worksheet}')
 
-                check = True
+                check: bool = True
             else:
                 # The requested sheet was not found.
                 raise ValueError(
@@ -991,11 +991,11 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook.read_cells(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook.read_cells(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         cl_dict = {}
 
         try:
@@ -1106,7 +1106,7 @@ class XlWorkbook:
                 f'{app_dict["loc"]["morpy"]["read_cells_sht"]}: {worksheet}\n'
                 f'{app_dict["loc"]["morpy"]["read_cells_cls"]}: {cell_range}')
 
-            check = True
+            check: bool = True
 
         # Error detection
         except Exception as e:
@@ -1224,20 +1224,20 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'write_ranges(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'write_ranges(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         wb_obj_return = self
 
         try:
             if not worksheet:
                 self._update_meta(morpy_trace, app_dict, minimal=True)
                 worksheet_obj = self.active_sheet
-                sht_check = True
+                sht_check: bool = True
             else:
-                sht_check = self.activate_worksheet(morpy_trace, app_dict, worksheet)["check"]
+                sht_check: bool = self.activate_worksheet(morpy_trace, app_dict, worksheet)["check"]
                 worksheet_obj = self.active_sheet
                 
             if cell_range and sht_check:
@@ -1312,7 +1312,7 @@ class XlWorkbook:
             if save_workbook:
                 wb_obj_return = self.save_workbook(morpy_trace, app_dict, close_workbook=close_workbook)["wb_obj"]
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1348,11 +1348,11 @@ class XlWorkbook:
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
-        module = 'lib.xl'
-        operation = 'XlWorkbook.get_table_attributes(~)'
-        morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.xl'
+        operation: str = 'XlWorkbook.get_table_attributes(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check = False
+        check: bool = False
         table_attr = None
 
         try:
@@ -1374,7 +1374,7 @@ class XlWorkbook:
                     f'{app_dict["loc"]["morpy"]["get_table_attributes_sheet"]}: {worksheet}\n'
                     f'{app_dict["loc"]["morpy"]["get_table_attributes_table"]}: {table}')
 
-            check = True
+            check: bool = True
 
         except Exception as e:
             log(morpy_trace, app_dict, "error",
@@ -1412,11 +1412,11 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'lib.xl'
-    operation = 'table_opyxl_datb_dict(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'lib.xl'
+    operation: str = 'table_opyxl_datb_dict(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check = False
+    check: bool = False
     table_data = f'{table_data}'
     table_item = ""
     table_attr = []
@@ -1460,7 +1460,7 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
                 f'{app_dict["loc"]["morpy"]["openpyxl_table_data_dict_tbl"]}: {table}\n'
                 f'{app_dict["loc"]["morpy"]["openpyxl_table_data_dict_attr"]}:\n{table_attr}')
 
-        check = True
+        check: bool = True
 
     except Exception as e:
         log(morpy_trace, app_dict, "error",

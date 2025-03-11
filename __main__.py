@@ -39,21 +39,21 @@ import logging
 
 # Setup fallback-logging for __main__
 logging.basicConfig(level=logging.CRITICAL)
-init_check = False
+init_check: bool = False
 
 def initialize_morpy():
     r"""
     Initialize the morPy framework.
     """
 
-    init_check = False
+    init_check: bool = False
 
     try:
         from lib import init
-        morpy_trace = init.init_cred()
+        morpy_trace: dict = init.init_cred()
         app_dict, orchestrator = init.init(morpy_trace)
         if app_dict and orchestrator:
-            init_check = True
+            init_check: bool = True
         return morpy_trace, app_dict, orchestrator, init_check
 
     except Exception as e:
@@ -79,7 +79,7 @@ def finalize_morpy(morpy_trace, app_dict):
 
 if __name__ == '__main__':
     try:
-        morpy_trace, app_dict, orchestrator, init_check = initialize_morpy()
+        morpy_trace, app_dict, orchestrator, init_check: bool = initialize_morpy()
         main(morpy_trace, app_dict, orchestrator)
     except Exception as e:
         import lib.fct as morpy_fct

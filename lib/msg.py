@@ -33,13 +33,13 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
         -
 
     :example:
-        msg.log(morpy_trace, app_dict, level, message)
+    >>> log(morpy_trace, app_dict, level, message)
 
     TODO Implement a mechanism to keep logfile size in check
         > Preferably auto delete logs based on "no errors occurred" per process, task, thread and __main__
     """
 
-    morpy_trace_eval = None
+    morpy_trace_eval: dict = None
 
     try:
         # Wait for an interrupt to end
@@ -234,7 +234,7 @@ def log_interrupt(morpy_trace: dict, app_dict: dict) -> None:
 
     import lib.fct as morpy_fct
 
-    morpy_trace = morpy_fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
+    morpy_trace: dict = morpy_fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Set the global interrupt flag
@@ -333,9 +333,9 @@ def log_txt(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     import lib.fct as morpy_fct
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_db(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'msg'
+    operation: str = 'log_db(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Write to text file - Fallback if SQLite functionality is broken
@@ -357,16 +357,16 @@ def log_db(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     import lib.fct as morpy_fct
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_db(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'msg'
+    operation: str = 'log_db(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Define the table to be adressed.
     db_path = app_dict["conf"]["log_db_path"]
     table_name = f'log_{app_dict["run"]["init_loggingstamp"]}'
 
-    check = log_db_table_check(morpy_trace, app_dict, db_path, table_name)
+    check: bool = log_db_table_check(morpy_trace, app_dict, db_path, table_name)
 
     # Define the columns for logging and their data types.
     columns = ["level","process_id","thread_id","task_id","datetimestamp","module","operation","tracing","message"]
@@ -401,9 +401,9 @@ def log_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> object | 
     import sys, sqlite3
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_db_connect(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'msg'
+    operation: str = 'log_db_connect(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     try:
@@ -436,9 +436,9 @@ def log_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> None:
     import sys, sqlite3
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_db_disconnect(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'msg'
+    operation: str = 'log_db_disconnect(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     conn = None
@@ -475,9 +475,9 @@ def log_db_table_create(morpy_trace: dict, app_dict: dict, db_path: str, table_n
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_db_table_create(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'msg'
+    operation: str = 'log_db_table_create(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Apply standard formats
@@ -530,14 +530,14 @@ def log_db_table_check(morpy_trace: dict, app_dict: dict, db_path: str, table_na
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_db_table_check(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'msg'
+    operation: str = 'log_db_table_check(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Apply standard formats
     table_name = f'{table_name}'
-    check = False
+    check: bool = False
 
     # Define the execution statement
     exec_statement = (f'SELECT count(name) FROM sqlite_master WHERE type=\'table\' AND name=\'{table_name}\'')
@@ -557,7 +557,7 @@ def log_db_table_check(morpy_trace: dict, app_dict: dict, db_path: str, table_na
 
         # Check the count of found tables
         if c.fetchone()[0] == 1:
-            check = True
+            check: bool = True
 
         # Close the cursor
         c.close()
@@ -593,9 +593,9 @@ def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, tab
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_db_table_add_column(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'msg'
+    operation: str = 'log_db_table_add_column(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Apply standard formats
@@ -604,7 +604,7 @@ def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, tab
     # Execution
     try:
         # Check the existence of the table
-        check = log_db_table_check(morpy_trace, app_dict, db_path, table_name)
+        check: bool = log_db_table_check(morpy_trace, app_dict, db_path, table_name)
 
         if check:
 
@@ -676,9 +676,9 @@ def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_db_row_insert(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'msg'
+    operation: str = 'log_db_row_insert(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
     # Preparation
@@ -692,7 +692,7 @@ def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
         exec_statement = f'INSERT INTO {table_name} (\'level\',\'process_id\',\'thread_id\',\'task_id\',\'datetimestamp\',\'module\',\'operation\',\'tracing\',\'message\') VALUES (?,?,?,?,?,?,?,?,?)'
 
         # Check the existence of the table
-        check = log_db_table_check(morpy_trace, app_dict, db_path, table_name)
+        check: bool = log_db_table_check(morpy_trace, app_dict, db_path, table_name)
 
         if check:
 
@@ -770,9 +770,9 @@ def log_wait_for_input(morpy_trace: dict, app_dict: dict, msg_text: str) -> str 
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    module = 'msg'
-    operation = 'log_wait_for_input(~)'
-    morpy_trace = morpy_fct.tracing(module, operation, morpy_trace)
+    module: str = 'msg'
+    operation: str = 'log_wait_for_input(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
         usr_input = input(f'{msg_text}\n')
