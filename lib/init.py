@@ -250,9 +250,9 @@ def types_dict_build(morpy_trace: dict, create: bool=False) -> dict:
         # With GIL, use a flat app_dict referencing UltraDict instances and mask it as nested.
         # TODO remove branch force
         if gil or True:
-            from lib.types_dict import MorPyDictUltraRoot, MorPyDictUltra
+            from lib.types_dict import FlatDict, MorPyDictUltra
 
-            init_dict = MorPyDictUltraRoot(
+            init_dict = FlatDict(
                 name="app_dict",
                 create=create
             )
@@ -551,14 +551,14 @@ def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str) -> None:
 
     try:
         morpy_ref_path = os.path.join(f'{init_dict["conf"]["main_path"]}', 'initialized_app_dict.txt')
-        init_dict = open(morpy_ref_path,'w')
+        init_dict_txt = open(morpy_ref_path,'w')
 
         # Write init_dict to file
-        init_dict.write(f'{init_dict["loc"]["morpy"]["ref_descr"]}\n\n')
-        init_dict.write(init_dict_str)
+        init_dict_txt.write(f'{init_dict["loc"]["morpy"]["ref_descr"]}\n\n')
+        init_dict_txt.write(init_dict_str)
 
         # Close the file
-        init_dict.close()
+        init_dict_txt.close()
 
         # The init_dict was written to textfile.
         log_no_q(morpy_trace, init_dict, "init",
@@ -585,56 +585,17 @@ def has_gil(morpy_trace: dict) -> bool | None:
     >>> gil = has_gil(morpy_trace)
     """
 
-    module: str = 'lib.init'
-    operation: str = 'has_gil(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    gil_detected: bool = False
+    # module: str = 'lib.init'
+    # operation: str = 'has_gil(~)'
+    # morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
-        # 1) Check if 'nogil' or 'free-threading' is in the version string
-        version_str = sys.version.lower()
-        if "nogil" in version_str or "free threading" in version_str:
-            # If we see "nogil"/"free threading", we assume *no GIL*:
-            return gil_detected
-
-        # 2) Check the Python implementation
-        #    - "cpython" typically has GIL,
-        #      but might be a special "nogil" fork (handled above).
-        #    - "ironpython" doesn't have GIL in the same way,
-        #    - "jython" uses JVM threads, etc.
-        impl = sys.implementation.name.lower()
-        if impl != "cpython":
-            # e.g. PyPy also has a GIL but implemented differently,
-            # or IronPython does not use GIL in the same sense
-            # Decide what to do based on your needs:
-            # - Return True if you want to treat PyPy as GIL-based
-            # - Return False for other interpreters, etc.
-            # For simplicity, let's assume any non-CPython is "no GIL"
-            # or "unknown GIL" scenario:
-            return gil_detected
-
-        gil_detected = True
-
-        # 3) Check the OS platform, if expectation of no-GIL forks on certain OS
-        # current_os = sys.platform.lower()
-        # Examples:
-        #   - 'linux' or 'linux2'
-        #   - 'darwin' for macOS
-        #   - 'win32' or 'cygwin'
-        #   - 'aix', 'freebsd', etc.
-
-        # If you specifically want to detect "no-GIL on Linux only," for instance:
-        # (But we've already returned False if we see "nogil" in the version.)
-
-        # Optionally, do something like:
-        # if current_os.startswith("linux"):
-        #     # e.g., maybe check other environment variables or file paths
-        #     # that you know only exist for your no-GIL builds
-
-        # 4) If nothing triggered a "False", assume standard CPython with GIL
-
-        return gil_detected
+        if sys.version_info >= (3, 13):
+            status = sys._is_gil_enabled()
+            if status:
+                return True
+            else:
+                return False
 
     except Exception as e:
         morpy_fct.handle_exception_init(e)

@@ -437,7 +437,6 @@ class MorPyDict(dict):
             return super().setdefault(key, default)
 
 class MorPyDictUltra(UltraDict):
-
     r"""
 	morPy specific dictionary supporting multiprocessing.
     """
@@ -863,86 +862,250 @@ class MorPyDictUltra(UltraDict):
         lock, super_class = self._get_super()
         return f'cl_mpy_dict(name={self._name}, access={self._access}, data={super_class.__repr__()})'
 
-class FlatDict(MutableMapping):
-    SEPARATOR = "::"  # used to join names
+# A helper class for wrapping nested dictionaries.
+class _NestedDict(dict):
+    """
+    A helper dict subclass used for nested dictionaries.
+    It behaves just like a standard dict but intercepts assignments
+    so that any mapping value is wrapped and stored in the shared flat storage.
+    """
 
-    def __init__(self, name, storage=None):
+    def __init__(self, qualified_name, flat_storage, initial=None):
+        self._qualified_name = qualified_name
+        self._flat_storage = flat_storage
+        super().__init__()
+        if initial is not None:
+            for key, value in initial.items():
+                if isinstance(value, dict) and not isinstance(value, _NestedDict):
+                    new_qname = f"{self._qualified_name}{FlatDict.SEPARATOR}{key}"
+                    value = _NestedDict(new_qname, self._flat_storage, initial=value)
+                    self._flat_storage[new_qname] = value
+                super().__setitem__(key, value)
+
+    def __setitem__(self, key, value):
+        full = f"{self._qualified_name}{FlatDict.SEPARATOR}{key}"
+        if isinstance(value, dict) and not isinstance(value, _NestedDict):
+            value = _NestedDict(full, self._flat_storage, initial=value)
+            self._flat_storage[full] = value
+        else:
+            if full in self._flat_storage:
+                del self._flat_storage[full]
+        super().__setitem__(key, value)
+
+    def __delitem__(self, key):
+        full = f"{self._qualified_name}{FlatDict.SEPARATOR}{key}"
+        if full in self._flat_storage:
+            del self._flat_storage[full]
+        super().__delitem__(key)
+
+
+class FlatDict(MutableMapping):
+    """
+    A flat mapping that mimics nested dictionaries via a shared flat storage.
+
+    This version has been extended so that its interface (including attributes and methods)
+    is 100% compatible with MorPyDictUltra (which is a subclass of UltraDict). In particular,
+    FlatDict now supports an access mode (normal, tightened, locked) and implements methods
+    such as update(), setdefault(), pop(), popitem(), clear() and _update_self().
+    """
+    SEPARATOR = "::"
+    _access_types = ('normal', 'tightened', 'locked')
+
+    def __init__(self, name, storage=None, access='normal', create=False, **kwargs):
         """
-        :param name: The name (or full name) for this dict, e.g. "app_dict".
+        :param name: The name (or full name) for this dict (e.g. "app_dict").
         :param storage: A shared dict where all nested dicts are stored.
                         If None, a new storage dict is created.
+        :param access: Access type: 'normal' (default), 'tightened', or 'locked'.
+        :param create: Flag for creating new nested structures.
         """
         self._name = name
         self._storage = storage if storage is not None else {}
-        # The "local" container for leaf keys of this dict is stored under self._name.
         if name not in self._storage:
             self._storage[name] = {}
+        self._access = access if access in self._access_types else 'normal'
+        self.create = create  # extra flag to mimic UltraDict.create
+        # Initialize localization/configuration dictionaries
+        self.loc = {}
+        self._init_conf()
+        self._init_loc()
 
-    def _full_name(self, key):
-        """Compute the full qualified name for a nested dict with the given key."""
-        return f"{self._name}{self.SEPARATOR}{key}"
+    def _init_conf(self):
+        """
+        Initialize localization and configuration.
+        This code attempts to import the localization module specified in conf.settings().
+        On failure it falls back to default English messages.
+        """
+        try:
+            self.lang = conf.settings().get('localization', '')
+            loc_morpy = importlib.import_module(self.lang)
+            messages = getattr(loc_morpy, 'loc_morpy')().get('MorPyDict', {})
+            for key, value in messages.items():
+                self.loc[key] = value
+        except (AttributeError, ImportError):
+            self.lang = 'en_US'
+            default_msgs = {
+                'MorPyDict_denied': 'Prohibited method',
+                'MorPyDict_new_key': 'Keys can not be added.',
+                'MorPyDict_del_key': 'Keys can not be deleted.',
+                'MorPyDict_clear': 'Dictionary can not be cleared.',
+                'MorPyDict_lock': 'Dictionary is locked.',
+                'MorPyDict_item': 'Item',
+                'MorPyDict_key': 'Key',
+                'MorPyDict_val': 'Value',
+                "MorPyDict_key_str": "Keys must be strings.",
+                "MorPyDict_empty": "Dictionary is empty.",
+            }
+            self.loc.update(default_msgs)
+        except Exception as e:
+            raise RuntimeError(f'CRITICAL {self._name}._init_conf(): {e}\n'
+                               f'Line: {sys.exc_info()[-1].tb_lineno}')
+
+    def _init_loc(self):
+        """
+        Initialize localized messages for the various dictionary operations.
+        """
+        try:
+            self._loc_msg()
+        except Exception as e:
+            raise RuntimeError(f'CRITICAL {self._name}._init_loc(): {e}\n'
+                               f'Line: {sys.exc_info()[-1].tb_lineno}')
+
+    def _loc_msg(self):
+        """
+        Setup localized messages depending on the current access type.
+        """
+        # Ensure certain keys exist
+        self.loc.setdefault("MorPyDict_denied", "Prohibited method")
+        self.loc.setdefault("MorPyDict_new_key", "Keys can not be added.")
+        self.loc.setdefault("MorPyDict_del_key", "Keys can not be deleted.")
+        self.loc.setdefault("MorPyDict_clear", "Dictionary can not be cleared.")
+        self.loc.setdefault("MorPyDict_lock", "Dictionary is locked.")
+        self.loc.setdefault("MorPyDict_key", "Key")
+        self.loc.setdefault("MorPyDict_key_str", "Keys must be strings.")
+        self.loc.setdefault("MorPyDict_empty", "Dictionary is empty.")
+        self.loc.setdefault("MorPyDict_err_unlink", "Error unlinking UltraDict instance")
+        if self._access == 'tightened':
+            self.msg__setitem__ = (f'{self.loc["MorPyDict_denied"]}: {self._name}.setitem()\n'
+                                   f'{self.loc["MorPyDict_new_key"]}\n'
+                                   f'{self.loc["MorPyDict_key"]}:')
+            self.msg__delitem__ = (f'{self.loc["MorPyDict_denied"]}: {self._name}.delitem()\n'
+                                   f'{self.loc["MorPyDict_del_key"]}\n'
+                                   f'{self.loc["MorPyDict_key"]}:')
+            self.msg_clear = f'{self.loc["MorPyDict_denied"]}: {self._name}.clear()\n{self.loc["MorPyDict_clear"]}'
+            self.msg_pop = (f'{self.loc["MorPyDict_denied"]}: {self._name}.pop()\n'
+                            f'{self.loc["MorPyDict_del_key"]}\n'
+                            f'{self.loc["MorPyDict_key"]}:')
+            self.msg_popitem = (f'{self.loc["MorPyDict_denied"]}: {self._name}.popitem()\n'
+                                f'{self.loc["MorPyDict_del_key"]}\n'
+                                f'{self.loc["MorPyDict_key"]}:')
+            self.msg_update = (f'{self.loc["MorPyDict_denied"]}: {self._name}.update()\n'
+                               f'{self.loc["MorPyDict_new_key"]}\n'
+                               f'{self.loc["MorPyDict_key"]}:')
+            self.msg_setdefault = (f'{self.loc["MorPyDict_denied"]}: {self._name}.setdefault()\n'
+                                   f'{self.loc["MorPyDict_new_key"]}\n'
+                                   f'{self.loc["MorPyDict_key"]}:')
+        elif self._access == 'locked':
+            self.msg__setitem__ = (f'{self.loc["MorPyDict_denied"]}: {self._name}.setitem()\n'
+                                   f'{self.loc["MorPyDict_lock"]}\n'
+                                   f'{self.loc["MorPyDict_key"]}:')
+            self.msg__delitem__ = (f'{self.loc["MorPyDict_denied"]}: {self._name}.delitem()\n'
+                                   f'{self.loc["MorPyDict_lock"]}\n'
+                                   f'{self.loc["MorPyDict_key"]}:')
+            self.msg_clear = f'{self.loc["MorPyDict_denied"]}: {self._name}.clear()\n{self.loc["MorPyDict_lock"]}'
+            self.msg_pop = (f'{self.loc["MorPyDict_denied"]}: {self._name}.pop()\n'
+                            f'{self.loc["MorPyDict_lock"]}\n'
+                            f'{self.loc["MorPyDict_key"]}:')
+            self.msg_popitem = (f'{self.loc["MorPyDict_denied"]}: {self._name}.popitem()\n'
+                                f'{self.loc["MorPyDict_lock"]}\n'
+                                f'{self.loc["MorPyDict_key"]}:')
+            self.msg_update = (f'{self.loc["MorPyDict_denied"]}: {self._name}.update()\n'
+                               f'{self.loc["MorPyDict_lock"]}\n'
+                               f'{self.loc["MorPyDict_key"]}:')
+            self.msg_setdefault = (f'{self.loc["MorPyDict_denied"]}: {self._name}.setdefault()\n'
+                                   f'{self.loc["MorPyDict_lock"]}\n'
+                                   f'{self.loc["MorPyDict_key"]}:')
+        else:
+            # For normal access, no extra messages are needed.
+            self.msg__setitem__ = ''
+            self.msg__delitem__ = ''
+            self.msg_clear = ''
+            self.msg_pop = ''
+            self.msg_popitem = ''
+            self.msg_update = ''
+            self.msg_setdefault = ''
+
+    def _update_self(self, _access=None, localization_force=False):
+        """
+        Allow reinitialization without data loss.
+        This method can be used to change the access level (and optionally force a reinit of the localization).
+        """
+        if _access and _access in self._access_types:
+            self._access = _access
+        self._init_loc()
 
     def __getitem__(self, key):
-        # Allow direct full-name access if the key contains the separator.
+        # Allow direct full-name access if key contains the separator.
         if self.SEPARATOR in key:
             if key in self._storage:
                 return self._storage[key]
             raise KeyError(key)
-        # First check the local (leaf) container.
+        # First, check the local (leaf) container.
         local = self._storage[self._name]
         if key in local:
             return local[key]
-        # Then check whether a nested dict exists.
-        full = self._full_name(key)
+        # Then check if a nested dict exists.
+        full = f"{self._name}{self.SEPARATOR}{key}"
         if full in self._storage:
             return self._storage[full]
         raise KeyError(key)
 
     def __setitem__(self, key, value):
-        # Direct full-name assignment: if key contains the separator.
+        if not isinstance(key, str):
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
+        if self._access == 'tightened':
+            if key not in self._storage[self._name]:
+                msg = f'{self.msg__setitem__} {key}'
+                raise KeyError(msg)
+        elif self._access == 'locked':
+            msg = f'{self.msg__setitem__} {key}'
+            raise PermissionError(msg)
+
+        # Direct full-name assignment if key contains the separator.
         if self.SEPARATOR in key:
-            if isinstance(value, dict) and not isinstance(value, _NestedDict):
-                # Wrap the dict before storing.
+            if type(value) is dict and not isinstance(value, _NestedDict):
                 value = _NestedDict(key, self._storage, initial=value)
             self._storage[key] = value
-            # Also remove any leaf entry with that key in the local container.
             self._storage[self._name].pop(key, None)
             return
 
-        # For keys without separator: if assigning a mapping, wrap it.
-        if isinstance(value, dict) and not isinstance(value, _NestedDict):
-            full = self._full_name(key)
+        # Only wrap plain dicts. Subclasses like MorPyDictUltra will be left unchanged.
+        if type(value) is MorPyDictUltra and not isinstance(value, _NestedDict):
+            full = f"{self._name}{self.SEPARATOR}{key}"
             value = _NestedDict(full, self._storage, initial=value)
             self._storage[full] = value
-            # Remove any previous leaf value for this key.
             self._storage[self._name].pop(key, None)
-            # Also keep a pointer in the local container so that iteration works.
             self._storage[self._name][key] = value
         else:
-            # For non-dict values, store in the local container.
             self._storage[self._name][key] = value
-            # And if a nested dict previously existed for that key, remove it.
-            full = self._full_name(key)
+            full = f"{self._name}{self.SEPARATOR}{key}"
             self._storage.pop(full, None)
 
     def __delitem__(self, key):
-        if self.SEPARATOR in key:
-            if key in self._storage:
-                del self._storage[key]
-            else:
-                raise KeyError(key)
-            return
-
+        if not isinstance(key, str):
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
+        if self._access in ('tightened', 'locked'):
+            msg = f'{self.msg__delitem__} {key}'
+            raise PermissionError(msg)
         if key in self._storage[self._name]:
-            full = self._full_name(key)
-            self._storage[self._name].pop(key)
+            full = f"{self._name}{self.SEPARATOR}{key}"
+            del self._storage[self._name][key]
             if full in self._storage:
                 del self._storage[full]
         else:
             raise KeyError(key)
 
     def __iter__(self):
-        # Iterate over keys in the local container.
         return iter(self._storage[self._name])
 
     def __len__(self):
@@ -953,57 +1116,111 @@ class FlatDict(MutableMapping):
             return key in self._storage
         if key in self._storage[self._name]:
             return True
-        full = self._full_name(key)
+        full = f"{self._name}{self.SEPARATOR}{key}"
         return full in self._storage
 
     def __repr__(self):
-        # For display, rebuild a regular dict from the local container.
         local = self._storage[self._name]
         return f"{self.__class__.__name__}({local})"
 
-
-class _NestedDict(dict):
-    """
-    A helper dict subclass used for nested dictionaries.
-    It behaves just like a standard dict but intercepts assignments
-    so that any value assigned as a mapping is wrapped and recorded in the shared flat storage.
-    """
-    def __init__(self, qualified_name, flat_storage, initial=None):
-        """
-        :param qualified_name: The full qualified name (e.g. "app_dict::run_dict").
-        :param flat_storage: The shared storage dict from the root FlatDict.
-        :param initial: An optional initial dict to populate this _NestedDict.
-        """
-        self._qualified_name = qualified_name
-        self._flat_storage = flat_storage
-        # Initialize using the base dict.
-        super().__init__()
-        if initial is not None:
-            for key, value in initial.items():
-                # If a nested mapping is found, wrap it.
-                if isinstance(value, dict) and not isinstance(value, _NestedDict):
-                    new_qname = f"{self._qualified_name}{FlatDict.SEPARATOR}{key}"
-                    value = _NestedDict(new_qname, self._flat_storage, initial=value)
-                    self._flat_storage[new_qname] = value
-                super().__setitem__(key, value)
-
-    def __setitem__(self, key, value):
-        full = f"{self._qualified_name}{FlatDict.SEPARATOR}{key}"
-        if isinstance(value, dict) and not isinstance(value, _NestedDict):
-            # Wrap the nested dict.
-            value = _NestedDict(full, self._flat_storage, initial=value)
-            self._flat_storage[full] = value
+    def update(self, *args, **kwargs):
+        new_items = dict(*args, **kwargs)
+        if self._access == 'tightened':
+            for key in new_items.keys():
+                if key not in self._storage[self._name]:
+                    msg = f'{self.msg_update} {key}'
+                    raise PermissionError(msg)
+            for key, value in new_items.items():
+                self.__setitem__(key, value)
+        elif self._access == 'locked':
+            raise PermissionError(self.msg_update)
         else:
-            # If a non-dict is being assigned where a nested dict existed, remove the flat entry.
-            if full in self._flat_storage:
-                del self._flat_storage[full]
-        super().__setitem__(key, value)
+            for key, value in new_items.items():
+                self.__setitem__(key, value)
 
-    def __delitem__(self, key):
-        full = f"{self._qualified_name}{FlatDict.SEPARATOR}{key}"
-        if full in self._flat_storage:
-            del self._flat_storage[full]
-        super().__delitem__(key)
+    def setdefault(self, key, default=None):
+        if not isinstance(key, str):
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
+        if self._access == 'tightened':
+            if key not in self._storage[self._name]:
+                msg = f'{self.msg_setdefault} {key}'
+                raise PermissionError(msg)
+            else:
+                return self.__getitem__(key)
+        elif self._access == 'locked':
+            msg = f'{self.msg_setdefault} {key}'
+            if key not in self._storage[self._name]:
+                raise PermissionError(msg)
+            else:
+                return self.__getitem__(key)
+        else:
+            if key not in self._storage[self._name]:
+                self.__setitem__(key, default)
+            return self.__getitem__(key)
+
+    def clear(self):
+        if self._access in ('tightened', 'locked'):
+            raise PermissionError(self.msg_clear)
+        else:
+            self._storage[self._name].clear()
+            keys_to_del = [k for k in self._storage if k.startswith(f"{self._name}{self.SEPARATOR}")]
+            for k in keys_to_del:
+                del self._storage[k]
+
+    def pop(self, key, default=None):
+        if not isinstance(key, str):
+            raise TypeError(f'{self.loc["MorPyDict_key_str"]}:')
+        if self._access in ('tightened', 'locked'):
+            msg = f'{self.msg_pop} {key}'
+            raise PermissionError(msg)
+        else:
+            if key in self._storage[self._name]:
+                full = f"{self._name}{self.SEPARATOR}{key}"
+                result = self._storage[self._name].pop(key)
+                if full in self._storage:
+                    del self._storage[full]
+                return result
+            else:
+                if default is not None:
+                    return default
+                raise KeyError(key)
+
+    def popitem(self):
+        if self._access in ('tightened', 'locked'):
+            if self._storage[self._name]:
+                last_key = next(reversed(self._storage[self._name]))
+                msg = f'{self.msg_popitem} {last_key}'
+                raise PermissionError(msg)
+            else:
+                raise TypeError(f'{self.loc["MorPyDict_empty"]}:')
+        else:
+            if self._storage[self._name]:
+                key = next(reversed(self._storage[self._name]))
+                value = self._storage[self._name].pop(key)
+                full = f"{self._name}{self.SEPARATOR}{key}"
+                if full in self._storage:
+                    del self._storage[full]
+                return key, value
+            else:
+                raise KeyError("dictionary is empty")
+
+    def get(self, key, default=None):
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return default
+
+    def print_status(self):
+        """
+        A helper method for debugging that returns the representation of the FlatDict.
+        """
+        return self.__repr__()
+
+    def get_recurse_register(self):
+        """
+        If a 'recurse_register' attribute has been set, return it. Otherwise, return None.
+        """
+        return getattr(self, 'recurse_register', None)
 
 class MorPyNestedButFlatDict(dict):
     """
@@ -1026,62 +1243,84 @@ class MorPyNestedButFlatDict(dict):
     # String separator used to identify composite keys for simulated deep nesting
     SEPARATOR = "::"
 
-    # Store attributes in an UltraDict to be rebuilt by spawned processes
-    ATTR_STORE_NAME = "app_dict::_attribute_store"
-    ATTR_STORE = UltraDict(name=ATTR_STORE_NAME)
-    # Keep track of top‐level keys that are “containers”
-    _ultra_keys = ATTR_STORE["_ultra_keys"] = set()
-
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, name: str = 'MorPyNestedButFlatDict',
+                 access: str = 'normal', **kwargs):
+        # Initialize the underlying dict with any initial data
         super().__init__(*args, **kwargs)
-        # If some composite keys were already set, record their top-level name.
-        for key in super().keys():
+        # Store the dictionary name and access mode
+        self._name = name
+        self._access = access
+
+        # Initialize a minimal localization/messages dict for error messages.
+        self.loc = {
+            "MorPyDict_key_str": "Keys must be strings.",
+            "MorPyDict_new_key": "Keys cannot be added.",
+            "MorPyDict_del_key": "Keys cannot be deleted.",
+            "MorPyDict_clear": "Dictionary cannot be cleared.",
+            "MorPyDict_lock": "Dictionary is locked.",
+            "MorPyDict_empty": "Dictionary is empty.",
+        }
+        self.msg__setitem__ = f"{self.loc['MorPyDict_new_key']} for {self._name}"
+        self.msg__delitem__ = f"{self.loc['MorPyDict_del_key']} for {self._name}"
+        self.msg_clear = f"{self.loc['MorPyDict_clear']} for {self._name}"
+        self.msg_pop = f"{self.loc['MorPyDict_del_key']} for {self._name}"
+        self.msg_popitem = f"{self.loc['MorPyDict_del_key']} for {self._name}"
+        self.msg_update = f"{self.loc['MorPyDict_new_key']} for {self._name}"
+        self.msg_setdefault = f"{self.loc['MorPyDict_new_key']} for {self._name}"
+
+        # Track top-level keys that are used to “flatten” nested dictionaries.
+        self._ultra_keys = set()
+        # If composite keys already exist, record their top-level names.
+        for key in list(super().keys()):
             if isinstance(key, str) and self.SEPARATOR in key:
                 top, _ = key.split(self.SEPARATOR, 1)
                 self._ultra_keys.add(top)
 
     def __getitem__(self, key):
-        # If a composite key is requested (e.g. "dict1::subkey"), use it directly.
+        # Allow direct composite-key access if the separator is in key.
         if isinstance(key, str) and self.SEPARATOR in key:
             return super().__getitem__(key)
-
-        # If key is known to be an UltraDict container, return a proxy.
+        # If key marks a container, return the proxy.
         if key in self._ultra_keys:
             return _MorPyNestedButFlatDictProxy(self, key)
-
-        # Otherwise, do a normal lookup (no auto‐creation).
         return super().__getitem__(key)
 
     def __setitem__(self, key, value):
-        # Bypass flattening for the protected key.
+        # Allow protected key to be set directly.
         if key == "_flat_key_references":
             super().__setitem__(key, value)
             return
 
-        # If the key is composite (contains the separator) then simply store.
-        if isinstance(key, str) and self.SEPARATOR in key:
+        if not isinstance(key, str):
+            raise TypeError(f"{self.loc['MorPyDict_key_str']}")
+
+        # Check access control before allowing modifications.
+        if self._access == 'tightened':
+            if key not in self:
+                raise KeyError(f"{self.msg__setitem__} {key}")
+        elif self._access == 'locked':
+            raise PermissionError(f"{self.msg__setitem__} {key}")
+
+        # If key contains the separator already, store it directly.
+        if self.SEPARATOR in key:
             super().__setitem__(key, value)
             return
 
-        # Otherwise, key is a top-level key.
-        if isinstance(value, UltraDict):
-            # Flatten the UltraDict: store each subkey using a composite key.
+        # If the value is a dict (but not an UltraDict), flatten it.
+        if isinstance(value, dict) and not isinstance(value, UltraDict):
             for subkey, subvalue in value.items():
                 composite_key = f"{key}{self.SEPARATOR}{subkey}"
                 super().__setitem__(composite_key, subvalue)
-            # Mark this key as an UltraDict container.
             self._ultra_keys.add(key)
         else:
-            # Store as a plain value.
             super().__setitem__(key, value)
 
     def __delitem__(self, key):
-        # If key is a composite key, delete it directly.
-        if isinstance(key, str) and self.SEPARATOR in key:
+        if not isinstance(key, str):
+            raise TypeError(f"{self.loc['MorPyDict_key_str']}")
+        if self.SEPARATOR in key:
             super().__delitem__(key)
             return
-
-        # If key is an UltraDict container, remove all composite keys starting with key.
         if key in self._ultra_keys:
             prefix = f"{key}{self.SEPARATOR}"
             keys_to_delete = [k for k in list(super().keys())
@@ -1092,27 +1331,59 @@ class MorPyNestedButFlatDict(dict):
         else:
             super().__delitem__(key)
 
-    def __contains__(self, key):
-        if isinstance(key, str) and self.SEPARATOR in key:
-            return super().__contains__(key)
-        if key in self._ultra_keys:
-            return True
-        return super().__contains__(key)
+    def update(self, *args, **kwargs):
+        if self._access == 'tightened':
+            new_items = dict(*args, **kwargs)
+            for key in new_items.keys():
+                if key not in self:
+                    raise PermissionError(f"{self.msg_update} {key}")
+            super().update(*args, **kwargs)
+        elif self._access == 'locked':
+            raise PermissionError(self.msg_update)
+        else:
+            # Use our __setitem__ to allow flattening and access control
+            for key, value in dict(*args, **kwargs).items():
+                self.__setitem__(key, value)
 
-    def __iter__(self):
-        """
-        Iterate over top-level keys.
-        Composite keys (those with the separator) are hidden.
-        """
-        seen = set()
-        for k in super().__iter__():
-            if isinstance(k, str) and self.SEPARATOR in k:
-                continue
-            yield k
-            seen.add(k)
-        for k in self._ultra_keys:
-            if k not in seen:
-                yield k
+    def clear(self):
+        if self._access in ('tightened', 'locked'):
+            raise PermissionError(self.msg_clear)
+        else:
+            super().clear()
+            self._ultra_keys.clear()
+
+    def pop(self, key, default=None):
+        if not isinstance(key, str):
+            raise TypeError(f"{self.loc['MorPyDict_key_str']}")
+        if self._access in ('tightened', 'locked'):
+            raise PermissionError(f"{self.msg_pop} {key}")
+        else:
+            return super().pop(key, default)
+
+    def popitem(self):
+        if self._access in ('tightened', 'locked'):
+            if self:
+                last_key = next(reversed(self))
+                raise PermissionError(f"{self.msg_popitem} {last_key}")
+            else:
+                raise KeyError(f"{self.loc['MorPyDict_empty']}")
+        else:
+            return super().popitem()
+
+    def setdefault(self, key, default=None):
+        if not isinstance(key, str):
+            raise TypeError(f"{self.loc['MorPyDict_key_str']}")
+        if self._access == 'tightened':
+            if key not in self:
+                raise PermissionError(f"{self.msg_setdefault} {key}")
+            else:
+                return self.__getitem__(key)
+        elif self._access == 'locked':
+            raise PermissionError(f"{self.msg_setdefault} {key}")
+        else:
+            if key not in self:
+                self.__setitem__(key, default)
+            return self.__getitem__(key)
 
     def keys(self):
         return list(iter(self))
@@ -1122,6 +1393,18 @@ class MorPyNestedButFlatDict(dict):
 
     def values(self):
         return [self[k] for k in self]
+
+    def __iter__(self):
+        # Iterate over top-level keys, skipping composite keys.
+        seen = set()
+        for k in super().__iter__():
+            if isinstance(k, str) and self.SEPARATOR in k:
+                continue
+            yield k
+            seen.add(k)
+        for k in self._ultra_keys:
+            if k not in seen:
+                yield k
 
     def __repr__(self):
         pairs = ", ".join(f"{k!r}: {self[k]!r}" for k in self)

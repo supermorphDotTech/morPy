@@ -29,6 +29,19 @@ def u_dict_build(create: bool=False):
 
     return app_dict
 
+def fibonacci(n):
+    n = n * 50
+    if n <= 0:
+        return []  # Return an empty list if n is non-positive.
+    elif n == 1:
+        return [0]
+
+    sequence = [0, 1]
+    while len(sequence) < n:
+        # Append the sum of the last two numbers in the sequence.
+        sequence.append(sequence[-1] + sequence[-2])
+    return sequence
+
 def parallel_task(app_dict):
     """ Task to be run in parallel with writes to app_dict """
     try:
@@ -48,6 +61,7 @@ def parallel_task(app_dict):
 
         while i < total:
             i += 1
+            fib_seq = fibonacci(i)
             # Read and write app_dict and nested dictionaries
             with app_dict.lock:
                 app_dict["test_count"] += 1
@@ -55,7 +69,7 @@ def parallel_task(app_dict):
             with app_dict["nested_udict"].lock:
                 app_dict["nested_udict"]["test_count"] += 1
 
-            print(f'{app_dict["test_count"]} :: {app_dict["nested_udict"]["test_count"]} :: {process.name}')
+            print(f'root={app_dict["test_count"]} :: nested={app_dict["nested_udict"]["test_count"]} :: fibonacci={len(fib_seq)} :: {process.name}\n')
             while tmp_val < total:
                 tmp_val = (sqrt(sqrt(i)*i) / i) + tmp_val**2
 
@@ -85,7 +99,7 @@ if __name__ == '__main__':
     task = [parallel_task,]
 
     i = 0
-    j = 50 # Processes to be started
+    j = 14 # Processes to be started
     processes = []
     while i < j:
         p = Process(target=partial(spawn_wrapper, task))

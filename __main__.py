@@ -79,7 +79,7 @@ def finalize_morpy(morpy_trace, app_dict):
 
 if __name__ == '__main__':
     try:
-        morpy_trace, app_dict, orchestrator, init_check: bool = initialize_morpy()
+        morpy_trace, app_dict, orchestrator, init_check = initialize_morpy()
         main(morpy_trace, app_dict, orchestrator)
     except Exception as e:
         import lib.fct as morpy_fct
