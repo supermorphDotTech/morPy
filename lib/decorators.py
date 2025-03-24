@@ -25,9 +25,9 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, ve
     :param verbose: If True, message is only logged in verbose mode.
 
     :example:
-    >>> from lib.decorators import log
-    >>> log(morpy_trace, app_dict, "info",
-    >>> lambda: "Hello world!")
+        from lib.decorators import log
+        log(morpy_trace, app_dict, "info",
+        lambda: "Hello world!")
     """
 
     import lib.msg as msg
@@ -61,9 +61,9 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callabl
     :param verbose: If True, message is only logged in verbose mode.
 
     :example:
-    >>> from lib.decorators import log_no_q
-    >>> log_no_q(morpy_trace, app_dict, level,
-    >>> lambda: <message>)
+        from lib.decorators import log_no_q
+        log_no_q(morpy_trace, app_dict, level,
+        lambda: <message>)
     """
 
     import lib.msg as msg
@@ -74,7 +74,7 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callabl
     else:
         log_level = log_level.lower()
 
-        if app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+        if message and app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
             msg.log(morpy_trace, app_dict, log_level, message(), verbose)
 
 def metrics(func):
@@ -87,9 +87,9 @@ def metrics(func):
     :return retval: Return value of the wrapped function
 
     :example:
-    >>> from lib.decorators import metrics
-    >>> @metrics
-    >>> my_function_call(morpy_trace, app_dict, *args, **kwargs)
+        from lib.decorators import metrics
+        @metrics
+        my_function_call(morpy_trace, app_dict, *args, **kwargs)
     """
 
     @wraps(func)
@@ -118,8 +118,8 @@ def metrics(func):
                 # Now we decide if metrics are enabled
                 # (only if we found both morpy_trace and app_dict)
                 if isinstance(morpy_trace, dict) and isinstance(app_dict, dict):
-                    enable_metrics = app_dict.get("conf", {}).get("metrics_enable", False)
-                    perf_mode = app_dict.get("conf", {}).get("metrics_perfmode", False)
+                    enable_metrics = app_dict.get("lib.conf", {}).get("metrics_enable", False)
+                    perf_mode = app_dict.get("lib.conf", {}).get("metrics_perfmode", False)
 
             except (IndexError, TypeError):
                 # If we still don't have them, leave them as None

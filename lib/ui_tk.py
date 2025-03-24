@@ -12,6 +12,7 @@ from lib.decorators import metrics, log
 
 import sys
 import threading, queue
+import ctypes
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
@@ -106,10 +107,8 @@ class FileDirSelectTk:
             self._init(morpy_trace, app_dict, rows_data, title=title, icon_data=icon_data)
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict, rows_data: dict, title: str = None,
@@ -186,6 +185,16 @@ class FileDirSelectTk:
         check: bool = False
 
         try:
+            # Try to make the process DPI-aware
+            # TODO port into os-class instead of hardcoding and make sure that each spawn will run this.
+            try:
+                ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            except Exception:
+                try:
+                    ctypes.windll.user32.SetProcessDPIAware()
+                except Exception:
+                    pass
+
             self.rows_data = rows_data
             self.title = title if title else app_dict["loc"]["morpy"]["FileDirSelectTk_title"]
 
@@ -229,8 +238,8 @@ class FileDirSelectTk:
             self._setup_ui(morpy_trace, app_dict)
 
             # Calculate coordinates for the window to be centered.
-            x = (app_dict["sys"]["resolution_width"] // 2) - (self.frame_width // 2)
-            y = (app_dict["sys"]["resolution_height"] * 2 // 5) - (self.frame_height // 2)
+            x = (int(app_dict["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
+            y = (int(app_dict["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
             self.root.geometry(f'{self.frame_width}x{self.frame_height}+{x}+{y}')
 
             # Bind the _on_close() method to closing the window
@@ -239,10 +248,8 @@ class FileDirSelectTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -371,10 +378,8 @@ class FileDirSelectTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -426,10 +431,8 @@ class FileDirSelectTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -464,10 +467,8 @@ class FileDirSelectTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -509,10 +510,8 @@ class FileDirSelectTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -546,10 +545,8 @@ class FileDirSelectTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -645,10 +642,8 @@ class GridChoiceTk:
                        icon_data=icon_data)
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict, tile_data: dict, title: str=None,
@@ -723,6 +718,15 @@ class GridChoiceTk:
         check: bool = False
 
         try:
+            # Try to make the process DPI-aware
+            try:
+                ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            except Exception:
+                try:
+                    ctypes.windll.user32.SetProcessDPIAware()
+                except Exception:
+                    pass
+
             self.tile_data = tile_data
             self.title = title if title else app_dict["loc"]["morpy"]["GridChoiceTk_title"]
 
@@ -760,8 +764,8 @@ class GridChoiceTk:
             self._setup_ui(morpy_trace, app_dict)
 
             # Calculate coordinates for the window to be centered.
-            x = (app_dict["sys"]["resolution_width"] // 2) - (self.frame_width // 2)
-            y = (app_dict["sys"]["resolution_height"] * 2 // 5) - (self.frame_height // 2)
+            x = (int(app_dict["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
+            y = (int(app_dict["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
             self.root.geometry(f'{self.frame_width}x{self.frame_height}+{x}+{y}')
 
             # Bind the _on_close() method to closing the window
@@ -773,10 +777,8 @@ class GridChoiceTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -891,10 +893,8 @@ class GridChoiceTk:
                 check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -928,10 +928,8 @@ class GridChoiceTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -973,10 +971,8 @@ class GridChoiceTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -1027,10 +1023,8 @@ class GridChoiceTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -1193,10 +1187,8 @@ class ProgressTrackerTk:
                        font=font, stages=stages, console=console, auto_close=auto_close, work=work)
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict, frame_title: str=None, frame_width: int=None,
@@ -1256,6 +1248,15 @@ class ProgressTrackerTk:
         self.height_factor_description = 0
 
         try:
+            # Try to make the process DPI-aware
+            try:
+                ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            except Exception:
+                try:
+                    ctypes.windll.user32.SetProcessDPIAware()
+                except Exception:
+                    pass
+
             self.console_on = console
             self.auto_close = auto_close
             self.done = False  # Will be True once overall progress is 100%
@@ -1284,13 +1285,13 @@ class ProgressTrackerTk:
 
             # Set frame width
             if not frame_width:
-                sys_width = app_dict["sys"]["resolution_width"]
+                sys_width = int(app_dict["sys"]["resolution_width"])
                 self.frame_width = sys_width // 3
             else:
                 self.frame_width = frame_width
 
             # Calculate factors for frame height
-            sys_height = app_dict["sys"]["resolution_height"]
+            sys_height = int(app_dict["sys"]["resolution_height"])
             height_factor = sys_height * .03125 # Height of main monitor * 32dpi // 1024px
             if not frame_height:
                 self.frame_height = 0
@@ -1343,8 +1344,8 @@ class ProgressTrackerTk:
                     self.frame_height += app_dict["sys"]["resolution_height"] // 2
 
             # Calculate coordinates for the window to be centered.
-            x = (app_dict["sys"]["resolution_width"] // 2) - (self.frame_width // 2)
-            y = (app_dict["sys"]["resolution_height"] * 2 // 5) - (self.frame_height // 2)
+            x = (int(app_dict["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
+            y = (int(app_dict["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
 
             # Tk window
             self.root = tk.Tk()
@@ -1365,10 +1366,8 @@ class ProgressTrackerTk:
             self.init_passed = check = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         finally:
             return {
@@ -1513,10 +1512,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -1566,10 +1563,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace": morpy_trace,
@@ -1623,10 +1618,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace": morpy_trace,
@@ -1683,10 +1676,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace": morpy_trace,
@@ -1731,10 +1722,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -1795,10 +1784,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -1880,10 +1867,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -1918,10 +1903,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -1994,10 +1977,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -2129,10 +2110,8 @@ class ProgressTrackerTk:
                     f'{type(tcl_e).__name__}: {tcl_e}')
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -2185,10 +2164,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace": morpy_trace,
@@ -2279,10 +2256,8 @@ class ProgressTrackerTk:
                     f'{type(tcl_e).__name__}: {tcl_e}')
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {"morpy_trace": morpy_trace, "check": check}
 
@@ -2323,10 +2298,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -2377,10 +2350,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -2446,10 +2417,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -2486,10 +2455,8 @@ class ProgressTrackerTk:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             "morpy_trace" : morpy_trace,
@@ -2499,8 +2466,8 @@ class ProgressTrackerTk:
 
 def check_main_thread(app_dict: dict):
     r"""
-    Check, if GUI runs in main thread. Otherwise, instabilities are introduced
-    with tkinter.
+    Check, if GUI runs in main thread and raise error if so. Otherwise,
+    instabilities are introduced with tkinter.
 
     :param app_dict: morPy global dictionary containing app configurations
 
@@ -2596,10 +2563,8 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -2679,10 +2644,8 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,

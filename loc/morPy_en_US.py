@@ -253,7 +253,7 @@ def loc_morpy() -> dict:
         # Area: lib.exit.py
         # #################
 
-        # exit.py - exit(~)
+        # exit.py - _exit(~)
         'exit_msg_done': 'App exited.',
         'exit_msg_started': 'Started',
         'exit_msg_at': 'at',
@@ -261,6 +261,9 @@ def loc_morpy() -> dict:
         'exit_msg_duration': 'Duration',
         'exit_msg_events': 'Events',
         'exit_msg_total': 'Total',
+
+        # exit.py - cleanup_ultra(~)
+        'cleanup_ultra_done': 'Unlinking and cleanup of UltraDict.',
 
         # #################
         # Area: lib.init.py
@@ -311,6 +314,7 @@ def loc_morpy() -> dict:
         'cl_orchestrator_init_not_float': 'Value is not a float. Check lib.conf.py for correction.',
         'cl_orchestrator_init_not_str': 'Value is not a string. Check lib.conf.py for correction.',
         'cl_orchestrator_init_rel_math_corr': 'Rounding corrected.',
+        'cl_orchestrator_init_err_rounding_val' : "Wrong rounding parameter. Fallback to 'round' for determining maximum amount of parallel processes.",
         'cl_orchestrator_init_cpus_determined': 'Maximum amount of parallel processes determined.',
         'cl_orchestrator_init_memory_set': 'Maximum memory set.',
         'cl_orchestrator_init_done': 'Multiprocessing initialized.',
@@ -339,6 +343,7 @@ def loc_morpy() -> dict:
         'run_parallel_requeue_err': 'Task could not be enqueued again. Task ID still in queue. Data loss possible.',
         'run_parallel_proc_busy': 'Processes busy',
         'run_parallel_proc_avl': 'Processes available',
+        'run_parallel_task_corr' : "The 'task' provided is a tuple. Autocorrected to list.",
         'run_parallel_start_w_arg': 'Starting process control with arguments',
         'run_parallel_search_p_id': 'Searching for available process ID.',
         'run_parallel_search_iter_end': 'Process ID determined.',

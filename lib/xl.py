@@ -309,10 +309,8 @@ class XlWorkbook:
                 raise RuntimeError(f'{app_dict["loc"]["morpy"]["XlWorkbook_inst_abort"]}')
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
@@ -407,10 +405,8 @@ class XlWorkbook:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,
@@ -453,10 +449,8 @@ class XlWorkbook:
 
         # Error detection
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             'morpy_trace': morpy_trace,
@@ -534,10 +528,8 @@ class XlWorkbook:
 
         # Error detection
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             'morpy_trace': morpy_trace,
@@ -719,10 +711,8 @@ class XlWorkbook:
                 check: bool = True
     
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
     
         return{
             'morpy_trace' : morpy_trace,
@@ -774,10 +764,8 @@ class XlWorkbook:
 
         # Error detection
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             'morpy_trace' : morpy_trace,
@@ -829,10 +817,8 @@ class XlWorkbook:
 
         # Error detection
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             'morpy_trace' : morpy_trace,
@@ -896,10 +882,8 @@ class XlWorkbook:
 
         # Error detection
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             'morpy_trace': morpy_trace,
@@ -1110,10 +1094,8 @@ class XlWorkbook:
 
         # Error detection
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,
@@ -1315,10 +1297,8 @@ class XlWorkbook:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
             'morpy_trace' : morpy_trace,
@@ -1377,10 +1357,8 @@ class XlWorkbook:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,
@@ -1426,7 +1404,7 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
         # relevant Part.
 
         # 1. Purge all whitespace characters to make regex easier and more precise
-        table_data = common.regex_replace(morpy_trace, app_dict, table_data, '\s', '')
+        table_data = common.regex_replace(morpy_trace, app_dict, table_data, r'\s', '')
 
         # 2. Split the data-book into a list of distinct table attributes
         delimiter = '<openpyxl.worksheet.table.Tableobject>'
@@ -1463,13 +1441,11 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-        return{
-            'morpy_trace' : morpy_trace,
-            'check' : check,
-            'table_attr' : table_attr
-            }
+    return{
+        'morpy_trace' : morpy_trace,
+        'check' : check,
+        'table_attr' : table_attr
+        }

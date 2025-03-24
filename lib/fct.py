@@ -9,11 +9,10 @@ Descr.:     This module yields the most basic functions of the morPy fork. These
             since they are fully compatible with morPy.
 """
 
-from lib.decorators import log
-
 import sys
 import psutil
 import logging
+import hashlib
 
 def datetime_now() -> dict:
     r"""
@@ -83,6 +82,16 @@ def datetime_now() -> dict:
         'datetimestamp' : datetimestamp ,
         'loggingstamp' : loggingstamp
     }
+
+def hashify(string: str) -> str:
+    """
+    Hash the given string using SHA-256 and return the hexadecimal digest.
+
+    :param string: The input string to hash.
+
+    :return str: A SHA-256 hash of the string as a hexadecimal string.
+    """
+    return hashlib.sha256(string.encode('utf-8')).hexdigest()
 
 def runtime(in_ref_time) -> dict:
     r"""
@@ -191,8 +200,8 @@ def pathtool(in_path) -> dict:
         parent_dir - Path of the parent directory.
 
     :example:
-    >>> file_path = "C:\my_file.txt"
-    >>> file_path = morPy.pathtool(file_path)["out_path"]
+        file_path = "C:\my_file.txt"
+        file_path = morPy.pathtool(file_path)["out_path"]
     """
 
     import pathlib
@@ -360,7 +369,7 @@ def app_dict_to_string(app_dict, depth: int=0) -> str:
     :return app_dict_str: morPy global dictionary as a UTF-8 string
 
     :example:
-    >>> app_dict_to_string(app_dict) # Do not specify depth!
+        app_dict_to_string(app_dict) # Do not specify depth!
     """
 
     if isinstance(app_dict, dict):
@@ -424,71 +433,3 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None) -> dict
     morpy_trace_passdown["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
 
     return morpy_trace_passdown
-
-def handle_exception_main(e, init=False, app_dict=None) -> None:
-    r"""
-    Handle any exception outside the scope of msg.py
-    """
-    import lib.msg as msg
-
-    if init and app_dict is not None:
-        message = (f'{app_dict["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                   f'{type(e).__name__}: {e}')
-        msg.log('__main__', app_dict, message, 'critical')
-    elif not init:
-        # Fallback logging in case the app dictionary or logging fails
-        logging.critical(f'Module: __main__\n'
-                         f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                         f'{type(e).__name__}: {e}\n'
-                         f'morPy initialization failed!')
-    elif init and app_dict is None:
-        # Fallback logging in case the app dictionary or logging fails
-        logging.critical(f'Module: __main__\n'
-                         f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                         f'{type(e).__name__}: {e}\n'
-                         f'Missing app_dict - morPy execution failed!')
-
-    # Quit the program
-    sys.exit()
-
-def handle_exception_init(e) -> None:
-    r"""
-    Handle any exception outside the scope of msg.py
-    """
-
-    # Fallback logging in case the app dictionary or logging fails
-    logging.critical(f'Module: lib.init\n'
-                     f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                     f'{type(e).__name__}: {e}\n'
-                     f'morPy initialization failed!')
-
-    # Quit the program
-    sys.exit()
-
-def handle_exception_decorator(e) -> None:
-    r"""
-    Handle any exception outside the scope of msg.py
-    """
-
-    # Fallback logging in case the app dictionary or logging fails
-    logging.critical(f'Module: lib.decorators\n'
-                     f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                     f'{type(e).__name__}: {e}\n'
-                     f'Wrapper function error.')
-
-    # Quit the program
-    sys.exit()
-
-def handle_exception_mp(e) -> None:
-    r"""
-    Handle any exception outside the scope of msg.py
-    """
-
-    # Fallback logging in case the app dictionary or logging fails
-    logging.critical(f'Module: lib.mp\n'
-                     f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                     f'{type(e).__name__}: {e}\n'
-                     f'Multiprocessing error.')
-
-    # Quit the program
-    sys.exit()

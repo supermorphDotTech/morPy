@@ -26,8 +26,8 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
         app_init_return: Return value (dict) of the initialization process, handed to app_run
 
     :example:
-    >>> from app import init as app_init
-    >>> init_retval = app_init(morpy_trace, app_dict)
+        from app import init as app_init
+        init_retval = app_init(morpy_trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -47,10 +47,8 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
     finally:
         # Initialization complete flag
         # Up until this point prints to console are mirrored on splash screen

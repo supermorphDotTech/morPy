@@ -53,14 +53,14 @@ class PriorityQueue:
                 is_process: If True, task is run in a new process (not by morPy orchestrator)
 
     :example:
-    >>> from functools import partial
-    >>> # Create queue instance
-    >>> queue = morPy.PriorityQueue(morpy_trace, app_dict, name="example_queue")
-    >>> # Add a task to the queue
-    >>> queue.enqueue(morpy_trace, app_dict, priority=25, task=partial(task, morpy_trace, app_dict))
-    >>> # Fetch a task and run it
-    >>> task = queue.dequeue(morpy_trace, app_dict)['task']
-    >>> task()
+        from functools import partial
+        # Create queue instance
+        queue = morPy.PriorityQueue(morpy_trace, app_dict, name="example_queue")
+        # Add a task to the queue
+        queue.enqueue(morpy_trace, app_dict, priority=25, task=partial(task, morpy_trace, app_dict))
+        # Fetch a task and run it
+        task = queue.dequeue(morpy_trace, app_dict)['task']
+        task()
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, name: str=None, is_manager: bool=False) -> None:
@@ -74,7 +74,7 @@ class PriorityQueue:
         :return: self
 
         :example:
-        >>> queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
+            queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
         """
 
         module: str = 'lib.common'
@@ -86,16 +86,14 @@ class PriorityQueue:
             self._init(morpy_trace, app_dict, name, is_manager=is_manager)
 
         except Exception as e:
-            err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
+            from lib.exceptions import MorPyException
+
+            no_q = True if self.is_manager else False
+            err_msg = f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
+            raise MorPyException(
+                morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
+                message=err_msg, no_q=no_q
             )
-            if self.is_manager:
-                log_no_q(morpy_trace, app_dict, "critical", err_msg)
-            else:
-                log(morpy_trace, app_dict, "critical", err_msg)
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict, name: str, is_manager: bool=False) -> dict:
@@ -135,9 +133,9 @@ class PriorityQueue:
 
             # Priority queue initialized.
             log_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_init_done"]}\n'
-                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
-            )
+            lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_init_done"]}\n'
+                    f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}')
+            
             if self.is_manager:
                 log_no_q(morpy_trace, app_dict, "debug", log_msg)
             else:
@@ -146,16 +144,14 @@ class PriorityQueue:
             check: bool = True
 
         except Exception as e:
-            err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
+            from lib.exceptions import MorPyException
+
+            no_q = True if self.is_manager else False
+            err_msg = f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
+            raise MorPyException(
+                morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
+                message=err_msg, no_q=no_q
             )
-            if self.is_manager:
-                log_no_q(morpy_trace, app_dict, "critical", err_msg)
-            else:
-                log(morpy_trace, app_dict, "critical", err_msg)
 
         return {
             'morpy_trace': morpy_trace,
@@ -189,16 +185,14 @@ class PriorityQueue:
             check: bool = True
 
         except Exception as e:
-            err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
+            from lib.exceptions import MorPyException
+
+            no_q = True if self.is_manager else False
+            err_msg = f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
+            raise MorPyException(
+                morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
+                message=err_msg, no_q=no_q
             )
-            if self.is_manager:
-                log_no_q(morpy_trace, app_dict, "critical", err_msg)
-            else:
-                log(morpy_trace, app_dict, "critical", err_msg)
 
         return {
             'morpy_trace': morpy_trace,
@@ -224,10 +218,10 @@ class PriorityQueue:
             check: Indicates if the task was enqueued successfully
 
         :example:
-        >>> from functools import partial
-        >>> queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
-        >>> task = partial(my_func, morpy_trace, app_dict)
-        >>> queue.enqueue(morpy_trace, app_dict, priority=25, task=task)
+            from functools import partial
+            queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
+            task = partial(my_func, morpy_trace, app_dict)
+            queue.enqueue(morpy_trace, app_dict, priority=25, task=task)
         """
 
         module: str = 'lib.common'
@@ -306,26 +300,24 @@ class PriorityQueue:
                     check: bool = True
             else:
                 # Task can not be None. Skipping enqueue.
-                log_msg = (
-                    lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_none"]}'
-                )
+                log_msg = lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_none"]}'
                 if self.is_manager:
                     log_no_q(morpy_trace, app_dict, "debug", log_msg)
                 else:
                     log(morpy_trace, app_dict, "debug", log_msg)
 
         except Exception as e:
+            from lib.exceptions import MorPyException
+
+            no_q = True if self.is_manager else False
             err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}\n'
-                        f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority}'
+                f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}\n'
+                f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority}'
             )
-            if self.is_manager:
-                log_no_q(morpy_trace, app_dict, "critical", err_msg)
-            else:
-                log(morpy_trace, app_dict, "critical", err_msg)
+            raise MorPyException(
+                morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
+                message=err_msg, no_q=no_q
+            )
 
         return {
             'morpy_trace': morpy_trace,
@@ -352,10 +344,10 @@ class PriorityQueue:
             is_process: If True, task is run in a new process (not by morPy orchestrator)
 
         :example:
-        >>> from functools import partial
-        >>> queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
-        >>> task = queue.dequeue(morpy_trace, app_dict)['task']
-        >>> task()
+            from functools import partial
+            queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
+            task = queue.dequeue(morpy_trace, app_dict)['task']
+            task()
         """
 
         module: str = 'mt'
@@ -393,25 +385,21 @@ class PriorityQueue:
 
             else:
                 # Can not dequeue from an empty priority queue. Skipped...
-                log_msg = (
-                    lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_void"]}'
-                )
+                log_msg = lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_void"]}'
                 if self.is_manager:
                     log_no_q(morpy_trace_dequeue, app_dict, "debug", log_msg)
                 else:
                     log(morpy_trace_dequeue, app_dict, "debug", log_msg)
 
         except Exception as e:
-            err_msg = (
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
+            from lib.exceptions import MorPyException
+            
+            no_q = True if self.is_manager else False
+            err_msg = f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
+            raise MorPyException(
+                morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error",
+                message=err_msg, no_q=no_q
             )
-            if self.is_manager:
-                log_no_q(morpy_trace_dequeue, app_dict, "critical", err_msg)
-            else:
-                log(morpy_trace_dequeue, app_dict, "critical", err_msg)
 
         return {
             'morpy_trace': morpy_trace_dequeue,
@@ -433,7 +421,7 @@ class PriorityQueue:
         :return: bool - True, if task ID is found to already exist in queue
 
         :example:
-        >>> task_exists = self.task_exists(task)
+            task_exists = self.task_exists(task)
         """
 
         return id(task) in self.task_lookup
@@ -462,9 +450,9 @@ class ProgressTracker:
             message: Message generated. None, if no tick was hit.
 
     :example:
-    >>> from morPy import ProgressTracker
-    >>> progress = ProgressTracker(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)["prog_rel"]
-    >>> progress.update(morpy_trace, app_dict, current=current_count)
+        from morPy import ProgressTracker
+        progress = ProgressTracker(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)["prog_rel"]
+        progress.update(morpy_trace, app_dict, current=current_count)
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
@@ -480,7 +468,7 @@ class ProgressTracker:
             -
 
         :example:
-        >>> progress = ProgressTracker(morpy_trace, app_dict, description='App Progress', total=100, ticks=10)
+            progress = ProgressTracker(morpy_trace, app_dict, description='App Progress', total=100, ticks=10)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -494,10 +482,8 @@ class ProgressTracker:
                        float_progress=float_progress, verbose=verbose)
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
@@ -521,7 +507,7 @@ class ProgressTracker:
             check: Indicates whether the function ended without errors
 
         :example:
-        >>> self._init(morpy_trace, app_dict, description=description, total=total, ticks=ticks)
+            self._init(morpy_trace, app_dict, description=description, total=total, ticks=ticks)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -572,10 +558,8 @@ class ProgressTracker:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,
@@ -595,7 +579,7 @@ class ProgressTracker:
             check: Indicates whether the function ended without errors
 
         :example:
-        >>> self._init_ticks(morpy_trace, app_dict)
+            self._init_ticks(morpy_trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -631,10 +615,8 @@ class ProgressTracker:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,
@@ -659,14 +641,14 @@ class ProgressTracker:
             message: Message generated. None, if no tick was hit.
 
         :example:
-        >>> import morPy
+            import morPy
 
-        >>> tot_cnt = 100
-        >>> tks = 12.5
-        >>> progress = morPy.ProgressTracker(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=tks)
+            tot_cnt = 100
+            tks = 12.5
+            progress = morPy.ProgressTracker(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=tks)
 
-        >>> curr_cnt = 37
-        >>> progress.update(morpy_trace, app_dict, current=curr_cnt)
+            curr_cnt = 37
+            progress.update(morpy_trace, app_dict, current=curr_cnt)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -724,10 +706,8 @@ class ProgressTracker:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,
@@ -757,10 +737,10 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding:
         lines: Number of lines in the file.
 
     :example:
-    >>> src_file = "C:\my_file.enc"
-    >>> src_input = open(src_file, 'rb')
-    >>> encoding: str = 'utf-16-le'
-    >>> retval = decode_to_plain_text(morpy_trace, app_dict, src_input, encoding)
+        src_file = "C:\my_file.enc"
+        src_input = open(src_file, 'rb')
+        encoding: str = 'utf-16-le'
+        retval = decode_to_plain_text(morpy_trace, app_dict, src_input, encoding)
     """
 
     module: str = 'lib.common'
@@ -823,10 +803,8 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding:
                 f'encoding: {encoding}')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return {
         'morpy_trace': morpy_trace,
@@ -855,7 +833,7 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
         dest: Path to the destination file as a path object.
 
     :example:
-    >>> result = fso_copy_file(morpy_trace, app_dict, "path/to/source.txt", "path/to/destination.txt", True)
+        result = fso_copy_file(morpy_trace, app_dict, "path/to/source.txt", "path/to/destination.txt", True)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -926,10 +904,8 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
                     f'source_exist: {source_exist}')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -952,7 +928,7 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str) -> dict:
         check: Indicates whether the function executed successfully (True/False).
 
     :example:
-    >>> result = fso_create_dir(morpy_trace, app_dict, "path/to/new_directory")
+        result = fso_create_dir(morpy_trace, app_dict, "path/to/new_directory")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -986,10 +962,8 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str) -> dict:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1011,7 +985,7 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
         check: Indicates whether the function executed successfully (True/False).
 
     :example:
-    >>> result = fso_delete_dir(morpy_trace, app_dict, "path/to/directory_to_delete")
+        result = fso_delete_dir(morpy_trace, app_dict, "path/to/directory_to_delete")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1046,10 +1020,8 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1070,7 +1042,7 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str) -> dict:
         check: Indicates whether the function executed successfully (True/False).
 
     :example:
-    >>> result = fso_delete_file(morpy_trace, app_dict, "path/to/file_to_delete.txt")
+        result = fso_delete_file(morpy_trace, app_dict, "path/to/file_to_delete.txt")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1105,10 +1077,8 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str) -> dict:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1146,7 +1116,7 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict
                    }
 
     :example:
-    >>> result = fso_walk(morpy_trace, app_dict, "path/to/directory", -1)["walk_dict"]
+        result = fso_walk(morpy_trace, app_dict, "path/to/directory", -1)["walk_dict"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1183,10 +1153,8 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1210,9 +1178,9 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         result: List of expressions found in the input, or None if nothing was found.
 
     :example:
-    >>> string = "Find digits 12345"
-    >>> pattern = r"\\d+"
-    >>> result = regex_findall(morpy_trace, app_dict, string, pattern)["result"]
+        string = "Find digits 12345"
+        pattern = r"\\d+"
+        result = regex_findall(morpy_trace, app_dict, string, pattern)["result"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1244,10 +1212,8 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1271,9 +1237,9 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         result: The first match found in the input, or None if nothing was found.
 
     :example:
-    >>> string = "Find digits 12345"
-    >>> pattern = r"\\d+"
-    >>> result = regex_find1st(morpy_trace, app_dict, string, pattern)["result"]
+        string = "Find digits 12345"
+        pattern = r"\\d+"
+        result = regex_find1st(morpy_trace, app_dict, string, pattern)["result"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1314,10 +1280,8 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
                     f'{app_dict["loc"]["morpy"]["regex_find1st_result"]}: {result}')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1343,9 +1307,9 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
         result: The list of parts split from the input.
 
     :example:
-    >>> string = "apple.orange.banana"
-    >>> split = r"\\."
-    >>> result = regex_split(morpy_trace, app_dict, string, split)["result"]
+        string = "apple.orange.banana"
+        split = r"\\."
+        result = regex_split(morpy_trace, app_dict, string, split)["result"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1385,10 +1349,8 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
                     f'{app_dict["loc"]["morpy"]["regex_split_result"]}: {result}')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1448,10 +1410,8 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1577,10 +1537,8 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1603,7 +1561,7 @@ def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: st
         check: Indicates whether the function executed successfully (True/False).
 
     :example:
-    >>> result = textfile_write(morpy_trace, app_dict, "path/to/file.txt", "This is some text.")
+        result = textfile_write(morpy_trace, app_dict, "path/to/file.txt", "This is some text.")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1640,10 +1598,8 @@ def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: st
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1664,7 +1620,7 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
         check - The function ended with no errors
 
     :example:
-    >>> testprint(morpy_trace, app_dict, "This is a test value.")
+        testprint(morpy_trace, app_dict, "This is a test value.")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1684,10 +1640,8 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1711,7 +1665,7 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
         usr_input: The input provided by the user.
 
     :example:
-    >>> result = wait_for_input(morpy_trace, app_dict, "Please enter your name: ")["usr_input"]
+        result = wait_for_input(morpy_trace, app_dict, "Please enter your name: ")["usr_input"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1738,10 +1692,8 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -1820,10 +1772,8 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,

@@ -43,10 +43,8 @@ class cl_orchestrator:
             self._init(morpy_trace, app_dict)
 
         except Exception as e:
-            log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict) -> dict:
@@ -80,10 +78,8 @@ class cl_orchestrator:
             check: bool = True
 
         except Exception as e:
-            log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
             'morpy_trace': morpy_trace,
@@ -109,13 +105,6 @@ class cl_orchestrator:
         check: bool = False
 
         try:
-            # Set attributes for _run
-            self.ref_module: str = module
-            self.ref_operation: str = operation
-            self.morpy_trace: dict = morpy_trace
-            self.app_dict = app_dict
-            self.process_q = app_dict["proc"]["morpy"]["process_q"]
-
             # Set up multiprocessing
             system_logical_cpus = int(app_dict["sys"]["logical_cpus"])
             self.processes_min = 1
@@ -191,6 +180,11 @@ class cl_orchestrator:
                     elif processes_relative_math == "ceil":
                         relative_result = processes_relative * system_logical_cpus
                         self.processes_max = int(relative_result) if relative_result == int(relative_result) else relative_result + 1
+                    else:
+                        # Wrong rounding parameter. Fallback to 'round' for determining maximum amount of parallel processes.
+                        log_no_q(morpy_trace, app_dict, "warning",
+                        lambda: f'{app_dict["loc"]["morpy"]["cl_orchestrator_init_err_rounding_val"]}\n{processes_relative_math=}')
+                        self.processes_max = round(processes_relative * system_logical_cpus)
 
             # Maximum amount of parallel processes determined
             log_no_q(morpy_trace, app_dict, "debug",
@@ -200,10 +194,8 @@ class cl_orchestrator:
             check: bool = True
 
         except Exception as e:
-            log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
             'morpy_trace': morpy_trace,
@@ -294,15 +286,13 @@ class cl_orchestrator:
             # Maximum memory set.
             log_no_q(morpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["morpy"]["cl_orchestrator_init_memory_set"]}\n'
-                f'Maximum memory for runtime: {self.memory_max / 1024} KB / {self.memory_max / 1024**2} MB')
+                f'Maximum memory for runtime: {self.memory_max // 1024} KB / {self.memory_max // 1024**2} MB')
 
             check: bool = True
 
         except Exception as e:
-            log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
             'morpy_trace': morpy_trace,
@@ -350,10 +340,8 @@ class cl_orchestrator:
             check: bool = True
 
         except Exception as e:
-            log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
             'morpy_trace': morpy_trace,
@@ -378,14 +366,15 @@ class cl_orchestrator:
         try:
             # Set attributes for _run
             self.process_q = app_dict["proc"]["morpy"]["process_q"]
+            self.ref_module: str = module
+            self.ref_operation: str = operation
+            self.morpy_trace: dict = morpy_trace
 
             check: bool = True
 
         except Exception as e:
-            log_no_q(morpy_trace_init_run, app_dict, "critical",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
             'morpy_trace': morpy_trace_init_run,
@@ -413,7 +402,7 @@ class cl_orchestrator:
             from app.exit import app_exit
 
             # App starting.
-            log(morpy_trace, app_dict, "info",
+            log_no_q(morpy_trace, app_dict, "info",
             lambda: f'{app_dict["loc"]["morpy"]["cl_orchestrator_app_run_start"]}')
 
             # Initialize and run the app
@@ -426,10 +415,8 @@ class cl_orchestrator:
             check: bool = True
 
         except Exception as e:
-            log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
             'morpy_trace': morpy_trace,
@@ -460,7 +447,7 @@ class cl_orchestrator:
             # TODO Add logging thread
 
             # Start the app
-            app_task = (self._app_run, morpy_trace_app, app_dict)
+            app_task = [self._app_run, morpy_trace_app, app_dict]
             # run_parallel(morpy_trace_app, app_dict, task=app_task, priority=-1)
             app_dict["proc"]["morpy"]["process_q"].enqueue(
                 morpy_trace, app_dict, priority=-1, task=app_task, autocorrect=False
@@ -473,10 +460,8 @@ class cl_orchestrator:
             check: bool = True
 
         except Exception as e:
-            log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         finally:
             return {
@@ -544,10 +529,8 @@ class cl_orchestrator:
             check: bool = True
 
         except Exception as e:
-            log_no_q(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         finally:
             return {
@@ -573,15 +556,15 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
         check: Indicates if the task was dequeued successfully
 
     :example:
-    >>> # The priority, counter, task_sys_id and task arguments are passed directly to the
-    >>> # process_control decorator and are delivered by common.PriorityQueue.dequeue().
+        # The priority, counter, task_sys_id and task arguments are passed directly to the
+        # process_control decorator and are delivered by common.PriorityQueue.dequeue().
 
-    >>> dequeued = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
-    >>> priority = dequeued["priority"]
-    >>> counter = dequeued["counter"]
-    >>> task_sys_id = dequeued["task_sys_id"]
-    >>> task = dequeued["task"]
-    >>> run_parallel(morpy_trace, app_dict, task=task, priority=priority)
+        dequeued = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
+        priority = dequeued["priority"]
+        counter = dequeued["counter"]
+        task_sys_id = dequeued["task_sys_id"]
+        task = dequeued["task"]
+        run_parallel(morpy_trace, app_dict, task=task, priority=priority)
     """
 
     import lib.fct as morpy_fct
@@ -599,14 +582,19 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
     id_err_dict: bool = False
 
     try:
+        if isinstance(task, tuple):
+            task = list(task)
+            # The 'task' provided is a tuple. Autocorrected to list.
+            log_no_q(morpy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morpy"]["run_parallel_task_corr"]}\n{task=}')
+
+
         # Starting process control with arguments:
         log_no_q(morpy_trace, app_dict, "debug",
         lambda: f'{app_dict["loc"]["morpy"]["run_parallel_start_w_arg"]}:\n'
                 f'morpy_trace: {morpy_trace}\n'
                 f'priority: {priority}\n'
                 f'task_sys_id: {task_sys_id}')
-
-        from lib.types_dict import MorPyDictUltra
 
         # Fetch the maximum processes to be utilized by morPy
         processes_max = app_dict["proc"]["morpy"]["cl_orchestrator"].processes_max
@@ -687,9 +675,6 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                 # Remove app_dict from the task to prevent pickling external to UltraDict
                 task[2] = {}
 
-                # Convert the task to a tuple
-                task = tuple(task)
-
                 # Run the task
                 if task is not None:
                     # Check for remnants of old process, prevent collisions due to shelving
@@ -700,7 +685,6 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
 
                     # Create references to the process
                     app_dict["proc"]["morpy"]["proc_refs"].update({f'{process_id}': p.name})
-                    app_dict["proc"]["morpy"]._update_self(_access="tightened")
 
                     # Enqueue a process watcher
                     process_watcher = (watcher, morpy_trace, app_dict, task)
@@ -737,7 +721,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                         message = f'{message}\n{app_dict["loc"]["morpy"]["run_parallel_id_err_busy"]}'
                     elif id_err_dict:
                         message = f'{message}\n{app_dict["loc"]["morpy"]["run_parallel_id_err_dict"]}'
-                raise RuntimeError(message)
+                    raise RuntimeError(message)
 
                 # Self repair of available and busy process sets
                 # Update set for processes available
@@ -755,7 +739,6 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                 # Delete process remnants in app_dict
                 for p_app in app_dict["proc"]["app"]:
                     if p_app not in app_dict["proc"]["morpy"]:
-                        app_dict["proc"]["app"]._update_self(_access="normal")
                         # Process remnant found. Cleaning up after supposed process crash.
                         log_no_q(morpy_trace, app_dict, "warning",
                         lambda: f'{app_dict["loc"]["morpy"]["run_parallel_clean_up_remnants"]}\n'
@@ -771,10 +754,8 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
             raise ValueError(f'{app_dict["loc"]["morpy"]["run_parallel_call_err"]}\n{task[0]}')
 
     except Exception as e:
-        log_no_q(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     finally:
         return {
@@ -784,7 +765,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
 
 def spawn(task: list) -> dict:
     r"""
-    This function registers a task and executes it.
+    This function registers a task in app_dict and executes it.
 
     :param task: Task represented by a list
 
@@ -794,58 +775,27 @@ def spawn(task: list) -> dict:
         process_partial: Process to be spawned, packed with partial
 
     :example:
-    >>> dequeued = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
-    >>> task = dequeued["task"]
-    >>> p = Process(target=spawn, args=task,)
-    >>> p.start()
+        dequeued = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
+        task = dequeued["task"]
+        p = Process(target=spawn, args=task,)
+        p.start()
     """
 
+    from UltraDict import UltraDict
+
     module: str = 'lib.mp'
-    app_dict = {}
+    morpy_trace = None
+    app_dict = None
 
     try:
-        # Rebuild the app_dict by reference (shared memory), after spawning
-        # a process.
-        # TODO solve app_dict sharing - implement nested-but-flat solution here
-        from lib.init import types_dict_build
-        from lib.init import types_dict_finalize
-        from lib.types_dict import MorPyDictUltra
+        morpy_trace = task[1]
+        process_id = morpy_trace["process_id"]
 
-        process_id = task[1]["process_id"]
-
-        # Recreate shared root dictionary
-        # app_dict = types_dict_build(task[1])
-
-        # Link to shared memory
-        # app_dict = MorPyDictUltra(
-        #     name="app_dict",
-        #     create=False
-        # )
-        # Rebuild morPy dictionary
-        app_dict = types_dict_build(task[1])
-
-        # Add process specific dictionaries to app_dict
-        app_dict["proc"]["morpy"]._update_self(_access="normal")
-        app_dict["proc"]["app"]._update_self(_access="normal")
-
-        app_dict["proc"]["morpy"][f'P{process_id}'] = MorPyDictUltra(
-            name=f'app_dict[proc][morPy][P{process_id}]',
+        app_dict = UltraDict(
+            name="app_dict",
+            create=False,
+            shared_lock=True
         )
-        app_dict["proc"]["morpy"][f'P{process_id}']["T0"] = MorPyDictUltra(
-            name=f'app_dict[proc][morPy][P{process_id}][T0]',
-        )
-        app_dict["proc"]["app"][f'P{process_id}'] = MorPyDictUltra(
-            name=f'app_dict[proc][app][P{process_id}]',
-        )
-        app_dict["proc"]["app"][f'P{process_id}']["T0"] = MorPyDictUltra(
-            name=f'app_dict[proc][app][P{process_id}][T0]',
-        )
-
-        app_dict["proc"]["morpy"]._update_self(_access="tightened")
-        app_dict["proc"]["app"]._update_self(_access="tightened")
-
-        # Set access restrictions
-        types_dict_finalize(task[1], app_dict)
 
         # Assign referenced app_dict to task (process) and run it
         task[2] = app_dict
@@ -853,14 +803,8 @@ def spawn(task: list) -> dict:
         result = func(*args)
 
     except Exception as e:
-        try:
-            print(f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                  f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                  f'{type(e).__name__}: {e}')
-        except KeyError:
-            print(f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                  f'in module {module}\n'
-                  f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 @metrics
 def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=False) -> dict:
@@ -876,13 +820,13 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
     :param single_check: If True, watcher() will not be enqueued again.
 
     :example 1:
-    >>> process_watcher = (watcher, morpy_trace, app_dict, task)
-    >>> app_dict["proc"]["morpy"]["process_q"].enqueue(
-    >>>     morpy_trace, app_dict, priority=priority, task=process_watcher, autocorrect=False, is_process=False
-    >>> )
+        process_watcher = (watcher, morpy_trace, app_dict, task)
+        app_dict["proc"]["morpy"]["process_q"].enqueue(
+            morpy_trace, app_dict, priority=priority, task=process_watcher, autocorrect=False, is_process=False
+        )
 
     :example 2:
-    >>> watcher(morpy_trace, app_dict, task, single_check=True)
+        watcher(morpy_trace, app_dict, task, single_check=True)
     """
 
     import lib.fct as morpy_fct
@@ -935,22 +879,18 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
                         verbose=True)
 
                 # Cleanup app_dict
-                app_dict["proc"]["morpy"]._update_self(_access="normal")
                 if process_id not in app_dict["proc"]["morpy"]["proc_available"]:
                     app_dict["proc"]["morpy"]["proc_available"].add(process_id)
                 if process_id in app_dict["proc"]["morpy"]["proc_busy"]:
                     app_dict["proc"]["morpy"]["proc_busy"].remove(process_id)
                 app_dict["proc"]["morpy"].pop(f'P{process_id}', None)
                 app_dict["proc"]["morpy"]["proc_refs"].pop(f'{process_id}', None)
-                app_dict["proc"]["morpy"]._update_self(_access="tightened")
 
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     finally:
         return {
@@ -961,7 +901,7 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
 @metrics
 def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
-    Function
+    Join all processes orchestrated by morPy.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -971,7 +911,7 @@ def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
         check: Indicates if the task was dequeued successfully
 
     :example:
-    >>> join_processes(morpy_trace, app_dict)
+        join_processes(morpy_trace, app_dict)
 
     TODO allow for custom settings/options
     TODO do not wait for orchestrator
@@ -979,7 +919,6 @@ def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
     """
 
     import lib.fct as morpy_fct
-    from multiprocessing import active_children
 
     module: str = 'mp'
     operation: str = 'join_processes(~)'
@@ -990,40 +929,45 @@ def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
     waiting_for_processes: bool = True
 
     try:
-        # Get number of running processes
-        active_children = len(active_children())
+        if len(app_dict["proc"]["morpy"]["proc_busy"]) > 1:
+            from multiprocessing import active_children
 
-        # Outer loop serves evaluation of processes running
-        while waiting_for_processes:
-            pid = None
+            # Get number of running processes
+            active_children = len(active_children())
 
-            for p_id, p_name in app_dict["proc"]["morpy"]["proc_refs"].items():
-                # Omit race condition if references are removed asynchronous
-                if p_id in app_dict["proc"]["morpy"]["proc_refs"].keys():
-                    # Joining processes.
-                    log(morpy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["morpy"]["join_processes_start"]}:\n'
-                            f'{app_dict["proc"]["morpy"]["proc_refs"]}')
+            # Omit an error when the dict is changed while iterating over it
+            proc_refs = app_dict["proc"]["morpy"]["proc_refs"].items()
 
-                    # Clean up process reference, if it still exists
-                    if p_id in app_dict["proc"]["morpy"]["proc_refs"].keys():
-                        app_dict["proc"]["morpy"]["proc_refs"].pop(f'{p_id}', None)
-                else:
-                    break
+            # Outer loop serves evaluation of processes running
+            while waiting_for_processes:
+                pid = None
 
-            # Check, if process reference is an empty dictionary
-            if not pid:
-                waiting_for_processes = False
+                with proc_refs.lock:
+                    for p_id, p_name in proc_refs:
+                        # Omit race condition if references are removed asynchronous
+                        if p_id in app_dict["proc"]["morpy"]["proc_refs"].keys():
+                            # Joining processes.
+                            log(morpy_trace, app_dict, "debug",
+                            lambda: f'{app_dict["loc"]["morpy"]["join_processes_start"]}:\n'
+                                    f'{app_dict["proc"]["morpy"]["proc_refs"]}')
 
-        # Clean up process references, if still existing
-        if active_children == 0 and p_id in app_dict["proc"]["morpy"]["proc_refs"].keys():
-            app_dict["proc"]["morpy"]["proc_refs"] = {}
+                            # Clean up process reference, if it still exists
+                            if p_id in app_dict["proc"]["morpy"]["proc_refs"].keys():
+                                app_dict["proc"]["morpy"]["proc_refs"].pop(f'{p_id}', None)
+                        else:
+                            break
+
+                # Check, if process reference is an empty dictionary
+                if not pid:
+                    waiting_for_processes = False
+
+            # Clean up process references, if still existing
+            if active_children == 0 and p_id in app_dict["proc"]["morpy"]["proc_refs"].keys():
+                app_dict["proc"]["morpy"]["proc_refs"] = {}
 
     except Exception as e:
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     finally:
         return {
@@ -1045,7 +989,7 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
         check: Indicates if the task was dequeued successfully
 
     :example:
-    >>> interrupt(morpy_trace, app_dict)
+        interrupt(morpy_trace, app_dict)
 
 
     TODO finish this function
@@ -1063,10 +1007,8 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
         pass
 
     except Exception as e:
-        log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     finally:
         return {

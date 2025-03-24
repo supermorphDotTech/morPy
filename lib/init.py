@@ -68,7 +68,7 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
         # ############################################
 
         # Build the app_dict
-        init_dict = types_dict_build(morpy_trace_init, create=True)
+        init_dict = build_app_dict(morpy_trace_init, create=True)
 
         init_dict["proc"]["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
         init_dict["proc"]["morpy"].update({"proc_available" : set()})
@@ -173,7 +173,7 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
         if init_dict["conf"]["print_init_vars"] or init_dict["conf"]["ref_create"]:
             init_dict_str = morpy_fct.app_dict_to_string(init_dict)
         else:
-            init_dict_str = ''
+            init_dict_str = ""
 
         # Print init_dict to console
         if init_dict["conf"]["print_init_vars"]:
@@ -207,9 +207,6 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
         lambda: f'{init_dict["loc"]["morpy"]["init_finished"]}\n'
             f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["run"]["init_rnt_delta"]}')
 
-        # Lock and tighten nested dictionaries
-        types_dict_finalize(morpy_trace_init, init_dict)
-
         # Write app_dict to file: initialized_app_dict.txt
         if init_dict["conf"]["ref_create"]:
             morpy_ref(morpy_trace_init, init_dict, init_dict_str)
@@ -222,24 +219,26 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
         morpy_fct.handle_exception_init(e)
         raise
 
-def types_dict_build(morpy_trace: dict, create: bool=False) -> dict:
+def build_app_dict(morpy_trace: dict, create: bool=False, processes: int = 1) -> dict:
     r"""
-    This function builds the app_dict. This is needed in spawned processes, too
-    to successfully link the nested dictionaries.
+    This function builds the app_dict in accordance to multiprocessing and whether GIL
+    is included in the Python environment.
 
     :param morpy_trace: operation credentials and tracing
     :param create: If True, a (nested) dictionary is created. Otherwise, purely
         references to the UltraDict.
+    :param processes: Amount of processes allowed to spawn. If greater 1, may use
+        UltraDict for app_dict.
 
     :return init_dict: morPy global dictionary containing app configurations
 
     :example:
-    >>> init_dict = types_dict_build(morpy_trace, create=True)
+        init_dict = build_app_dict(morpy_trace, create=True)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.init'
-    operation: str = 'types_dict_build(~)'
+    operation: str = 'build_app_dict(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     # Check for GIL and decide for an app_dict structure.
@@ -247,245 +246,47 @@ def types_dict_build(morpy_trace: dict, create: bool=False) -> dict:
     init_dict = None
 
     try:
-        # With GIL, use a flat app_dict referencing UltraDict instances and mask it as nested.
-        # TODO remove branch force
-        if gil or True:
-            from lib.types_dict import FlatDict, MorPyDictUltra
-
-            init_dict = FlatDict(
+        # FIXME
+        # if gil and processes > 1:
+        if True:
+            from UltraDict import UltraDict
+            init_dict = UltraDict(
                 name="app_dict",
-                create=create
+                create=create,
+                shared_lock=True,
+                buffer_size=1_000_000,
+                full_dump_size=1_000_000,
+                auto_unlink=False,
+                recurse=True
             )
 
-            init_dict["conf"] = MorPyDictUltra(
-                name="app_dict[conf]",
-                create=create
-            )
-
-            init_dict["sys"] = MorPyDictUltra(
-                name="app_dict[sys]",
-                create=create
-            )
-
-            init_dict["run"] = MorPyDictUltra(
-                name="app_dict[run]",
-                create=create
-            )
-
-            init_dict["global"] = MorPyDictUltra(
-                name="app_dict[global]",
-                create=create
-            )
-
-            init_dict["global"]["morpy"] = MorPyDictUltra(
-                name="app_dict[global][morPy]",
-                create=create
-            )
-
-            init_dict["global"]["app"] = MorPyDictUltra(
-                name="app_dict[global][app]",
-                create=create
-            )
-
-            init_dict["proc"] = MorPyDictUltra(
-                name="app_dict[proc]",
-                create=create
-            )
-
-            init_dict["proc"]["morpy"] = MorPyDictUltra(
-                name="app_dict[proc][morPy]",
-                create=create
-            )
-
-            init_dict["proc"]["morpy"][f'P{morpy_trace["process_id"]}'] = MorPyDictUltra(
-                name=f'app_dict[proc][morPy][P{morpy_trace["process_id"]}]',
-                create=create
-            )
-
-            init_dict["proc"]["morpy"][f'P{morpy_trace["process_id"]}'][f'T{morpy_trace["thread_id"]}'] = MorPyDictUltra(
-                name=f'app_dict[proc][morPy][P{morpy_trace["process_id"]}][T{morpy_trace["thread_id"]}]',
-                create=create
-            )
-
-            init_dict["proc"]["app"] = MorPyDictUltra(
-                name="app_dict[proc][app]",
-                create=create
-            )
-
-            init_dict["proc"]["app"][f'P{morpy_trace["process_id"]}'] = MorPyDictUltra(
-                name=f'app_dict[proc][app][P{morpy_trace["process_id"]}]',
-                create=create
-            )
-
-            init_dict["proc"]["app"][f'P{morpy_trace["process_id"]}'][f'T{morpy_trace["thread_id"]}'] = MorPyDictUltra(
-                name=f'app_dict[proc][app][P{morpy_trace["process_id"]}][T{morpy_trace["thread_id"]}]',
-                create=create
-            )
-
-            init_dict["loc"] = MorPyDictUltra(
-                name="app_dict[loc]",
-                create=create
-            )
-
-            init_dict["loc"]["morpy"] = MorPyDictUltra(
-                name="app_dict[loc][morPy]",
-                create=create
-            )
-
-            init_dict["loc"]["morpy_dgb"] = MorPyDictUltra(
-                name="app_dict[loc][mpy_dbg]",
-                create=create
-            )
-
-            init_dict["loc"]["app"] = MorPyDictUltra(
-                name="app_dict[loc][app]",
-                create=create
-            )
-
-            init_dict["loc"]["app_dbg"] = MorPyDictUltra(
-                name="app_dict[loc][app_dbg]",
-                create=create
-            )
-
-            init_dict["global"]["morpy"]["logs_generate"] = MorPyDictUltra(
-                name="app_dict[global][morPy][logs_generate]",
-                create=create
-            )
         # Without GIL, allow for true nesting
         else:
-            from lib.types_dict import MorPyDict
+            init_dict = {}
 
-            init_dict = MorPyDict(
-                name="app_dict",
-            )
+        if create:
+            init_dict["conf"] = {}
+            init_dict["sys"] = {}
+            init_dict["run"] = {}
+            init_dict["global"] = {}
+            init_dict["global"]["morpy"] = {}
+            init_dict["global"]["app"] = {}
+            init_dict["proc"] = {}
+            init_dict["proc"]["morpy"] = {}
+            init_dict["proc"]["app"] = {}
+            init_dict["loc"] = {}
+            init_dict["loc"]["morpy"] = {}
+            init_dict["loc"]["morpy_dgb"] = {}
+            init_dict["loc"]["app"] = {}
+            init_dict["loc"]["app_dbg"] = {}
+            init_dict["global"]["morpy"]["logs_generate"] = {}
 
-            init_dict["conf"] = MorPyDict(
-                name="app_dict[conf]",
-            )
-
-            init_dict["sys"] = MorPyDict(
-                name="app_dict[sys]",
-            )
-
-            init_dict["run"] = MorPyDict(
-                name="app_dict[run]",
-            )
-
-            init_dict["global"] = MorPyDict(
-                name="app_dict[global]",
-            )
-
-            init_dict["global"]["morpy"] = MorPyDict(
-                name="app_dict[global][morPy]",
-            )
-
-            init_dict["global"]["app"] = MorPyDict(
-                name="app_dict[global][app]",
-            )
-
-            init_dict["proc"] = MorPyDict(
-                name="app_dict[proc]",
-            )
-
-            init_dict["proc"]["morpy"] = MorPyDict(
-                name="app_dict[proc][morPy]",
-            )
-
-            init_dict["proc"]["morpy"][f'P{morpy_trace["process_id"]}'] = MorPyDict(
-                name=f'app_dict[proc][morPy][P{morpy_trace["process_id"]}]',
-            )
-
-            init_dict["proc"]["morpy"][f'P{morpy_trace["process_id"]}'][f'T{morpy_trace["thread_id"]}'] = MorPyDict(
-                name=f'app_dict[proc][morPy][P{morpy_trace["process_id"]}][T{morpy_trace["thread_id"]}]',
-            )
-
-            init_dict["proc"]["app"] = MorPyDict(
-                name="app_dict[proc][app]",
-            )
-
-            init_dict["proc"]["app"][f'P{morpy_trace["process_id"]}'] = MorPyDict(
-                name=f'app_dict[proc][app][P{morpy_trace["process_id"]}]',
-            )
-
-            init_dict["proc"]["app"][f'P{morpy_trace["process_id"]}'][f'T{morpy_trace["thread_id"]}'] = MorPyDict(
-                name=f'app_dict[proc][app][P{morpy_trace["process_id"]}][T{morpy_trace["thread_id"]}]',
-            )
-
-            init_dict["loc"] = MorPyDict(
-                name="app_dict[loc]",
-            )
-
-            init_dict["loc"]["morpy"] = MorPyDict(
-                name="app_dict[loc][morPy]",
-            )
-
-            init_dict["loc"]["morpy_dgb"] = MorPyDict(
-                name="app_dict[loc][mpy_dbg]",
-            )
-
-            init_dict["loc"]["app"] = MorPyDict(
-                name="app_dict[loc][app]",
-            )
-
-            init_dict["loc"]["app_dbg"] = MorPyDict(
-                name="app_dict[loc][app_dbg]",
-            )
-
-            init_dict["global"]["morpy"]["logs_generate"] = MorPyDict(
-                name="app_dict[global][morPy][logs_generate]",
-            )
+            return init_dict
 
     # Error detection
     except Exception as e:
-        morpy_fct.handle_exception_init(e)
-        raise
-
-    finally:
-        return init_dict
-
-def types_dict_finalize(morpy_trace: dict, init_dict: dict) -> None:
-    r"""
-    This function locks parts of the global dictionary to streamline the use
-    of app_dict as designed.
-
-    :param morpy_trace: operation credentials and tracing
-    :param init_dict: Dictionary holding all initialized data (init of app_dict)
-
-    :return:
-        -
-
-    :example:
-    >>> types_dict_finalize(morpy_trace, init_dict)
-    """
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module: str = 'lib.init'
-    operation: str = 'types_dict_finalize(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    try:
-        init_dict._update_self(_access="tightened")
-        init_dict["conf"]._update_self(_access="locked")
-        init_dict["sys"]._update_self(_access="locked")
-        init_dict["run"]._update_self(_access="tightened")
-        init_dict["global"]._update_self(_access="tightened")
-        init_dict["global"]["morpy"]._update_self(_access="normal")
-        init_dict["global"]["morpy"]["logs_generate"]._update_self(_access="locked")
-        init_dict["proc"]._update_self(_access="tightened")
-        init_dict["proc"]["morpy"]._update_self(_access="tightened")
-        init_dict["proc"]["app"]._update_self(_access="tightened")
-        init_dict["loc"]._update_self(_access="locked")
-        init_dict["loc"]["morpy"]._update_self(_access="locked")
-        init_dict["loc"]["morpy_dgb"]._update_self(_access="locked")
-        init_dict["loc"]["app"]._update_self(_access="locked")
-        init_dict["loc"]["app_dbg"]._update_self(_access="locked")
-
-    # Error detection
-    except Exception as e:
-        log_no_q(morpy_trace, init_dict, "error",
-        lambda: f'{init_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{init_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def morpy_log_header(morpy_trace: dict, init_dict: dict) -> None:
     r"""
@@ -499,7 +300,7 @@ def morpy_log_header(morpy_trace: dict, init_dict: dict) -> None:
         -
 
     :example:
-    >>> morpy_log_header(morpy_trace, init_dict)
+        morpy_log_header(morpy_trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -541,7 +342,7 @@ def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str) -> None:
         -
 
     :example:
-    >>> morpy_ref(morpy_trace, init_dict)
+        morpy_ref(morpy_trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -566,10 +367,8 @@ def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str) -> None:
                 f'{init_dict["loc"]["morpy"]["ref_path"]}: {morpy_ref_path}')
 
     except Exception as e:
-        log_no_q(morpy_trace, init_dict, "error",
-        lambda: f'{init_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{init_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{init_dict["loc"]["morpy"]["err_excp"]}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, None, e, sys.exc_info()[-1].tb_lineno, "error")
 
 def has_gil(morpy_trace: dict) -> bool | None:
     r"""
@@ -582,7 +381,7 @@ def has_gil(morpy_trace: dict) -> bool | None:
     :return gil_detected: If True, Python environment has GIL implemented. Process forking not supported.
 
     :example:
-    >>> gil = has_gil(morpy_trace)
+        gil = has_gil(morpy_trace)
     """
 
     # module: str = 'lib.init'
@@ -596,6 +395,9 @@ def has_gil(morpy_trace: dict) -> bool | None:
                 return True
             else:
                 return False
+        else:
+            return True
 
     except Exception as e:
-        morpy_fct.handle_exception_init(e)
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, None, e, sys.exc_info()[-1].tb_lineno, "error")

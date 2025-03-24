@@ -105,7 +105,7 @@ def sqlite3_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
         error - Error details if the connection fails
 
     :example:
-    >>> sqlite3_db_connect(morpy_trace, app_dict, '/path/to/db.sqlite')
+        sqlite3_db_connect(morpy_trace, app_dict, '/path/to/db.sqlite')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -130,10 +130,8 @@ def sqlite3_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
         return conn
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
 @metrics
 def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
@@ -149,7 +147,7 @@ def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> di
         message - Details about the disconnection process
 
     :example:
-    >>> sqlite3_db_disconnect(morpy_trace, app_dict, '/path/to/db.sqlite')
+        sqlite3_db_disconnect(morpy_trace, app_dict, '/path/to/db.sqlite')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -157,8 +155,9 @@ def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> di
     operation: str = 'sqlite3_db_disconnect(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    try:
+    conn = None
 
+    try:
         # Disconnecting from SQLite database.
         log(morpy_trace, app_dict, "debug",
         lambda: f'{app_dict["loc"]["morpy"]["sqlite3_db_disconnect_discon"]}\n'
@@ -167,10 +166,8 @@ def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> di
         conn = sqlite3.connect(db_path)
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     finally:
         try:
@@ -183,10 +180,8 @@ def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> di
                         f'conn: {conn}')
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
 @metrics
 def sqlite3_db_statement(morpy_trace: dict, app_dict: dict, db_path: str, db_smnt: str) -> dict:
@@ -204,7 +199,7 @@ def sqlite3_db_statement(morpy_trace: dict, app_dict: dict, db_path: str, db_smn
         error - Error details if the statement fails.
 
     :example:
-    >>> sqlite3_db_statement(morpy_trace, app_dict, '/path/to/db.sqlite', 'SELECT * FROM table_name')
+        sqlite3_db_statement(morpy_trace, app_dict, '/path/to/db.sqlite', 'SELECT * FROM table_name')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -251,10 +246,8 @@ def sqlite3_db_statement(morpy_trace: dict, app_dict: dict, db_path: str, db_smn
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -277,7 +270,7 @@ def sqlite3_tbl_check(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
         error - Error details if the check fails.
 
     :example:
-    >>> sqlite3_tbl_check(morpy_trace, app_dict, '/path/to/db.sqlite', 'users_table')
+        sqlite3_tbl_check(morpy_trace, app_dict, '/path/to/db.sqlite', 'users_table')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -333,10 +326,8 @@ def sqlite3_tbl_check(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
         sqlite3_db_disconnect(morpy_trace, app_dict, db_path)
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -359,7 +350,7 @@ def sqlite3_tbl_create(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         error - Error details if the table creation fails.
 
     :example:
-    >>> sqlite3_tbl_create(morpy_trace, app_dict, '/path/to/db.sqlite', 'new_table')
+        sqlite3_tbl_create(morpy_trace, app_dict, '/path/to/db.sqlite', 'new_table')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -405,10 +396,8 @@ def sqlite3_tbl_create(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -432,7 +421,7 @@ def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, tabl
         message - Details about the column addition process.
 
     :example:
-    >>> sqlite3_tbl_column_add(morpy_trace, app_dict, '/path/to/db.sqlite', 'table_name', ['new_column1', 'new_column2'], ['TEXT', 'INTEGER'])
+        sqlite3_tbl_column_add(morpy_trace, app_dict, '/path/to/db.sqlite', 'table_name', ['new_column1', 'new_column2'], ['TEXT', 'INTEGER'])
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -506,11 +495,12 @@ def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, tabl
                 sqlite3_db_disconnect(morpy_trace, app_dict, db_path)
 
             except Exception as e:
-                log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_smnt"]}: {exec_statement}')
+                from lib.exceptions import MorPyException
+                err_msg = f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_smnt"]}: {exec_statement}'
+                raise MorPyException(
+                    morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error",
+                    message=err_msg
+                )
 
         # Log and print a denial
         if not check:
@@ -532,10 +522,8 @@ def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, tabl
                     f'{app_dict["loc"]["morpy"]["sqlite3_tbl_column_add_numdatatype"]}: {j}')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -560,7 +548,7 @@ def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         error - Error details if the row insertion fails.
 
     :example:
-    >>> sqlite3_row_insert(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['value1', 123])
+        sqlite3_row_insert(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['value1', 123])
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -647,11 +635,12 @@ def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_na
                         f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_tbl"]}: {table_name}')
 
             except Exception as e:
-                log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_smnt"]}: {exec_statement}')
+                from lib.exceptions import MorPyException
+                err_msg = f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_smnt"]}: {exec_statement}'
+                raise MorPyException(
+                    morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error",
+                    message=err_msg
+                )
 
         # Log and print a denial
         if not check:
@@ -672,10 +661,8 @@ def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_na
                     f'{app_dict["loc"]["morpy"]["sqlite3_row_insert_numval"]}: {j}')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -702,7 +689,7 @@ def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         error - Error details if the update operation fails.
 
     :example:
-    >>> sqlite3_row_update(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], 42)
+        sqlite3_row_update(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], 42)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -796,11 +783,12 @@ def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_na
                         f'{app_dict["loc"]["morpy"]["sqlite3_row_update_id"]}: {row_id}')
 
             except Exception as e:
-                log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}\n'
-                        f'{app_dict["loc"]["morpy"]["sqlite3_row_update_smnt"]}: {exec_statement}')
+                from lib.exceptions import MorPyException
+                err_msg = f'{app_dict["loc"]["morpy"]["sqlite3_row_update_smnt"]}: {exec_statement}'
+                raise MorPyException(
+                    morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error",
+                    message=err_msg
+                )
 
         # Log and print a denial
         if not check:
@@ -821,10 +809,8 @@ def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_na
                     f'{app_dict["loc"]["morpy"]["sqlite3_row_update_numval"]}: {j}')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -852,8 +838,8 @@ def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, ta
         error - Error details if the update operation fails.
 
     :example:
-    >>> sqlite3_row_update_where(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'],
-    >>>                          ['new_value1', 456], "id = 42 AND status = 'active'")
+        sqlite3_row_update_where(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'],
+                                 ['new_value1', 456], "id = 42 AND status = 'active'")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -948,10 +934,8 @@ def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, ta
                         f'where: {where}')
 
             except Exception as e:
-                log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                        f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}')
+                from lib.exceptions import MorPyException
+                raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         # Log and print a denial
         if not check:
@@ -972,10 +956,8 @@ def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, ta
                     f'{app_dict["loc"]["morpy"]["sqlite3_row_update_where_numval"]}: {j}')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,

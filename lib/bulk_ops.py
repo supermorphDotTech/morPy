@@ -34,11 +34,11 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         morpy_trace - operation credentials and tracing
 
     :example:
-    >>> search_obj = "Let's replace1 and replace2!"
-    >>> replace_tpl = (("replace1", "with1"), ("replace2", "with2"))
-    >>> save_as = "C:\my_replaced_strings.txt"
-    >>> overwrite = True
-    >>> retval = find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
+        search_obj = "Let's replace1 and replace2!"
+        replace_tpl = (("replace1", "with1"), ("replace2", "with2"))
+        save_as = "C:\my_replaced_strings.txt"
+        overwrite = True
+        retval = find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
     """
 
     module: str = 'lib.bulk_ops'
@@ -91,10 +91,8 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
                 check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{app_dict["loc"]["morpy"]["err_excp"]}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return {
         'morpy_trace': morpy_trace,

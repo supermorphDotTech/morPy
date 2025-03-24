@@ -17,7 +17,6 @@ import sys
 
 @metrics
 def template(morpy_trace: dict, app_dict: dict) -> dict:
-
     r"""
     This function is a template.
 

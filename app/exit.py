@@ -28,15 +28,15 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict, orchestrat
         check: Indicates whether the function ended without errors
 
     :example:
-    >>> from app import init as app_init
-    >>> from app import run as app_run
-    >>> from app import exit as app_exit
+        from app import init as app_init
+        from app import run as app_run
+        from app import exit as app_exit
 
-    >>> # Assuming app_dict is initialized correctly
-    >>> orchestrator = app_dict["proc"]["morpy"]["cl_orchestrator"]
-    >>> init_retval = app_init(morpy_trace, app_dict)
-    >>> run_retval = app_run(morpy_trace, app_dict, init_retval)
-    >>> app_exit(morpy_trace, app_dict, run_retval, orchestrator)
+        # Assuming app_dict is initialized correctly
+        orchestrator = app_dict["proc"]["morpy"]["cl_orchestrator"]
+        init_retval = app_init(morpy_trace, app_dict)
+        run_retval = app_run(morpy_trace, app_dict, init_retval)
+        app_exit(morpy_trace, app_dict, run_retval, orchestrator)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -55,10 +55,7 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict, orchestrat
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     finally:
         # TODO .join()

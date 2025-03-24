@@ -34,11 +34,10 @@ TODO use pyinstaller to generate standalone application
     pyinstaller --icon=bulb.ico myscript.py
 """
 
-import sys
-import logging
+from lib.exceptions import MorPyException
 
-# Setup fallback-logging for __main__
-logging.basicConfig(level=logging.CRITICAL)
+import sys
+
 init_check: bool = False
 
 def initialize_morpy():
@@ -52,13 +51,13 @@ def initialize_morpy():
         from lib import init
         morpy_trace: dict = init.init_cred()
         app_dict, orchestrator = init.init(morpy_trace)
+
         if app_dict and orchestrator:
             init_check: bool = True
         return morpy_trace, app_dict, orchestrator, init_check
 
     except Exception as e:
-        import lib.fct as morpy_fct
-        morpy_fct.handle_exception_main(e, init=init_check)
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def main(morpy_trace, app_dict, orchestrator):
     r"""
@@ -82,10 +81,9 @@ if __name__ == '__main__':
         morpy_trace, app_dict, orchestrator, init_check = initialize_morpy()
         main(morpy_trace, app_dict, orchestrator)
     except Exception as e:
-        import lib.fct as morpy_fct
-        morpy_fct.handle_exception_main(e, init=init_check)
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
     finally:
         try:
             finalize_morpy(morpy_trace, app_dict)
         except Exception as e:
-            morpy_fct.handle_exception_main(e, init=init_check)
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")

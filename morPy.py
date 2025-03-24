@@ -15,6 +15,7 @@ import lib.ui_tk as ui_tk
 # TODO fix web module
 import lib.xl as xl
 from lib.decorators import log
+from lib.exceptions import MorPyException
 
 import sys
 
@@ -73,10 +74,7 @@ def PriorityQueue(morpy_trace: dict, app_dict: dict, name: str=None):
         operation: str = 'PriorityQueue(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def ProgressTracker(morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
                 float_progress: bool=False, verbose: bool=False):
@@ -124,10 +122,7 @@ def ProgressTracker(morpy_trace: dict, app_dict: dict, description: str=None, to
         operation: str = 'ProgressTracker(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def FileDirSelectTk(morpy_trace: dict, app_dict: dict, rows_data: dict, title: str=None,
                  icon_data: dict=None):
@@ -207,10 +202,7 @@ def FileDirSelectTk(morpy_trace: dict, app_dict: dict, rows_data: dict, title: s
         operation: str = 'FileDirSelectTk(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str=None, frame_width: int=None,
               frame_height: int=None, headline_total: str=None, headline_font_size: int=10,
@@ -356,10 +348,7 @@ def ProgressTrackerTk(morpy_trace: dict, app_dict: dict, frame_title: str=None, 
         operation: str = 'ProgressTrackerTk(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile_size: tuple=None,
                  icon_data: dict=None):
@@ -438,10 +427,7 @@ def GridChoiceTk(morpy_trace, app_dict, tile_data, title: str=None, default_tile
         operation: str = 'GridChoiceTk(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def XlWorkbook(morpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
               data_only: bool=False, keep_vba: bool=True):
@@ -693,10 +679,7 @@ def XlWorkbook(morpy_trace: dict, app_dict: dict, workbook: str, create: bool=Fa
         operation: str = 'XlWorkbook(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
              print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None, gui=None):
@@ -760,10 +743,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
         operation: str = 'csv_read(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, overwrite: bool=False,
                       worksheet: str=None, close_workbook: bool=False, csv_dict: dict=None,
@@ -839,10 +819,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         operation: str = 'csv_dict_to_excel(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, encoding: str=''):
     r"""
@@ -879,10 +856,7 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input: str, enco
         operation: str = 'decode_to_plain_text(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_types: tuple=None, title: str=None):
     r"""
@@ -920,10 +894,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
         operation: str = 'dialog_sel_file(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None):
     r"""
@@ -957,10 +928,47 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
         operation: str = 'dialog_sel_dir(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+
+def exception(morpy_trace: dict, app_dict: dict, exception: BaseException, line: int, log_level: str,
+              message: str=None, no_q: bool=False) -> None:
+    r"""
+    This wraps errors in the standard morPy fashion. If one of the arguments
+    required for logging is missing, this wrapper will raise other errors in
+    order to reduce tracebacks and specifically point to the issue at hand.
+
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param log_level: Severity: debug/info/warning/error/critical/denied
+    :param line: Line number of the original error that could not be logged.
+    :param exception: Exception object as passed by sys of the parent function/method.
+    :param message: Additional exception text attached to the end of the standard message.
+    :param no_q: For morPy framework internal use. Will skip PriorityQueue if True.
+
+    :example:
+        import morPy
+        import sys
+        try:
+            pass # some code
+        except Exception as e:
+            raise morPy.exception(
+                morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "info",
+                message="Specifics regarding the error"
+            )
+    """
+
+    try:
+        MorPyException(morpy_trace, app_dict, exception, line, log_level, message=message, no_q=no_q)
+
+    except Exception as e:
+        import lib.fct as morpy_fct
+
+        # Define operation credentials (see init.init_cred() for all dict keys)
+        module: str = 'morPy'
+        operation: str = 'dialog_sel_dir(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, overwrite: bool=False):
     r"""
@@ -994,10 +1002,7 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
         operation: str = 'fso_copy_file(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str):
     r"""
@@ -1026,10 +1031,7 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str):
         operation: str = 'fso_create_dir(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str):
     r"""
@@ -1059,10 +1061,7 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str):
         operation: str = 'fso_delete_dir(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str):
     r"""
@@ -1091,10 +1090,7 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str):
         operation: str = 'fso_delete_file(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
     r"""
@@ -1140,10 +1136,7 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
         operation: str = 'fso_walk(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
     r"""
@@ -1193,10 +1186,7 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
             operation: str = 'process_q(~)'
             morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-            log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     except Exception as e:
         if app_dict:
@@ -1240,10 +1230,7 @@ def join_processes(morpy_trace: dict, app_dict: dict):
         operation: str = 'interrupt(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def interrupt(morpy_trace: dict, app_dict: dict):
     r"""
@@ -1272,10 +1259,7 @@ def interrupt(morpy_trace: dict, app_dict: dict):
         operation: str = 'interrupt(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str):
     r"""
@@ -1308,10 +1292,7 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         operation: str = 'regex_findall(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str):
     r"""
@@ -1344,10 +1325,7 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         operation: str = 'regex_find1st(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter: str):
     r"""
@@ -1382,10 +1360,7 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
         operation: str = 'regex_split(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_for: str, replace_by: str):
     r"""
@@ -1420,10 +1395,7 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
         operation: str = 'regex_replace(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spec_lst: list):
     r"""
@@ -1464,10 +1436,7 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
         operation: str = 'regex_remove_special(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: str):
     r"""
@@ -1497,10 +1466,7 @@ def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: st
         operation: str = 'textfile_write(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def testprint(morpy_trace: dict, app_dict: dict, message: str):
     r"""
@@ -1529,10 +1495,7 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str):
         operation: str = 'testprint(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def wait_for_input(morpy_trace: dict, app_dict: dict, message: str):
     r"""
@@ -1564,10 +1527,7 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str):
         operation: str = 'wait_for_input(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection: tuple=None):
     r"""
@@ -1603,10 +1563,7 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection:
         operation: str = 'wait_for_select(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def datetime_now():
     r"""
@@ -1837,7 +1794,4 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         operation: str = 'find_replace_saveas(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        log(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")

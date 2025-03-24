@@ -63,10 +63,10 @@ Feel free to comment, share and support this project!
 
 ### 1.1.1 Software Requirements [⇧](#toc) <a name="1.1.1"></a>
 
-| Dependency                                                                                                                                                                    | Requirement Description                                      |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| [![Python 3.10.11](https://img.shields.io/badge/Python-3.10.11+-blue.svg)](https://www.python.org/downloads/release/python-31011/)                                            | Oldest supported Python version. Predetermined by UltraDict. |
-| [![Microsoft Visual C++ BuildTools](https://img.shields.io/badge/Microsoft-Visual%20C++%20BuildTools-orange.svg)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) | Build tools required for UltraDict pip install.              |
+| Dependency                                                                                                                                                                    | Requirement Description                                              |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| [![Python 3.10.11](https://img.shields.io/badge/Python-3.10.11+-blue.svg)](https://www.python.org/downloads/release/python-31011/)                                            | Oldest supported Python version. First implementation of match-case. |
+| [![Microsoft Visual C++ BuildTools](https://img.shields.io/badge/Microsoft-Visual%20C++%20BuildTools-orange.svg)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) | Build tools required for UltraDict pip install.                      |
 
 ### 1.1.2 Setup Guidance [⇧](#toc) <a name="1.1.2"></a>
 
@@ -85,20 +85,28 @@ Feel free to comment, share and support this project!
 #### 1.1.3.1 Basic Setup [⇧](#toc) <a name="1.1.3.1"></a>
 
 1.  Run PowerShell
-2.  Navigate to `pip.exe`  
+2. Define the Python version
+
+```PowerShell
+$env:python_version = 312
+$env:python_path = "$($env:userprofile)\AppData\Local\Programs\Python\Python$($env:python_version)"
+$env:python_exe = "$($env:python_path)\python.exe"
+```
+
+3.  Navigate to `pip.exe` 
     If Python was installed in the user path, type
 
 ```PowerShell
-cd $env:userprofile\AppData\Local\Programs\Python\Python313\Scripts
+cd "$($env:python_path)\Scripts"
 ```
 
-3.  install the virtualenv library
+4.  install the virtualenv library
 
 ```PowerShell
 .\pip install virtualenv
 ```
 
-4.  install tcl libraries
+5.  install tcl libraries
 
 ```PowerShell
 .\pip install tcl
@@ -108,22 +116,22 @@ cd $env:userprofile\AppData\Local\Programs\Python\Python313\Scripts
 .\pip install tk
 ```
 
-5.  Setup the path to the Python project as an environment variable (for this PowerShell session only), i.e.
+6.  Setup the path to the Python project as an environment variable (for this PowerShell session only), i.e.
 
 ```PowerShell
 $env:PythonProject = "C:\Projects\morPy"
 ```
 
-6.  Navigate to the root folder of the Python project, i.e.
+7.  Navigate to the root folder of the Python project, i.e.
 
 ```PowerShell
 cd $env:PythonProject
 ```
 
-7.  Insert the virtual environment into the project.
+8.  Insert the virtual environment into the project.
 
 ```PowerShell
-python -m venv .venv-win
+& "$env:python_exe" -m venv .venv-win
 ```
 
 If an error occurs indicating `python<version> was not recognized as a cmdlet`, it is likely, that Python was not installed with the option "Add python.exe to PATH".
@@ -229,20 +237,14 @@ This is merely an example, of how parallelization may look like. There is still 
 
 ## 4.1 Introduction [⇧](#toc) <a name="4.1"></a>
 
-At the heart of the morPy framework a program wide dictionary is available. Within this dictionary, all morPy functions and classes store their data to be used either globally, process-, thread, or task-wide. This dictionary is further divided into dictionaries to avoid naming conflicts and provide a categorization to potentially organize data in a streamlined way. Nested dictionaries were divided into `app` and `mpy`, whereas the latter is reserved for the morPy framework.
+At the heart of the morPy framework a program wide dictionary is available. Within this dictionary, all morPy functions and classes store their data to be used either globally, process-, thread, or task-wide. This dictionary is further divided into dictionaries (nested) to avoid naming conflicts and provide a categorization to potentially organize data in a streamlined way. Nested dictionaries were divided into `app` and `morpy`, whereas the latter is reserved for the morPy framework core.
 
-The `app_dict` is an instanciated custom subclass of the Python `dict`\-class. For details on the sub-class `MorPyDict` see it's own section. The pattern of instanciating such dictionary is
-
-```Python
-app_dict = MorPyDict(name="app_dict", access="locked")
-app_dict._update_self(access="tightened")
-```
-
-Developer created sub-dictionaries may mirror this way of dictionary creation, integrating it into the `app_dict`.
+The class of `app_dict` is, in dependency to the GIL, either a regular `dict` or an `UltraDict`. The latter ensures efficient shared memory (as much as possible) when spawning processes.
 
 ```Python
-# Examplary dev dictionary nesting
-app_dict["run"]["add_data"] = MorPyDict(name="app_dict[run][add_data]")
+# Exemplary dev dictionary nesting
+app_dict["global"]["app"]["my_project"] = {}
+app_dict["global"]["app"]["my_project"].update({"key" : "value"})
 ```
 
 ## 4.2 Navigating the App Dictionary [⇧](#toc) <a name="4.2"></a>
@@ -251,38 +253,28 @@ app_dict["run"]["add_data"] = MorPyDict(name="app_dict[run][add_data]")
 
 ***Relevant dictionaries for developers to be utilized and altered will be marked `dev` in the descriptions.***
 
-Sub-dictionaries are hardened by specifiying the access type, to streamline the utilization of `app_dict` as designed. The access types are  
-`normal` - works like any Python dictionary  
-`tightened` - keys can not be added to or removed from the dict. Values may be altered, however.  
-`locked` - dictionary is in lockdown and can not be altered in any way except, referenced UltraDict's can still be altered.  
-An asterisk as in `*tightened` indicates, that the access type is circumvented by morPy core functionalities. Nested dictionaries not mentioned explicitly (comapare with "App Dictionary Map") always are of access type `normal`.
-
 ```Python
 app_dict
 ```
 
-- `tightened`
 - Globally shared root dictionary
 
 ```Python
 app_dict["loc"]
 ```
 
-- `locked`
 - sd-lvl-1 root for Localization
 
 ```Python
 app_dict["loc"]["morpy"]
 ```
 
-- `locked`
 - Localization sd-lvl-2: morPy only
 
 ```Python
 app_dict["loc"]["morpy_dbg"]
 ```
 
-- `locked`
 - Localization sd-lvl-2: morPy unit tests and general debugging only
 
 ```Python
@@ -290,7 +282,6 @@ app_dict["loc"]["app"]
 ```
 
 - `dev`
-- `locked`
 - Localization sd-lvl-2: app specific only
 
 ```Python
@@ -298,7 +289,6 @@ app_dict["loc"]["app_dbg"]
 ```
 
 - `dev`
-- `locked`
 - Localization sd-lvl-2: app specific debugging only
 
 ```Python
@@ -306,35 +296,30 @@ app_dict["conf"]
 ```
 
 - `dev`
-- `locked`
 - sd-lvl-1 reserved for configuration and settings for runtime (see conf.py for the initialized configuration)
 
 ```Python
 app_dict["sys"]
 ```
 
-- `locked`
 - sd-lvl-1 reserved for host, system and network information
 
 ```Python
 app_dict["run"]
 ```
 
-- `tightened`
 - sd-lvl-1 reserved for runtime and metrics information
 
 ```Python
 app_dict["global"]
 ```
 
-- `tightened`
 - sd-lvl-1 root for global data storage
 
 ```Python
 app_dict["global"]["morpy"]
 ```
 
-- `normal`
 - sd-lvl-2 morPy core global data storage
 
 ```Python
@@ -342,29 +327,24 @@ app_dict["global"]["app"]
 ```
 
 - `dev`
-- `normal`
 - sd-lvl-2 app global data storage
 
 ```Python
 app_dict["proc"]
 ```
 
-- `tightened`
 - sd-lvl-1 root for process and thread specific data storage
 
 ```Python
 app_dict["proc"]["morpy"]
 ```
 
-- `*tightened`
 - sd-lvl-2 morPy core process specific data storage
-- Even though this dictionary tightened, the nested process specific dictionaries are created by the multiprocessing priority queue and deleted at process exit.
 
 ```Python
 app_dict["proc"]["morpy"]["Pn"]
 ```
 
-- `normal`
 - sd-lvl-3 morPy core thread specific data storage
 
 ```Python
@@ -372,16 +352,13 @@ app_dict["proc"]["app"]
 ```
 
 - `dev`
-- `*tightened`
 - sd-lvl-2 app process specific data storage
-- Even though this dictionary tightened, the nested process specific dictionaries are created by the multiprocessing priority queue and deleted at process exit.
 
 ```Python
 app_dict["proc"]["app"]["Pn"]
 ```
 
 - `dev`
-- `normal`
 - sd-lvl-3 app thread specific data storage
 
 ### 4.2.2 App Dictionary Map [⇧](#toc) <a name="4.2.2"></a>
@@ -642,9 +619,6 @@ As an example, it is not advisory to allow installation of `jkuri/bore`, as it a
 | **Abbreviation** | **Context** | **Description** |
 | --- | --- | --- |
 | dev | Documentation | `dev` marks a (nested/shared) dictionary as relevant for developers. These datasections may be leveraged freely. |
-| normal | app_dict.\_access | The (nested/shared) dictionary works like any dict-type. |
-| tightened | app_dict.\_access | In the (nested/shared) dictionary, keys can not be added or popped from the dict. Values may be altered, however. |
-| locked | app_dict.\_access | The (nested/shared) dictionary is in lockdown and can not be altered in any way except, referenced UltraDict's can still be altered. |
 | dict | Python Code | Python dictionary object |
 | sdict | Python Code | Python dictionary object - sub-dictionary |
 | sd-lvl-n | Python Code | Python dictionary object - sub-dictionary at level n relative to the root dictionary |

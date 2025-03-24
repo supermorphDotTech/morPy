@@ -128,7 +128,11 @@ def settings(start_time=None):
 
     r"""
 >>> MEMORY <<<
-    TODO implement memory management with custom dict-like types
+    TODO implement memory management with UltraDict
+    
+    These settings only take in effect in Multiprocessed/-threaded apps.
+    With this setting memory can be claimed at initialization to prevent later memory
+    buffer enhancements. In case of performance issues, memory may be increased.
     """
 
     # Select the way, how the available RAM is determined. If absolute, an integer
@@ -160,23 +164,23 @@ def settings(start_time=None):
     # Select the way, how the available CPUs are determined. If absolute, an integer
     # value will reflect the maximum number of logical cores to utilize in parallel.
     # Default: False or None
-    processes_count_absolute: bool = True
+    processes_count_absolute: bool = False
 
     # Absolute amount of processes to run parallel. This value will by default not exceed
     # the logical cores available on the system. If None, all CPUs can be utilized.
     # Default: None
-    processes_absolute: int = 2
+    processes_absolute: int = 1
 
     # Set the relative maximum amount of processes to be utilized, where 1 resembles 100%
     # utilization and 0 resembles 0% utilization. If None, all CPUs can be utilized.
     # Default: None or 1.0
-    processes_relative: float = None
+    processes_relative: float = 0.92
 
     # If the relative determination of maximum processes is used, it is necessary
     # to set how the maximum thread count should be rounded in case process_relative
     # does not reflect an integer cpu count. Allowed is "round" (default), "floor" or
     # "ceil".
-    processes_relative_math: str = "round"
+    processes_relative_math: str = "floor"
 
     r"""
 >>> MULTITHREADING <<<

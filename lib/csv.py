@@ -58,12 +58,12 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
                 DATA2 : ...}
 
     :example:
-    >>> src_file_path = 'C:\myfile.csv'
-    >>> delimiter = '","'
-    >>> csv = csv_read(morpy_trace, app_dict, src_file_path, delimiter)
-    >>> csv_dict = csv["csv_dict"]
-    >>> csv_header1 = csv["csv_dict"]["DATA1"]["header"]
-    >>> print(f'{csv_header1}')
+        src_file_path = 'C:\myfile.csv'
+        delimiter = '","'
+        csv = csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+        csv_dict = csv["csv_dict"]
+        csv_header1 = csv["csv_dict"]["DATA1"]["header"]
+        print(f'{csv_header1}')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -230,10 +230,8 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -286,21 +284,21 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
             Used to delete the reference to an instance.
 
     :example:
-    >>> src_file_path = 'C:\my.csv'
-    >>> delimiter = '","'
-    >>> csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+        src_file_path = 'C:\my.csv'
+        delimiter = '","'
+        csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
 
-    >>> # ... process data in csv["csv_dict"] ...
+        # ... process data in csv["csv_dict"] ...
 
-    >>> target_path = 'C:\my.xlsx'
-    >>> wb_sht = 'Sheet1'
-    >>> wb = csv_dict_to_excel(morpy_trace, app_dict, csv_dict=csv["csv_dict"], xl_path=target_path,
-    >>>     overwrite=True, worksheet=wb_sht)["wb_obj"]
+        target_path = 'C:\my.xlsx'
+        wb_sht = 'Sheet1'
+        wb = csv_dict_to_excel(morpy_trace, app_dict, csv_dict=csv["csv_dict"], xl_path=target_path,
+            overwrite=True, worksheet=wb_sht)["wb_obj"]
 
-    >>> # ... modify 'C:\my.xlsx' ...
+        # ... modify 'C:\my.xlsx' ...
 
-    >>> # Save and close workbook
-    >>> wb.close_workbook(mpy_trac, app_dict, save_workbook=True, close_workbook=True)
+        # Save and close workbook
+        wb.close_workbook(mpy_trac, app_dict, save_workbook=True, close_workbook=True)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -498,10 +496,8 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
                     f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_data"]}: {csv_dict}')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,

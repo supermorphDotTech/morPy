@@ -12,7 +12,7 @@ from lib.decorators import metrics, log_no_q
 import sys
 
 @metrics
-def _exit(morpy_trace: dict=None, app_dict: dict=None):
+def _exit(morpy_trace: dict, app_dict: dict):
     r"""
     This is the mpy exit routine. It is not intended to be used as part of an app, but it may be executed however,
     at any time after initialization.
@@ -24,7 +24,8 @@ def _exit(morpy_trace: dict=None, app_dict: dict=None):
         -
 
     :example:
-    >>> exit._exit(morpy_trace, app_dict)
+        from lib.exit import _exit
+        _exit(morpy_trace, app_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -68,7 +69,5 @@ def _exit(morpy_trace: dict=None, app_dict: dict=None):
                 f'{leading_total}{app_dict["loc"]["morpy"]["exit_msg_total"]}: {app_dict["run"]["events_total"]}')
 
     except Exception as e:
-        log_no_q(morpy_trace, app_dict, "critical",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
