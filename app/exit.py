@@ -19,7 +19,8 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
-    :param app_run_return: Return value (dict) of the app, returned by app_run
+    :param app_run_return: Return value (dict) of the app, returned by app_run.
+        This dictionary is not shared with other processes by default.
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -56,7 +57,7 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
 
     finally:
         # Join all spawned processes before transitioning into the next phase.
-        join_processes_for_transition(morpy_trace, app_dict)
+        join_processes_for_transition(morpy_trace, app_dict, child_pid=morpy_trace["process_id"])
         # Signal morPy orchestrator of app termination
         app_dict["global"]["morpy"]["exit"] = True
 

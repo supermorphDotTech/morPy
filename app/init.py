@@ -52,7 +52,7 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
 
     finally:
         # Join all spawned processes before transitioning into the next phase.
-        join_processes_for_transition(morpy_trace, app_dict)
+        join_processes_for_transition(morpy_trace, app_dict, child_pid=morpy_trace["process_id"])
 
         # Initialization complete flag
         # TODO Up until this point prints to console are mirrored on splash screen

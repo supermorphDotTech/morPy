@@ -73,6 +73,7 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
         init_dict["proc"]["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
         init_dict["proc"]["morpy"].update({"proc_available" : set()})
         init_dict["proc"]["morpy"].update({"proc_busy" : {morpy_trace_init["process_id"],}})
+        init_dict["proc"]["morpy"]["proc_joined"] = True
         init_dict["proc"]["morpy"].update({"proc_master" : morpy_trace['process_id']})
         init_dict["proc"]["morpy"].update({"proc_refs" : {}})
 

@@ -504,6 +504,7 @@ class cl_orchestrator:
                     args = task[1:]
                     # Run a new parallel process
                     if is_process:
+                        app_dict["proc"]["morpy"]["proc_joined"] = False
                         run_parallel(morpy_trace, app_dict, task=task, priority=priority)
                         self._terminate = False
                     # Run an orchestrator task internally
@@ -906,49 +907,44 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
         }
 
 @metrics
-def join_processes_for_transition(morpy_trace: dict, app_dict: dict) -> dict:
+def join_all_by_master(morpy_trace: dict, app_dict: dict, child_pid: int | str = None) -> dict:
     r"""
-    Join all processes orchestrated by morPy. This can not be used, to arbitrarily join processes.
-    It is tailored to be used at the end of app.init, app.run and app.exit! The function is to
-    join all processes of one of the steps (init - run - exit) before transitioning into the next.
-
-    Cleanup of process references is performed by enqueued watcher() functions.
+    Task for the orchestrator to join all morPy registered processes.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
+    :param child_pid: Process ID of the child process calling the function. Required filter out
+        the child process, that is waiting for joining all.
 
     :return: dict
         morpy_trace: Operation credentials and tracing
         check: Indicates if the task was dequeued successfully
 
     :example:
-        join_processes_for_transition(morpy_trace, app_dict)
-
-    TODO allow for custom settings/options
-    TODO do not wait for orchestrator
-    TODO find solution for 2-core mode
+        task = (join_all_by_master, morpy_trace, app_dict, child_pid)
+        app_dict["proc"]["morpy"]["process_q"].enqueue(
+            morpy_trace, app_dict, priority=0, task=task, autocorrect=False, is_process=False
     """
 
     module: str = 'mp'
-    operation: str = 'join_processes_for_transition(~)'
+    operation: str = 'join_all_by_master(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     check: bool = False
 
     try:
-        own_process_id = morpy_trace['process_id']
-
         # Make a copy of the process references to avoid race conditions.
         proc_refs: dict = copy.deepcopy(app_dict["proc"]["morpy"]["proc_refs"])
 
-        # Remove own process references from pool
-        proc_refs.pop(str(own_process_id), None)
+        # Remove child and master process references from pool
+        proc_refs.pop(str(child_pid), None)
+        proc_refs.pop(str(morpy_trace["process_id"]), None)  # Should not be in the pool
 
         if len(proc_refs.keys()) > 0:
             # Waiting for processes to finish before transitioning app phase.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["join_processes_for_transition_start"]}:\n'
-                    f'{app_dict["proc"]["morpy"]["proc_refs"]}')
+                lambda: f'{app_dict["loc"]["morpy"]["join_all_by_master_start"]}:\n'
+                        f'{app_dict["proc"]["morpy"]["proc_refs"]}')
 
             from multiprocessing import active_children
 
@@ -959,6 +955,61 @@ def join_processes_for_transition(morpy_trace: dict, app_dict: dict) -> dict:
                         proc.join()
 
                 proc_refs.pop(p_id, None)
+
+        # Signal all processes joined
+        app_dict["proc"]["morpy"]["proc_joined"] = True
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+
+    finally:
+        return {
+            'morpy_trace': morpy_trace,
+            'check': check,
+        }
+
+@metrics
+def join_processes_for_transition(morpy_trace: dict, app_dict: dict, child_pid: int | str = None) -> dict:
+    r"""
+    Join all processes orchestrated by morPy. This can not be used, to arbitrarily join processes.
+    It is tailored to be used at the end of app.init, app.run and app.exit! The function is to
+    join all processes of one of the steps (init - run - exit) before transitioning into the next.
+
+    Cleanup of process references is performed by enqueued watcher() functions.
+
+    :param morpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param child_pid: Process ID of the child process calling the function. Required filter out
+        the child process, that is waiting for joining all.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates if the task was dequeued successfully
+
+    :example:
+        join_processes_for_transition(morpy_trace, app_dict)
+    """
+
+    import time
+
+    module: str = 'mp'
+    operation: str = 'join_processes_for_transition(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    check: bool = False
+
+    try:
+        # Check, if join is necessary
+        if not app_dict["proc"]["morpy"]["proc_joined"]:
+            task = (join_all_by_master, morpy_trace, app_dict, child_pid)
+            app_dict["proc"]["morpy"]["process_q"].enqueue(
+                morpy_trace, app_dict, priority=0, task=task, autocorrect=False, is_process=False
+            )
+
+        # Wait for processes to join
+        while not app_dict["proc"]["morpy"]["proc_joined"]:
+            time.sleep(0.05)    # 0.05 seconds = 50 milliseconds
 
     except Exception as e:
         from lib.exceptions import MorPyException

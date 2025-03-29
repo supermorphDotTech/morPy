@@ -326,7 +326,7 @@ def loc_morpy() -> dict:
         'cl_orchestrator_app_run_start': 'App starting.',
 
         # mp.py - join_processes_for_transition(~)
-        'join_processes_for_transition_start': 'Waiting for processes to finish before transitioning app phase.',
+        'join_all_by_master_start': 'Waiting for processes to finish before transitioning app phase.',
 
         # mp.py - watcher(~)
         'watcher_is_alive': 'Process Watcher: Process still alive.',
