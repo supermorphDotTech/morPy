@@ -7,6 +7,7 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
+from lib.mp import join_processes_for_transition
 from lib.decorators import metrics, log
 
 import sys
@@ -46,15 +47,17 @@ def app_run(morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
         import demo.ProgressTrackerTk as demo_ProgressTrackerTk
         demo_ProgressTrackerTk.run(morpy_trace, app_dict)
 
-        # app_dict["global"]["app"]["test"] = True
-
         check: bool = True
 
     except Exception as e:
         raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-    return{
-        'morpy_trace' : morpy_trace,
-        'check' : check,
-        'app_run_return' : app_run_return
-        }
+    finally:
+        # Join all spawned processes before transitioning into the next phase.
+        join_processes_for_transition(morpy_trace, app_dict)
+
+        return{
+            'morpy_trace' : morpy_trace,
+            'check' : check,
+            'app_run_return' : app_run_return
+            }

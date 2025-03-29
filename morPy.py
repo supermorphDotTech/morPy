@@ -1204,33 +1204,33 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
     finally:
         return process_qed
 
-def join_processes(morpy_trace: dict, app_dict: dict):
-    r"""
-    Function
-
-    :param morpy_trace: operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
-
-    :return: dict
-        morpy_trace: Operation credentials and tracing
-        check: Indicates if the task was dequeued successfully
-
-    :example:
-        mp.join_processes(morpy_trace, app_dict)
-    """
-
-    try:
-        return join_processes(morpy_trace, app_dict)
-
-    except Exception as e:
-        import lib.fct as morpy_fct
-
-        # Define operation credentials (see init.init_cred() for all dict keys)
-        module: str = 'morPy'
-        operation: str = 'interrupt(~)'
-        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+# def join_processes(morpy_trace: dict, app_dict: dict):
+#     r"""
+#     Function
+#     TODO provide an arbitrarily usable joining (use active_children() to only join children (of children...))
+#     :param morpy_trace: operation credentials and tracing information
+#     :param app_dict: morPy global dictionary containing app configurations
+#
+#     :return: dict
+#         morpy_trace: Operation credentials and tracing
+#         check: Indicates if the task was dequeued successfully
+#
+#     :example:
+#         mp.join_processes(morpy_trace, app_dict)
+#     """
+#
+#     try:
+#         return join_processes(morpy_trace, app_dict)
+#
+#     except Exception as e:
+#         import lib.fct as morpy_fct
+#
+#         # Define operation credentials (see init.init_cred() for all dict keys)
+#         module: str = 'morPy'
+#         operation: str = 'interrupt(~)'
+#         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+#
+#         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def interrupt(morpy_trace: dict, app_dict: dict):
     r"""
@@ -1792,6 +1792,46 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         # Define operation credentials (see init.init_cred() for all dict keys)
         module: str = 'morPy'
         operation: str = 'find_replace_saveas(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+
+def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, password: str = None,
+                          file_path: str = None, file_name: str = None, overwrite: bool = True) -> dict:
+    r"""
+    Create a QR-code for a Wifi network. Files will be overwritten by default.
+
+    :param morpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param ssid: Name of the Wifi network.
+    :param password: WPA2 password of the network. Consider handing the password via prompt instead
+        of in code for better security.
+    :param file_path: Path where the qr-code generated will be saved. If None, save in '.\data'.
+    :param file_name: Name of the file without file extension (always PNG). Default to '.\qrcode.png'.
+    :param overwrite: If False, will not overwrite existing files. Defaults to True.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
+
+    :example:
+        from morPy import qrcode_generator_wifi
+        qrcode_generator_wifi(morpy_trace, app_dict,
+            ssid="ExampleNET",
+            password="3x4mp13pwd"
+        )
+    """
+
+    try:
+        return common.qrcode_generator_wifi(morpy_trace, app_dict, ssid=ssid, password=password, file_path=file_path,
+                                            file_name=file_name, overwrite=overwrite)
+
+    except Exception as e:
+        import lib.fct as morpy_fct
+
+        # Define operation credentials (see init.init_cred() for all dict keys)
+        module: str = 'morPy'
+        operation: str = 'regex_split(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")

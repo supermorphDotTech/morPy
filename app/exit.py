@@ -7,21 +7,19 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
-import lib.mp as mp
+from lib.mp import join_processes_for_transition
 from lib.decorators import metrics, log
 
 import sys
 
-
 @metrics
-def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict, orchestrator) -> dict:
+def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
     r"""
     This function runs the exit workflow of the app.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
     :param app_run_return: Return value (dict) of the app, returned by app_run
-    :param orchestrator: Reference to the instantiated morPy orchestrator
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -33,10 +31,9 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict, orchestrat
         from app import exit as app_exit
 
         # Assuming app_dict is initialized correctly
-        orchestrator = app_dict["proc"]["morpy"]["cl_orchestrator"]
         init_retval = app_init(morpy_trace, app_dict)
         run_retval = app_run(morpy_trace, app_dict, init_retval)
-        app_exit(morpy_trace, app_dict, run_retval, orchestrator)
+        app_exit(morpy_trace, app_dict, run_retval)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -58,10 +55,10 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict, orchestrat
         raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     finally:
-        # TODO .join()
+        # Join all spawned processes before transitioning into the next phase.
+        join_processes_for_transition(morpy_trace, app_dict)
         # Signal morPy orchestrator of app termination
-        mp.join_processes(morpy_trace, app_dict)
-        orchestrator._terminate = True
+        app_dict["global"]["morpy"]["exit"] = True
 
         return{
             'morpy_trace' : morpy_trace,

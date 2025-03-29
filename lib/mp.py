@@ -8,6 +8,7 @@ Descr.:     Multiprocessing functionality for morPy.
 TODO provide a general purpose lock
     > Find a way to lock file objects and dirs
 """
+import copy
 
 import lib.fct as morpy_fct
 from lib.decorators import metrics, log, log_no_q
@@ -15,6 +16,7 @@ from lib.decorators import metrics, log, log_no_q
 import sys
 import time
 from multiprocessing import Process
+from multiprocessing import active_children
 from functools import partial
 
 class cl_orchestrator:
@@ -410,7 +412,7 @@ class cl_orchestrator:
             app_run_return = app_run(morpy_trace, app_dict, app_init_return)["app_run_return"]
 
             # Exit the app and signal morPy to exit
-            app_exit(morpy_trace, app_dict, app_run_return, self)
+            app_exit(morpy_trace, app_dict, app_run_return)
 
             check: bool = True
 
@@ -448,7 +450,6 @@ class cl_orchestrator:
 
             # Start the app
             app_task = [self._app_run, morpy_trace_app, app_dict]
-            # run_parallel(morpy_trace_app, app_dict, task=app_task, priority=-1)
             app_dict["proc"]["morpy"]["process_q"].enqueue(
                 morpy_trace, app_dict, priority=-1, task=app_task, autocorrect=False
             )
@@ -494,7 +495,7 @@ class cl_orchestrator:
         try:
             while (not self._terminate) or (len(self.process_q.heap) > 0):
                 # Check process queue for tasks
-                if self.process_q.heap:
+                if len(self.process_q.heap) > 0:
                     task_dqued = self.process_q.dequeue(morpy_trace, app_dict)
                     task = task_dqued["task"]
                     priority = task_dqued["priority"]
@@ -517,6 +518,8 @@ class cl_orchestrator:
                     time.sleep(0.05)  # 0.05 seconds = 50 milliseconds
 
                 # Initiate program exit
+                # TODO make use of program exit with critical exceptions
+                # TODO dev a process kill app to end spawned processes and empty memory
                 if app_dict["global"]["morpy"]["exit"]:
                     self._terminate = True
 
@@ -542,7 +545,7 @@ class cl_orchestrator:
 def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=None, task_sys_id=None) -> dict:
     r"""
     This function is takes a task from the morPy priority queue, reserves a process ID, modifies the
-    morpy_trace of the task ultimately starts the parallel process.
+    morpy_trace of the task and ultimately starts the parallel process.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -649,7 +652,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                         app_dict["proc"]["morpy"]["proc_busy"].add(process_id)
                     id_err_dict = True
                 else:
-                    id_check: bool = True
+                    id_check = True
 
                 # Process ID determined.
                 log_no_q(morpy_trace, app_dict, "debug",
@@ -781,28 +784,33 @@ def spawn(task: list) -> dict:
         p.start()
     """
 
-    from UltraDict import UltraDict
+    from lib.init import build_app_dict
 
     module: str = 'lib.mp'
-    morpy_trace = None
-    app_dict = None
+    morpy_trace: dict = None
+    app_dict: dict = None
 
     try:
         morpy_trace = task[1]
-        process_id = morpy_trace["process_id"]
-
-        app_dict = UltraDict(
-            name="app_dict",
-            create=False,
-            shared_lock=True
-        )
+        app_dict = build_app_dict(morpy_trace)
 
         # Assign referenced app_dict to task (process) and run it
         task[2] = app_dict
         func, *args = task
         result = func(*args)
 
+        # Remove own process reference
+        app_dict["proc"]["morpy"]["proc_refs"].pop(morpy_trace['process_id'], None)
+        app_dict["proc"]["morpy"]["proc_busy"].remove(morpy_trace['process_id'])
+
     except Exception as e:
+        # Remove own process reference
+        try:
+            app_dict["proc"]["morpy"]["proc_refs"].pop(morpy_trace['process_id'], None)
+            app_dict["proc"]["morpy"]["proc_busy"].remove(morpy_trace['process_id'])
+        except:
+            pass
+
         from lib.exceptions import MorPyException
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
@@ -812,7 +820,7 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
     Watcher function that monitors a running process based on the provided task reference. It verifies
     if the process is still active and, if so, re-enqueues itself for continued monitoring unless
     single_check is set to True. Once the process is detected to be inactive, it cleans up references
-    to free the process ID and related resources.
+    to free the process ID and related resources, in case process was killed.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -883,7 +891,6 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
                     app_dict["proc"]["morpy"]["proc_available"].add(process_id)
                 if process_id in app_dict["proc"]["morpy"]["proc_busy"]:
                     app_dict["proc"]["morpy"]["proc_busy"].remove(process_id)
-                app_dict["proc"]["morpy"].pop(f'P{process_id}', None)
                 app_dict["proc"]["morpy"]["proc_refs"].pop(f'{process_id}', None)
 
         check: bool = True
@@ -899,9 +906,13 @@ def watcher(morpy_trace: dict, app_dict: dict, task: tuple, single_check: bool=F
         }
 
 @metrics
-def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
+def join_processes_for_transition(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
-    Join all processes orchestrated by morPy.
+    Join all processes orchestrated by morPy. This can not be used, to arbitrarily join processes.
+    It is tailored to be used at the end of app.init, app.run and app.exit! The function is to
+    join all processes of one of the steps (init - run - exit) before transitioning into the next.
+
+    Cleanup of process references is performed by enqueued watcher() functions.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -911,59 +922,43 @@ def join_processes(morpy_trace: dict, app_dict: dict) -> dict:
         check: Indicates if the task was dequeued successfully
 
     :example:
-        join_processes(morpy_trace, app_dict)
+        join_processes_for_transition(morpy_trace, app_dict)
 
     TODO allow for custom settings/options
     TODO do not wait for orchestrator
     TODO find solution for 2-core mode
     """
 
-    import lib.fct as morpy_fct
-
     module: str = 'mp'
-    operation: str = 'join_processes(~)'
+    operation: str = 'join_processes_for_transition(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     check: bool = False
-    p_id: int = None
-    waiting_for_processes: bool = True
 
     try:
-        if len(app_dict["proc"]["morpy"]["proc_busy"]) > 1:
+        own_process_id = morpy_trace['process_id']
+
+        # Make a copy of the process references to avoid race conditions.
+        proc_refs: dict = copy.deepcopy(app_dict["proc"]["morpy"]["proc_refs"])
+
+        # Remove own process references from pool
+        proc_refs.pop(str(own_process_id), None)
+
+        if len(proc_refs.keys()) > 0:
+            # Waiting for processes to finish before transitioning app phase.
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["join_processes_for_transition_start"]}:\n'
+                    f'{app_dict["proc"]["morpy"]["proc_refs"]}')
+
             from multiprocessing import active_children
 
-            # Get number of running processes
-            active_children = len(active_children())
+            # Loop until all known process references have been joined.
+            for p_id, p_name in proc_refs:
+                for proc in active_children():
+                    if proc.name == p_name:
+                        proc.join()
 
-            # Omit an error when the dict is changed while iterating over it
-            proc_refs = app_dict["proc"]["morpy"]["proc_refs"].items()
-
-            # Outer loop serves evaluation of processes running
-            while waiting_for_processes:
-                pid = None
-
-                with proc_refs.lock:
-                    for p_id, p_name in proc_refs:
-                        # Omit race condition if references are removed asynchronous
-                        if p_id in app_dict["proc"]["morpy"]["proc_refs"].keys():
-                            # Joining processes.
-                            log(morpy_trace, app_dict, "debug",
-                            lambda: f'{app_dict["loc"]["morpy"]["join_processes_start"]}:\n'
-                                    f'{app_dict["proc"]["morpy"]["proc_refs"]}')
-
-                            # Clean up process reference, if it still exists
-                            if p_id in app_dict["proc"]["morpy"]["proc_refs"].keys():
-                                app_dict["proc"]["morpy"]["proc_refs"].pop(f'{p_id}', None)
-                        else:
-                            break
-
-                # Check, if process reference is an empty dictionary
-                if not pid:
-                    waiting_for_processes = False
-
-            # Clean up process references, if still existing
-            if active_children == 0 and p_id in app_dict["proc"]["morpy"]["proc_refs"].keys():
-                app_dict["proc"]["morpy"]["proc_refs"] = {}
+                proc_refs.pop(p_id, None)
 
     except Exception as e:
         from lib.exceptions import MorPyException

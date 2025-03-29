@@ -175,6 +175,10 @@ pip install defusedxml
 ```
 
 ```PowerShell
+pip install qrcode
+```
+
+```PowerShell
 pip install atomics
 ```
 

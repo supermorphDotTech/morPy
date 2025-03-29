@@ -1649,6 +1649,88 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
         }
 
 @metrics
+def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, password: str = None,
+                          file_path: str = None, file_name: str = None, overwrite: bool = True) -> dict:
+    r"""
+    Create a QR-code for a Wifi network. Files will be overwritten by default.
+
+    :param morpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param ssid: Name of the Wifi network.
+    :param password: WPA2 password of the network. Consider handing the password via prompt instead
+        of in code for better security.
+    :param file_path: Path where the qr-code generated will be saved. If None, save in '.\data'.
+    :param file_name: Name of the file without file extension (always PNG). Default to '.\qrcode.png'.
+    :param overwrite: If False, will not overwrite existing files. Defaults to True.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
+
+    :example:
+        from morPy import qrcode_generator_wifi
+        qrcode_generator_wifi(morpy_trace, app_dict,
+            ssid="ExampleNET",
+            password="3x4mp13pwd"
+        )
+    """
+
+    import os
+    import qrcode
+
+    # morPy credentials (see init.init_cred() for all dict keys)
+    module: str = 'lib.common'
+    operation: str = 'qrcode_generator_wifi(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    check: bool = False
+    generate: bool = True
+
+    try:
+        # Check given filepath and eventually default to .\data
+        if file_path:
+            check_file_path: bool = morpy_fct.pathtool(file_path)["dir_exists"]
+            file_path = file_path if check_file_path else app_dict["conf"]["data_path"]
+        else:
+            file_path = app_dict["conf"]["data_path"]
+
+        # Default file name if needed
+        file_name = f'{file_name}.png' if file_name else "qrcode.png"
+
+        # Construct full path
+        full_path = os.path.join(file_path, file_name)
+
+        # Check, if file exists and delete existing, if necessary.
+        file_exists: bool = morpy_fct.pathtool(file_path)["file_exists"]
+        if file_exists:
+            if overwrite:
+                fso_delete_file(morpy_trace, app_dict, full_path)
+            else:
+                generate = False
+
+        # Generate and save the QR code
+        if generate:
+            wifi_config = f'WIFI:S:{ssid};T:WPA;P:{password};;'
+            img = qrcode.make(wifi_config)
+            img.save(full_path)
+
+        # QR code generated and saved.
+        log(morpy_trace, app_dict, "info",
+        lambda: f'{app_dict["loc"]["morpy"]["qrcode_generator_wifi_done"]}\n'
+                f'{ssid=}\n{full_path=}')
+
+        check: bool = True
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    return{
+        'morpy_trace' : morpy_trace,
+        'check' : check,
+        }
+
+@metrics
 def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
     r"""
     Pauses program execution until a user provides input. The input is then

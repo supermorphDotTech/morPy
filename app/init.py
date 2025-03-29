@@ -7,6 +7,7 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
+from lib.mp import join_processes_for_transition
 from lib.decorators import metrics, log
 
 import sys
@@ -50,8 +51,11 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
         raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     finally:
+        # Join all spawned processes before transitioning into the next phase.
+        join_processes_for_transition(morpy_trace, app_dict)
+
         # Initialization complete flag
-        # Up until this point prints to console are mirrored on splash screen
+        # TODO Up until this point prints to console are mirrored on splash screen
         app_dict["run"]["init_complete"] = True
 
         return{

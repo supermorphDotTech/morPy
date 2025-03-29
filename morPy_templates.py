@@ -28,7 +28,7 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
         check: Indicates whether the function ended without errors
 
     :example:
-    >>> template(morpy_trace, app_dict)
+        template(morpy_trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -51,10 +51,8 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -79,7 +77,7 @@ class TemplateClass:
             -
 
         :example:
-        >>> instance = TemplateClass(morpy_trace, app_dict)
+            instance = TemplateClass(morpy_trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -95,10 +93,8 @@ class TemplateClass:
             self._init(morpy_trace, app_dict)
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict) -> dict:
@@ -113,7 +109,7 @@ class TemplateClass:
             check: Indicates whether the function ended without errors
 
         :example:
-        >>> self._init(morpy_trace, app_dict)
+            self._init(morpy_trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -135,10 +131,8 @@ class TemplateClass:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,
@@ -156,7 +150,7 @@ class TemplateClass:
             check: Indicates whether the function ended without errors
 
         :example:
-        >>> self.method(morpy_trace, app_dict)
+            self.method(morpy_trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -178,10 +172,8 @@ class TemplateClass:
             check: bool = True
 
         except Exception as e:
-            log(morpy_trace, app_dict, "error",
-            lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                    f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                    f'{type(e).__name__}: {e}')
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,

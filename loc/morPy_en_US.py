@@ -205,6 +205,9 @@ def loc_morpy() -> dict:
         'textfile_write_created' : 'Textfile has been created.',
         'textfile_write_content' : 'Content',
 
+        # common.py - qrcode_generator_wifi(~)
+        'qrcode_generator_wifi_done': 'QR code generated and saved.',
+
         # common.py - wait_for_input(~)
         'wait_for_input_compl' : 'A user input was made.',
         'wait_for_input_message' : 'Message',
@@ -322,8 +325,8 @@ def loc_morpy() -> dict:
         # mp.py - cl_orchestrator._app_run(~)
         'cl_orchestrator_app_run_start': 'App starting.',
 
-        # mp.py - join_processes(~)
-        'join_processes_start': 'Joining processes',
+        # mp.py - join_processes_for_transition(~)
+        'join_processes_for_transition_start': 'Waiting for processes to finish before transitioning app phase.',
 
         # mp.py - watcher(~)
         'watcher_is_alive': 'Process Watcher: Process still alive.',

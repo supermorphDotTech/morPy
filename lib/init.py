@@ -38,9 +38,9 @@ def init_cred() -> dict:
         'module' : '__main__',
         'operation' : '',
         'tracing' : '__main__',
-        'process_id' : 0,
-        'thread_id' : 0,
-        'task_id' : 0,
+        'process_id' : int(0),
+        'thread_id' : int(0),
+        'task_id' : int(0),
         'log_enable' : False,
         'interrupt_enable' : False,
     }
@@ -72,7 +72,8 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
 
         init_dict["proc"]["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
         init_dict["proc"]["morpy"].update({"proc_available" : set()})
-        init_dict["proc"]["morpy"].update({"proc_busy" : set(range(morpy_trace_init["process_id"]))})
+        init_dict["proc"]["morpy"].update({"proc_busy" : {morpy_trace_init["process_id"],}})
+        init_dict["proc"]["morpy"].update({"proc_master" : morpy_trace['process_id']})
         init_dict["proc"]["morpy"].update({"proc_refs" : {}})
 
         # Initialize the global interrupt flag and exit flag
@@ -219,7 +220,7 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
         morpy_fct.handle_exception_init(e)
         raise
 
-def build_app_dict(morpy_trace: dict, create: bool=False, processes: int = 1) -> dict:
+def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
     r"""
     This function builds the app_dict in accordance to multiprocessing and whether GIL
     is included in the Python environment.
@@ -227,8 +228,6 @@ def build_app_dict(morpy_trace: dict, create: bool=False, processes: int = 1) ->
     :param morpy_trace: operation credentials and tracing
     :param create: If True, a (nested) dictionary is created. Otherwise, purely
         references to the UltraDict.
-    :param processes: Amount of processes allowed to spawn. If greater 1, may use
-        UltraDict for app_dict.
 
     :return init_dict: morPy global dictionary containing app configurations
 
@@ -244,27 +243,160 @@ def build_app_dict(morpy_trace: dict, create: bool=False, processes: int = 1) ->
     # Check for GIL and decide for an app_dict structure.
     gil = has_gil(morpy_trace)
     init_dict = None
+    init_mem = 1_000_000 # TODO get memory from config
 
     try:
         # FIXME
-        # if gil and processes > 1:
+        # if gil:
         if True:
             from UltraDict import UltraDict
             init_dict = UltraDict(
                 name="app_dict",
                 create=create,
                 shared_lock=True,
-                buffer_size=1_000_000,
-                full_dump_size=1_000_000,
-                auto_unlink=False,
-                recurse=True
+                buffer_size=init_mem,
+                full_dump_size=init_mem,
+                auto_unlink=False
+            )
+
+            init_dict["conf"] = UltraDict(
+                name="app_dict[conf]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 100,
+                full_dump_size=init_mem // 100,
+                auto_unlink=False
+            )
+
+            init_dict["sys"] = UltraDict(
+                name="app_dict[sys]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 10,
+                full_dump_size=init_mem // 10,
+                auto_unlink=False
+            )
+
+            init_dict["run"] = UltraDict(
+                name="app_dict[run]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 10,
+                full_dump_size=init_mem // 10,
+                auto_unlink=False
+            )
+
+            init_dict["global"] = UltraDict(
+                name="app_dict[global]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem,
+                full_dump_size=init_mem,
+                auto_unlink=False
+            )
+
+            init_dict["global"]["morpy"] = UltraDict(
+                name="app_dict[global][morPy]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 100,
+                full_dump_size=init_mem // 100,
+                auto_unlink=False
+            )
+
+            init_dict["global"]["app"] = UltraDict(
+                name="app_dict[global][app]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 10,
+                full_dump_size=init_mem // 10,
+                auto_unlink=False
+            )
+
+            init_dict["proc"] = UltraDict(
+                name="app_dict[proc]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 100,
+                full_dump_size=init_mem // 100,
+                auto_unlink=False
+            )
+
+            init_dict["proc"]["morpy"] = UltraDict(
+                name="app_dict[proc][morPy]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 100,
+                full_dump_size=init_mem // 100,
+                auto_unlink=False
+            )
+
+            init_dict["proc"]["app"] = UltraDict(
+                name="app_dict[proc][app]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 100,
+                full_dump_size=init_mem // 100,
+                auto_unlink=False
+            )
+
+            init_dict["loc"] = UltraDict(
+                name="app_dict[loc]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 1_000,
+                full_dump_size=init_mem // 1_000,
+                auto_unlink=False
+            )
+
+            init_dict["loc"]["morpy"] = UltraDict(
+                name="app_dict[loc][morPy]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem,
+                full_dump_size=init_mem,
+                auto_unlink=False
+            )
+
+            init_dict["loc"]["morpy_dgb"] = UltraDict(
+                name="app_dict[loc][mpy_dbg]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 100,
+                full_dump_size=init_mem // 100,
+                auto_unlink=False
+            )
+
+            init_dict["loc"]["app"] = UltraDict(
+                name="app_dict[loc][app]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem,
+                full_dump_size=init_mem,
+                auto_unlink=False
+            )
+
+            init_dict["loc"]["app_dbg"] = UltraDict(
+                name="app_dict[loc][app_dbg]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 100,
+                full_dump_size=init_mem // 100,
+                auto_unlink=False
+            )
+
+            init_dict["global"]["morpy"]["logs_generate"] = UltraDict(
+                name="app_dict[global][morPy][logs_generate]",
+                create=create,
+                shared_lock=True,
+                buffer_size=init_mem // 1_000,
+                full_dump_size=init_mem // 1_000,
+                auto_unlink=False
             )
 
         # Without GIL, allow for true nesting
         else:
             init_dict = {}
-
-        if create:
             init_dict["conf"] = {}
             init_dict["sys"] = {}
             init_dict["run"] = {}
@@ -281,7 +413,8 @@ def build_app_dict(morpy_trace: dict, create: bool=False, processes: int = 1) ->
             init_dict["loc"]["app_dbg"] = {}
             init_dict["global"]["morpy"]["logs_generate"] = {}
 
-            return init_dict
+
+        return init_dict
 
     # Error detection
     except Exception as e:
