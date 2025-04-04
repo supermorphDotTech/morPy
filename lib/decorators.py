@@ -9,14 +9,13 @@ Descr.:     This module yields all decorators to be used with the morPy framewor
 import time
 
 from functools import wraps
+from UltraDict import UltraDict
 
 def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
     r"""
     Wrapper for conditional logging based on log level. To benefit from
     this logic, it is necessary to construct "message" in the lambda shown
     in the example, whereas <message> refers to a localized string like
-
-        f'{app_dict["loc"]["app"]["localized_message"]}\nVariable: '
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
@@ -28,31 +27,25 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, ve
         from lib.decorators import log
         log(morpy_trace, app_dict, "info",
         lambda: "Hello world!")
+
+    TODO move this to morPy, it's not a decorator
     """
 
     import lib.msg as msg
 
     # Skip logging, if message is verbose and verbose is disabled
-    if verbose and app_dict["conf"].get("msg_verbose", False):
-        pass
+    if verbose and not app_dict["conf"].get("msg_verbose", False):
+        return
     else:
         log_level = log_level.lower()
 
-        # Evaluate the message only when logging is demanded
-        if message and app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
-            task = (msg.log, morpy_trace, app_dict, log_level, message(), verbose)
-
-            # Enqueue the orchestrator task
-            app_dict["proc"]["morpy"]["process_q"].enqueue(
-                morpy_trace, app_dict, priority=-100, task=task, autocorrect=False, is_process=False
-            )
+        if message and app_dict["morpy"]["logs_generate"].get(log_level, False):
+            msg.log(morpy_trace, app_dict, log_level, message(), verbose)
 
 def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
     r"""
     Wrapper for conditional logging based on log level. This decorator does not enqueue
     logs and is intended for use by morPy orchestrator only.
-
-        f'{app_dict["loc"]["app"]["localized_message"]}\nVariable: '
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
@@ -64,17 +57,19 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callabl
         from lib.decorators import log_no_q
         log_no_q(morpy_trace, app_dict, level,
         lambda: <message>)
+
+    TODO remove this decorator as lib.msg.log() takes care of "no queue"
     """
 
     import lib.msg as msg
 
     # Skip logging, if message is verbose and verbose is disabled
-    if verbose and app_dict["conf"].get("msg_verbose", False):
-        pass
+    if verbose and not app_dict["conf"].get("msg_verbose", False):
+        return
     else:
         log_level = log_level.lower()
 
-        if message and app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+        if message and app_dict["morpy"]["logs_generate"].get(log_level, False):
             msg.log(morpy_trace, app_dict, log_level, message(), verbose)
 
 def metrics(func):
@@ -117,7 +112,7 @@ def metrics(func):
 
                 # Now we decide if metrics are enabled
                 # (only if we found both morpy_trace and app_dict)
-                if isinstance(morpy_trace, dict) and isinstance(app_dict, dict):
+                if isinstance(morpy_trace, dict) and isinstance(app_dict, (UltraDict, dict)):
                     enable_metrics = app_dict.get("lib.conf", {}).get("metrics_enable", False)
                     perf_mode = app_dict.get("lib.conf", {}).get("metrics_perfmode", False)
 
@@ -125,7 +120,7 @@ def metrics(func):
                 # If we still don't have them, leave them as None
                 pass
             except KeyError:
-                raise IndexError("Positional arguments morpy_trace and/or app_dict are missing or at wrong position!")
+                raise IndexError("Positional arguments morpy_trace and/or app_dict are missing or at the wrong position!")
 
             if enable_metrics:
                 start_time = time.perf_counter()

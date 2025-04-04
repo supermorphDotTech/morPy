@@ -502,10 +502,10 @@ class FileDirSelectTk:
             self.root.quit()
 
             # Initiate program exit
-            app_dict["global"]["morpy"]["exit"] = True
+            app_dict["morpy"]["exit"] = True
 
             # Release the global interrupts
-            app_dict["global"]["morpy"]["interrupt"] = False
+            app_dict["morpy"]["interrupt"] = False
 
             check: bool = True
 
@@ -963,10 +963,10 @@ class GridChoiceTk:
             self.root.quit()
 
             # Initiate program exit
-            app_dict["global"]["morpy"]["exit"] = True
+            app_dict["morpy"]["exit"] = True
 
             # Release the global interrupts
-            app_dict["global"]["morpy"]["interrupt"] = False
+            app_dict["morpy"]["interrupt"] = False
 
             check: bool = True
 
@@ -2388,10 +2388,10 @@ class ProgressTrackerTk:
                 self.done = True
 
                 # Initiate global exit
-                app_dict["global"]["morpy"]["exit"] = True
+                app_dict["morpy"]["exit"] = True
 
                 # Release the global interrupts to proceed with exit
-                app_dict["global"]["morpy"]["interrupt"] = False
+                app_dict["morpy"]["interrupt"] = False
 
 
             # Clear any pending UI update calls.

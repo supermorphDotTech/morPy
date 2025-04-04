@@ -7,14 +7,15 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
-from lib.mp import join_processes_for_transition
+from lib.mp import join_or_task
+from lib.fct import tracing as init_tracing
 from lib.decorators import metrics, log
 
 import sys
+from UltraDict import UltraDict
 
 @metrics
-def app_init(morpy_trace: dict, app_dict: dict) -> dict:
-
+def app_init(morpy_trace: dict, app_dict: dict | UltraDict) -> dict:
     r"""
     This function runs the initialization workflow of the app.
 
@@ -31,10 +32,20 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
         init_retval = app_init(morpy_trace, app_dict)
     """
 
+    try:
+        if isinstance(app_dict, UltraDict):
+            with app_dict["morpy"]["orchestrator"].lock:
+                mp = app_dict["morpy"]["orchestrator"]["mp"]
+        else:
+            mp = False
+    except:
+        # Gracefully pass in single-core mode
+        pass
+
     # morPy credentials (see init.init_cred() for all dict keys)
     module: str = 'app.init'
     operation: str = 'app_init(~)'
-    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+    morpy_trace: dict = init_tracing(module, operation, morpy_trace, reset=mp)
 
     # OPTION enable/disable logging
     # ??? morpy_trace["log_enable"] = False
@@ -52,11 +63,15 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
 
     finally:
         # Join all spawned processes before transitioning into the next phase.
-        join_processes_for_transition(morpy_trace, app_dict, child_pid=morpy_trace["process_id"])
+        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
 
         # Initialization complete flag
         # TODO Up until this point prints to console are mirrored on splash screen
-        app_dict["run"]["init_complete"] = True
+        if isinstance(app_dict["run"], UltraDict):
+            with app_dict["run"].lock:
+                app_dict["run"]["init_complete"] = True
+        else:
+            app_dict["run"]["init_complete"] = True
 
         return{
             'morpy_trace' : morpy_trace,

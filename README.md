@@ -28,9 +28,15 @@ Feel free to comment, share and support this project!
 └─│`1.1.3.3` [Copy Packages to Virtual Environment](#1.1.3.3)  
 `2.` [Versioning - α.β.γλ](#2.)  
 `3.` [Parallelization](#3.)  
+&nbsp;
+└─│`3.1` [Reserved Orchestrator Heap Priorities](#3.1)  
+&nbsp;
+└─│`3.2` [Parallelization Map](#3.2)  
 `4.` [≛ Shared App Dictionary](#4.)  
 &nbsp;
 └─│`4.1` [Introduction](#4.1)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`4.1.1` [Limitations of the Shared App Dictionary](#4.1.1)  
 &nbsp;
 └─│`4.2` [Navigating the App Dictionary](#4.2)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -231,9 +237,17 @@ $env:PythonProject\.venv-win\Lib\site-packages\Tcl
 
 # 3. Parallelization [⇧](#toc) <a name="3."></a>
 
-The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends. The process ID "0" is always reserved for the orchestration process. It will take care of logging and is reserved for tasks with a priority in between 0 and 10 (smaller numbers for higher priority). All app tasks will automatically receive a higher number (lower priority) than morPy reserved tasks. In case a priority is corrected, a warning will be raised.
+The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends. The process ID "0" is reserved for the orchestration process. It will take care of logging and is reserved for tasks with a priority smaller than 0 (smaller numbers equal higher priority). All app tasks priorities will default to 100, if not specified and will be autocorrected if set below 0. In case a priority is corrected, a warning will be raised.
 
-This is merely an example, of how parallelization may look like. There is still freedom to change how exactly the app is orchestrated (i.e. by setting a limit of maximum concurrent processes in `.\lib\conf.py`).
+## Reserved Orchestrator Heap Priorities [⇧](#toc) <a name="3.1"></a>
+
+| Priority | Operation                           | Description                                                                |
+|----------|-------------------------------------|----------------------------------------------------------------------------|
+| -100     | lib.decorators.log()                | Absolute highest priority reserved for logging. Prevents build up of heap. |
+| -90      | lib.mp.MorPyOrchestrator._app_run() | Task of the actual app. Only enqueued once after initialization.           |
+| \[100\]  | morPy.process_q()                   | Default priority of a new child process.                                   |
+
+## Parallelization Map [⇧](#toc) <a name="3.2"></a>
 
 ![EN-morPy-parallelization-scheme-v1 0 0-darkmode](https://github.com/user-attachments/assets/4f460193-7a01-4c78-a501-16b99aea747b)
 
@@ -249,6 +263,38 @@ The class of `app_dict` is, in dependency to the GIL, either a regular `dict` or
 # Exemplary dev dictionary nesting
 app_dict["global"]["app"]["my_project"] = {}
 app_dict["global"]["app"]["my_project"].update({"key" : "value"})
+```
+
+## 4.1.1 Limitations of the Shared App Dictionary [⇧](#toc) <a name="4.1.1"></a>
+
+Most in-place operations (such as `append()` for lists) are not propagated correctly between processes. Instead,
+use reassignment to force an assignment after the in–place operation. For example:
+
+````Python
+temp = app_dict["some"]["nested_list"]
+temp.append(new_item)
+app_dict["some"]["nested_list"] = temp  # reassign to trigger synchronization
+````
+
+In addition, storing classes in `app_dict` to share them across processes may fail, because it's attributes
+are not propagated reliably to other processes. In multiprocessing contexts, a classes attributes are not
+shared like other values and types. Instead, if attributes have to be accessible by other processes, construct
+shared dictionaries to achieve that. Make sure to avoid infinite recursions by creating a new
+shared dict, that is not nested in app_dict.
+This means, that you may have pseudo-attributes in your class addressing
+`app_dict["..."]["..."]`, instead of references to self.
+
+```Python
+# WRONG in multiprocessing:
+app_dict["global"]["MyClass"] = MyClass(morpy_trace, app_dict, *args, **kwargs)
+
+# CORRECT in multiprocessing:
+from lib.mp import shared_dict
+instance_mp = shared_dict(name="MyClass", create=True)
+
+instance = MyClass(morpy_trace, app_dict, *args, **kwargs)
+instance_mp["ob_ref"] = instance
+instance_mp["data"] = instance.my_custom_method_to_return_data()
 ```
 
 ## 4.2 Navigating the App Dictionary [⇧](#toc) <a name="4.2"></a>

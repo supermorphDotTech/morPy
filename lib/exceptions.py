@@ -105,12 +105,14 @@ class MorPyException(Exception):
             # Build the final message
             if message:
                 message = f'\n{message}'
-
-            self.message = f'{self.core_msg}{message}'
-            if no_q:
-                log(morpy_trace, app_dict, log_level, lambda: self.message)
+                self.message = f'{self.core_msg}{message}'
             else:
+                self.message = f'{self.core_msg}'
+
+            if no_q:
                 log_no_q(morpy_trace, app_dict, log_level, lambda: self.message)
+            else:
+                log(morpy_trace, app_dict, log_level, lambda: self.message)
 
         except Exception as crit_e:
 

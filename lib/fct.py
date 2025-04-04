@@ -374,8 +374,8 @@ def app_dict_to_string(app_dict, depth: int=0) -> str:
 
     if isinstance(app_dict, dict):
 
-        # Define the priority order for level-1 subdictionaries
-        app_dict_order = ["conf", "sys", "run", "global", "proc", "loc"]
+        # Define the priority order for level-1 nested dictionaries
+        app_dict_order = ["conf", "sys", "run", "morpy", "loc"]
 
         lines = []
         indent = 4 * " " * depth  # 4 spaces per depth level
@@ -396,7 +396,8 @@ def app_dict_to_string(app_dict, depth: int=0) -> str:
     else:
         return None
 
-def tracing(module, operation, morpy_trace, clone=True, process_id=None) -> dict:
+def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: bool=False,
+            reset_w_prefix: str=None) -> dict:
     r"""
     This function formats the trace to any given operation. This function is
     necessary to alter the morpy_trace as a pass down rather than pointing to the
@@ -412,6 +413,9 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None) -> dict
         initialization only).
     :param process_id: Adjust the process ID of the trace. Intended to be used by morPy
         orchestrator only.
+    :param reset: If True, the trace will be reset/lost.
+    :param reset_w_prefix: If reset is True, a custom preset can be set in order to retain
+        a customized trace.
 
     :return morpy_trace_passdown: operation credentials and tracing
     """
@@ -430,6 +434,11 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None) -> dict
     # Define operation credentials (see init.init_cred() for all dict keys)
     morpy_trace_passdown["module"] = f'{module}'
     morpy_trace_passdown["operation"] = f'{operation}'
-    morpy_trace_passdown["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
+
+    if reset:
+        morpy_trace_passdown["tracing"] = \
+            f'{reset_w_prefix} > {module}.{operation}' if reset_w_prefix else f'{module}.{operation}'
+    else:
+        morpy_trace_passdown["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
 
     return morpy_trace_passdown

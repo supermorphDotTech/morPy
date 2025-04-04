@@ -95,13 +95,13 @@ def loc_morpy() -> dict:
         'PriorityQueue_enqueue_priority' : 'Priority',
         'PriorityQueue_enqueue_none' : 'Task can not be None. Skipping enqueue.',
 
-        # common.py - PriorityQueue.dequeue(~)
-        'PriorityQueue_dequeue_task' : 'Task',
-        'PriorityQueue_dequeue_start' : 'Pulling task from',
-        'PriorityQueue_dequeue_name' : 'Task name',
-        'PriorityQueue_dequeue_priority' : 'Priority',
-        'PriorityQueue_dequeue_cnt' : 'Counter',
-        'PriorityQueue_dequeue_void' : 'Can not dequeue from an empty priority queue. Skipped...',
+        # common.py - PriorityQueue.pull(~)
+        'PriorityQueue_pull_task' : 'Task',
+        'PriorityQueue_pull_start' : 'Pulling task from',
+        'PriorityQueue_pull_name' : 'Task name',
+        'PriorityQueue_pull_priority' : 'Priority',
+        'PriorityQueue_pull_cnt' : 'Counter',
+        'PriorityQueue_pull_void' : 'Can not pull from an empty priority queue. Skipped...',
 
         # common.py - ProgressTracker._init(~)
         'ProgressTracker_miss_total': 'Missing total count. Can not track progress if point of completion is unknown.',
@@ -311,44 +311,66 @@ def loc_morpy() -> dict:
         # Area: lib.mp.py
         # #################
 
-        # mp.py - cl_orchestrator._init(~)
-        'cl_orchestrator_init_not_bool': 'Value is not a boolean. Check lib.conf.py for correction.',
-        'cl_orchestrator_init_not_int': 'Value is not an integer. Check lib.conf.py for correction.',
-        'cl_orchestrator_init_not_float': 'Value is not a float. Check lib.conf.py for correction.',
-        'cl_orchestrator_init_not_str': 'Value is not a string. Check lib.conf.py for correction.',
-        'cl_orchestrator_init_rel_math_corr': 'Rounding corrected.',
-        'cl_orchestrator_init_err_rounding_val' : "Wrong rounding parameter. Fallback to 'round' for determining maximum amount of parallel processes.",
-        'cl_orchestrator_init_cpus_determined': 'Maximum amount of parallel processes determined.',
-        'cl_orchestrator_init_memory_set': 'Maximum memory set.',
-        'cl_orchestrator_init_done': 'Multiprocessing initialized.',
+        # mp.py - MorPyOrchestrator._init(~)
+        'MorPyOrchestrator_init_not_bool': 'Value is not a boolean. Check lib.conf.py for correction.',
+        'MorPyOrchestrator_init_not_int': 'Value is not an integer. Check lib.conf.py for correction.',
+        'MorPyOrchestrator_init_not_float': 'Value is not a float. Check lib.conf.py for correction.',
+        'MorPyOrchestrator_init_not_str': 'Value is not a string. Check lib.conf.py for correction.',
+        'MorPyOrchestrator_init_rel_math_corr': 'Rounding corrected.',
+        'MorPyOrchestrator_init_err_rounding_val' : "Wrong rounding parameter. Fallback to 'round' for determining maximum amount of parallel processes.",
+        'MorPyOrchestrator_init_cpus_determined': 'Maximum amount of parallel processes determined.',
+        'MorPyOrchestrator_init_memory_set': 'Maximum memory set.',
+        'MorPyOrchestrator_init_done': 'MorPyOrchestrator initialized.',
 
-        # mp.py - cl_orchestrator._app_run(~)
-        'cl_orchestrator_app_run_start': 'App starting.',
+        # mp.py - MorPyOrchestrator._app_run(~)
+        'MorPyOrchestrator_app_run_start': 'App starting.',
 
-        # mp.py - join_processes_for_transition(~)
-        'join_all_by_master_start': 'Waiting for processes to finish before transitioning app phase.',
+        # mp.py - process_q_init(~)
+        'process_q_init_done': 'Priority queue initialized.',
 
-        # mp.py - watcher(~)
-        'watcher_is_alive': 'Process Watcher: Process still alive.',
-        'watcher_end': 'Process Watcher: Process ended, cleaning up process',
+        # mp.py - process_enqueue(~)
+        'process_enqueue_task': 'Task',
+        'process_enqueue_prio_corr': 'Invalid argument given to process queue. Autocorrected.',
+        'process_enqueue_start': 'Pushing task to heap.',
+        'process_enqueue_priority': 'Priority',
+        'process_enqueue_none': 'Task can not be None. Skipping enqueue.',
+
+        # mp.py - process_pull(~)
+        'process_pull_task': 'Task',
+        'process_pull_start': 'Pulling task from heap.',
+        'process_pull_name': 'Task name',
+        'process_pull_priority': 'Priority',
+        'process_pull_cnt': 'Counter',
+        'process_pull_void': 'Can not pull from an empty process queue. Skipped...',
+
+        # mp.py - check_child_processes(~)
+        'check_child_processes_term_err': 'A child process was terminated unexpectedly. Process references will be restored.',
+        'check_child_processes_aff': 'Affected process is',
+        'check_child_processes_rogues': 'At least one process still running, although considered terminated.',
+        'check_child_processes_norec': 'Recovery is not possible, trying to terminate.',
+        'check_child_processes_joined': 'All child processes are joined.',
+
+        # mp.py - join_or_task(~)
+        'join_or_task_start': 'Waiting for processes to finish or task to run.',
+
+        # mp.py - stop_while_interrupt(~)
+        'stop_while_interrupt': 'Global interrupt. Process is waiting for release.',
 
         # mp.py - run_parallel(~)
         'run_parallel_task': 'Task',
         'run_parallel_task_sys_id': 'Task ID',
         'run_parallel_start': 'Parallel process starting. ID',
-        'run_parallel_exit': 'Parallel process created. ID',
+        'run_parallel_exit': 'Parallel process running. ID',
         'run_parallel_call_err': 'Task provided is not callable.',
         'run_parallel_id_abort': 'Could not get process ID. Task was enqueued again.',
         'run_parallel_issues': 'Issues encountered:',
         'run_parallel_id_err_avl': 'Process ID conflict. Possible concurrent process creation. Process creation skipped.',
         'run_parallel_id_err_busy': 'Process ID conflict. ID# seemed available, is busy. Process creation skipped.',
-        'run_parallel_id_err_dict': 'Process ID conflict. A process may have terminated dirty. Process creation skipped.',
         'run_parallel_requeue_err': 'Task could not be enqueued again. Task ID still in queue. Data loss possible.',
         'run_parallel_proc_busy': 'Processes busy',
         'run_parallel_proc_avl': 'Processes available',
         'run_parallel_task_corr' : "The 'task' provided is a tuple. Autocorrected to list.",
-        'run_parallel_start_w_arg': 'Starting process control with arguments',
-        'run_parallel_search_p_id': 'Searching for available process ID.',
+        'run_parallel_start_prep': 'Start preparing task for spawning process.',
         'run_parallel_search_iter_end': 'Process ID determined.',
         'run_parallel_clean_up_remnants': 'Process remnant found.Cleaning up after supposed process crash.',
 

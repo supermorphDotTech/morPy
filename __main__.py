@@ -38,8 +38,6 @@ from lib.exceptions import MorPyException
 
 import sys
 
-init_check: bool = False
-
 def initialize_morpy():
     r"""
     Initialize the morPy framework.
@@ -70,8 +68,8 @@ def finalize_morpy(morpy_trace, app_dict):
     Finalize morPy components.
     """
 
-    import lib.exit as exit
-    exit._exit(morpy_trace, app_dict)
+    from lib.exit import _exit
+    _exit(morpy_trace, app_dict)
 
     # Quit the program
     sys.exit()

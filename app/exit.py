@@ -7,13 +7,14 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
-from lib.mp import join_processes_for_transition
+from lib.mp import join_or_task
 from lib.decorators import metrics, log
 
 import sys
+from UltraDict import UltraDict
 
 @metrics
-def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
+def app_exit(morpy_trace: dict, app_dict: dict | UltraDict, app_run_return: dict) -> dict:
     r"""
     This function runs the exit workflow of the app.
 
@@ -48,7 +49,6 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
     check: bool = False
 
     try:
-        # TODO: first statement .join()
         # TODO: MY CODE
         check: bool = True
 
@@ -57,9 +57,13 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
 
     finally:
         # Join all spawned processes before transitioning into the next phase.
-        join_processes_for_transition(morpy_trace, app_dict, child_pid=morpy_trace["process_id"])
+        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
         # Signal morPy orchestrator of app termination
-        app_dict["global"]["morpy"]["exit"] = True
+        if isinstance(app_dict["morpy"], UltraDict):
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["exit"] = True
+        else:
+            app_dict["morpy"]["exit"] = True
 
         return{
             'morpy_trace' : morpy_trace,

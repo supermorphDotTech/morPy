@@ -8,7 +8,7 @@ Descr.:     Module of generally useful functions.
 
 import lib.fct as morpy_fct
 import lib.mp as mp
-from lib.decorators import metrics, log, log_no_q
+from lib.decorators import metrics, log
 
 import sys
 import chardet
@@ -22,8 +22,8 @@ from heapq import heappush, heappop
 class PriorityQueue:
     r"""
     This class delivers a priority queue solution. Any task may be enqueued.
-    When dequeuing, the highest priority task (lowest number) is dequeued
-    first. In case there is more than one, the oldest is dequeued.
+    When dequeuing, the highest priority task (lowest number) is pulled
+    first. In case there is more than one, the oldest is pulled.
 
     :param morpy_trace: Operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -40,7 +40,7 @@ class PriorityQueue:
                 smaller zero is reserved for the morPy Core.
             :param is_process: If True, task is run in a new process (not by morPy orchestrator)
 
-        .dequeue(morpy_trace: dict, app_dict: dict)
+        .pull(morpy_trace: dict, app_dict: dict)
             Removes and returns the highest priority task from the priority queue.
 
             :return: dict
@@ -48,8 +48,8 @@ class PriorityQueue:
                 counter: Number of the task when enqueued
                 task_id : Continuously incremented task ID (counter).
                 task_sys_id : ID of the task determined by Python core
-                task: The dequeued task list
-                task_callable: The dequeued task callable
+                task: The pulled task list
+                task_callable: The pulled task callable
                 is_process: If True, task is run in a new process (not by morPy orchestrator)
 
     :example:
@@ -59,11 +59,11 @@ class PriorityQueue:
         # Add a task to the queue
         queue.enqueue(morpy_trace, app_dict, priority=25, task=partial(task, morpy_trace, app_dict))
         # Fetch a task and run it
-        task = queue.dequeue(morpy_trace, app_dict)['task']
+        task = queue.pull(morpy_trace, app_dict)['task']
         task()
     """
 
-    def __init__(self, morpy_trace: dict, app_dict: dict, name: str=None, is_manager: bool=False) -> None:
+    def __init__(self, morpy_trace: dict, app_dict: dict, name: str=None) -> None:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
@@ -83,28 +83,25 @@ class PriorityQueue:
 
         try:
             # Use _init() for initialization to apply @metrics
-            self._init(morpy_trace, app_dict, name, is_manager=is_manager)
+            self._init(morpy_trace, app_dict, name)
 
         except Exception as e:
             from lib.exceptions import MorPyException
 
-            no_q = True if self.is_manager else False
             err_msg = f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
             raise MorPyException(
                 morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
-                message=err_msg, no_q=no_q
+                message=err_msg
             )
 
     @metrics
-    def _init(self, morpy_trace: dict, app_dict: dict, name: str, is_manager: bool=False) -> dict:
+    def _init(self, morpy_trace: dict, app_dict: dict, name: str) -> dict:
         r"""
         Helper method for initialization to ensure @metrics decorator functionality.
 
         :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         :param name: Name or description of the instance
-        :param is_manager: If True, priority queue is worked on as a manger. Intended
-            for morPy orchestrator only.
 
         :return: dict
             morpy_trace: Operation credentials and tracing
@@ -119,38 +116,24 @@ class PriorityQueue:
 
         try:
             self.name = name if name else 'queue'
-            self.is_manager = is_manager
             self.heap = []
             self.counter = 0 # Task counter. Starts at 0, increments by 1
             self.task_lookup = set() # Set for quick task existence check
 
-            # Initialize in single core mode. Orchestrator is initialized afterward.
-            # In single-core mode, skip queue.
-            self._single_core = True
-
-            # Set up the global task counter (serves also as the task ID)
-            app_dict["proc"]["morpy"]["tasks_created"] = 0
-
             # Priority queue initialized.
-            log_msg = (
+            log(morpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_init_done"]}\n'
                     f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}')
-            
-            if self.is_manager:
-                log_no_q(morpy_trace, app_dict, "debug", log_msg)
-            else:
-                log(morpy_trace, app_dict, "debug", log_msg)
 
             check: bool = True
 
         except Exception as e:
             from lib.exceptions import MorPyException
 
-            no_q = True if self.is_manager else False
             err_msg = f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
             raise MorPyException(
                 morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
-                message=err_msg, no_q=no_q
+                message=err_msg
             )
 
         return {
@@ -159,49 +142,7 @@ class PriorityQueue:
         }
 
     @metrics
-    def _init_mp(self, morpy_trace: dict, app_dict: dict) -> dict:
-        r"""
-        Helper method for initialization to ensure @metrics decorator functionality. Multiprocessing
-        component/activation.
-
-        :param morpy_trace: Operation credentials and tracing information
-        :param app_dict: morPy global dictionary containing app configurations
-
-        :return: dict
-            morpy_trace: Operation credentials and tracing
-            check: Indicates whether initialization completed without errors
-        """
-
-        module: str = 'lib.common'
-        operation: str = 'PriorityQueue._init_mp(~)'
-        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
-
-        try:
-            # In single-core mode, skip queue
-            self._single_core = False if app_dict["proc"]["morpy"]["cl_orchestrator"].processes_max > 1 else True
-
-            check: bool = True
-
-        except Exception as e:
-            from lib.exceptions import MorPyException
-
-            no_q = True if self.is_manager else False
-            err_msg = f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
-            raise MorPyException(
-                morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
-                message=err_msg, no_q=no_q
-            )
-
-        return {
-            'morpy_trace': morpy_trace,
-            'check': check
-        }
-
-    @metrics
-    def enqueue(self, morpy_trace: dict, app_dict: dict, priority: int=100,
-                task: tuple=None, autocorrect: bool=True, is_process: bool=True) -> dict:
+    def enqueue(self, morpy_trace: dict, app_dict: dict, priority: int=100, task: tuple=None) -> dict:
         r"""
         Adds a task to the priority queue.
 
@@ -209,9 +150,6 @@ class PriorityQueue:
         :param app_dict: morPy global dictionary containing app configurations
         :param priority: Integer representing task priority (lower is higher priority)
         :param task: Tuple of a callable, *args and **kwargs (func, *args, **kwargs)
-        :param autocorrect: If False, priority can be smaller than zero. Priority
-            smaller zero is reserved for the morPy Core.
-        :param is_process: If True, task is run in a new process (not by morPy orchestrator)
 
         :return: dict
             morpy_trace: Operation credentials and tracing
@@ -232,91 +170,45 @@ class PriorityQueue:
 
         try:
             if task:
-                # Omit queuing, if single core mode
-                if self._single_core:
-                    func = task[0]
-                    args = task[1:]
-                    retval = func(*args)
+                # Pushing task to priority queue.
+                log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_start"]} {self.name}\n'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority}')
+
+                # Increment task counter
+                self.counter += 1
+
+                task_sys_id = id(task)
+
+                # Check, if ID already in queue
+                if task_sys_id in self.task_lookup:
+                    # Task is already enqueued. Referencing in queue.
+                    log(morpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_task_duplicate"]}\n'
+                            f'Task system ID: {task_sys_id}')
                 else:
-                    # Check and autocorrect process priority
-                    if priority < 0 and autocorrect:
-                        # Invalid argument given to process queue. Autocorrected.
-                        log_msg = (
-                            lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_prio_corr"]}\n'
-                                    f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority} to 0'
-                        )
-                        if self.is_manager:
-                            log_no_q(morpy_trace, app_dict, "debug", log_msg)
-                        else:
-                            log(morpy_trace, app_dict, "debug", log_msg)
+                    self.task_lookup.add(task_sys_id)
 
-                        priority = 0
+                # Push task to queue
+                task_qed = (priority, self.counter, task_sys_id, task)
+                heappush(self.heap, task_qed)
 
-                    # Pushing task to priority queue.
-                        log_msg = (
-                            lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_start"]} {self.name}\n'
-                                    f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority}'
-                        )
-                        if self.is_manager:
-                            log_no_q(morpy_trace, app_dict, "debug", log_msg)
-                        else:
-                            log(morpy_trace, app_dict, "debug", log_msg)
-
-                    # Increment task counter
-                    self.counter += 1
-
-                    # Check for incremented task ID
-                    new_id = app_dict["proc"]["morpy"]["tasks_created"] + 1
-
-                    # Check continuously counted task ID
-                    if self.counter == new_id:
-                        task_sys_id = id(task)
-
-                        # Check, if ID already in queue
-                        if task_sys_id in self.task_lookup:
-                            # Task is already enqueued. Referencing in queue.
-                            log_msg = (
-                                lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_task_duplicate"]}\n'
-                                        f'Task system ID: {task_sys_id}'
-                            )
-                            if self.is_manager:
-                                log_no_q(morpy_trace, app_dict, "debug", log_msg)
-                            else:
-                                log(morpy_trace, app_dict, "debug", log_msg)
-
-                        # Push task to queue
-                        task_qed = (priority, self.counter, task_sys_id, task, is_process)
-                        heappush(self.heap, task_qed)
-                        self.task_lookup.add(task_sys_id)
-
-                        # Updating global tasks created last in case an error occurs
-                        app_dict["proc"]["morpy"]["tasks_created"] += 1
-                        morpy_trace["task_id"] = app_dict["proc"]["morpy"]["tasks_created"]
-
-                    else:
-                        # Task not enqueued. Task ID mismatch or conflict.
-                        raise RuntimeError(f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_id_conflict"]}\nID: {self.counter}<>{morpy_trace["task_id"]}')
-
-                    check: bool = True
+                check: bool = True
             else:
                 # Task can not be None. Skipping enqueue.
-                log_msg = lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_none"]}'
-                if self.is_manager:
-                    log_no_q(morpy_trace, app_dict, "debug", log_msg)
-                else:
-                    log(morpy_trace, app_dict, "debug", log_msg)
+                log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_none"]}')
 
         except Exception as e:
             from lib.exceptions import MorPyException
 
-            no_q = True if self.is_manager else False
             err_msg = (
                 f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}\n'
                 f'{app_dict["loc"]["morpy"]["PriorityQueue_enqueue_priority"]}: {priority}'
             )
             raise MorPyException(
                 morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
-                message=err_msg, no_q=no_q
+                message=err_msg
             )
 
         return {
@@ -325,7 +217,7 @@ class PriorityQueue:
         }
 
     @metrics
-    def dequeue(self, morpy_trace: dict, app_dict: dict) -> dict:
+    def pull(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Removes and returns the highest priority task from the priority queue.
 
@@ -334,97 +226,72 @@ class PriorityQueue:
 
         :return: dict
             morpy_trace: Operation credentials and tracing
-            check: Indicates if the task was dequeued successfully
+            check: Indicates if the task was pulled successfully
             priority: Integer representing task priority (lower is higher priority)
             counter: Number of the task when enqueued
             task_id : Continuously incremented task ID (counter).
             task_sys_id : ID of the task determined by Python core
-            task: The dequeued task list
-            task_callable: The dequeued task callable
-            is_process: If True, task is run in a new process (not by morPy orchestrator)
+            task: The pulled task list
+            task_callable: The pulled task callable
 
         :example:
             from functools import partial
             queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
-            task = queue.dequeue(morpy_trace, app_dict)['task']
+            task = queue.pull(morpy_trace, app_dict)['task']
             task()
         """
 
-        module: str = 'mt'
-        operation: str = 'PriorityQueue.dequeue(~)'
-        morpy_trace_dequeue = morpy_fct.tracing(module, operation, morpy_trace)
+        module: str = 'lib.common'
+        operation: str = 'PriorityQueue.pull(~)'
+        morpy_trace_pull = morpy_fct.tracing(module, operation, morpy_trace)
 
         check: bool = False
         priority = None
         counter = None
         task_sys_id = None
         task = None
-        is_process = None
 
         try:
             # Global interrupt - wait for error handling
-            while app_dict["global"]["morpy"].get("interrupt", False):
+            while app_dict["morpy"].get("interrupt", False):
                 pass
 
             if len(self.heap) > 0:
                 task_dqed = heappop(self.heap)
-                priority, counter, task_sys_id, task, is_process = task_dqed
+                priority, counter, task_sys_id, task = task_dqed
 
                 # Pulling task from NAME priority: INT counter: INT
-                log_msg = (
-                    lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_start"]} {self.name}.\n'
-                            f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_priority"]}: {priority}\n'
-                            f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_cnt"]}: {counter}'
-                )
-                if self.is_manager:
-                    log_no_q(morpy_trace_dequeue, app_dict, "debug", log_msg, verbose=True)
-                else:
-                    log(morpy_trace_dequeue, app_dict, "debug", log_msg, verbose=True)
+                log(morpy_trace_pull, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_pull_start"]} {self.name}.\n'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_pull_priority"]}: {priority}\n'
+                        f'{app_dict["loc"]["morpy"]["PriorityQueue_pull_cnt"]}: {counter}',
+                        verbose = True)
 
                 check: bool = True
 
             else:
-                # Can not dequeue from an empty priority queue. Skipped...
-                log_msg = lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_dequeue_void"]}'
-                if self.is_manager:
-                    log_no_q(morpy_trace_dequeue, app_dict, "debug", log_msg)
-                else:
-                    log(morpy_trace_dequeue, app_dict, "debug", log_msg)
+                # Can not pull from an empty priority queue. Skipped...
+                log(morpy_trace_pull, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["PriorityQueue_pull_void"]}')
 
         except Exception as e:
             from lib.exceptions import MorPyException
-            
-            no_q = True if self.is_manager else False
+
             err_msg = f'{app_dict["loc"]["morpy"]["PriorityQueue_name"]}: {self.name}'
             raise MorPyException(
                 morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error",
-                message=err_msg, no_q=no_q
+                message=err_msg
             )
 
         return {
-            'morpy_trace': morpy_trace_dequeue,
+            'morpy_trace': morpy_trace_pull,
             'check': check,
             'priority' : priority,
             'counter' : counter,
             'task_id' : morpy_trace["task_id"],
             'task_sys_id' : task_sys_id,
-            'task': list(task),
-            'is_process': is_process
+            'task': list(task)
         }
-
-    def task_exists(self, task):
-        """
-        Check if a task already exists in the queue.
-
-        :param task: A callable (function or lambda) representing the task
-
-        :return: bool - True, if task ID is found to already exist in queue
-
-        :example:
-            task_exists = self.task_exists(task)
-        """
-
-        return id(task) in self.task_lookup
 
 class ProgressTracker:
     r"""
@@ -1840,7 +1707,7 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection:
                 if usr_response == "y":
                     usr_input = input(f'{message}\n')
                 elif usr_response == "q":
-                    app_dict["proc"]["morpy"]["cl_orchestrator"]._terminate = True
+                    app_dict["morpy"]["orchestrator"]["terminate"] = True
                     break
                 else:
                     pass

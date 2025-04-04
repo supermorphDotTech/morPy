@@ -3,26 +3,13 @@ morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
-Descr.:     This module yields all basic parameters of the morPy fork. The
-            parameters are meant to be tempered with.
-
-TODO provide as json
+Descr.:     Initialization parameters for the morPy framework.
 """
 
 def settings(start_time=None):
     r"""
-    This function defines the parameters morPy will be run with. These
-    parameters are meant to be tinkered with and added on to. Have in mind,
-    that the return dictionary eventually needs to be altered. The
-    morPy framework is preconfigured to support the change of these parameters
-    during runtime, although that may be done within app_dict directly, rather
-    than initializing the parameters again. There are exceptions though, which
-    are pointed out with ">REINITIALIZE<", as an indicator, that the JSON file
-    containing all parameters needs to be updated before a change can have an
-    effect. To do so, simply execute param_to_json(~) after altering the
-    parameters in app_dict like so:
-        app_dict["conf"]['my_param'] = 'my_value'
-        param_to_json(morpy_trace, app_dict)
+    Initialization parameters for the morPy framework. These settings are
+    not meant to be tempered with during runtime.
 
     :param start_time: Datetime stamp of runtime start. Defaults to None.
 
@@ -45,8 +32,8 @@ def settings(start_time=None):
     """
 
     # Defines, whether elevated privileges are required.
-    # Called by: init.init(~)
-    mpy_priv_required: bool = False
+    # Called by: 
+    run_elevated: bool = False
 
     r"""
 >>> LOGGING & DEBUGGING <<<
@@ -95,7 +82,7 @@ def settings(start_time=None):
     # These log levels may still be printed to console.
     # Called by: throughout msg operations
     # Default: ["debug"]
-    log_lvl_nolog: list = ["debug"]
+    log_lvl_nolog: list = []
 
     # List object to exclude certain log levels from being printed to ui or console.
     # These log levels may still be logged to DB or text file.
@@ -130,32 +117,32 @@ def settings(start_time=None):
 >>> MEMORY <<<
     TODO implement memory management with UltraDict
     
-    These settings only take in effect in Multiprocessed/-threaded apps.
-    With this setting memory can be claimed at initialization to prevent later memory
-    buffer enhancements. In case of performance issues, memory may be increased.
+    These settings only take effect in a multiprocessing context. With this setting
+    memory can be claimed at initialization to prevent later memory buffer increases.
+    In case of performance issues, memory may be increased.
     """
 
-    # Select the way, how the available RAM is determined. If absolute, an integer
-    # value will reflect the Megabytes of maximum memory.
-    # Default: False or None
-    memory_count_absolute: bool = False
-
-    # Absolute amount of RAM to be utilized. This value will by default not exceed
-    # the memory available on the system. If None, all RAM can be utilized.
-    # Default: None
-    # >REINITIALIZE<
-    memory_absolute: int = None
-
-    # Set the relative maximum amount of RAM to be utilized, where 1 resembles 100%
-    # utilization and 0 resembles 0% utilization. If None, all RAM can be utilized.
-    # Default: None or 1.0
-    # >REINITIALIZE<
-    memory_relative: float = None
-
-    # Set the Minimum amount of memory in MB, that app_dict has to have reserved.
-    # Default: None or 200
-    # >REINITIALIZE<
-    memory_min_MB: int = None
+    # # Select the way, how the available RAM is determined. If absolute, an integer
+    # # value will reflect the Megabytes of maximum memory.
+    # # Default: False or None
+    # memory_count_absolute: bool = False
+    # 
+    # # Absolute amount of RAM to be utilized. This value will by default not exceed
+    # # the memory available on the system. If None, all RAM can be utilized.
+    # # Default: None
+    # # >REINITIALIZE<
+    # memory_absolute: int = None
+    # 
+    # # Set the relative maximum amount of RAM to be utilized, where 1 resembles 100%
+    # # utilization and 0 resembles 0% utilization. If None, all RAM can be utilized.
+    # # Default: None or 1.0
+    # # >REINITIALIZE<
+    # memory_relative: float = None
+    # 
+    # # Set the Minimum amount of memory in MB, that app_dict has to have reserved.
+    # # Default: None or 200
+    # # >REINITIALIZE<
+    # memory_min_MB: int = None
 
     r"""
 >>> MULTI-PROCESSING <<<
@@ -181,35 +168,6 @@ def settings(start_time=None):
     # does not reflect an integer cpu count. Allowed is "round" (default), "floor" or
     # "ceil".
     processes_relative_math: str = "floor"
-
-    r"""
->>> MULTITHREADING <<<
-    """
-
-    # Select how the maximum threads will be determined. If true, you must set
-    # an integer value greater than 1 for mt_max_threads_cnt_abs. Ultimately,
-    # if the relative determination is chosen, an absolute maximum thread count
-    # will be determined during initialization and mt_max_threads will
-    # always be addressed after initialization.
-    mt_max_threads_set_abs: bool = True
-
-    # Set the absolute maximum amount of threads which shall be utilized. This needs
-    # mt_max_threads_set_abs = True in order to have any effect. Have in mind, that
-    # your app still needs to utilize these threads by keeping enough tasks in
-    # the priority queue.
-    mt_max_threads_cnt_abs: int = 1
-
-    # Set the relative maximum amount of threads which shall be utilized, where
-    # 1 resembles 100% utilization and 0 resembles 0% utilization. This needs
-    # mt_max_threads_set_abs = False in order to have any effect. Have in mind, that
-    # your app still needs to utilize these threads by keeping enough tasks in
-    # the priority queue.
-    mt_max_threads_cnt_rel: float = 1.0
-
-    # If the relative determination of maximum threads is enabled, it is necessary
-    # to set whether the maximum thread count should be rounded up or down, since
-    # not in every case the result will be an integer value.
-    mt_max_threads_rel_floor: bool = False
 
     r"""
 >>> PATHS <<<
@@ -251,7 +209,7 @@ def settings(start_time=None):
     return{
         'language' : language,
         'localization' : f'loc.morPy_{language}',
-        'priv_required' : mpy_priv_required,
+        'run_elevated' : run_elevated,
         'log_enable' : log_enable,
         'ref_create' : ref_create,
         'log_db_enable' : log_db_enable,
@@ -265,18 +223,14 @@ def settings(start_time=None):
         'log_lvl_interrupts' : log_lvl_interrupts,
         'metrics_enable' : metrics_enable,
         'metrics_perfmode' : metrics_perfmode,
-        'memory_count_absolute' : memory_count_absolute,
-        'memory_absolute' : memory_absolute,
-        'memory_relative' : memory_relative,
-        'memory_min_MB' : memory_min_MB,
+        # 'memory_count_absolute' : memory_count_absolute,
+        # 'memory_absolute' : memory_absolute,
+        # 'memory_relative' : memory_relative,
+        # 'memory_min_MB' : memory_min_MB,
         'processes_count_absolute' : processes_count_absolute,
         'processes_absolute' : processes_absolute,
         'processes_relative' : processes_relative,
         'processes_relative_math' : processes_relative_math,
-        'mt_max_threads_set_abs' : mt_max_threads_set_abs,
-        'mt_max_threads_cnt_abs' : mt_max_threads_cnt_abs,
-        'mt_max_threads_cnt_rel' : mt_max_threads_cnt_rel,
-        'mt_max_threads_rel_floor' : mt_max_threads_rel_floor,
         'main_path' : main_path,
         'log_path' : log_path,
         'log_db_path' : log_db_path,

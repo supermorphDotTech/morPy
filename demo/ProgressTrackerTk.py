@@ -30,6 +30,8 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
         import app.demo_ProgressTrackerTk as demo_ProgressTrackerTk
         demo_ProgressTrackerTk.run(morpy_trace, app_dict)
+
+    TODO localization
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -68,10 +70,8 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         check = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return {
         'morpy_trace': morpy_trace,
@@ -97,6 +97,8 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: 
 
     :example:
         arbitrary_task(morpy_trace, app_dict)
+
+    TODO localization
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -136,10 +138,8 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: 
         lambda: f'Parallel task executed.')
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno}\n'
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,

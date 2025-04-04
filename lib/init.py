@@ -9,19 +9,19 @@ Descr.:     This module holds all functions used for initialization of the
 
 import lib.fct as morpy_fct
 import lib.conf as conf
-
-from lib.common import PriorityQueue
 from lib.common import textfile_write
-from lib.decorators import log_no_q
-from lib.mp import cl_orchestrator
+from lib.decorators import log
+from lib.mp import MorPyOrchestrator
 
+import importlib
 import sys
 import os
-import importlib
+import os.path
+from UltraDict import UltraDict
 
 def init_cred() -> dict:
     r"""
-    This function initializes the operation credentials and tracing.
+    Initializes the operation credentials and tracing.
 
     :param:
         -
@@ -47,9 +47,9 @@ def init_cred() -> dict:
 
     return morpy_trace
 
-def init(morpy_trace) -> (dict, cl_orchestrator):
+def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
     r"""
-    This function initializes the app dictionary and yields app
+    Initializes the app dictionary and yields app
     specific information to be handed down through called functions.
 
     :param morpy_trace: operation credentials and tracing
@@ -70,16 +70,15 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
         # Build the app_dict
         init_dict = build_app_dict(morpy_trace_init, create=True)
 
-        init_dict["proc"]["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
-        init_dict["proc"]["morpy"].update({"proc_available" : set()})
-        init_dict["proc"]["morpy"].update({"proc_busy" : {morpy_trace_init["process_id"],}})
-        init_dict["proc"]["morpy"]["proc_joined"] = True
-        init_dict["proc"]["morpy"].update({"proc_master" : morpy_trace['process_id']})
-        init_dict["proc"]["morpy"].update({"proc_refs" : {}})
+        init_dict["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
+        init_dict["morpy"].update({"proc_available" : set()})
+        init_dict["morpy"].update({"proc_busy" : {morpy_trace_init["process_id"],}})
+        init_dict["morpy"]["proc_joined"] = True
+        init_dict["morpy"].update({"proc_master" : morpy_trace['process_id']})
 
         # Initialize the global interrupt flag and exit flag
-        init_dict["global"]["morpy"]["interrupt"] = False
-        init_dict["global"]["morpy"]["exit"] = False
+        init_dict["morpy"]["interrupt"] = False
+        init_dict["morpy"]["exit"] = False
 
         # Set an initialization complete flag
         init_dict["run"]["init_complete"] = False
@@ -116,9 +115,9 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
                 init_dict["conf"]["msg_print"] and
                  not (log_level in init_dict["conf"]["log_lvl_noprint"]))
             ):
-                init_dict["global"]["morpy"]["logs_generate"].update({log_level : True})
+                init_dict["morpy"]["logs_generate"].update({log_level : True})
             else:
-                init_dict["global"]["morpy"]["logs_generate"].update({log_level : False})
+                init_dict["morpy"]["logs_generate"].update({log_level : False})
 
         # Retrieve system information
         sysinfo = morpy_fct.sysinfo()
@@ -149,25 +148,20 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
         ):
             morpy_log_header(morpy_trace_init, init_dict)
 
-        # Logging may start after this
-        init_dict["proc"]["morpy"]["process_q"] = PriorityQueue(
-            morpy_trace_init, init_dict, name="morPy priority queue", is_manager=True
-        )
-
         # Initialize the morPy debug-specific localization
         init_dict["loc"]["morpy_dgb"].update(getattr(morpy_loc, 'loc_morpy_dbg')())
-        log_no_q(morpy_trace_init, init_dict, "init",
+        log(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_dbg_loaded"]}')
 
         # Initialize the app-specific localization
         app_loc = importlib.import_module(f'loc.app_{init_dict["conf"]["language"]}')
         init_dict["loc"]["app"].update(getattr(app_loc, 'loc_app')())
         init_dict["loc"]["app_dbg"].update(getattr(app_loc, 'loc_app_dbg')())
-        log_no_q(morpy_trace_init, init_dict, "init",
+        log(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_app_loaded"]}')
 
         # Localization initialized.
-        log_no_q(morpy_trace_init, init_dict, "init",
+        log(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_finished"]}\n'
                 f'{init_dict["loc"]["morpy"]["init_loc_lang"]}: {init_dict["conf"]["language"]}')
 
@@ -182,10 +176,7 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
             print(init_dict_str)
 
         # Initialize the morPy orchestrator
-        init_dict["proc"]["morpy"]["cl_orchestrator"] = cl_orchestrator(morpy_trace_init, init_dict)
-
-        # Activate priority queue
-        init_dict["proc"]["morpy"]["process_q"]._init_mp(morpy_trace_init, init_dict)
+        orchestrator = MorPyOrchestrator(morpy_trace_init, init_dict)
 
         # ############################################
         # END Single-threaded initialization
@@ -205,7 +196,7 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
         # Record the duration of the initialization
         init_dict["run"]["init_rnt_delta"] = init_duration["rnt_delta"]
 
-        log_no_q(morpy_trace_init, init_dict, "init",
+        log(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_finished"]}\n'
             f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["run"]["init_rnt_delta"]}')
 
@@ -214,12 +205,12 @@ def init(morpy_trace) -> (dict, cl_orchestrator):
             morpy_ref(morpy_trace_init, init_dict, init_dict_str)
 
         # Exit initialization
-        retval = init_dict, init_dict["proc"]["morpy"]["cl_orchestrator"]
+        retval = init_dict, orchestrator
         return retval
 
     except Exception as e:
-        morpy_fct.handle_exception_init(e)
-        raise
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
     r"""
@@ -245,175 +236,146 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
     gil = has_gil(morpy_trace)
     init_dict = None
     init_mem = 1_000_000 # TODO get memory from config
+    min_mem = 1_000
 
     try:
         # FIXME
         # if gil:
         if True:
-            from UltraDict import UltraDict
-            init_dict = UltraDict(
+            from lib.mp import shared_dict
+
+            def mem_evaluation(mem, min_mem) -> int:
+                mem = mem if mem > min_mem else min_mem
+                return mem
+
+            mem = mem_evaluation(init_mem, min_mem)
+            init_dict = shared_dict(
                 name="app_dict",
                 create=create,
-                shared_lock=True,
-                buffer_size=init_mem,
-                full_dump_size=init_mem,
-                auto_unlink=False
+                size=mem,
+                recurse=False
             )
 
-            init_dict["conf"] = UltraDict(
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["conf"] = shared_dict(
                 name="app_dict[conf]",
                 create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 100,
-                full_dump_size=init_mem // 100,
-                auto_unlink=False
+                size=mem,
+                recurse=False
             )
 
-            init_dict["sys"] = UltraDict(
-                name="app_dict[sys]",
+            mem = mem_evaluation(init_mem // 10, min_mem)
+            init_dict["morpy"] = shared_dict(
+                name="app_dict[morpy]",
                 create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 10,
-                full_dump_size=init_mem // 10,
-                auto_unlink=False
+                size=mem,
+                recurse=False
             )
 
-            init_dict["run"] = UltraDict(
-                name="app_dict[run]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 10,
-                full_dump_size=init_mem // 10,
-                auto_unlink=False
-            )
-
-            init_dict["global"] = UltraDict(
-                name="app_dict[global]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem,
-                full_dump_size=init_mem,
-                auto_unlink=False
-            )
-
-            init_dict["global"]["morpy"] = UltraDict(
-                name="app_dict[global][morPy]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 100,
-                full_dump_size=init_mem // 100,
-                auto_unlink=False
-            )
-
-            init_dict["global"]["app"] = UltraDict(
-                name="app_dict[global][app]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 10,
-                full_dump_size=init_mem // 10,
-                auto_unlink=False
-            )
-
-            init_dict["proc"] = UltraDict(
-                name="app_dict[proc]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 100,
-                full_dump_size=init_mem // 100,
-                auto_unlink=False
-            )
-
-            init_dict["proc"]["morpy"] = UltraDict(
-                name="app_dict[proc][morPy]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 100,
-                full_dump_size=init_mem // 100,
-                auto_unlink=False
-            )
-
-            init_dict["proc"]["app"] = UltraDict(
-                name="app_dict[proc][app]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 100,
-                full_dump_size=init_mem // 100,
-                auto_unlink=False
-            )
-
-            init_dict["loc"] = UltraDict(
-                name="app_dict[loc]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 1_000,
-                full_dump_size=init_mem // 1_000,
-                auto_unlink=False
-            )
-
-            init_dict["loc"]["morpy"] = UltraDict(
-                name="app_dict[loc][morPy]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem,
-                full_dump_size=init_mem,
-                auto_unlink=False
-            )
-
-            init_dict["loc"]["morpy_dgb"] = UltraDict(
-                name="app_dict[loc][mpy_dbg]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 100,
-                full_dump_size=init_mem // 100,
-                auto_unlink=False
-            )
-
-            init_dict["loc"]["app"] = UltraDict(
-                name="app_dict[loc][app]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem,
-                full_dump_size=init_mem,
-                auto_unlink=False
-            )
-
-            init_dict["loc"]["app_dbg"] = UltraDict(
-                name="app_dict[loc][app_dbg]",
-                create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 100,
-                full_dump_size=init_mem // 100,
-                auto_unlink=False
-            )
-
-            init_dict["global"]["morpy"]["logs_generate"] = UltraDict(
+            mem = mem_evaluation(init_mem // 1_000, min_mem)
+            init_dict["morpy"]["logs_generate"] = shared_dict(
                 name="app_dict[global][morPy][logs_generate]",
                 create=create,
-                shared_lock=True,
-                buffer_size=init_mem // 1_000,
-                full_dump_size=init_mem // 1_000,
-                auto_unlink=False
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["morpy"]["orchestrator"] = shared_dict(
+                name="app_dict[morpy][orchestrator]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["morpy"]["proc_refs"] = shared_dict(
+                name="app_dict[morpy][proc_refs]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 10, min_mem)
+            init_dict["morpy"]["proc_waiting"] = shared_dict(
+                name="app_dict[morpy][proc_waiting]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 10, min_mem)
+            init_dict["sys"] = shared_dict(
+                name="app_dict[sys]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 10, min_mem)
+            init_dict["run"] = shared_dict(
+                name="app_dict[run]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 1_000, min_mem)
+            init_dict["loc"] = shared_dict(
+                name="app_dict[loc]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem, min_mem)
+            init_dict["loc"]["morpy"] = shared_dict(
+                name="app_dict[loc][morPy]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["loc"]["morpy_dgb"] = shared_dict(
+                name="app_dict[loc][mpy_dbg]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem, min_mem)
+            init_dict["loc"]["app"] = shared_dict(
+                name="app_dict[loc][app]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["loc"]["app_dbg"] = shared_dict(
+                name="app_dict[loc][app_dbg]",
+                create=create,
+                size=mem,
+                recurse=False
             )
 
         # Without GIL, allow for true nesting
         else:
             init_dict = {}
+
             init_dict["conf"] = {}
+            init_dict["morpy"] = {}
+            init_dict["morpy"]["logs_generate"] = {}
+            init_dict["morpy"]["orchestrator"] = {}
+            init_dict["morpy"]["proc_refs"] = {}
             init_dict["sys"] = {}
             init_dict["run"] = {}
-            init_dict["global"] = {}
-            init_dict["global"]["morpy"] = {}
-            init_dict["global"]["app"] = {}
-            init_dict["proc"] = {}
-            init_dict["proc"]["morpy"] = {}
-            init_dict["proc"]["app"] = {}
             init_dict["loc"] = {}
             init_dict["loc"]["morpy"] = {}
             init_dict["loc"]["morpy_dgb"] = {}
             init_dict["loc"]["app"] = {}
             init_dict["loc"]["app_dbg"] = {}
-            init_dict["global"]["morpy"]["logs_generate"] = {}
-
 
         return init_dict
 
@@ -422,7 +384,7 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
         from lib.exceptions import MorPyException
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
-def morpy_log_header(morpy_trace: dict, init_dict: dict) -> None:
+def morpy_log_header(morpy_trace: dict, init_dict: dict | UltraDict) -> None:
     r"""
     This function writes the header for the logfile including app specific
     information.
@@ -463,7 +425,7 @@ def morpy_log_header(morpy_trace: dict, init_dict: dict) -> None:
     # Clean up
     del morpy_trace
 
-def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str) -> None:
+def morpy_ref(morpy_trace: dict, init_dict: dict | UltraDict, init_dict_str: str) -> None:
     r"""
     This function documents the initialized dictionary (reference). It is stored
     in the same path as __main__.py and serves development purposes.
@@ -496,13 +458,13 @@ def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str) -> None:
         init_dict_txt.close()
 
         # The init_dict was written to textfile.
-        log_no_q(morpy_trace, init_dict, "init",
+        log(morpy_trace, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["ref_created"]}\n'
                 f'{init_dict["loc"]["morpy"]["ref_path"]}: {morpy_ref_path}')
 
     except Exception as e:
         from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, None, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
 def has_gil(morpy_trace: dict) -> bool | None:
     r"""

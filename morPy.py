@@ -22,8 +22,8 @@ import sys
 def PriorityQueue(morpy_trace: dict, app_dict: dict, name: str=None):
     r"""
     This class delivers a priority queue solution. Any task may be enqueued.
-    When dequeuing, the highest priority task (lowest number) is dequeued
-    first. In case there is more than one, the oldest is dequeued.
+    When dequeuing, the highest priority task (lowest number) is pulled
+    first. In case there is more than one, the oldest is pulled.
 
     :param morpy_trace: Operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -40,7 +40,7 @@ def PriorityQueue(morpy_trace: dict, app_dict: dict, name: str=None):
                 smaller zero is reserved for the morPy Core.
             :param is_process: If True, task is run in a new process (not by morPy orchestrator)
 
-        .dequeue(morpy_trace: dict, app_dict: dict)
+        .pull(morpy_trace: dict, app_dict: dict)
             Removes and returns the highest priority task from the priority queue.
 
             :return: dict
@@ -48,8 +48,8 @@ def PriorityQueue(morpy_trace: dict, app_dict: dict, name: str=None):
                 counter: Number of the task when enqueued
                 task_id : Continuously incremented task ID (counter).
                 task_sys_id : ID of the task determined by Python core
-                task: The dequeued task list
-                task_callable: The dequeued task callable
+                task: The pulled task list
+                task_callable: The pulled task callable
                 is_process: If True, task is run in a new process (not by morPy orchestrator)
 
     :example:
@@ -59,7 +59,7 @@ def PriorityQueue(morpy_trace: dict, app_dict: dict, name: str=None):
         # Add a task to the queue
         queue.enqueue(morpy_trace, app_dict, priority=25, task=partial(task, morpy_trace, app_dict))
         # Fetch a task and run it
-        task = queue.dequeue(morpy_trace, app_dict)['task']
+        task = queue.pull(morpy_trace, app_dict)['task']
         task()
     """
 
@@ -1138,18 +1138,21 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
 
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
-def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
+def process_q(morpy_trace: dict, app_dict: dict, task: list, priority: int=100, autocorrect: bool=True):
     r"""
     This function enqueues a task in the morPy multiprocessing queue. The task is a
     tuple, that demands the positional arguments (func, morpy_trace, app_dict, *args, **kwargs).
 
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
     :param task: Tuple of a callable, *args and **kwargs
     :param priority: Integer representing task priority (lower is higher priority)
     :param autocorrect: If False, priority can be smaller than zero. Priority
         smaller zero is reserved for the morPy Core. However, it is a devs choice
         to make.
 
-    :return: process_qed: If True, process was queued successfully. If False, an error occurred.
+    :return:
+        -
 
     :example:
         from morPy import process_q
@@ -1157,52 +1160,25 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
         def gimme_5(morpy_trace, app_dict, message):
             print(message)
             return message
-        a_number = (gimme_5, morpy_trace, app_dict, message) # Tuple of a callable, *args and **kwargs
-        enqueued = process_q(task=a_number, priority=20) #
+        a_number = [gimme_5, morpy_trace, app_dict, message] # List of a callable, *args and **kwargs
+        enqueued = process_q(morpy_trace, app_dict, task=a_number, priority=20) #
         if not enqueued:
-            print("No, thank you sir!")
+            print("No, thank you!")
     """
 
-    process_qed = False
-    morpy_trace: dict = None
-    app_dict = None
-
     try:
-        morpy_trace: dict = task[1]
-        app_dict = task[2]
-
-        try:
-            app_dict["proc"]["morpy"]["process_q"].enqueue(
-                morpy_trace, app_dict, priority=priority, task=task, autocorrect=autocorrect
-            )
-
-            process_qed = True
-
-        except Exception as e:
-            import lib.fct as morpy_fct
-
-            # Define operation credentials (see init.init_cred() for all dict keys)
-            module: str = 'morPy'
-            operation: str = 'process_q(~)'
-            morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+        from lib.mp import process_enqueue
+        process_enqueue(morpy_trace, app_dict, priority=priority, task=task, autocorrect=autocorrect)
 
     except Exception as e:
-        if app_dict:
-            raise ValueError(f'{app_dict["loc"]["morpy"]["ValueError"]}\n'
-                             f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno}\n'
-                             f'{type(e).__name__}: {e}'
-                             )
-        else:
-            raise ValueError('A function got an argument of correct type but improper value.\n'
-                             f'Line: {sys.exc_info()[-1].tb_lineno}\n'
-                             f'{type(e).__name__}: {e}\n'
-                             f'morpy_trace: {True if morpy_trace else False}\n'
-                             f'app_dict: False')
+        import lib.fct as morpy_fct
 
-    finally:
-        return process_qed
+        # Define operation credentials (see init.init_cred() for all dict keys)
+        module: str = 'morPy'
+        operation: str = 'process_q(~)'
+        morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 # def join_processes(morpy_trace: dict, app_dict: dict):
 #     r"""
@@ -1213,7 +1189,7 @@ def process_q(task: tuple, priority: int=100, autocorrect: bool=True):
 #
 #     :return: dict
 #         morpy_trace: Operation credentials and tracing
-#         check: Indicates if the task was dequeued successfully
+#         check: Indicates if the task was pulled successfully
 #
 #     :example:
 #         mp.join_processes(morpy_trace, app_dict)
@@ -1242,7 +1218,7 @@ def interrupt(morpy_trace: dict, app_dict: dict):
 
     :return: dict
         morpy_trace: Operation credentials and tracing
-        check: Indicates if the task was dequeued successfully
+        check: Indicates if the task was pulled successfully
 
     :example:
         mp.interrupt(morpy_trace, app_dict)
