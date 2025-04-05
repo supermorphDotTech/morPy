@@ -69,10 +69,10 @@ Feel free to comment, share and support this project!
 
 ### 1.1.1 Software Requirements [⇧](#toc) <a name="1.1.1"></a>
 
-| Dependency                                                                                                                                                                    | Requirement Description                                              |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| [![Python 3.10.11](https://img.shields.io/badge/Python-3.10.11+-blue.svg)](https://www.python.org/downloads/release/python-31011/)                                            | Oldest supported Python version. First implementation of match-case. |
-| [![Microsoft Visual C++ BuildTools](https://img.shields.io/badge/Microsoft-Visual%20C++%20BuildTools-orange.svg)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) | Build tools required for UltraDict pip install.                      |
+| Dependency                                                                                                                                                                    | Requirement Description                                      |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| [![Python 3.10.11](https://img.shields.io/badge/Python-3.10.11+-blue.svg)](https://www.python.org/downloads/release/python-31011/)                                            | Oldest supported Python version. Introduction of match-case. |
+| [![Microsoft Visual C++ BuildTools](https://img.shields.io/badge/Microsoft-Visual%20C++%20BuildTools-orange.svg)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) | Build tools required for UltraDict pip install.              |
 
 ### 1.1.2 Setup Guidance [⇧](#toc) <a name="1.1.2"></a>
 
@@ -202,29 +202,25 @@ pip install pillow
 
 #### 1.1.3.3 Copy Packages to Virtual Environment [⇧](#toc) <a name="1.1.3.3"></a>
 
-*Manual installation of* `tcl` *and* `tk` *in the virtual environment. This needed, as tcl does not install correctly, otherwise.*
+*Manual copy of* `tcl` *and* `tk` *from Python installation to the virtual environment. This is required, as tcl does not install correctly, otherwise.*
 
-1.  Navigate to the tcl installation folder and copy it to the virtual environment, i.e.:
+1.  Navigate to the tcl installation folder and copy it to the virtual environment. (*Change `Python312` to your Python version installed in the virtual environment!*)
 
-`\> copy tcl`
-
-```PowerShell
-$env:userprofile\AppData\Local\Programs\Python\Python313\tcl\tcl8.6
+Copy the following path into your Windows Explorer path bar and press ENTER.
+```
+%USERPROFILE%\AppData\Local\Programs\Python\Python312\tcl
 ```
 
-`\> copy tk`
-
-```PowerShell
-$env:userprofile\AppData\Local\Programs\Python\Python313\tcl\tk8.6
+Copy the following subdirectories.
+```
+.\tcl8.6
+.\tk8.6
 ```
 
-`\> paste to`
-
-```PowerShell
-$env:PythonProject\.venv-win\Lib\site-packages\Tcl
+Navigate to the virtual environment and paste the directories. Your may have to create a new folder `.\Tcl`. (*Change `PROJECT` to your Python project path!*)
 ```
-
-*Create the* `tcl` *subfolder if it does not exist.*
+PROJECT\.venv-win\Lib\site-packages\Tcl
+```
 
 # 2. Versioning - α.β.γλ [⇧](#toc) <a name="2."></a>
 

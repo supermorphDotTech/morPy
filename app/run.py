@@ -54,11 +54,11 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
 
         stages = 5
         for i in range(0, 50):
-            total_rep = 10 ** i
+            total_rep = 10 ** 6
             task = [arbitrary_task, morpy_trace, app_dict, {"stages" : stages, "total_rep" : total_rep}]
             process_q(morpy_trace, app_dict, task=task, priority=20)
             print(f'process queueing :: {i}')
-            # time.sleep(0.2)
+            time.sleep(0.2)
 
         check: bool = True
 
@@ -98,7 +98,7 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int = 0, total_rep
     from math import sqrt
 
     # morPy credentials (see init.init_cred() for all dict keys)
-    module = 'demo.ProgressTrackerTk'
+    module = 'app.run'
     operation = 'arbitrary_task(~)'
     morpy_trace = morPy.tracing(module, operation, morpy_trace)
 

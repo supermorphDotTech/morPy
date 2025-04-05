@@ -6,12 +6,10 @@ Author:     Bastian Neuwirth
 Descr.:     Initialization parameters for the morPy framework.
 """
 
-def settings(start_time=None):
+def settings():
     r"""
     Initialization parameters for the morPy framework. These settings are
     not meant to be tempered with during runtime.
-
-    :param start_time: Datetime stamp of runtime start. Defaults to None.
 
     :return: dict
         > See through the function for detailed descriptions of every morPy setting.
@@ -113,11 +111,11 @@ def settings(start_time=None):
 
     r"""
 >>> MEMORY <<<
-    TODO implement memory management with UltraDict
-    
     These settings only take effect in a multiprocessing context. With these settings
     memory can be claimed at initialization to prevent later memory buffer increases.
-    In case of performance issues, memory may be increased.
+    In case of performance issues or instabilities, memory may be increased.
+    
+    Memory initialized will scale with the amount of processes configured for scalability.
     """
 
     # Select the way, how the available RAM is determined. If absolute, an integer
@@ -160,7 +158,7 @@ def settings(start_time=None):
 
     # If the relative determination of maximum processes is used, it is necessary
     # to set how the maximum thread count should be rounded in case process_relative
-    # does not reflect an integer cpu count. Allowed is "round" (default), "floor" or
+    # does not reflect an integer cpu count. Allowed is "round", "floor" (default) or
     # "ceil".
     processes_relative_math: str = "floor"
 
@@ -180,7 +178,7 @@ def settings(start_time=None):
     log_db_path = pathlib.Path(os.path.join(f'{log_path}', 'log.db'))
 
     # Path to the logging textfile.
-    log_txt_path = os.path.join(f'{log_path}', f'{start_time}.log')
+    log_txt_path = os.path.join(f'{log_path}', "morPy.log")
 
     # Path to the data folder
     data_path = pathlib.Path(os.path.join(f'{main_path}', 'data'))
