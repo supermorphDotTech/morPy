@@ -19,6 +19,9 @@ import sys
 import time
 from heapq import heappush, heappop
 
+from lib.mp import is_udict
+
+
 @metrics
 def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbose: bool) -> None:
     r"""
@@ -45,8 +48,16 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
 
     try:
         # Wait for an interrupt to end
-        while app_dict["morpy"]["interrupt"] == True:
+        udict_true = is_udict(app_dict["morpy"])
+        if udict_true:
+            with app_dict["morpy"].lock:
+                interrupt = app_dict["morpy"]["interrupt"]
+        else:
+            interrupt = app_dict["morpy"]["interrupt"]
+
+        while interrupt:
             time.sleep(0.05)
+
 
         # Event handling (counting and formatting)
         log_event_dict = log_event_handler(app_dict, message, level)
@@ -106,9 +117,9 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
         del log_dict
         del morpy_trace
 
-    except:
+    except Exception as e:
         # Severe morPy logging error.
-        raise RuntimeError(f'{app_dict["loc"]["morpy"]["log_crit_fail"]}')
+        raise RuntimeError(f'{app_dict["loc"]["morpy"]["log_crit_fail"]}:\n{e}')
 
 def log_enqueue(app_dict: dict, priority: int=-100, task: list=None) -> None:
     r"""
@@ -131,6 +142,10 @@ def log_enqueue(app_dict: dict, priority: int=-100, task: list=None) -> None:
             task_lookup = morpy_dict["task_lookup"]
             heap = morpy_dict["heap"]
 
+            with app_dict["morpy"]["orchestrator"].lock:
+                counter = app_dict["morpy"]["orchestrator"]["task_counter"] + 1
+                app_dict["morpy"]["orchestrator"]["task_counter"] = counter
+
             # Substitute UltraDict references in task to avoid recursion issues.
             app_dict_substitute = (f'__morPy_shared_ref__::{app_dict.name}', app_dict.shared_lock, app_dict.auto_unlink,
                                    app_dict.recurse)
@@ -139,7 +154,7 @@ def log_enqueue(app_dict: dict, priority: int=-100, task: list=None) -> None:
             task_sys_id = id(task)
 
             # Push task to queue
-            task_qed = (priority, 'log', task_sys_id, task, False)
+            task_qed = (priority, counter, task_sys_id, task, False)
 
             heappush(heap, task_qed)
             app_dict["morpy"]["heap"] = heap # reassign to trigger synchronization
@@ -292,11 +307,11 @@ def log_interrupt(morpy_trace: dict, app_dict: dict) -> None:
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
 
-    :return
-        -
+    :return: -
 
-    TODO Change the way an interrupt is displayed. Only the interrupt-raising
-        process should request an input, other processes should just wait!
+    FIXME function is unstable.
+        > Input after prompt does not work
+        > Overwritten for the time being
     """
 
     import lib.fct as morpy_fct
@@ -304,15 +319,52 @@ def log_interrupt(morpy_trace: dict, app_dict: dict) -> None:
     morpy_trace: dict = morpy_fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
     morpy_trace["log_enable"] = False
 
+    udict_true = is_udict(app_dict["morpy"])
+
     # Set the global interrupt flag
-    app_dict["morpy"]["interrupt"] = True
+    if udict_true:
+        with app_dict["morpy"].lock:
+            app_dict["morpy"]["interrupt"] = True
+    else:
+        app_dict["morpy"]["interrupt"] = True
 
-    # INTERRUPT <<< Press Enter to continue...
-    msg_text = app_dict["loc"]["morpy"]["msg_print_intrpt"]
-    log_wait_for_input(morpy_trace, app_dict, msg_text)
+    # INTERRUPT <<< Type [y]es to quit or anything else to continue.
+    input_str_long: str = app_dict["loc"]["morpy"]["msg_print_intrpt_yes"]
+    input_str_short_1: str = input_str_long[0]
+    input_str_short_2: str = input_str_long[1:]
+    interrupt_prompt = (
+        f'{app_dict["loc"]["morpy"]["msg_print_intrpt_1"]} '
+        f'[{input_str_short_1}]{input_str_short_2} '
+        f'{app_dict["loc"]["morpy"]["msg_print_intrpt_2"]}'
+    )
 
-    # Reset the global interrupt flag
-    app_dict["morpy"]["interrupt"] = False
+    # Flush any buffered output so that no stray log messages are printed
+    sys.stdout.flush()
+    sys.stderr.flush()
+    time.sleep(0.1)
+
+    # Instead of using sys.stdout (which may be redirected), use sys.__stdout__
+    # to ensure that the prompt is printed cleanly.
+    sys.__stdout__.write(f"{interrupt_prompt}\n")
+    sys.__stdout__.flush()
+    # usr_input = sys.__stdin__.readline().strip()
+    # FIXME
+    usr_input = "y"
+
+    if usr_input.strip().lower() in {input_str_short_1.lower(), input_str_long.lower()}:
+        # Reset the global interrupt flag
+        if udict_true:
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["exit"] = True
+        else:
+            app_dict["morpy"]["exit"] = True
+    else:
+        # Reset the global interrupt flag
+        if udict_true:
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["interrupt"] = False
+        else:
+            app_dict["morpy"]["interrupt"] = False
 
 def log_msg_builder(app_dict: dict, log_dict: dict) -> str:
     r"""
@@ -799,35 +851,6 @@ def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
             'check' : check ,
             'row_id' : row_id
             }
-
-    except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
-
-def log_wait_for_input(morpy_trace: dict, app_dict: dict, msg_text: str) -> str | None:
-    r"""
-    This function makes the program wait until a user input was made.
-    The user input can be returned to the calling module.
-
-    :param morpy_trace: operation credentials and tracing
-    :param app_dict: morPy global dictionary
-    :param msg_text: The text to be displayed before user input
-
-    :return usr_input: Returns the input of the user
-    """
-
-    import lib.fct as morpy_fct
-    import sys
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module: str = 'msg'
-    operation: str = 'log_wait_for_input(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    try:
-        usr_input = input(f'{msg_text}\n')
-
-        return usr_input
 
     except Exception as e:
         from lib.exceptions import MorPyException

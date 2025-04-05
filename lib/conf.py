@@ -72,7 +72,7 @@ def settings(start_time=None):
     # for logging. If logging to db is activated, there is no need for this option, as all
     # relevant data is stored in the db. When logging to textfile, verbose messages are the only way
     # to get a detailed context of a log message.
-    msg_verbose: bool = False
+    msg_verbose: bool = True
 
     # Print the initialized app dictionary to console.
     # Called by: init.init(~)
@@ -105,44 +105,39 @@ def settings(start_time=None):
 
     # Turn on metrics for the code executed.
     # Data collected: function name, trace, runtime, start time, end time, process ID, task ID
-    # >REINITIALIZE<
     metrics_enable: bool = False
 
     # Perform metrics gathering in performance mode.
     # Data collected: function name, trace, runtime
-    # >REINITIALIZE<
     metrics_perfmode: bool = False
 
     r"""
 >>> MEMORY <<<
     TODO implement memory management with UltraDict
     
-    These settings only take effect in a multiprocessing context. With this setting
+    These settings only take effect in a multiprocessing context. With these settings
     memory can be claimed at initialization to prevent later memory buffer increases.
     In case of performance issues, memory may be increased.
     """
 
-    # # Select the way, how the available RAM is determined. If absolute, an integer
-    # # value will reflect the Megabytes of maximum memory.
-    # # Default: False or None
-    # memory_count_absolute: bool = False
-    # 
-    # # Absolute amount of RAM to be utilized. This value will by default not exceed
-    # # the memory available on the system. If None, all RAM can be utilized.
-    # # Default: None
-    # # >REINITIALIZE<
-    # memory_absolute: int = None
-    # 
-    # # Set the relative maximum amount of RAM to be utilized, where 1 resembles 100%
-    # # utilization and 0 resembles 0% utilization. If None, all RAM can be utilized.
-    # # Default: None or 1.0
-    # # >REINITIALIZE<
-    # memory_relative: float = None
-    # 
-    # # Set the Minimum amount of memory in MB, that app_dict has to have reserved.
-    # # Default: None or 200
-    # # >REINITIALIZE<
-    # memory_min_MB: int = None
+    # Select the way, how the available RAM is determined. If absolute, an integer
+    # value will reflect the Megabytes of maximum memory. Otherwise, use relative.
+    # Default: False or None
+    memory_use_absolute: bool = False
+
+    # Absolute amount of memory in MB. If None, all RAM can be utilized.
+    # Default: None
+    memory_absolute_mb: int = None
+
+    # Set the relative amount of memory to be reserved, where 1 resembles 100%
+    # of system memory and 0 resembles 0%. If None, automatically determined.
+    # Default: None or 1.0
+    memory_relative: float = None
+
+    # Set the Minimum amount of memory in MB to be reserved at startup. If this threshold
+    # can not be met, app will exit.
+    # Default: None or 100
+    memory_min_mb: int = None
 
     r"""
 >>> MULTI-PROCESSING <<<
@@ -223,10 +218,10 @@ def settings(start_time=None):
         'log_lvl_interrupts' : log_lvl_interrupts,
         'metrics_enable' : metrics_enable,
         'metrics_perfmode' : metrics_perfmode,
-        # 'memory_count_absolute' : memory_count_absolute,
-        # 'memory_absolute' : memory_absolute,
-        # 'memory_relative' : memory_relative,
-        # 'memory_min_MB' : memory_min_MB,
+        'memory_use_absolute' : memory_use_absolute,
+        'memory_relative' : memory_relative,
+        'memory_absolute' : memory_absolute_mb,
+        'memory_min_mb' : memory_min_mb,
         'processes_count_absolute' : processes_count_absolute,
         'processes_absolute' : processes_absolute,
         'processes_relative' : processes_relative,

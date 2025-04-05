@@ -1,24 +1,31 @@
-# MorPyDict Development
+# Python: morPy Framework Development
+
+## Big Picture Description of the morPy Framweork
+
+Know, that the morPy framework provided is
+designed to seamlessly work regardless of the amount of processes configured. This means, all
+modules and functions have to respect possible concurrency. At the core is the morPy orchestrator,
+lining out the entire internal mechanisms of any app built on top of the morPy framework.
 
 ## Your Task
 
-Analyse the code provided below and figure out where the RecursionError originates from. The error only ever occurs in multiprocessing mode. If I stick to a single process, regardless of initializing `app_dict` as a standard dict or UltraDict, the error does not appear. I suspect a logical flaw of mine in either `lib.init`, `lib.mp` or both. The root cause may stem from something else, however.
-
-## The Error / Console Messages
-
-```
-CRITICAL - 2025-04-02_122854
-	Line 516 in module 'lib.mp'
-	RecursionError: maximum recursion depth exceeded
-```
+Analyse the code provided below. When running the app, during `demo.ProgressTrackerTk.py` the tkinter GUI
+freezes at the end of progressing the first stage of the overall progress. This is not an issue, if in
+`lib.conf.py` I set the app to run on a single process (`processes_count_absolute=True` and `processes_absolute=1`).
 
 ## Your Methodology
 
 Analyze the Python code provided below. You are supposed to walk through the code chronologically as it would be executed.
 
-All of this is to identify the root cause of the problem described above. Start with `__main__.py` and follow the code line by line to identify it. 
+All of this is to identify the root cause of the problem described next. Start with `__main__.py` and follow the code line by line to identify it. 
 
-You may study this [SuperFastPython Guide](https://superfastpython.com/multiprocessing-in-python/) to get inspiration.
+## The Error / Console Messages
+
+No error. Just study the code in regards to "Your Task" and "Your Methodology"
+
+```
+[...]
+```
 
 ## __main__.py
 
@@ -63,8 +70,6 @@ from lib.exceptions import MorPyException
 
 import sys
 
-init_check: bool = False
-
 def initialize_morpy():
     r"""
     Initialize the morPy framework.
@@ -95,8 +100,8 @@ def finalize_morpy(morpy_trace, app_dict):
     Finalize morPy components.
     """
 
-    import lib.exit as exit
-    exit._exit(morpy_trace, app_dict)
+    from lib.exit import _exit
+    _exit(morpy_trace, app_dict)
 
     # Quit the program
     sys.exit()
@@ -112,6 +117,713 @@ if __name__ == '__main__':
             finalize_morpy(morpy_trace, app_dict)
         except Exception as e:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+```
+
+## lib.init.py
+
+```Python
+r"""
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
+Author:     Bastian Neuwirth
+Descr.:     This module holds all functions used for initialization of the
+            morPy framework.
+"""
+
+import lib.fct as morpy_fct
+import lib.conf as conf
+from lib.common import textfile_write
+from lib.decorators import log
+from lib.mp import MorPyOrchestrator
+
+import importlib
+import sys
+import os
+import os.path
+from UltraDict import UltraDict
+
+def init_cred() -> dict:
+    r"""
+    Initializes the operation credentials and tracing.
+
+    :param:
+        -
+
+    :return: dict
+        morpy_trace - operation credentials and tracing
+    """
+
+    # Initialize operation credentials and tracing.
+    # Each operation/function/object will fill the dictionary with data
+    # by executing morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+    # as a first step before execution.
+    morpy_trace: dict = {
+        'module' : '__main__',
+        'operation' : '',
+        'tracing' : '__main__',
+        'process_id' : int(0),
+        'thread_id' : int(0),
+        'task_id' : int(0),
+        'log_enable' : False,
+        'interrupt_enable' : False,
+    }
+
+    return morpy_trace
+
+def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
+    r"""
+    Initializes the app dictionary and yields app
+    specific information to be handed down through called functions.
+
+    :param morpy_trace: operation credentials and tracing
+
+    :return app_dict: morPy global dictionary containing app configurations
+    """
+
+    # Define operation credentials (see init.init_cred() for all dict keys)
+    module: str = 'lib.init'
+    operation: str = 'init(~)'
+    morpy_trace_init = morpy_fct.tracing(module, operation, morpy_trace)
+
+    try:
+        # ############################################
+        # START Single-threaded initialization
+        # ############################################
+
+        # Build the app_dict
+        init_dict = build_app_dict(morpy_trace_init, create=True)
+
+        init_dict["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
+        init_dict["morpy"].update({"proc_available" : set()})
+        init_dict["morpy"].update({"proc_busy" : {morpy_trace_init["process_id"],}})
+        init_dict["morpy"]["proc_joined"] = True
+        init_dict["morpy"].update({"proc_master" : morpy_trace['process_id']})
+
+        # Initialize the global interrupt flag and exit flag
+        init_dict["morpy"]["interrupt"] = False
+        init_dict["morpy"]["exit"] = False
+
+        # Set an initialization complete flag
+        init_dict["run"]["init_complete"] = False
+
+        # Retrieve the starting time of the program
+        init_datetime = morpy_fct.datetime_now()
+
+        # Store the start time and timestamps in the dictionary
+        for time_key in init_datetime:
+            init_dict["run"][f'init_{time_key}'] = init_datetime[f'{time_key}']
+
+        # Update the initialize dictionary with the parameters dictionary
+        init_dict["conf"].update(conf.settings(start_time=init_dict["run"]["init_datetimestamp"]))
+
+        # Evaluate log_enable
+        if not init_dict["conf"]["log_db_enable"] and not init_dict["conf"]["log_txt_enable"]:
+            init_dict["conf"]["log_enable"] = False
+
+        # Pass down the log enabling parameter
+        morpy_trace["log_enable"] = init_dict["conf"]["log_enable"]
+        morpy_trace_init["log_enable"] = init_dict["conf"]["log_enable"]
+
+        # Import the morPy core functions localization into init_dict.
+        morpy_loc = importlib.import_module(init_dict["conf"]["localization"])
+        init_dict["loc"]["morpy"].update(getattr(morpy_loc, 'loc_morpy')())
+
+        # Build nested dictionary for log generation
+        log_levels = ("init", "debug", "info", "warning", "denied", "error", "critical", "exit")
+        for log_level in log_levels:
+            if (
+                (init_dict["conf"]["log_enable"] and
+                 not (log_level in init_dict["conf"]["log_lvl_nolog"])
+                 ) or (
+                init_dict["conf"]["msg_print"] and
+                 not (log_level in init_dict["conf"]["log_lvl_noprint"]))
+            ):
+                init_dict["morpy"]["logs_generate"].update({log_level : True})
+            else:
+                init_dict["morpy"]["logs_generate"].update({log_level : False})
+
+        # Retrieve system information
+        sysinfo = morpy_fct.sysinfo()
+
+        # Update init_dict with system information
+        for sys_key in sysinfo:
+            init_dict["sys"][sys_key] = sysinfo[sys_key]
+
+        # Test for elevated privileges
+        # TODO make an elevation handler
+
+        # Prepare log levels
+        init_dict["run"]["events_total"] = 0
+        init_dict["run"]["events_DEBUG"] = 0
+        init_dict["run"]["events_INFO"] = 0
+        init_dict["run"]["events_WARNING"] = 0
+        init_dict["run"]["events_DENIED"] = 0
+        init_dict["run"]["events_ERROR"] = 0
+        init_dict["run"]["events_CRITICAL"] = 0
+        init_dict["run"]["events_UNDEFINED"] = 0
+        init_dict["run"]["events_INIT"] = 0
+        init_dict["run"]["events_EXIT"] = 0
+
+        # Create first log in txt-file including the app header
+        if (init_dict["conf"]["log_txt_header_enable"] and
+            morpy_trace_init["log_enable"] and
+            init_dict["conf"]["log_txt_enable"]
+        ):
+            morpy_log_header(morpy_trace_init, init_dict)
+
+        # Initialize the morPy debug-specific localization
+        init_dict["loc"]["morpy_dgb"].update(getattr(morpy_loc, 'loc_morpy_dbg')())
+        log(morpy_trace_init, init_dict, "init",
+        lambda: f'{init_dict["loc"]["morpy"]["init_loc_dbg_loaded"]}')
+
+        # Initialize the app-specific localization
+        app_loc = importlib.import_module(f'loc.app_{init_dict["conf"]["language"]}')
+        init_dict["loc"]["app"].update(getattr(app_loc, 'loc_app')())
+        init_dict["loc"]["app_dbg"].update(getattr(app_loc, 'loc_app_dbg')())
+        log(morpy_trace_init, init_dict, "init",
+        lambda: f'{init_dict["loc"]["morpy"]["init_loc_app_loaded"]}')
+
+        # Localization initialized.
+        log(morpy_trace_init, init_dict, "init",
+        lambda: f'{init_dict["loc"]["morpy"]["init_loc_finished"]}\n'
+                f'{init_dict["loc"]["morpy"]["init_loc_lang"]}: {init_dict["conf"]["language"]}')
+
+        # Load init_dict as a string
+        if init_dict["conf"]["print_init_vars"] or init_dict["conf"]["ref_create"]:
+            init_dict_str = morpy_fct.app_dict_to_string(init_dict)
+        else:
+            init_dict_str = ""
+
+        # Print init_dict to console
+        if init_dict["conf"]["print_init_vars"]:
+            print(init_dict_str)
+
+        # Initialize the morPy orchestrator
+        orchestrator = MorPyOrchestrator(morpy_trace_init, init_dict)
+
+        # ############################################
+        # END Single-threaded initialization
+        # START Multi-threaded initialization
+        # ############################################
+
+        # task = morPy.testprint(morpy_trace_init, "Message")
+        # mp.run_parallel(mpy_task, app_dict, task)
+
+        # ############################################
+        # END Multi-threaded initialization
+        # ############################################
+
+        # Calculate the runtime of the initialization routine
+        init_duration = morpy_fct.runtime(init_dict["run"]["init_datetime_value"])
+
+        # Record the duration of the initialization
+        init_dict["run"]["init_rnt_delta"] = init_duration["rnt_delta"]
+
+        log(morpy_trace_init, init_dict, "init",
+        lambda: f'{init_dict["loc"]["morpy"]["init_finished"]}\n'
+            f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["run"]["init_rnt_delta"]}')
+
+        # Write app_dict to file: initialized_app_dict.txt
+        if init_dict["conf"]["ref_create"]:
+            morpy_ref(morpy_trace_init, init_dict, init_dict_str)
+
+        # Exit initialization
+        retval = init_dict, orchestrator
+        return retval
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+
+def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
+    r"""
+    This function builds the app_dict in accordance to multiprocessing and whether GIL
+    is included in the Python environment.
+
+    :param morpy_trace: operation credentials and tracing
+    :param create: If True, a (nested) dictionary is created. Otherwise, purely
+        references to the UltraDict.
+
+    :return init_dict: morPy global dictionary containing app configurations
+
+    :example:
+        init_dict = build_app_dict(morpy_trace, create=True)
+    """
+
+    # Define operation credentials (see init.init_cred() for all dict keys)
+    module: str = 'lib.init'
+    operation: str = 'build_app_dict(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    # Check for GIL and decide for an app_dict structure.
+    gil = has_gil(morpy_trace)
+    init_dict = None
+    init_mem = 1_000_000 # TODO get memory from config
+    min_mem = 1_000
+
+    try:
+        # FIXME
+        # if gil:
+        if True:
+            from lib.mp import shared_dict
+
+            def mem_evaluation(mem, min_mem) -> int:
+                mem = mem if mem > min_mem else min_mem
+                return mem
+
+            mem = mem_evaluation(init_mem, min_mem)
+            init_dict = shared_dict(
+                name="app_dict",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["conf"] = shared_dict(
+                name="app_dict[conf]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 10, min_mem)
+            init_dict["morpy"] = shared_dict(
+                name="app_dict[morpy]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 1_000, min_mem)
+            init_dict["morpy"]["logs_generate"] = shared_dict(
+                name="app_dict[global][morPy][logs_generate]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["morpy"]["orchestrator"] = shared_dict(
+                name="app_dict[morpy][orchestrator]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["morpy"]["proc_refs"] = shared_dict(
+                name="app_dict[morpy][proc_refs]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 10, min_mem)
+            init_dict["morpy"]["proc_waiting"] = shared_dict(
+                name="app_dict[morpy][proc_waiting]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 10, min_mem)
+            init_dict["sys"] = shared_dict(
+                name="app_dict[sys]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 10, min_mem)
+            init_dict["run"] = shared_dict(
+                name="app_dict[run]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 1_000, min_mem)
+            init_dict["loc"] = shared_dict(
+                name="app_dict[loc]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem, min_mem)
+            init_dict["loc"]["morpy"] = shared_dict(
+                name="app_dict[loc][morPy]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["loc"]["morpy_dgb"] = shared_dict(
+                name="app_dict[loc][mpy_dbg]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem, min_mem)
+            init_dict["loc"]["app"] = shared_dict(
+                name="app_dict[loc][app]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+            mem = mem_evaluation(init_mem // 100, min_mem)
+            init_dict["loc"]["app_dbg"] = shared_dict(
+                name="app_dict[loc][app_dbg]",
+                create=create,
+                size=mem,
+                recurse=False
+            )
+
+        # Without GIL, allow for true nesting
+        else:
+            init_dict = {}
+
+            init_dict["conf"] = {}
+            init_dict["morpy"] = {}
+            init_dict["morpy"]["logs_generate"] = {}
+            init_dict["morpy"]["orchestrator"] = {}
+            init_dict["morpy"]["proc_refs"] = {}
+            init_dict["sys"] = {}
+            init_dict["run"] = {}
+            init_dict["loc"] = {}
+            init_dict["loc"]["morpy"] = {}
+            init_dict["loc"]["morpy_dgb"] = {}
+            init_dict["loc"]["app"] = {}
+            init_dict["loc"]["app_dbg"] = {}
+
+        return init_dict
+
+    # Error detection
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+
+def morpy_log_header(morpy_trace: dict, init_dict: dict | UltraDict) -> None:
+    r"""
+    This function writes the header for the logfile including app specific
+    information.
+
+    :param morpy_trace: operation credentials and tracing
+    :param init_dict: Dictionary holding all initialized data (init of app_dict)
+
+    :return:
+        -
+
+    :example:
+        morpy_log_header(morpy_trace, init_dict)
+    """
+
+    # Define operation credentials (see init.init_cred() for all dict keys)
+    module: str = 'lib.init'
+    operation: str = 'log_header(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    # Create the app header
+    content = (
+        f'== {init_dict["loc"]["morpy"]["log_header_start"]}{3*" =="}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_author"]}: Bastian Neuwirth\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_app"]}: {init_dict["conf"]["main_path"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_timestamp"]}: {init_dict["run"]["init_datetimestamp"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_user"]}: {init_dict["sys"]["username"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_system"]}: {init_dict["sys"]["os"]} {init_dict["sys"]["os_release"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_version"]}: {init_dict["sys"]["os_version"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_architecture"]}: {init_dict["sys"]["os_arch"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_threads"]}: {init_dict["sys"]["threads"]}\n'
+        f'== {init_dict["loc"]["morpy"]["log_header_begin"]}{3*" =="}\n'
+    )
+
+    # Write to the logfile
+    filepath = init_dict["conf"]["log_txt_path"]
+    textfile_write(morpy_trace, init_dict, filepath, content)
+
+    # Clean up
+    del morpy_trace
+
+def morpy_ref(morpy_trace: dict, init_dict: dict | UltraDict, init_dict_str: str) -> None:
+    r"""
+    This function documents the initialized dictionary (reference). It is stored
+    in the same path as __main__.py and serves development purposes.
+
+    :param morpy_trace: operation credentials and tracing
+    :param init_dict: Dictionary holding all initialized data (init of app_dict)
+    :param init_dict_str: String of the init_dict
+
+    :return:
+        -
+
+    :example:
+        morpy_ref(morpy_trace, init_dict)
+    """
+
+    # Define operation credentials (see init.init_cred() for all dict keys)
+    module: str = 'lib.init'
+    operation: str = 'ref(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    try:
+        morpy_ref_path = os.path.join(f'{init_dict["conf"]["main_path"]}', 'initialized_app_dict.txt')
+        init_dict_txt = open(morpy_ref_path,'w')
+
+        # Write init_dict to file
+        init_dict_txt.write(f'{init_dict["loc"]["morpy"]["ref_descr"]}\n\n')
+        init_dict_txt.write(init_dict_str)
+
+        # Close the file
+        init_dict_txt.close()
+
+        # The init_dict was written to textfile.
+        log(morpy_trace, init_dict, "init",
+        lambda: f'{init_dict["loc"]["morpy"]["ref_created"]}\n'
+                f'{init_dict["loc"]["morpy"]["ref_path"]}: {morpy_ref_path}')
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+def has_gil(morpy_trace: dict) -> bool | None:
+    r"""
+    Return True if we detect a standard GIL-based Python runtime on a 'typical' operating system.
+    Return False if we suspect a 'no-gil' or 'free-threading' build on Linux/macOS/Windows, or if
+    we detect certain alternative Pythons. This is *heuristic* and not a guaranteed official check.
+
+    :param morpy_trace: operation credentials and tracing information
+
+    :return gil_detected: If True, Python environment has GIL implemented. Process forking not supported.
+
+    :example:
+        gil = has_gil(morpy_trace)
+    """
+
+    # module: str = 'lib.init'
+    # operation: str = 'has_gil(~)'
+    # morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    try:
+        if sys.version_info >= (3, 13):
+            status = sys._is_gil_enabled()
+            if status:
+                return True
+            else:
+                return False
+        else:
+            return True
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, None, e, sys.exc_info()[-1].tb_lineno, "error")
+```
+
+## morPy_templates.py
+
+```Python
+r"""
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
+Author:     AUTHOR
+Descr.:     DESCRIPTION
+
+Annotations:
+    #TODO
+    #FIXME
+"""
+
+import morPy as morPy
+from lib.decorators import metrics, log
+
+import sys
+
+@metrics
+def template(morpy_trace: dict, app_dict: dict) -> dict:
+    r"""
+    This function is a template.
+
+    :param morpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
+
+    :example:
+        template(morpy_trace, app_dict)
+    """
+
+    # morPy credentials (see init.init_cred() for all dict keys)
+    module: str = 'app.my_module'
+    operation: str = 'template(~)'
+    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+
+    # OPTION enable/disable logging
+    # ??? morpy_trace["log_enable"] = False
+
+    check: bool = False
+
+    try:
+        # LOCALIZED_MESSAGE
+        log(morpy_trace, app_dict, "info",
+        lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
+
+        # TODO: MY CODE
+
+        check: bool = True
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    return{
+        'morpy_trace' : morpy_trace,
+        'check' : check,
+        }
+
+class TemplateClass:
+    r"""
+    This class is a template.
+
+    !! LIMITATIONS IN MULTIPROCESSING !!
+    In multiprocessing contexts, a classes attributes are not shared like other values
+    and types. Instead, if attributes have to be accessible by other processes, construct
+    shared dictionaries to achieve that. Make sure to avoid infinite recursions by creating
+    a new shared dict, that is not nested in app_dict.
+    This means, that you may have pseudo-attributes in your class addressing
+    app_dict["..."]["..."], instead of references to self.
+    WRONG in multiprocessing:
+        app_dict["global"]["MyClass"] = MyClass(morpy_trace, app_dict, *args, **kwargs)
+    CORRECT in multiprocessing:
+        from lib.mp import shared_dict
+        instance_mp = shared_dict(name="MyClass", create=True)
+
+        instance = MyClass(morpy_trace, app_dict, *args, **kwargs)
+        instance_mp["ob_ref"] = instance
+        instance_mp["data"] = instance.my_custom_method_to_return_data()
+    """
+
+    def __init__(self, morpy_trace: dict, app_dict: dict) -> None:
+        r"""
+        In order to get metrics for __init__(), call helper method _init() for
+        the @metrics decorator to work. It relies on the returned
+        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+
+        :param morpy_trace: operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+
+        :return:
+            -
+
+        :example:
+            instance = TemplateClass(morpy_trace, app_dict)
+        """
+
+        # morPy credentials (see init.init_cred() for all dict keys)
+        module: str = 'app.my_module'
+        operation: str = 'TemplateClass.__init__(~)'
+        morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+
+        # OPTION enable/disable logging
+        # ??? morpy_trace["log_enable"] = False
+
+        try:
+            # Use self._init() for initialization
+            self._init(morpy_trace, app_dict)
+
+        except Exception as e:
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    @metrics
+    def _init(self, morpy_trace: dict, app_dict: dict) -> dict:
+        r"""
+        Helper method for initialization to ensure @metrics decorator usage.
+
+        :param morpy_trace: operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether the function ended without errors
+
+        :example:
+            self._init(morpy_trace, app_dict)
+        """
+
+        # morPy credentials (see init.init_cred() for all dict keys)
+        module: str = 'app.my_module'
+        operation: str = 'TemplateClass._init(~)'
+        morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+
+        # OPTION enable/disable logging
+        # ??? morpy_trace["log_enable"] = False
+
+        check: bool = False
+
+        try:
+            # TODO: MY INSTANCE INITIALIZATION
+            # LOCALIZED_MESSAGE
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
+
+            check: bool = True
+
+        except Exception as e:
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+        return{
+            'morpy_trace' : morpy_trace,
+            'check' : check,
+            }
+
+    @metrics
+    def method(self, morpy_trace: dict, app_dict: dict) -> dict:
+        r"""
+        :param morpy_trace: operation credentials and tracing information
+        :param app_dict: morPy global dictionary containing app configurations
+
+        :return: dict
+            morpy_trace: Operation credentials and tracing
+            check: Indicates whether the function ended without errors
+
+        :example:
+            self.method(morpy_trace, app_dict)
+        """
+
+        # morPy credentials (see init.init_cred() for all dict keys)
+        module: str = 'app.my_module'
+        operation: str = 'TemplateClass.method(~)'
+        morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+
+        # OPTION enable/disable logging
+        # ??? morpy_trace["log_enable"] = False
+
+        check: bool = False
+
+        try:
+            # TODO: MY CLASS METHOD
+            # LOCALIZED_MESSAGE
+            log(morpy_trace, app_dict, "info",
+            lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
+
+            check: bool = True
+
+        except Exception as e:
+            from lib.exceptions import MorPyException
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+        return{
+            'morpy_trace' : morpy_trace,
+            'check' : check,
+            }
 ```
 
 ## lib.common.py
@@ -1858,26 +2570,13 @@ morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
-Descr.:     This module yields all basic parameters of the morPy fork. The
-            parameters are meant to be tempered with.
-
-TODO provide as json
+Descr.:     Initialization parameters for the morPy framework.
 """
 
 def settings(start_time=None):
     r"""
-    This function defines the parameters morPy will be run with. These
-    parameters are meant to be tinkered with and added on to. Have in mind,
-    that the return dictionary eventually needs to be altered. The
-    morPy framework is preconfigured to support the change of these parameters
-    during runtime, although that may be done within app_dict directly, rather
-    than initializing the parameters again. There are exceptions though, which
-    are pointed out with ">REINITIALIZE<", as an indicator, that the JSON file
-    containing all parameters needs to be updated before a change can have an
-    effect. To do so, simply execute param_to_json(~) after altering the
-    parameters in app_dict like so:
-        app_dict["conf"]['my_param'] = 'my_value'
-        param_to_json(morpy_trace, app_dict)
+    Initialization parameters for the morPy framework. These settings are
+    not meant to be tempered with during runtime.
 
     :param start_time: Datetime stamp of runtime start. Defaults to None.
 
@@ -1900,8 +2599,8 @@ def settings(start_time=None):
     """
 
     # Defines, whether elevated privileges are required.
-    # Called by: init.init(~)
-    mpy_priv_required: bool = False
+    # Called by: 
+    run_elevated: bool = False
 
     r"""
 >>> LOGGING & DEBUGGING <<<
@@ -1950,7 +2649,7 @@ def settings(start_time=None):
     # These log levels may still be printed to console.
     # Called by: throughout msg operations
     # Default: ["debug"]
-    log_lvl_nolog: list = ["debug"]
+    log_lvl_nolog: list = []
 
     # List object to exclude certain log levels from being printed to ui or console.
     # These log levels may still be logged to DB or text file.
@@ -1985,9 +2684,9 @@ def settings(start_time=None):
 >>> MEMORY <<<
     TODO implement memory management with UltraDict
     
-    These settings only take in effect in Multiprocessed/-threaded apps.
-    With this setting memory can be claimed at initialization to prevent later memory
-    buffer enhancements. In case of performance issues, memory may be increased.
+    These settings only take effect in a multiprocessing context. With this setting
+    memory can be claimed at initialization to prevent later memory buffer increases.
+    In case of performance issues, memory may be increased.
     """
 
     # Select the way, how the available RAM is determined. If absolute, an integer
@@ -2038,35 +2737,6 @@ def settings(start_time=None):
     processes_relative_math: str = "floor"
 
     r"""
->>> MULTITHREADING <<<
-    """
-
-    # Select how the maximum threads will be determined. If true, you must set
-    # an integer value greater than 1 for mt_max_threads_cnt_abs. Ultimately,
-    # if the relative determination is chosen, an absolute maximum thread count
-    # will be determined during initialization and mt_max_threads will
-    # always be addressed after initialization.
-    mt_max_threads_set_abs: bool = True
-
-    # Set the absolute maximum amount of threads which shall be utilized. This needs
-    # mt_max_threads_set_abs = True in order to have any effect. Have in mind, that
-    # your app still needs to utilize these threads by keeping enough tasks in
-    # the priority queue.
-    mt_max_threads_cnt_abs: int = 1
-
-    # Set the relative maximum amount of threads which shall be utilized, where
-    # 1 resembles 100% utilization and 0 resembles 0% utilization. This needs
-    # mt_max_threads_set_abs = False in order to have any effect. Have in mind, that
-    # your app still needs to utilize these threads by keeping enough tasks in
-    # the priority queue.
-    mt_max_threads_cnt_rel: float = 1.0
-
-    # If the relative determination of maximum threads is enabled, it is necessary
-    # to set whether the maximum thread count should be rounded up or down, since
-    # not in every case the result will be an integer value.
-    mt_max_threads_rel_floor: bool = False
-
-    r"""
 >>> PATHS <<<
     """
 
@@ -2106,7 +2776,7 @@ def settings(start_time=None):
     return{
         'language' : language,
         'localization' : f'loc.morPy_{language}',
-        'priv_required' : mpy_priv_required,
+        'run_elevated' : run_elevated,
         'log_enable' : log_enable,
         'ref_create' : ref_create,
         'log_db_enable' : log_db_enable,
@@ -2128,10 +2798,6 @@ def settings(start_time=None):
         'processes_absolute' : processes_absolute,
         'processes_relative' : processes_relative,
         'processes_relative_math' : processes_relative_math,
-        'mt_max_threads_set_abs' : mt_max_threads_set_abs,
-        'mt_max_threads_cnt_abs' : mt_max_threads_cnt_abs,
-        'mt_max_threads_cnt_rel' : mt_max_threads_cnt_rel,
-        'mt_max_threads_rel_floor' : mt_max_threads_rel_floor,
         'main_path' : main_path,
         'log_path' : log_path,
         'log_db_path' : log_db_path,
@@ -2142,6 +2808,236 @@ def settings(start_time=None):
         'app_icon' : app_icon,
         'app_banner' : app_banner,
     }
+```
+
+## lib.exceptions
+
+```Python
+r"""
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
+Author:     Bastian Neuwirth
+Descr.:     This module defines custom exceptions for the morPy framework.
+"""
+
+from lib.decorators import log, log_no_q
+
+import sys
+
+class MorPyCoreError(Exception):
+    r"""
+    This error is raised whenever MorPyException fails to generate and log an error
+    as intended. This error will reduce the amount of tracebacks to the most
+    useful messages required for troubleshooting.
+
+    :param exc: Exception object as passed by sys of the parent function/method.
+    :param root_line: Line number of the original error that could not be logged.
+    :param root_module: Module name of the original error that could not be logged.
+    :param root_e: Exception object of the original error that could not be logged.
+    """
+
+    __slots__ = ['exc', 'root_line', 'root_module', 'root_e']
+
+    def __init__(self, app_dict: dict=None, exc: BaseException=None, root_line: int=None, root_e: BaseException=None,
+                 root_trace: dict=None, logging: bool=False, cause: str=None) -> None:
+
+        # Assignments and preparation
+        self.exc = exc
+        current_line = root_line if root_line else None
+
+        loc_info = "" if logging else " Localization not available."
+        self.core_msg = (
+            f"Line {current_line} in module lib.exceptions identified as '{type(self.exc).__name__}'\n"
+            f"CRITICAL. Missing argument '{cause}' in error call. Logging of error failed.{loc_info}"
+        )
+
+        module = root_trace.get("module", None) if root_trace else None
+        self.root_msg = (
+            f"Root error:\n    > Line {root_line} in module '{module}'\n"
+            f"    > {type(root_e).__name__}: {root_e}"
+        )
+        self.message = f"{self.core_msg}\n{self.root_msg}"
+
+        if logging:
+            log(str(root_trace), app_dict, "critical", lambda: self.message)
+        else:
+            # Suppress traceback for clarity
+            self.__suppress_context__: bool = True
+            sys.tracebacklimit: int = 0
+            super().__init__(self.message)
+
+        # Quit the program
+        sys.exit(-1)
+
+class MorPyException(Exception):
+    r"""
+    This wraps errors in the standard morPy fashion. If one of the arguments
+    required for logging is missing, this wrapper will raise other errors in
+    order to reduce tracebacks and specifically point to the issue at hand.
+
+    :param morpy_trace: Operation credentials and tracing information.
+    :param app_dict: The morPy global dictionary containing app configurations.
+    :param log_level: Severity: debug/info/warning/error/critical/denied
+    :param line: Line number of the original error that could not be logged.
+    :param exception: Exception object as passed by sys of the parent function/method.
+    :param message: Additional exception text attached to the end of the standard message.
+    :param no_q: For morPy framework internal use. Will skip PriorityQueue if True.
+
+    :example:
+        import morPy
+        import sys
+        try:
+            pass # some code
+        except Exception as e:
+            raise morPy.exception(
+                morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "info",
+                message="Specifics regarding the error"
+            )
+    """
+
+    __slots__ = ['morpy_trace', 'app_dict', 'log_level', 'line', 'module', 'e']
+
+    def __init__(self, morpy_trace: dict, app_dict: dict, exception: BaseException, line: int,
+                 log_level: str, message: str=None, no_q: bool=False) -> None:
+        try:
+            # Use .get() with default values to prevent KeyErrors
+            loc = app_dict.get("loc", {}).get("morpy", {}) if app_dict else {}
+            err_line = loc.get("err_line", "Line unknown")
+            err_module = loc.get("err_module", "Module unknown")
+            module = morpy_trace.get("module", "Module unknown") if morpy_trace else "Module unknown"
+
+            # Safely extract current line number; if not available, use provided line
+            tb = sys.exc_info()[2]
+            current_line = tb.tb_lineno if tb else line
+
+            # Build the core message of the original error
+            self.core_msg = (
+                f"{err_line} {current_line} {err_module} '{module}'\n"
+                f"{type(exception).__name__}: {exception}"
+            )
+
+            # Build the final message
+            if message:
+                message = f'\n{message}'
+                self.message = f'{self.core_msg}{message}'
+            else:
+                self.message = f'{self.core_msg}'
+
+            if no_q:
+                log_no_q(morpy_trace, app_dict, log_level, lambda: self.message)
+            else:
+                log(morpy_trace, app_dict, log_level, lambda: self.message)
+
+        except Exception as crit_e:
+
+            # Raise critical error in hierarchical order
+            if not app_dict:
+                cause = "app_dict"
+                logging = False
+            elif not morpy_trace:
+                cause = "morpy_trace"
+                logging = True
+            elif not log_level:
+                cause = "log_level"
+                logging = True
+            elif not line:
+                cause = "line"
+                logging = True
+            elif not exception:
+                cause = "module"
+                logging = True
+            else:
+                cause = "INVAlID"
+                logging = False
+
+            raise MorPyCoreError(
+                app_dict=app_dict,
+                exc=crit_e,
+                root_line=line,
+                root_e=exception,
+                root_trace=morpy_trace,
+                logging=logging,
+                cause=cause
+            )
+```
+
+## lib.exit.py
+
+```Python
+r"""
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
+Author:     Bastian Neuwirth
+Descr.:     This module delivers functions to handle exiting the app.
+"""
+
+import lib.fct as morpy_fct
+from lib.decorators import metrics, log_no_q
+
+import sys
+
+@metrics
+def _exit(morpy_trace: dict, app_dict: dict):
+    r"""
+    This is the mpy exit routine. It is not intended to be used as part of an app, but it may be executed however,
+    at any time after initialization.
+
+    :param morpy_trace: operation credentials and tracing
+    :param app_dict: The mpy-specific global dictionary
+
+    :return:
+        -
+
+    :example:
+        from lib.exit import _exit
+        _exit(morpy_trace, app_dict)
+    """
+
+    # Define operation credentials (see init.init_cred() for all dict keys)
+    module: str = 'lib.exit'
+    operation: str = '_exit(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    try:
+        # Retrieve exit time and date
+        datetime_exit = morpy_fct.datetime_now()
+
+        # determine runtime duration
+        temp_duration = morpy_fct.runtime(app_dict["run"]["init_datetime_value"])
+
+        # Correction of the exit occurrance counter for the very last message
+        app_dict["run"]["events_EXIT"] += 1
+        app_dict["run"]["events_total"] += 1
+
+        # Determine leading spaces before app_dict["exit_msg_total"] so the colons
+        # of the exit message fall in one vertcal line.
+        spaces_total = 9 - len(app_dict["loc"]["morpy"]["exit_msg_total"])
+        leading_total = f'{spaces_total * " "}'
+
+        # Build the exit message
+        log_no_q(morpy_trace, app_dict, "exit",
+        lambda: f'{app_dict["loc"]["morpy"]["exit_msg_done"]}\n'
+                f'{app_dict["loc"]["morpy"]["exit_msg_started"]}: {app_dict["run"]["init_date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {app_dict["run"]["init_time"]}\n'
+                f'{app_dict["loc"]["morpy"]["exit_msg_exited"]}: {datetime_exit["date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {datetime_exit["time"]}\n'
+                f'{app_dict["loc"]["morpy"]["exit_msg_duration"]}: {temp_duration["rnt_delta"]}\n\n'
+                f'{5 * "-"} {app_dict["loc"]["morpy"]["exit_msg_events"]} {5 * "-"}\n'
+                f'     INIT: {app_dict["run"]["events_INIT"]}\n'
+                f'    DEBUG: {app_dict["run"]["events_DEBUG"]}\n'
+                f'     INFO: {app_dict["run"]["events_INFO"]}\n'
+                f'  WARNING: {app_dict["run"]["events_WARNING"]}\n'
+                f'   DENIED: {app_dict["run"]["events_DENIED"]}\n'
+                f'    ERROR: {app_dict["run"]["events_ERROR"]}\n'
+                f' CRITICAL: {app_dict["run"]["events_CRITICAL"]}\n'
+                f'     EXIT: {app_dict["run"]["events_EXIT"]}\n'
+                f'UNDEFINED: {app_dict["run"]["events_UNDEFINED"]}\n'
+                f'{18 * "-"}\n'
+                f'{leading_total}{app_dict["loc"]["morpy"]["exit_msg_total"]}: {app_dict["run"]["events_total"]}')
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 ```
 
 ## lib.decorators.py
@@ -2158,6 +3054,7 @@ Descr.:     This module yields all decorators to be used with the morPy framewor
 import time
 
 from functools import wraps
+from UltraDict import UltraDict
 
 def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
     r"""
@@ -2187,7 +3084,7 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, ve
     else:
         log_level = log_level.lower()
 
-        if message and app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+        if message and app_dict["morpy"]["logs_generate"].get(log_level, False):
             msg.log(morpy_trace, app_dict, log_level, message(), verbose)
 
 def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
@@ -2217,7 +3114,7 @@ def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callabl
     else:
         log_level = log_level.lower()
 
-        if message and app_dict["global"]["morpy"]["logs_generate"].get(log_level, False):
+        if message and app_dict["morpy"]["logs_generate"].get(log_level, False):
             msg.log(morpy_trace, app_dict, log_level, message(), verbose)
 
 def metrics(func):
@@ -2260,7 +3157,7 @@ def metrics(func):
 
                 # Now we decide if metrics are enabled
                 # (only if we found both morpy_trace and app_dict)
-                if isinstance(morpy_trace, dict) and isinstance(app_dict, dict):
+                if isinstance(morpy_trace, dict) and isinstance(app_dict, (UltraDict, dict)):
                     enable_metrics = app_dict.get("lib.conf", {}).get("metrics_enable", False)
                     perf_mode = app_dict.get("lib.conf", {}).get("metrics_perfmode", False)
 
@@ -2268,7 +3165,7 @@ def metrics(func):
                 # If we still don't have them, leave them as None
                 pass
             except KeyError:
-                raise IndexError("Positional arguments morpy_trace and/or app_dict are missing or at wrong position!")
+                raise IndexError("Positional arguments morpy_trace and/or app_dict are missing or at the wrong position!")
 
             if enable_metrics:
                 start_time = time.perf_counter()
@@ -2330,6 +3227,517 @@ def metrics_full(morpy_trace, run_time):
 
 ```
 
+## lib.csv.py
+
+```Python
+r"""
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
+Author:     Bastian Neuwirth
+Descr.:     Module of operations concerning csv-files.
+"""
+
+import lib.fct as morpy_fct
+import lib.xl as xl
+from lib.decorators import metrics, log
+from lib.common import ProgressTracker
+from lib.ui_tk import ProgressTrackerTk
+
+import sys
+from openpyxl.utils.cell import get_column_letter
+
+@metrics
+def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
+             print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None, gui=None) -> dict:
+    r"""
+    This function reads a csv file and returns a dictionary of
+    dictionaries. The header row, first row of data and delimiter
+    is determined automatically.
+
+    :param morpy_trace: Operation credentials and tracing
+    :param app_dict: morPy global dictionary containing app configurations
+    :param src_file_path: Path to the csv file.
+    :param delimiter: Delimiters used in the csv. None = Auto detection
+    :param print_csv_dict: If true, the csv_dict will be printed to console. Should only
+        be used for debugging with small example csv files. May take very long to complete.
+    :param log_progress: If True, logs the progress.
+    :param progress_ticks: Percentage of total to log the progress. I.e. at ticks=10.7 at every
+        10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
+        If gui is not None, may overwrite this setting.
+    :param gui: User Interface reference. Automatically referenced by morPy.ProgressTrackerTk()
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
+        csv_dict: Dictionary containing all tags. The line numbers of data are
+            the keys of the parent dictionary, and the csv header consists of
+            the keys of every sub-dictionary.
+            Pattern:
+                {DATA1 :
+                    delimiter : [str]
+                    header : [tuple] (header(1), header(2), ...)
+                    columns : [int] header columns
+                    rows : [int] number of rows in data
+                    ROW1 : [dict]
+                        {header(1) : data(1, 1),
+                        header(2) : data(2, 1),
+                        ...}
+                    ROW2 : [dict]
+                        {header(1) : data(1, 2),
+                        header(2) : data(2, 2),
+                        ...}
+                DATA2 : ...}
+
+    :example:
+        src_file_path = 'C:\myfile.csv'
+        delimiter = '","'
+        csv = csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+        csv_dict = csv["csv_dict"]
+        csv_header1 = csv["csv_dict"]["DATA1"]["header"]
+        print(f'{csv_header1}')
+    """
+
+    # Define operation credentials (see init.init_cred() for all dict keys)
+    module: str = 'lib.csv'
+    operation: str = 'csv_read(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    check: bool = False
+    csv_copy_dict: dict = {}
+    csv_dict: dict = {}
+    header: tuple = ()
+    data_table: str = ''
+    columns: int = 0
+    header_row: int = -1
+    data_rows: int = 0 # Sum of data rows in a data table
+    r_data: int = 0 # Row counter for file processing
+    delim_check: bool = False # True, if delimiter identified
+    header_cnt_delimiters: int = -1 # Number of determined columns in header
+    data_subdict_nr: int = 0
+    data_cnt_row: int = 0 # Counter for printing the data row sub-dictionary
+    csv_read_progress = None
+
+    try:
+        # Started processing CSV-file.
+        log(morpy_trace, app_dict, "info",
+        lambda: f'{app_dict["loc"]["morpy"]["csv_read_start"]}\n'
+                f'{app_dict["loc"]["morpy"]["csv_read_file_path"]}: {src_file_path}')
+
+        # Delimiter auto-detection
+        delimiters = (delimiter,) if delimiter else ('";"', '","', ';', ',', '"\t"', '\t', '":"', ':')
+
+        src_file_dict = morpy_fct.pathtool(src_file_path)
+        src_file_path = src_file_dict["out_path"]
+        src_file_isfile = src_file_dict["is_file"]
+        src_file_exists = src_file_dict["file_exists"]
+        src_file_ext = src_file_dict["file_ext"]
+
+        if src_file_isfile and src_file_exists and src_file_ext == ".csv":
+            r_tot = 0 # Total row counter
+            # Import the csv file as is and determine length
+            with open(src_file_path, 'r') as csv_file:
+                for line in csv_file:
+                    r_tot +=1
+                    csv_copy_dict[f'{r_tot}'] = line
+
+            # Track progress
+            if log_progress:
+                prog_total = len(delimiters) * r_tot
+                if gui:
+                    gui.begin_stage(morpy_trace, app_dict,
+                                    stage_limit=prog_total,
+                                    headline_stage=app_dict["loc"]["morpy"]["csv_read_start"],
+                                    detail_description=app_dict["loc"]["morpy"]["csv_read_stage"],
+                                    ticks=25)
+                    gui_msg_row = app_dict["loc"]["morpy"]["csv_read_row"]
+                else:
+                    csv_read_progress = ProgressTracker(morpy_trace, app_dict,
+                        description=app_dict["loc"]["morpy"]["csv_read_stage"], total=prog_total, ticks=progress_ticks)
+
+            # Determine delimiters, header and data rows
+            for d in delimiters:
+                r_det = 0 # Row counter for delimiter check
+                for row, line in csv_copy_dict.items():
+                    r_det +=1
+
+                    # Progress Tracking
+                    if log_progress:
+                        if gui:
+                            gui.update_text(morpy_trace, app_dict, detail_description=f'{gui_msg_row} {r_det}')
+                            gui.update_progress(morpy_trace, app_dict, current=r_det)
+                        else:
+                            csv_read_progress.update(morpy_trace, app_dict, current=r_det)
+
+                    line = line.rstrip()
+                    if d in line:
+                        # Check, if header needs to be found
+                        if header_row < 0:
+                            header_row = r_det
+                            header = tuple(map(lambda x: x.strip('"\''), line.split(d)))
+                            header_cnt_delimiters = len(header)
+                            columns = header_cnt_delimiters + 1
+                        # If header was assigned, check for data row
+                        else:
+                            data = tuple(map(lambda x: x.strip('"\''), line.split(d)))
+                            data_cnt_delimiters = len(data)
+                            data_row = r_det
+                            r_data += 1
+                            # If header and data got the same amount of columns, data table found.
+                            if header_cnt_delimiters == data_cnt_delimiters:
+                                # Check, if new data table
+                                if data_row == header_row + 1:
+                                    delim_check: bool = True
+                                    data_subdict_nr += 1
+                                    data_table = f'DATA{data_subdict_nr}'
+                                    csv_dict[f'{data_table}'] = {}
+                                    csv_dict[f'{data_table}']["delimiter"] = d
+                                    csv_dict[f'{data_table}']["header"] = header
+                                    csv_dict[f'{data_table}']["columns"] = columns
+                                    csv_dict[f'{data_table}']["rows"] = data_rows
+                                csv_dict[f'{data_table}'][f'{r_data}'] = dict(zip(header, data))
+                                data_rows += 1
+                                csv_dict[f'{data_table}']["rows"] = data_rows
+                            # Set current line as header for next iteration of determination
+                            else:
+                                header_row = r_det
+                                header_cnt_delimiters = data_cnt_delimiters
+                                header = tuple(map(lambda x: x.strip(), line.split(d)))
+                                columns = header_cnt_delimiters + 1
+                                data_rows = 0
+                                r_data = 0
+                    else:
+                        header_row = -1
+                        header_cnt_delimiters = -1
+                        data_rows = 0
+                        r_data = 0
+                        header = ()
+
+            # Process CSV into dictionary
+            if delim_check:
+                # CSV file processed. Dictionary contains ## rows.
+                log(morpy_trace, app_dict, "info",
+                lambda: f'{app_dict["loc"]["morpy"]["csv_read_done"]}: {data_rows}')
+
+                # Print csv_dict to console for debugging.
+                if print_csv_dict:
+                    # Start printing returned dictionary to console.
+                    log(morpy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["morpy"]["csv_read_done"]}: {data_rows}')
+
+                    for data_table_name in csv_dict.keys():
+                        print(f'{0*" "}{data_table_name}: {{')
+                        for meta, meta_val in csv_dict[data_table_name].items():
+                            # Check, if meta holds data and therefore a dictionary
+                            if isinstance(meta_val, dict):
+                                data_cnt_row +=1
+                                print(f'{3*" "}ROW{data_cnt_row}: {{')
+                                for dat_col, dat_row in meta_val.items():
+                                    print(f'{6*" "}{dat_col} : {dat_row}')
+                                print(f'{3*" "}}}')
+                            else:
+                                print(f'{3*" "}{meta} : {meta_val}')
+                        print(f'{0*" "}}}\n')
+                        data_cnt_row = 0
+
+                    # Finished printing returned dictionary to console.
+                    log(morpy_trace, app_dict, "info",
+                    lambda: f'{app_dict["loc"]["morpy"]["csv_read_done"]}: {data_rows}')
+
+            else:
+                # Delimiters could not be determined or data is corrupted. No return dictionary created.
+                log(morpy_trace, app_dict, "warning",
+                lambda: f'{app_dict["loc"]["morpy"]["csv_read_no_return"]}\n'
+                        f'{app_dict["loc"]["morpy"]["csv_read_file_path"]}: {src_file_path}')
+
+        else:
+            # File does not exist or is not a CSV file.
+            log(morpy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morpy"]["csv_read_not_done"]}\n'
+                    f'{app_dict["loc"]["morpy"]["csv_read_file_exist"]}: {src_file_exists}\n'
+                    f'{app_dict["loc"]["morpy"]["csv_read_isfile"]}: {src_file_isfile}\n'
+                    f'{app_dict["loc"]["morpy"]["csv_read_file_ext"]}: {src_file_ext}\n'
+                    f'{app_dict["loc"]["morpy"]["csv_read_file_path"]}: {src_file_path}')
+
+        check: bool = True
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    return{
+        'morpy_trace' : morpy_trace,
+        'check' : check,
+        'csv_dict' : csv_dict
+        }
+
+@metrics
+def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, overwrite: bool=False,
+                      worksheet: str=None, close_workbook: bool=False, csv_dict: dict=None,
+                      log_progress: bool=False, progress_ticks: float=None) -> dict:
+    r"""
+    This function takes da dictionary as provided by csv_read() and saves it as an MS Excel file.
+    The csv_dict however may be evaluated and processed prior to executing csv_dict_to_excel().
+    The file will be saved automatically, but closing the workbook is optional.
+
+    :param morpy_trace: Operation credentials and tracing
+    :param app_dict: morPy global dictionary containing app configurations
+    :param xl_path: Path to the target MS Excel file.
+    :param overwrite: If True, an existing MS Excel file may be overwritten.
+    :param worksheet: Name of the worksheet, where the cell is located. If None, the
+        active sheet is addressed.
+    :param close_workbook: If True, closes the workbook.
+    :param csv_dict: Dictionary containing all tags. The line numbers of data are
+        the keys of the parent dictionary, and the csv header consists of
+        the keys of every sub-dictionary.
+        Pattern:
+            {DATA1 :
+                delimiter : [str]
+                header : [tuple] (header(1), header(2), ...)
+                columns : [int] header columns
+                rows : [int] number of rows in data
+                ROW1 : [dict]
+                    {header(1) : data(1, 1),
+                    header(2) : data(2, 1),
+                    ...}
+                ROW2 : [dict]
+                    {header(1) : data(1, 2),
+                    header(2) : data(2, 2),
+                    ...}
+            DATA2 : ...}
+    :param log_progress: If True, logs the progress.
+    :param progress_ticks: Percentage of total to log the progress. I.e. at ticks=10.7 at every
+        10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
+        wb_obj: Returns None, if the object was closed. Else returns an instance of "xl.XlWorkbook()".
+            Used to delete the reference to an instance.
+
+    :example:
+        src_file_path = 'C:\my.csv'
+        delimiter = '","'
+        csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+
+        # ... process data in csv["csv_dict"] ...
+
+        target_path = 'C:\my.xlsx'
+        wb_sht = 'Sheet1'
+        wb = csv_dict_to_excel(morpy_trace, app_dict, csv_dict=csv["csv_dict"], xl_path=target_path,
+            overwrite=True, worksheet=wb_sht)["wb_obj"]
+
+        # ... modify 'C:\my.xlsx' ...
+
+        # Save and close workbook
+        wb.close_workbook(mpy_trac, app_dict, save_workbook=True, close_workbook=True)
+    """
+
+    # Define operation credentials (see init.init_cred() for all dict keys)
+    module: str = 'lib.csv'
+    operation: str = 'csv_dict_to_excel(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    check: bool = False
+    xl_exists: bool = False
+    xl_write: bool = False
+    wb_obj = None
+    progress = None
+
+    try:
+        # Writing data to MS Excel file.
+        log(morpy_trace, app_dict, "info",
+            lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_start"]}\n'
+                    f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_path"]}: {xl_path}\n'
+                    f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
+
+        # Log the progress
+        if log_progress:
+            total_prog_count = 0
+            for d_block in csv_dict.keys():
+                row_cnt = csv_dict[d_block].get("rows")
+                if row_cnt:
+                    total_prog_count += csv_dict[d_block].get("rows")
+                else:
+                    log_progress = False
+
+                    # Missing row count in csv_dict. Skipping progress logging.
+                    log(morpy_trace, app_dict, "warning",
+                        lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_fail"]}')
+
+            # Instantiate progress logging
+            progress = ProgressTracker(morpy_trace, app_dict,
+                                          description=f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_descr"]}',
+                                          total=total_prog_count,
+                                          ticks=progress_ticks)
+
+        # Check target file path
+        if xl_path:
+            xl_path_eval = morpy_fct.pathtool(in_path=xl_path)
+            xl_exists = xl_path_eval["file_exists"]
+            xl_valid = True
+        else:
+            xl_valid = False
+
+        # Evaluate, if write to file is allowed and path is valid
+        if xl_valid and (not xl_exists or xl_exists and overwrite):
+            xl_write = True
+
+        # If we have a valid path and a dictionary with data, attempt to write
+        if xl_write and csv_dict:
+            # Instantiate workbook API
+            wb = xl.XlWorkbook(morpy_trace, app_dict, xl_path, create=not xl_exists)
+
+            row_index = 1  # Starting row
+
+            # Loop over each data block in csv_dict
+            for data_block_key, data_block_val in csv_dict.items():
+
+                # -- Validate the block --
+                if not isinstance(data_block_val, dict):
+                    continue
+                if "header" not in data_block_val or not data_block_val["header"]:
+                    continue
+
+                # 1) Write the header row
+                header_tuple = data_block_val["header"]
+                header_length = len(header_tuple)
+
+                # Build a range for the header from e.g. A{row_index}:E{row_index}
+                # If header_length is 5, columns = A, B, C, D, E
+                # Example range: ["A{row_index}:E{row_index}"]
+                first_col_letter = get_column_letter(1)
+                last_col_letter = get_column_letter(header_length)
+                header_range = [f"{first_col_letter}{row_index}:{last_col_letter}{row_index}"]
+
+                # Construct a list of dictionaries representing each header cell.
+                # Each cell’s "value" is the corresponding column name in the header.
+                # Styles are applied conditionally.
+                cell_writes_for_header = []
+                for col_header in header_tuple:
+                    cell_writes_for_header.append({
+                        "value": col_header
+                    })
+
+                # Write the header row
+                wb.write_ranges(
+                    morpy_trace,
+                    app_dict,
+                    worksheet=worksheet,
+                    cell_range=header_range,
+                    cell_writes=cell_writes_for_header,
+                    fill_range=False,  # no re-cycling of style/data in the same row
+                    style_default=False,  # keep default or user-specified style
+                    save_workbook=False,  # we'll do a final save after everything
+                    close_workbook=False,
+                )
+
+                row_index += 1  # move to the next row to start writing data
+
+                # 2) Write all data rows
+                # Each row is a dictionary keyed by the column header
+                # E.g. { 'Name': 'Alice', 'Age': '42', ... }
+                data_count = data_block_val.get("rows", 0)
+
+                # Convert string keys to int, sort them if needed
+                # The block might have items like "1", "2", ... representing row1, row2...
+                # We'll gather them in sorted order
+                row_keys = []
+                for k in data_block_val.keys():
+                    # skip the block-level keys
+                    if k in ("delimiter", "header", "columns", "rows"):
+                        continue
+                    try:
+                        row_keys.append(int(k))
+                        if log_progress:
+                            progress.update(morpy_trace, app_dict)
+                    except (ValueError, TypeError):
+                        pass # Ignore keys that cannot be converted to integers
+                row_keys.sort()
+
+                for row_key in row_keys:
+                    # data_dict is e.g. {'Name': 'Alice', 'Age': '42'}
+                    data_dict = data_block_val[str(row_key)]
+
+                    # We build a range for the row e.g. A{row_index}:E{row_index}
+                    row_range = [f"{first_col_letter}{row_index}:{last_col_letter}{row_index}"]
+
+                    # Now build a list of each cell’s data in the order of the header
+                    cell_writes_for_data = []
+                    for col_header in header_tuple:
+                        # fetch the cell data (string, number, whatever)
+                        cell_value = data_dict.get(col_header, "")
+                        cell_writes_for_data.append({"value": cell_value})
+
+                    wb.write_ranges(
+                        morpy_trace,
+                        app_dict,
+                        worksheet=worksheet,
+                        cell_range=row_range,
+                        cell_writes=cell_writes_for_data,
+                        fill_range=False,
+                        style_default=False,
+                        save_workbook=False,
+                        close_workbook=False,
+                    )
+
+                    row_index += 1  # next row
+
+                # 3) Skip one row after finishing this block
+                row_index += 1
+
+            # Save and optionally close the workbook
+            wb_obj = wb.save_workbook(
+                morpy_trace,
+                app_dict,
+                close_workbook=close_workbook,
+            )["wb_obj"]
+
+            check: bool = True
+
+        if xl_exists and overwrite:
+            # MS Excel file exists. Overwritten.
+            log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_xl_ovwr"]}\n'
+                        f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_path"]}: {xl_path}\n'
+                        f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
+
+        elif xl_exists and not overwrite:
+            # MS Excel file exists. Operation skipped.
+            log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_xl_novwr"]}\n'
+                        f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_path"]}: {xl_path}'
+                        f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
+
+        if not xl_path:
+            # Missing path to MS Excel file. Operation skipped.
+            log(morpy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_missing_xl"]}\n'
+                    f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_path"]}: {xl_path}')
+
+        if not xl_valid:
+            # Invalid path to MS Excel file. Operation skipped.
+            log(morpy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_inval_xl"]}\n'
+                    f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_path"]}: {xl_path}')
+
+        elif not csv_dict:
+            # Missing data book from csv file. operation skipped.
+            log(morpy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_missing_data"]}\n'
+                    f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_data"]}: {csv_dict}')
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    return{
+        'morpy_trace' : morpy_trace,
+        'check' : check,
+        'wb_obj' : wb_obj,
+        }
+```
+
 ## lib.fct.py
 
 ```Python
@@ -2344,9 +3752,7 @@ Descr.:     This module yields the most basic functions of the morPy fork. These
             since they are fully compatible with morPy.
 """
 
-import sys
 import psutil
-import logging
 import hashlib
 
 def datetime_now() -> dict:
@@ -2709,8 +4115,8 @@ def app_dict_to_string(app_dict, depth: int=0) -> str:
 
     if isinstance(app_dict, dict):
 
-        # Define the priority order for level-1 subdictionaries
-        app_dict_order = ["conf", "sys", "run", "global", "proc", "loc"]
+        # Define the priority order for level-1 nested dictionaries
+        app_dict_order = ["conf", "sys", "run", "morpy", "loc"]
 
         lines = []
         indent = 4 * " " * depth  # 4 spaces per depth level
@@ -2731,7 +4137,8 @@ def app_dict_to_string(app_dict, depth: int=0) -> str:
     else:
         return None
 
-def tracing(module, operation, morpy_trace, clone=True, process_id=None) -> dict:
+def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: bool=False,
+            reset_w_prefix: str=None) -> dict:
     r"""
     This function formats the trace to any given operation. This function is
     necessary to alter the morpy_trace as a pass down rather than pointing to the
@@ -2747,6 +4154,9 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None) -> dict
         initialization only).
     :param process_id: Adjust the process ID of the trace. Intended to be used by morPy
         orchestrator only.
+    :param reset: If True, the trace will be reset/lost.
+    :param reset_w_prefix: If reset is True, a custom preset can be set in order to retain
+        a customized trace.
 
     :return morpy_trace_passdown: operation credentials and tracing
     """
@@ -2765,543 +4175,14 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None) -> dict
     # Define operation credentials (see init.init_cred() for all dict keys)
     morpy_trace_passdown["module"] = f'{module}'
     morpy_trace_passdown["operation"] = f'{operation}'
-    morpy_trace_passdown["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
+
+    if reset:
+        morpy_trace_passdown["tracing"] = \
+            f'{reset_w_prefix} > {module}.{operation}' if reset_w_prefix else f'{module}.{operation}'
+    else:
+        morpy_trace_passdown["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
 
     return morpy_trace_passdown
-
-```
-
-## lib.init.py
-
-```Python
-r"""
-morPy Framework by supermorph.tech
-https://github.com/supermorphDotTech
-
-Author:     Bastian Neuwirth
-Descr.:     This module holds all functions used for initialization of the
-            morPy framework.
-"""
-
-import lib.fct as morpy_fct
-import lib.conf as conf
-from lib.common import textfile_write
-from lib.decorators import metrics, log, log_no_q
-from lib.mp import MorPyOrchestrator, process_q_init
-
-import importlib
-import sys
-import os
-import os.path
-
-def init_cred() -> dict:
-    r"""
-    This function initializes the operation credentials and tracing.
-
-    :param:
-        -
-
-    :return: dict
-        morpy_trace - operation credentials and tracing
-    """
-
-    # Initialize operation credentials and tracing.
-    # Each operation/function/object will fill the dictionary with data
-    # by executing morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
-    # as a first step before execution.
-    morpy_trace: dict = {
-        'module' : '__main__',
-        'operation' : '',
-        'tracing' : '__main__',
-        'process_id' : int(0),
-        'thread_id' : int(0),
-        'task_id' : int(0),
-        'log_enable' : False,
-        'interrupt_enable' : False,
-    }
-
-    return morpy_trace
-
-def init(morpy_trace) -> (dict, MorPyOrchestrator):
-    r"""
-    This function initializes the app dictionary and yields app
-    specific information to be handed down through called functions.
-
-    :param morpy_trace: operation credentials and tracing
-
-    :return app_dict: morPy global dictionary containing app configurations
-    """
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module: str = 'lib.init'
-    operation: str = 'init(~)'
-    morpy_trace_init = morpy_fct.tracing(module, operation, morpy_trace)
-
-    try:
-        # ############################################
-        # START Single-threaded initialization
-        # ############################################
-
-        # Build the app_dict
-        init_dict = build_app_dict(morpy_trace_init, create=True)
-
-        init_dict["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
-        init_dict["morpy"].update({"proc_available" : set()})
-        init_dict["morpy"].update({"proc_busy" : {morpy_trace_init["process_id"],}})
-        init_dict["morpy"]["proc_joined"] = True
-        init_dict["morpy"].update({"proc_master" : morpy_trace['process_id']})
-
-        # Initialize the global interrupt flag and exit flag
-        init_dict["morpy"]["interrupt"] = False
-        init_dict["morpy"]["exit"] = False
-
-        # Set an initialization complete flag
-        init_dict["run"]["init_complete"] = False
-
-        # Retrieve the starting time of the program
-        init_datetime = morpy_fct.datetime_now()
-
-        # Store the start time and timestamps in the dictionary
-        for time_key in init_datetime:
-            init_dict["run"][f'init_{time_key}'] = init_datetime[f'{time_key}']
-
-        # Update the initialize dictionary with the parameters dictionary
-        init_dict["conf"].update(conf.settings(start_time=init_dict["run"]["init_datetimestamp"]))
-
-        # Evaluate log_enable
-        if not init_dict["conf"]["log_db_enable"] and not init_dict["conf"]["log_txt_enable"]:
-            init_dict["conf"]["log_enable"] = False
-
-        # Pass down the log enabling parameter
-        morpy_trace["log_enable"] = init_dict["conf"]["log_enable"]
-        morpy_trace_init["log_enable"] = init_dict["conf"]["log_enable"]
-
-        # Import the morPy core functions localization into init_dict.
-        morpy_loc = importlib.import_module(init_dict["conf"]["localization"])
-        init_dict["loc"]["morpy"].update(getattr(morpy_loc, 'loc_morpy')())
-
-        # Build nested dictionary for log generation
-        log_levels = ("init", "debug", "info", "warning", "denied", "error", "critical", "exit")
-        for log_level in log_levels:
-            if (
-                (init_dict["conf"]["log_enable"] and
-                 not (log_level in init_dict["conf"]["log_lvl_nolog"])
-                 ) or (
-                init_dict["conf"]["msg_print"] and
-                 not (log_level in init_dict["conf"]["log_lvl_noprint"]))
-            ):
-                init_dict["global"]["morpy"]["logs_generate"].update({log_level : True})
-            else:
-                init_dict["global"]["morpy"]["logs_generate"].update({log_level : False})
-
-        # Retrieve system information
-        sysinfo = morpy_fct.sysinfo()
-
-        # Update init_dict with system information
-        for sys_key in sysinfo:
-            init_dict["sys"][sys_key] = sysinfo[sys_key]
-
-        # Test for elevated privileges
-        # TODO make an elevation handler
-
-        # Prepare log levels
-        init_dict["run"]["events_total"] = 0
-        init_dict["run"]["events_DEBUG"] = 0
-        init_dict["run"]["events_INFO"] = 0
-        init_dict["run"]["events_WARNING"] = 0
-        init_dict["run"]["events_DENIED"] = 0
-        init_dict["run"]["events_ERROR"] = 0
-        init_dict["run"]["events_CRITICAL"] = 0
-        init_dict["run"]["events_UNDEFINED"] = 0
-        init_dict["run"]["events_INIT"] = 0
-        init_dict["run"]["events_EXIT"] = 0
-
-        # Create first log in txt-file including the app header
-        if (init_dict["conf"]["log_txt_header_enable"] and
-            morpy_trace_init["log_enable"] and
-            init_dict["conf"]["log_txt_enable"]
-        ):
-            morpy_log_header(morpy_trace_init, init_dict)
-
-        # Initialize the morPy debug-specific localization
-        init_dict["loc"]["morpy_dgb"].update(getattr(morpy_loc, 'loc_morpy_dbg')())
-        log_no_q(morpy_trace_init, init_dict, "init",
-        lambda: f'{init_dict["loc"]["morpy"]["init_loc_dbg_loaded"]}')
-
-        # Initialize the app-specific localization
-        app_loc = importlib.import_module(f'loc.app_{init_dict["conf"]["language"]}')
-        init_dict["loc"]["app"].update(getattr(app_loc, 'loc_app')())
-        init_dict["loc"]["app_dbg"].update(getattr(app_loc, 'loc_app_dbg')())
-        log_no_q(morpy_trace_init, init_dict, "init",
-        lambda: f'{init_dict["loc"]["morpy"]["init_loc_app_loaded"]}')
-
-        # Localization initialized.
-        log_no_q(morpy_trace_init, init_dict, "init",
-        lambda: f'{init_dict["loc"]["morpy"]["init_loc_finished"]}\n'
-                f'{init_dict["loc"]["morpy"]["init_loc_lang"]}: {init_dict["conf"]["language"]}')
-
-        # Load init_dict as a string
-        if init_dict["conf"]["print_init_vars"] or init_dict["conf"]["ref_create"]:
-            init_dict_str = morpy_fct.app_dict_to_string(init_dict)
-        else:
-            init_dict_str = ""
-
-        # Print init_dict to console
-        if init_dict["conf"]["print_init_vars"]:
-            print(init_dict_str)
-
-        # Initialize the morPy orchestrator
-        orchestrator = MorPyOrchestrator(morpy_trace_init, init_dict)
-
-        # ############################################
-        # END Single-threaded initialization
-        # START Multi-threaded initialization
-        # ############################################
-
-        # task = morPy.testprint(morpy_trace_init, "Message")
-        # mp.run_parallel(mpy_task, app_dict, task)
-
-        # ############################################
-        # END Multi-threaded initialization
-        # ############################################
-
-        # Calculate the runtime of the initialization routine
-        init_duration = morpy_fct.runtime(init_dict["run"]["init_datetime_value"])
-
-        # Record the duration of the initialization
-        init_dict["run"]["init_rnt_delta"] = init_duration["rnt_delta"]
-
-        log_no_q(morpy_trace_init, init_dict, "init",
-        lambda: f'{init_dict["loc"]["morpy"]["init_finished"]}\n'
-            f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["run"]["init_rnt_delta"]}')
-
-        # Write app_dict to file: initialized_app_dict.txt
-        if init_dict["conf"]["ref_create"]:
-            morpy_ref(morpy_trace_init, init_dict, init_dict_str)
-
-        # Exit initialization
-        retval = init_dict, orchestrator
-        return retval
-
-    except Exception as e:
-        morpy_fct.handle_exception_init(e)
-        raise
-
-def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
-    r"""
-    This function builds the app_dict in accordance to multiprocessing and whether GIL
-    is included in the Python environment.
-
-    :param morpy_trace: operation credentials and tracing
-    :param create: If True, a (nested) dictionary is created. Otherwise, purely
-        references to the UltraDict.
-
-    :return init_dict: morPy global dictionary containing app configurations
-
-    :example:
-        init_dict = build_app_dict(morpy_trace, create=True)
-    """
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module: str = 'lib.init'
-    operation: str = 'build_app_dict(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    # Check for GIL and decide for an app_dict structure.
-    gil = has_gil(morpy_trace)
-    init_dict = None
-    init_mem = 1_000_000 # TODO get memory from config
-    min_mem = 1_000
-
-    try:
-        # FIXME
-        # if gil:
-        if True:
-            from lib.mp import shared_dict
-
-            def mem_evaluation(mem, min_mem) -> int:
-                mem = mem if mem > min_mem else min_mem
-                return mem
-
-            mem = mem_evaluation(init_mem, min_mem)
-            init_dict = shared_dict(
-                name="app_dict",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 100, min_mem)
-            init_dict["conf"] = shared_dict(
-                name="app_dict[conf]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 10, min_mem)
-            init_dict["morpy"] = shared_dict(
-                name="app_dict[morpy]",
-                create=create,
-                size=mem,
-                recurse=True
-            )
-
-            mem = mem_evaluation(init_mem // 100, min_mem)
-            init_dict["morpy"]["orchestrator"] = shared_dict(
-                name="app_dict[morpy][orchestrator]",
-                create=create,
-                size=mem,
-                recurse=True
-            )
-
-            mem = mem_evaluation(init_mem // 100, min_mem)
-            init_dict["morpy"]["proc_refs"] = shared_dict(
-                name="app_dict[morpy][proc_refs]",
-                create=create,
-                size=mem,
-                recurse=True
-            )
-
-            mem = mem_evaluation(init_mem // 10, min_mem)
-            init_dict["sys"] = shared_dict(
-                name="app_dict[sys]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 10, min_mem)
-            init_dict["run"] = shared_dict(
-                name="app_dict[run]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem, min_mem)
-            init_dict["global"] = shared_dict(
-                name="app_dict[global]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 100, min_mem)
-            init_dict["global"]["morpy"] = shared_dict(
-                name="app_dict[global][morPy]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 10, min_mem)
-            init_dict["global"]["app"] = shared_dict(
-                name="app_dict[global][app]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 100, min_mem)
-            init_dict["proc"] = shared_dict(
-                name="app_dict[proc]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 100, min_mem)
-            init_dict["proc"]["morpy"] = shared_dict(
-                name="app_dict[proc][morPy]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 100, min_mem)
-            init_dict["proc"]["app"] = shared_dict(
-                name="app_dict[proc][app]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 1_000, min_mem)
-            init_dict["loc"] = shared_dict(
-                name="app_dict[loc]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem, min_mem)
-            init_dict["loc"]["morpy"] = shared_dict(
-                name="app_dict[loc][morPy]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 100, min_mem)
-            init_dict["loc"]["morpy_dgb"] = shared_dict(
-                name="app_dict[loc][mpy_dbg]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem, min_mem)
-            init_dict["loc"]["app"] = shared_dict(
-                name="app_dict[loc][app]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 100, min_mem)
-            init_dict["loc"]["app_dbg"] = shared_dict(
-                name="app_dict[loc][app_dbg]",
-                create=create,
-                size=mem
-            )
-
-            mem = mem_evaluation(init_mem // 1_000, min_mem)
-            init_dict["global"]["morpy"]["logs_generate"] = shared_dict(
-                name="app_dict[global][morPy][logs_generate]",
-                create=create,
-                size=mem
-            )
-
-        # Without GIL, allow for true nesting
-        else:
-            init_dict = {}
-
-            init_dict["conf"] = {}
-            init_dict["morpy"] = {}
-            init_dict["morpy"]["orchestrator"] = {}
-            init_dict["morpy"]["proc_refs"] = {}
-            init_dict["sys"] = {}
-            init_dict["run"] = {}
-            init_dict["global"] = {}
-            init_dict["global"]["morpy"] = {}
-            init_dict["global"]["app"] = {}
-            init_dict["proc"] = {}
-            init_dict["proc"]["morpy"] = {}
-            init_dict["proc"]["app"] = {}
-            init_dict["loc"] = {}
-            init_dict["loc"]["morpy"] = {}
-            init_dict["loc"]["morpy_dgb"] = {}
-            init_dict["loc"]["app"] = {}
-            init_dict["loc"]["app_dbg"] = {}
-            init_dict["global"]["morpy"]["logs_generate"] = {}
-
-        return init_dict
-
-    # Error detection
-    except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
-
-def morpy_log_header(morpy_trace: dict, init_dict: dict) -> None:
-    r"""
-    This function writes the header for the logfile including app specific
-    information.
-
-    :param morpy_trace: operation credentials and tracing
-    :param init_dict: Dictionary holding all initialized data (init of app_dict)
-
-    :return:
-        -
-
-    :example:
-        morpy_log_header(morpy_trace, init_dict)
-    """
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module: str = 'lib.init'
-    operation: str = 'log_header(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    # Create the app header
-    content = (
-        f'== {init_dict["loc"]["morpy"]["log_header_start"]}{3*" =="}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_author"]}: Bastian Neuwirth\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_app"]}: {init_dict["conf"]["main_path"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_timestamp"]}: {init_dict["run"]["init_datetimestamp"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_user"]}: {init_dict["sys"]["username"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_system"]}: {init_dict["sys"]["os"]} {init_dict["sys"]["os_release"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_version"]}: {init_dict["sys"]["os_version"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_architecture"]}: {init_dict["sys"]["os_arch"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_threads"]}: {init_dict["sys"]["threads"]}\n'
-        f'== {init_dict["loc"]["morpy"]["log_header_begin"]}{3*" =="}\n'
-    )
-
-    # Write to the logfile
-    filepath = init_dict["conf"]["log_txt_path"]
-    textfile_write(morpy_trace, init_dict, filepath, content)
-
-    # Clean up
-    del morpy_trace
-
-def morpy_ref(morpy_trace: dict, init_dict: dict, init_dict_str: str) -> None:
-    r"""
-    This function documents the initialized dictionary (reference). It is stored
-    in the same path as __main__.py and serves development purposes.
-
-    :param morpy_trace: operation credentials and tracing
-    :param init_dict: Dictionary holding all initialized data (init of app_dict)
-    :param init_dict_str: String of the init_dict
-
-    :return:
-        -
-
-    :example:
-        morpy_ref(morpy_trace, init_dict)
-    """
-
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module: str = 'lib.init'
-    operation: str = 'ref(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    try:
-        morpy_ref_path = os.path.join(f'{init_dict["conf"]["main_path"]}', 'initialized_app_dict.txt')
-        init_dict_txt = open(morpy_ref_path,'w')
-
-        # Write init_dict to file
-        init_dict_txt.write(f'{init_dict["loc"]["morpy"]["ref_descr"]}\n\n')
-        init_dict_txt.write(init_dict_str)
-
-        # Close the file
-        init_dict_txt.close()
-
-        # The init_dict was written to textfile.
-        log_no_q(morpy_trace, init_dict, "init",
-        lambda: f'{init_dict["loc"]["morpy"]["ref_created"]}\n'
-                f'{init_dict["loc"]["morpy"]["ref_path"]}: {morpy_ref_path}')
-
-    except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, None, e, sys.exc_info()[-1].tb_lineno, "error")
-
-def has_gil(morpy_trace: dict) -> bool | None:
-    r"""
-    Return True if we detect a standard GIL-based Python runtime on a 'typical' operating system.
-    Return False if we suspect a 'no-gil' or 'free-threading' build on Linux/macOS/Windows, or if
-    we detect certain alternative Pythons. This is *heuristic* and not a guaranteed official check.
-
-    :param morpy_trace: operation credentials and tracing information
-
-    :return gil_detected: If True, Python environment has GIL implemented. Process forking not supported.
-
-    :example:
-        gil = has_gil(morpy_trace)
-    """
-
-    # module: str = 'lib.init'
-    # operation: str = 'has_gil(~)'
-    # morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    try:
-        if sys.version_info >= (3, 13):
-            status = sys._is_gil_enabled()
-            if status:
-                return True
-            else:
-                return False
-        else:
-            return True
-
-    except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, None, e, sys.exc_info()[-1].tb_lineno, "error")
 
 ```
 
@@ -3318,7 +4199,6 @@ Descr.:     Multiprocessing functionality for morPy.
 TODO provide a general purpose lock
     > Find a way to lock file objects and dirs
 """
-import copy
 
 import lib.fct as morpy_fct
 from lib.decorators import metrics, log, log_no_q
@@ -3326,7 +4206,7 @@ from lib.decorators import metrics, log, log_no_q
 import sys
 import time
 from UltraDict import UltraDict
-from multiprocessing import Process
+from multiprocessing import Process, active_children
 from functools import partial
 from heapq import heappush, heappop
 
@@ -3382,10 +4262,7 @@ class MorPyOrchestrator:
             self._init_processes(morpy_trace, app_dict)
             self._init_memory(morpy_trace, app_dict)
 
-            # Initialize the process queue shared dictionary.
-            self.process_q = process_q_init(morpy_trace, app_dict, create=True)["process_q_dict"]
-
-            # Set up fist tasks
+            # Set up first tasks
             self._init_app_dict(morpy_trace, app_dict)
             self._init_run(morpy_trace, app_dict)
 
@@ -3411,9 +4288,6 @@ class MorPyOrchestrator:
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
-
-        TODO make compatible with forking/free-threading
-        TODO when made compatible, take care of self._run(), init.init() and ProcessQueue._init()
         """
 
         module: str = 'lib.mp'
@@ -3698,6 +4572,10 @@ class MorPyOrchestrator:
             self.ref_operation: str = operation
             self.morpy_trace: dict = morpy_trace
 
+            # Activate the process queue
+            if self._mp:
+                process_q_init(morpy_trace, app_dict)
+
             check: bool = True
 
         except Exception as e:
@@ -3730,11 +4608,10 @@ class MorPyOrchestrator:
             from app.exit import app_exit
 
             # App starting.
-            log_no_q(morpy_trace, app_dict, "info",
+            log(morpy_trace, app_dict, "info",
             lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_app_run_start"]}')
 
             # Initialize and run the app
-            morpy_trace["tracing"] = ""
             app_init_return = app_init(morpy_trace, app_dict)["app_init_return"]
             app_run_return = app_run(morpy_trace, app_dict, app_init_return)["app_run_return"]
 
@@ -3769,21 +4646,18 @@ class MorPyOrchestrator:
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         check: bool = False
-        self_ref = app_dict["morpy"]["orchestrator"]
 
         try:
-            # TODO provide case for 2-core mode
-            #   > 1 core for orchestrator and 1 core for app, so no additional spawns
-            #   > Can be mitigated by making waiting processes participate in taking tasks
-            # TODO Add logging thread
-
             # Start the app
             app_task = [self._app_run, morpy_trace_app, app_dict]
-            process_enqueue(morpy_trace, app_dict, priority=-20, task=app_task, autocorrect=False, force=self._mp)
+            process_enqueue(morpy_trace, app_dict, priority=-90, task=app_task, autocorrect=False, force=self._mp)
 
             if self._mp:
-                while not self_ref["terminate"]:
-                    self._main_loop(morpy_trace, app_dict)
+                terminate = False
+                while not terminate:
+                    self._mp_loop(morpy_trace, app_dict)
+                    with app_dict["morpy"]["orchestrator"].lock:
+                        terminate = app_dict["morpy"]["orchestrator"]["terminate"]
 
             check: bool = True
 
@@ -3798,9 +4672,10 @@ class MorPyOrchestrator:
             }
 
     @metrics
-    def _main_loop(self, morpy_trace: dict, app_dict: dict) -> dict:
+    def _mp_loop(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
-        Function
+        Main loop of the morPy orchestrator. This loop will stay alive
+        for the most part of runtime if multiprocessing is enabled.
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -3810,53 +4685,96 @@ class MorPyOrchestrator:
             check: Indicates if the task was pulled successfully
 
         :example:
-            self._main_loop(morpy_trace, app_dict)
+            self._mp_loop(morpy_trace, app_dict)
         """
 
         module: str = 'lib.mp'
-        operation: str = 'MorPyOrchestrator._main_loop(~)'
+        operation: str = 'MorPyOrchestrator._mp_loop(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         check: bool = False
-        self_ref = app_dict["morpy"]["orchestrator"]
+        exit: bool = False
 
         try:
-            while (not self_ref["terminate"]) or (len(self.process_q["heap"]) > 0):
+            with app_dict["morpy"].lock:
+                heap_len = len(app_dict["morpy"]["heap"])
+
+            terminate = False
+            while not terminate or heap_len > 0:
                 # Check process queue for tasks
-                if len(self.process_q["heap"]) > 0:
+                if heap_len > 0:
                     task_pull = process_pull(morpy_trace, app_dict)
                     task = task_pull["task"]
-                    priority = task_pull["priority"]
-                    is_process = task_pull["is_process"]
-                    func = task[0]
-                    args = task[1:]
-                    # Run a new parallel process
-                    if is_process:
-                        app_dict["morpy"]["proc_joined"] = False
-                        run_parallel(morpy_trace, app_dict, task=task, priority=priority)
-                        self_ref["terminate"] = False
-                    # Run an orchestrator task internally
-                    else:
-                        retval = func(*args)
 
-                        # Introduce wait time, if waiting for processes
-                        if priority == -20:
-                            time.sleep(0.02)  # 0.02 seconds = 20 milliseconds
+                    if task:
+                        is_process = task_pull["is_process"]
+                        priority = task_pull["priority"]
+                        # Run a new parallel process
+                        if is_process:
+                            with app_dict["morpy"].lock:
+                                exit = app_dict["morpy"]["exit"]
+
+                            # Only run new processes if not exiting.
+                            if not exit:
+                                app_dict["morpy"]["proc_joined"] = False
+                                run_parallel(morpy_trace, app_dict, task=task, priority=priority)
+                                terminate = False
+                                with app_dict["morpy"]["orchestrator"].lock:
+                                    app_dict["morpy"]["orchestrator"]["terminate"] = terminate
+                        # Run an orchestrator task directly
+                        else:
+                            # Recreate UltraDict references in task
+                            task_recreated = reattach_ultradict_refs(morpy_trace, app_dict, task)["task_recreated"]
+                            func = task_recreated[0]
+                            args = task_recreated[1:]
+                            func(*args)
+
+                    with app_dict["morpy"].lock:
+                        heap_len = len(app_dict["morpy"]["heap"])
+
                 else:
-                    # Sleep if heap is empty
-                    time.sleep(0.05)  # 0.05 seconds = 50 milliseconds
+                    # First, see if lost tasks need to be recovered
+                    check_child_processes(morpy_trace, app_dict)
+                    # Sleep if heap is empty / wait for shelved process acceptance
+                    time.sleep(0.2)  # 0.2 seconds = 200 milliseconds
 
-                # Initiate program exit
+                    with app_dict["morpy"].lock:
+                        heap_len = len(app_dict["morpy"]["heap"])
+
+                    # If heap is still empty, mark processes as joined.
+                    if heap_len > 0:
+                        check_child_processes(morpy_trace, app_dict, check_join=True)
+
+                # TODO check if all processes are joined
+                #   > heap empty and all are waiting
+
+                with app_dict["morpy"].lock:
+                    heap = app_dict["morpy"]["heap"]
+
                 # TODO make use of program exit with critical exceptions
-                # TODO dev a process kill app to end spawned processes and empty memory
-                if app_dict["morpy"]["exit"]:
-                    self_ref["terminate"] = True
+                # TODO make sure no memory leaks are introduced when exiting
+                with app_dict["morpy"].lock:
+                    # Check for the global exit flag
+                    exit = app_dict["morpy"]["exit"]
+                    no_children = True if len(app_dict["morpy"]["proc_busy"]) < 2 else False
+                    no_heap = True if len(heap) == 0 else False
+                    if exit and (no_children and no_heap):
+                        terminate = True
 
-                # Evaluate if spawned processes need to end. As long as the app is running in
-                # a different process, the orchestrator will not terminate. Also, a critical exception
-                # may end the app.
-                if len(app_dict["morpy"]["proc_busy"]) == 0:
-                    self_ref["terminate"] = True
+                # In case of global exit, delete the heap.
+                if exit:
+                    with app_dict["morpy"].lock:
+                        app_dict["morpy"]["heap"] = []
+
+                # Fail-safe check if really no child processes are running anymore.
+                if terminate and not exit:
+                    # TODO call check_child_processes()
+                    # terminate = RESULT
+                    pass
+
+                if terminate:
+                    with app_dict["morpy"]["orchestrator"].lock:
+                        app_dict["morpy"]["orchestrator"]["terminate"] = terminate
 
             check: bool = True
 
@@ -3871,7 +4789,7 @@ class MorPyOrchestrator:
             }
 
 @metrics
-def process_q_init(morpy_trace: dict, app_dict: dict, create: bool = False) -> dict:
+def process_q_init(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
     Initialize the morPy process queue in a separated non-nested shared dictionary.
 
@@ -3891,46 +4809,31 @@ def process_q_init(morpy_trace: dict, app_dict: dict, create: bool = False) -> d
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     check: bool = False
-    name: str = "morPy::process_q"
-    process_q_dict: dict = None
 
     try:
-        # TODO get size from lib.init to support memory management
-        process_q_dict = shared_dict(
-            name=name,
-            create=create,
-            size=100_000
-        )
+        with app_dict["morpy"].lock:
+            morpy_dict = app_dict["morpy"]
+            morpy_dict["heap"] = []
+            morpy_dict["process_q_counter"] = 0
+            morpy_dict["task_lookup"] = set()
 
-        if create:
-            process_q_dict["heap"] = []
-            process_q_dict["counter"] = 0
-            process_q_dict["task_lookup"] = set()
-    
             # Priority queue initialized.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["process_q_init_done"]}\n'
-                    f'{app_dict["loc"]["morpy"]["process_q_name"]}: "{name}"')
+            lambda: f'{app_dict["loc"]["morpy"]["process_q_init_done"]}')
 
-        check: bool = True
+            check = True
 
     except Exception as e:
         from lib.exceptions import MorPyException
-
-        err_msg = f'{app_dict["loc"]["morpy"]["process_q_name"]}: "{name}"'
-        raise MorPyException(
-            morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
-            message=err_msg
-        )
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     return {
         'morpy_trace': morpy_trace,
-        'check': check,
-        'process_q_dict': process_q_dict
+        'check': check
     }
 
 @metrics
-def process_enqueue(morpy_trace: dict, app_dict: dict, priority: int=100, task: tuple=None, autocorrect: bool=True,
+def process_enqueue(morpy_trace: dict, app_dict: dict, priority: int=100, task: list=None, autocorrect: bool=True,
             is_process: bool=True, force: bool = False) -> dict:
     r"""
     Adds a task to the morPy process queue.
@@ -3963,52 +4866,58 @@ def process_enqueue(morpy_trace: dict, app_dict: dict, priority: int=100, task: 
     check: bool = False
 
     try:
-        # Attach to process queue shared dictionary.
-        process_q = process_q_init(morpy_trace, app_dict)["process_q_dict"]
-        name: str = process_q.name
-
         if task:
-            # Omit queuing, if in single core mode
+            # Skip queuing, if in single core mode
             if not (morpy_trace["process_id"] == app_dict["morpy"]["proc_master"]) or force:
 
-                # Check and autocorrect process priority
-                if priority < 0 and autocorrect:
-                    # Invalid argument given to process queue. Autocorrected.
+                with app_dict["morpy"].lock:
+                    morpy_dict = app_dict["morpy"]
+                    task_lookup = morpy_dict["task_lookup"]
+                    heap = morpy_dict["heap"]
+                    counter = morpy_dict["process_q_counter"]
+                    tasks_created = morpy_dict["tasks_created"]
+
+                    # Substitute UltraDict references in task to avoid recursion issues.
+                    task_sanitized = substitute_ultradict_refs(morpy_trace, app_dict, task)["task_sanitized"]
+
+                    # Check and autocorrect process priority
+                    if priority < 0 and autocorrect:
+                        # Invalid argument given to process queue. Autocorrected.
+                        log(morpy_trace, app_dict, "debug",
+                        lambda: f'{app_dict["loc"]["morpy"]["process_enqueue_prio_corr"]}\n'
+                                f'{app_dict["loc"]["morpy"]["process_enqueue_priority"]}: {priority} to 0')
+                        priority = 0
+
+                    # Pushing task to priority queue.
                     log(morpy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["morpy"]["process_enqueue_prio_corr"]}\n'
-                            f'{app_dict["loc"]["morpy"]["process_enqueue_priority"]}: {priority} to 0')
-                    priority = 0
+                    lambda: f'{app_dict["loc"]["morpy"]["process_enqueue_start"]}\n'
+                            f'{app_dict["loc"]["morpy"]["process_enqueue_priority"]}: {priority}')
 
-                # Pushing task to priority queue.
-                log(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["process_enqueue_start"]} {name}\n'
-                        f'{app_dict["loc"]["morpy"]["process_enqueue_priority"]}: {priority}')
+                    next_task_id = app_dict["morpy"]["tasks_created"] + 1
+                    task_sys_id = id(task_sanitized)
 
-                next_task_id = app_dict["morpy"]["tasks_created"] + 1
-                task_sys_id = id(task)
+                    # Check, if ID already in queue
+                    if task_sys_id in task_lookup:
+                        # Task is already enqueued. Referencing in queue.
+                        log(morpy_trace, app_dict, "debug",
+                        lambda: f'{app_dict["loc"]["morpy"]["process_enqueue_task_duplicate"]}\n'
+                                f'Task system ID: {task_sys_id}')
 
-                # Check, if ID already in queue
-                if task_sys_id in process_q["task_lookup"]:
-                    # Task is already enqueued. Referencing in queue.
-                    log(morpy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["morpy"]["process_enqueue_task_duplicate"]}\n'
-                            f'Task system ID: {task_sys_id}')
+                    # Push task to queue
+                    task_qed = (priority, next_task_id, task_sys_id, task_sanitized, is_process)
 
-                # Push task to queue
-                task_qed = (priority, next_task_id, task_sys_id, task, is_process)
+                    heappush(heap, task_qed)
+                    app_dict["morpy"]["heap"] = heap # reassign to trigger synchronization
 
-                heap = process_q["heap"]
-                heappush(heap, task_qed)
-                process_q["heap"] = heap # reassign to trigger synchronization
+                    task_lookup.add(task_sys_id)
+                    app_dict["morpy"]["task_lookup"] = task_lookup # reassign to trigger synchronization
 
-                task_lookup = process_q["task_lookup"]
-                task_lookup.add(task_sys_id)
-                process_q["task_lookup"] = task_lookup # reassign to trigger synchronization
-
-                # Updating global tasks created last in case an error occurs
-                process_q["counter"] += 1
-                app_dict["morpy"]["tasks_created"] += 1
-                morpy_trace["task_id"] = app_dict["morpy"]["tasks_created"]
+                    # Updating global tasks created last in case an error occurs
+                    counter += 1
+                    morpy_dict["process_q_counter"] = counter
+                    tasks_created += 1
+                    morpy_dict["tasks_created"] = tasks_created
+                    morpy_trace["task_id"] = tasks_created
 
             # If run by morPy orchestrator or in single core mode, execute without queueing.
             else:
@@ -4024,20 +4933,7 @@ def process_enqueue(morpy_trace: dict, app_dict: dict, priority: int=100, task: 
 
     except Exception as e:
         from lib.exceptions import MorPyException
-
-        try:
-            name: str = process_q.name
-        except:
-            name: str = "???"
-
-        err_msg = (
-            f'{app_dict["loc"]["morpy"]["ProcessQueue_name"]}: {name}\n'
-            f'{app_dict["loc"]["morpy"]["process_enqueue_priority"]}: {priority}'
-        )
-        raise MorPyException(
-            morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical",
-            message=err_msg
-        )
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     return {
         'morpy_trace': morpy_trace,
@@ -4045,7 +4941,7 @@ def process_enqueue(morpy_trace: dict, app_dict: dict, priority: int=100, task: 
     }
 
 @metrics
-def process_pull(self, morpy_trace: dict, app_dict: dict) -> dict:
+def process_pull(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
     Removes and returns the highest priority task from the process queue.
 
@@ -4082,52 +4978,37 @@ def process_pull(self, morpy_trace: dict, app_dict: dict) -> dict:
     is_process = None
 
     try:
-        # Attach to process queue shared dictionary.
-        process_q = process_q_init(morpy_trace, app_dict)["process_q_dict"]
-        name: str = process_q.name
+        with app_dict["morpy"].lock:
+            morpy_dict = app_dict["morpy"]
+            heap = morpy_dict["heap"]
+            task_lookup = morpy_dict["task_lookup"]
 
-        # Global interrupt - wait for error handling
-        while app_dict["morpy"].get("interrupt", False):
-            pass
+            if len(heap) > 0:
+                task_pulled = heappop(heap)
+                app_dict["morpy"]["heap"] = heap # reassign to trigger synchronization
 
-        if len(process_q["heap"]) > 0:
-            heap = process_q["heap"]
-            task_dqed = heappop(heap)
-            process_q["heap"] = heap # reassign to trigger synchronization
+                priority, counter, task_sys_id, task, is_process = task_pulled
 
-            priority, counter, task_sys_id, task, is_process = task_dqed
+                task_lookup.remove(task_sys_id)
+                app_dict["morpy"]["task_lookup"] = task_lookup # reassign to trigger synchronization
 
-            task_lookup = process_q["task_lookup"]
-            task_lookup.remove(task_sys_id)
-            process_q["task_lookup"] = task_lookup # reassign to trigger synchronization
+                # Pulling task from NAME priority: INT counter: INT
+                log(morpy_trace_pull, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["process_pull_start"]}\n'
+                        f'{app_dict["loc"]["morpy"]["process_pull_priority"]}: {priority}\n'
+                        f'{app_dict["loc"]["morpy"]["process_pull_cnt"]}: {counter}',
+                        verbose = True)
 
-            # Pulling task from NAME priority: INT counter: INT
-            log(morpy_trace_pull, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["process_pull_start"]} {name}.\n'
-                    f'{app_dict["loc"]["morpy"]["process_pull_priority"]}: {priority}\n'
-                    f'{app_dict["loc"]["morpy"]["process_pull_cnt"]}: {counter}',
-                    verbose = True)
+                check = True
 
-            check: bool = True
-
-        else:
-            # Can not pull from an empty priority queue. Skipped...
-            log(morpy_trace_pull, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["process_pull_void"]}')
+            else:
+                # Can not pull from an empty priority queue. Skipped...
+                log(morpy_trace_pull, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["process_pull_void"]}')
 
     except Exception as e:
         from lib.exceptions import MorPyException
-
-        try:
-            name: str = process_q.name
-        except:
-            name: str = "???"
-
-        err_msg = f'{app_dict["loc"]["morpy"]["ProcessQueue_name"]}: {name}'
-        raise MorPyException(
-            morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error",
-            message=err_msg
-        )
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     return {
         'morpy_trace': morpy_trace_pull,
@@ -4136,8 +5017,121 @@ def process_pull(self, morpy_trace: dict, app_dict: dict) -> dict:
         'counter' : counter,
         'task_id' : morpy_trace["task_id"],
         'task_sys_id' : task_sys_id,
-        'task': list(task),
+        'task': task,
         'is_process': is_process
+    }
+
+@metrics
+def substitute_ultradict_refs(morpy_trace: dict, app_dict: dict, task: list) -> dict:
+    r"""
+    Recursively traverse a task (which can be a list, tuple, or dict) and replace any
+    UltraDict instance with a tuple placeholder. The tuple is structured as follows:
+
+        (
+            "__morPy_shared_ref__::{UltraDict.name}",
+            UltraDict.shared_lock,   # (bool) whether a shared lock is used
+            UltraDict.auto_unlink,   # (bool) whether the dict auto-unlinks on close
+            UltraDict.recurse        # (bool) whether recursion (nested UltraDicts) is allowed
+        )
+
+    This substitution preserves the original structure so that later the task can be
+    reconstructed exactly.
+    """
+
+    module: str = 'lib.mp'
+    operation: str = 'substitute_ultradict_refs(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    check: bool = False
+
+    try:
+        def substitute(obj):
+            if isinstance(obj, UltraDict):
+                name_val = obj.name
+                return (f"__morPy_shared_ref__::{name_val}",
+                        obj.shared_lock,
+                        obj.auto_unlink,
+                        obj.recurse)
+            elif isinstance(obj, list):
+                return [substitute(item) for item in obj]
+            elif isinstance(obj, tuple):
+                return tuple(substitute(item) for item in obj)
+            elif isinstance(obj, dict):
+                return {substitute(key): substitute(value) for key, value in obj.items()}
+            else:
+                return obj
+
+        task_sanitized = substitute(task)
+        check = True
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    return {
+        "morpy_trace": morpy_trace,
+        "check": check,
+        "task_sanitized": task_sanitized
+    }
+
+@metrics
+def reattach_ultradict_refs(morpy_trace: dict, app_dict: dict, task) -> dict:
+    r"""
+    Recursively traverse a task (which can be a list, tuple, or dict) and replace any
+    placeholder tuple with the actual UltraDict instance. A placeholder tuple must have the form:
+
+        (
+            "__morPy_shared_ref__::{name}",
+            UltraDict.shared_lock,
+            UltraDict.auto_unlink,
+            UltraDict.recurse
+        )
+
+    The UltraDict is reattached by calling its constructor with these parameters and create=False.
+    """
+
+    module: str = 'lib.mp'
+    operation: str = 'reattach_ultradict_refs(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    check: bool = False
+
+    try:
+        def reattach(obj):
+            placeholder_prefix = "__morPy_shared_ref__::"
+            if (isinstance(obj, tuple) and len(obj) == 4 and
+                    isinstance(obj[0], str) and obj[0].startswith(placeholder_prefix)):
+                name_val = obj[0][len(placeholder_prefix):]
+                shared_lock_val = obj[1]
+                auto_unlink_val = obj[2]
+                recurse_val = obj[3]
+                return UltraDict(
+                    name=name_val,
+                    create=False,
+                    shared_lock=shared_lock_val,
+                    auto_unlink=auto_unlink_val,
+                    recurse=recurse_val
+                )
+            elif isinstance(obj, list):
+                return [reattach(item) for item in obj]
+            elif isinstance(obj, tuple):
+                return tuple(reattach(item) for item in obj)
+            elif isinstance(obj, dict):
+                return {reattach(key): reattach(value) for key, value in obj.items()}
+            else:
+                return obj
+
+        task_recreated = reattach(task)
+        check = True
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    return {
+        "morpy_trace": morpy_trace,
+        "check": check,
+        "task_recreated": task_recreated
     }
 
 @metrics
@@ -4158,15 +5152,10 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
         check: Indicates if the task was pulled successfully
 
     :example:
-        # The priority, counter, task_sys_id and task arguments are passed directly to the
-        # process_control decorator and are delivered by common.ProcessQueue.dequeue().
+        TODO provide example
 
-        pulled = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
-        priority = pulled["priority"]
-        counter = pulled["counter"]
-        task_sys_id = pulled["task_sys_id"]
-        task = pulled["task"]
-        run_parallel(morpy_trace, app_dict, task=task, priority=priority)
+
+    TODO make compatible with forking/free-threading
     """
 
     import lib.fct as morpy_fct
@@ -4181,88 +5170,81 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
     process_id: int = -1
     id_err_avl: bool = False
     id_err_busy: bool = False
+    shelved: bool = False
 
     try:
         if isinstance(task, tuple):
             task = list(task)
             # The 'task' provided is a tuple. Autocorrected to list.
-            log_no_q(morpy_trace, app_dict, "warning",
+            log(morpy_trace, app_dict, "warning",
             lambda: f'{app_dict["loc"]["morpy"]["run_parallel_task_corr"]}\n{task=}')
 
-        # Starting process control with arguments:
-        log_no_q(morpy_trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["run_parallel_start_w_arg"]}:\n'
-                f'morpy_trace: {morpy_trace}\n'
-                f'priority: {priority}\n'
-                f'task_sys_id: {task_sys_id}')
+        # Start preparing task for spawning process.
+        log(morpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["morpy"]["run_parallel_start_prep"]}')
 
         # Fetch the maximum processes to be utilized by morPy
         processes_max = app_dict["morpy"]["orchestrator"]["processes_max"]
 
         if callable(task[0]):
-            # Search for available process IDs and stop searching after 2x maximum processes
-            while (not id_check) and (id_search <= 2 * processes_max):
 
-                id_search += 1
+            # See, if processes are waiting with an empty shelf.
+            with app_dict["morpy"]["proc_waiting"].lock:
+                proc_waiting = app_dict["morpy"]["proc_waiting"]
+                for process in proc_waiting:
+                    task_shelved, priority = proc_waiting[process]
+                    # Put the task on the shelf and return.
+                    if not task_shelved:
+                        proc_waiting[process] = (task, priority)
+                        shelved = True
 
-                # Searching for available process ID.
-                log_no_q(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["run_parallel_search_p_id"]}:\n'
-                        f'id_check: {id_check}\n'
-                        f'id_search: {id_search}')
+            # Exit, if task has been shelved
+            if shelved:
+                # A task was shelved to a running process.
+                log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["run_parallel_shelved"]}')
 
-                # Fetch sets for membership testing
+                return {
+                    'morpy_trace': morpy_trace,
+                    'check': check,
+                }
+
+            with app_dict["morpy"].lock:
                 processes_available = app_dict["morpy"]["proc_available"]
                 processes_busy = app_dict["morpy"]["proc_busy"]
+                process_id = None
+                proc_master = app_dict["morpy"]["proc_master"]
 
-                process_id = min(processes_available)
-
-                # Membership testing / avoid conflicts during process ID fetch
-                if process_id in processes_available:
-                    # Pop process ID from available list
+                # Try up to 2 * processes_max attempts
+                for attempt in range(2 * processes_max):
+                    if not processes_available:
+                        break  # No IDs available
+                    process_id = min(processes_available)
+                    # Remove candidate immediately from available_ids
                     processes_available.remove(process_id)
-                    app_dict["morpy"]["proc_available"] = processes_available
-                else:
-                    # Process ID conflict. Possible concurrent process creation. Process creation skipped.
-                    id_err_avl = True
+                    # If candidate is not busy, reserve it
+                    if process_id not in processes_busy:
+                        processes_busy.add(process_id)
+                        break
 
-                # Membership testing / adding process to busy
-                if process_id in processes_busy:
-                    # Process ID conflict. ID# seemed available, is busy. Process creation skipped.
-                    id_err_busy = True
-                else:
-                    # Add process ID to busy list
-                    processes_busy.add(process_id)
-                    app_dict["morpy"]["proc_busy"] = processes_busy
+                app_dict["morpy"]["proc_available"] = processes_available # reassign to trigger synchronization
+                app_dict["morpy"]["proc_busy"] = processes_busy # reassign to trigger synchronization
 
-                # Processes available / processes busy
-                log_no_q(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["run_parallel_proc_avl"]}:'
-                        f'{app_dict["morpy"]["proc_available"]}\n'
-                        f'{app_dict["loc"]["morpy"]["run_parallel_proc_busy"]}:'
-                        f'{app_dict["morpy"]["proc_busy"]}')
-
-                # Process ID conflict. A process may have terminated dirty. Process creation skipped.
-                if id_err_busy or id_err_avl:
-                    id_check = False
-                else:
-                    id_check = True
-
+            if process_id:
                 # Process ID determined.
-                log_no_q(morpy_trace, app_dict, "debug",
+                log(morpy_trace, app_dict, "debug",
                 lambda: f'{app_dict["loc"]["morpy"]["run_parallel_search_iter_end"]}:\n'
-                        f'id_check: {id_check}\n'
-                        f'id_search: {id_search}')
-
+                        f'{id_check=}\n{id_search=}')
             # Execute the task
-            if process_id >= 0 and id_check:
+            if process_id != proc_master:
 
                 # Parallel process starting.
-                log_no_q(morpy_trace, app_dict, "debug",
+                log(morpy_trace, app_dict, "debug",
                 lambda: f'{app_dict["loc"]["morpy"]["run_parallel_start"]}: {process_id}')
 
                 # Increment the total task count
-                app_dict["morpy"]["orchestrator"]["task_counter"] += 1
+                with app_dict["morpy"]["orchestrator"].lock:
+                    app_dict["morpy"]["orchestrator"]["task_counter"] += 1
 
                 # Tracing update and ID assignment for the new process
                 task[1].update({"process_id" : process_id})
@@ -4270,58 +5252,40 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                 task[1].update({"task_id" : app_dict["morpy"]["orchestrator"]["task_counter"]})
                 task[1].update({"tracing" : ""})
 
-                # Remove app_dict from the task to prevent unnecessary pickling
-                task[2] = {}
-
                 # Run the task
                 if task is not None:
-                    # Check for remnants of old process, prevent collisions due to shelving
-                    watcher(morpy_trace, app_dict, task, single_check=True)
-
                     p = Process(target=partial(spawn, task))
                     p.start()
 
                     # Create references to the process
-                    proc_refs = app_dict["morpy"]["proc_refs"]
-                    proc_refs.update({f'{process_id}': p.name})
-                    app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
-
-                    # Enqueue a process watcher
-                    process_watcher = (watcher, morpy_trace, app_dict, task)
-                    process_enqueue(
-                        morpy_trace, app_dict, priority=priority, task=process_watcher,
-                        autocorrect=False, is_process=False
-                    )
+                    with app_dict["morpy"]["proc_refs"].lock:
+                        proc_refs = app_dict["morpy"]["proc_refs"]
+                        proc_refs.update({process_id : p.name})
+                        app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
 
             else:
+                with app_dict["morpy"]["process_q"].lock:
+                    task_lookup = app_dict["morpy"]["process_q"]["task_lookup"]
+
                 # Enqueue the task again to prevent data loss
-                if task_sys_id in app_dict["proc"]["morpy"]["queue"].task_lookup:
+                if task_sys_id in task_lookup:
                     # Task could not be enqueued again. Task ID still in queue. Data loss possible.
                     raise RuntimeError(
                         f'{app_dict["loc"]["morpy"]["run_parallel_requeue_err"]}\n'
                         f'{app_dict["loc"]["morpy"]["run_parallel_task_sys_id"]}: {task}\n'
                         f'{app_dict["loc"]["morpy"]["run_parallel_task"]}: {task_sys_id}')
                 else:
-                    app_dict["proc"]["morpy"]["queue"].enqueue(
-                        morpy_trace, app_dict, priority=priority,
-                        task=partial(task, morpy_trace, app_dict)
+                    process_enqueue(
+                        morpy_trace, app_dict, priority=priority, task=[task, morpy_trace, app_dict]
                     )
 
-                # Could not get process ID. Task was enqueued again. Issues encountered:
-                # [CONDITIONAL] Process ID conflict. Possible concurrent process creation. Process creation skipped.
-                # [CONDITIONAL] Process ID conflict. ID# seemed available, is busy. Process creation skipped.
-                message = f'{app_dict["loc"]["morpy"]["run_parallel_id_abort"]}'
+                    # Failed to allocate process ID. Re-queueing the task.
+                    log(morpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["morpy"]["run_parallel_allocate_fail"]}:\n'
+                            f'{id_check=}\n{id_search=}')
 
-                if id_err_avl or id_err_busy:
-                    message = f'{message}\n{app_dict["loc"]["morpy"]["run_parallel_issues"]}'
-                    if id_err_avl:
-                        message = f'{message}\n{app_dict["loc"]["morpy"]["run_parallel_id_err_avl"]}'
-                    elif id_err_busy:
-                        message = f'{message}\n{app_dict["loc"]["morpy"]["run_parallel_id_err_busy"]}'
-                    raise RuntimeError(message)
-
-            # Parallel process created.
-            log_no_q(morpy_trace, app_dict, "debug",
+            # Parallel process running.
+            log(morpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["morpy"]["run_parallel_exit"]}: {process_id}')
 
         else:
@@ -4338,7 +5302,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
             'check': check,
         }
 
-def spawn(task: list) -> dict:
+def spawn(task: list) -> None:
     r"""
     This function registers a task in app_dict and executes it.
 
@@ -4350,140 +5314,188 @@ def spawn(task: list) -> dict:
         process_partial: Process to be spawned, packed with partial
 
     :example:
-        pulled = app_dict["proc"]["morpy"]["queue"].dequeue(morpy_trace, app_dict)
-        task = pulled["task"]
-        p = Process(target=spawn, args=task,)
-        p.start()
+        TODO example
+
+    TODO redirect stdout and stderr for this process to only show it's own and not duplicate in master process
+        > Test current solution with GUI
+        > Make custom I/O stream optional, because for app it is not generally desired.
     """
 
-    from lib.init import build_app_dict
+    import io
 
     morpy_trace: dict = None
-    app_dict: dict = None
+    app_dict: dict = shared_dict(name="app_dict")
+    my_id: int = None
 
     try:
         # Extract morpy_trace and app_dict (which must be provided by the parent).
         morpy_trace = task[1]
-        app_dict = build_app_dict(morpy_trace)
+        my_id = morpy_trace["process_id"]
 
-        # Assign referenced app_dict to task (process) and run it
-        task[2] = app_dict
-        func, *args = task
+        # Recreate UltraDict references in task
+        task_recreated = reattach_ultradict_refs(morpy_trace, app_dict, task)["task_recreated"]
+        func, *args = task_recreated
         result = func(*args)
 
-        # Remove own process reference
-        proc_refs = app_dict["morpy"]["proc_refs"]
-        proc_refs.pop(morpy_trace['process_id'], None)
-        app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
+        module = morpy_trace["module"]
+        operation = morpy_trace["operation"]
 
-        proc_busy = app_dict["morpy"]["proc_busy"]
-        proc_busy.remove(morpy_trace['process_id'])
-        app_dict["morpy"]["proc_busy"] = proc_busy # reassign to trigger synchronization
+        # Wait until all are joined or take on a task.
+        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
 
-    except Exception as e:
-        # Remove own process reference
-        try:
+        # Remove own process reference.
+        # Always get the proc_refs lock first to prevent deadlocks and data loss.
+        with app_dict["morpy"]["proc_refs"].lock:
             proc_refs = app_dict["morpy"]["proc_refs"]
-            proc_refs.pop(morpy_trace['process_id'], None)
+            proc_refs.pop(my_id, None)
             app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
 
-            proc_busy = app_dict["morpy"]["proc_busy"]
-            proc_busy.remove(morpy_trace['process_id'])
-            app_dict["morpy"]["proc_busy"] = proc_busy  # reassign to trigger synchronization
+            with app_dict["morpy"].lock:
+                proc_busy = app_dict["morpy"]["proc_busy"]
+                proc_busy.remove(my_id)
+                app_dict["morpy"]["proc_busy"] = proc_busy # reassign to trigger synchronization
+
+    except Exception as e:
+        # Remove own process references if left after exception
+        try:
+            # Always get the proc_refs lock first to prevent deadlocks and data loss.
+            with app_dict["morpy"]["proc_refs"].lock:
+                proc_refs = app_dict["morpy"]["proc_refs"]
+                proc_refs.pop(my_id, None)
+                app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
+
+                with app_dict["morpy"].lock:
+                    proc_busy = app_dict["morpy"]["proc_busy"]
+                    proc_busy.remove(my_id)
+                    app_dict["morpy"]["proc_busy"] = proc_busy  # reassign to trigger synchronization
+
+                with app_dict["morpy"]["proc_waiting"].lock:
+                    proc_waiting = app_dict["morpy"]["proc_waiting"]
+                    if proc_waiting.get(my_id, None):
+                        proc_waiting.remove(my_id)
+                        app_dict["morpy"]["proc_waiting"] = proc_waiting # reassign to trigger synchronization
+
+            from lib.exceptions import MorPyException
+            morpy_trace["module"] = 'lib.mp'
+            morpy_trace["operation"] = 'spawn(~)'
+            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
         except:
             pass
 
-        from lib.exceptions import MorPyException
-        morpy_trace["module"] = 'lib.mp'
-        morpy_trace["operation"] = 'spawn(~)'
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
-
 @metrics
-def watcher(morpy_trace: dict, app_dict: dict, task: list, single_check: bool=False) -> dict:
+def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = False) -> dict:
     r"""
-    Watcher function that monitors a running process based on the provided task reference. It verifies
-    if the process is still active and, if so, re-enqueues itself for continued monitoring unless
-    single_check is set to True. Once the process is detected to be inactive, it cleans up references
-    to free the process ID and related resources, in case process was killed.
+    Orchestrator routine to check on child processes and correct
+    the process references in app_dict if necessary.
+
+    This function compares the list of active child processes with the
+    process references stored in app_dict["morpy"]["proc_refs"]. If a process
+    is referenced but no longer active, it logs an error and removes that reference.
+    It also attempts to terminate any processes that are still running but are not
+    referenced in proc_refs (rogue processes).
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
-    :param task: Task represented by a tuple
-    :param single_check: If True, watcher() will not be enqueued again.
+    :param check_join: If True, the orchestrator will check if all processes are
+        joined. This may end processes, that could otherwise accept a shelved task.
 
-    :example 1:
-        process_watcher = (watcher, morpy_trace, app_dict, task)
-        process_enqueue(
-            morpy_trace, app_dict, priority=priority, task=process_watcher, autocorrect=False, is_process=False
-        )
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates if the function ended without errors.
 
-    :example 2:
-        watcher(morpy_trace, app_dict, task, single_check=True)
+    :example:
+        check_child_processes(morpy_trace, app_dict)
     """
 
-    import lib.fct as morpy_fct
-    import copy
-    from multiprocessing import active_children
-
-    morpy_trace_in = copy.deepcopy(morpy_trace)
     module: str = 'lib.mp'
-    operation: str = 'watcher(~)'
+    operation: str = 'check_child_processes(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     check: bool = False
-    priority: int = -20
-    is_active: bool = False
+    child_processes: dict = {}
+    proc_left_over: set = set()
 
     try:
-        active = active_children()
-        task_morpy_trace: dict = task[1]
-        process_id = task_morpy_trace["process_id"]
+        # Always get the proc_refs lock first to prevent deadlocks and data loss.
+        with (app_dict["morpy"]["proc_refs"].lock):
+            proc_refs = app_dict["morpy"]["proc_refs"]
 
-        # Check, if process is still active
-        if f'{process_id}' in app_dict["morpy"]["proc_refs"].keys():
-            p_name = app_dict["morpy"]["proc_refs"][f'{process_id}']
+            # Build a set of active child process names
+            for child in active_children():
+                child_processes.update({child.name : child})
 
-            for p in active:
-                if p.name == p_name:
-                    is_active = True
-                    break
+            # Compare morPy process references with active_children()
+            for p_id, p_name in proc_refs.items():
+                try:
+                    child_processes.pop(p_name)
+                except KeyError:
+                    # A child process was terminated unexpectedly. Process references will be restored.
+                    log(morpy_trace, app_dict, "error",
+                    lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_term_err"]}\n'
+                            f'{app_dict["loc"]["morpy"]["check_child_processes_aff"]} "{p_id}: {p_name}"')
 
-            # If process is still alive enqueue watcher again
-            if is_active:
-                # Process Watcher: Process still alive.
-                log(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["watcher_is_alive"]}:\n'
-                        f'{app_dict["morpy"]["proc_refs"]}',
-                        verbose=True)
+                    # Collect leftover process IDs
+                    proc_left_over.add(p_id)
 
-                if not single_check:
-                    task = (watcher, morpy_trace_in, app_dict, task)
-                    process_enqueue(
-                        morpy_trace, app_dict, priority=priority, task=task, autocorrect=False, is_process=False
-                    )
+            # Try to terminate roque processes.
+            roque_proc_names: list = child_processes.keys()
+            if len(roque_proc_names) > 0:
+                # At least one process still running, although considered terminated.
+                # Recovery is not possible, trying to terminate.
+                log(morpy_trace, app_dict, "warning",
+                lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_rogues"]}\n'
+                        f'{app_dict["loc"]["morpy"]["check_child_processes_norec"]}'
+                        f'{roque_proc_names}')
 
-            # Clean up process references, if process is not running.
-            else:
-                # Process Watcher: Process ended, cleaning up.
-                log(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["watcher_end"]}:\n'
-                        f'{app_dict["morpy"]["proc_refs"]}',
-                        verbose=True)
+                for rogue_name, rogue_obj in child_processes.items():
+                    try:
+                        rogue_obj.terminate()
+                    except:
+                        pass
 
-                # Cleanup app_dict
-                proc_available = app_dict["morpy"]["proc_available"]
-                if process_id not in proc_available:
-                    proc_available.add(process_id)
+            # Finally, sanitize the process references
+            with app_dict["morpy"].lock:
+                proc_busy = app_dict["morpy"]["proc_busy"]
+
+                for proc_remnant_id in proc_left_over:
+                    del proc_refs[proc_remnant_id]
+                    app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
+
+                    proc_available = app_dict["morpy"]["proc_available"]
+                    proc_available.add(proc_remnant_id)
                     app_dict["morpy"]["proc_available"] = proc_available # reassign to trigger synchronization
 
-                proc_busy = app_dict["morpy"]["proc_busy"]
-                if process_id in proc_busy:
-                    proc_busy.remove(process_id)
+                    proc_busy.discard(proc_remnant_id)
                     app_dict["morpy"]["proc_busy"] = proc_busy # reassign to trigger synchronization
 
-                proc_refs = app_dict["morpy"]["proc_refs"]
-                proc_refs.pop(f'{process_id}', None)
-                app_dict["morpy"]["proc_refs"] = proc_refs
+                    with app_dict["morpy"]["proc_waiting"].lock:
+                        proc_waiting = app_dict["morpy"]["proc_waiting"]
+
+                        if proc_waiting.get(proc_remnant_id, None):
+                            # Proactively Recover a task from shelve
+                            task_recovered, priority = proc_waiting[proc_remnant_id]
+                            if task_recovered:
+                                process_enqueue(morpy_trace, app_dict, priority=priority, task=task_recovered)
+                                # A shelved task was recovered from a terminated task.
+                                log(morpy_trace, app_dict, "warning",
+                                lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_recovery"]}'
+                                        f'{roque_proc_names}')
+
+                            proc_waiting.remove(proc_remnant_id)
+                            app_dict["morpy"]["proc_waiting"] = proc_waiting  # reassign to trigger synchronization
+
+                if check_join:
+                    with app_dict["morpy"]["proc_waiting"].lock:
+                        proc_waiting = app_dict["morpy"]["proc_waiting"]
+
+                    # Have in mind, that the orchestrator is never waiting.
+                    if len(proc_busy) == len(proc_waiting.keys()) + 1:
+                        app_dict["morpy"]["proc_joined"] = True
+
+                        # All child processes are joined.
+                        log(morpy_trace, app_dict, "debug",
+                        lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_joined"]}'
+                                f'{roque_proc_names}')
 
         check: bool = True
 
@@ -4498,70 +5510,7 @@ def watcher(morpy_trace: dict, app_dict: dict, task: list, single_check: bool=Fa
         }
 
 @metrics
-def join_all_by_master(morpy_trace: dict, app_dict: dict, child_pid: int | str = None) -> dict:
-    r"""
-    Task for the orchestrator to join all morPy registered processes.
-
-    :param morpy_trace: operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
-    :param child_pid: Process ID of the child process calling the function. Required filter out
-        the child process, that is waiting for joining all.
-
-    :return: dict
-        morpy_trace: Operation credentials and tracing
-        check: Indicates if the task was pulled successfully
-
-    :example:
-        task = (join_all_by_master, morpy_trace, app_dict, child_pid)
-        process_enqueue(
-            morpy_trace, app_dict, priority=0, task=task, autocorrect=False, is_process=False
-    """
-
-    module: str = 'lib.mp'
-    operation: str = 'join_all_by_master(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    check: bool = False
-
-    try:
-        # Make a copy of the process references to avoid race conditions.
-        proc_refs: dict = copy.deepcopy(app_dict["morpy"]["proc_refs"])
-
-        # Remove child and master process references from pool
-        proc_refs.pop(str(child_pid), None)
-        proc_refs.pop(str(morpy_trace["process_id"]), None)  # Should not be in the pool
-
-        if len(proc_refs.keys()) > 0:
-            # Waiting for processes to finish before transitioning app phase.
-            log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["join_all_by_master_start"]}:\n'
-                    f'{app_dict["morpy"]["proc_refs"]}')
-
-            from multiprocessing import active_children
-
-            # Loop until all known process references have been joined.
-            for p_id, p_name in proc_refs.items():
-                for proc in active_children():
-                    if proc.name == p_name:
-                        proc.join()
-
-                proc_refs.pop(p_id, None)
-
-        # Signal all processes joined
-        app_dict["morpy"]["proc_joined"] = True
-
-    except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
-
-    finally:
-        return {
-            'morpy_trace': morpy_trace,
-            'check': check,
-        }
-
-@metrics
-def join_all_from_child(morpy_trace: dict, app_dict: dict, child_pid: int | str = None) -> dict:
+def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, reset_w_prefix: str=None) -> dict:
     r"""
     Join all processes orchestrated by morPy. This can not be used, to arbitrarily join processes.
     It is tailored to be used at the end of app.init, app.run and app.exit! The function is to
@@ -4571,41 +5520,84 @@ def join_all_from_child(morpy_trace: dict, app_dict: dict, child_pid: int | str 
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
-    :param child_pid: Process ID of the child process calling the function. Required filter out
-        the child process, that is waiting for joining all.
+    :param reset_trace: If True, the trace will be reset/lost.
+    :param reset_w_prefix: If reset_trace is True, a custom preset can be set in order to retain
+        a customized trace.
 
     :return: dict
         morpy_trace: Operation credentials and tracing
         check: Indicates if the task was pulled successfully
 
     :example:
-        join_all_from_child(morpy_trace, app_dict)
+        join_or_task(morpy_trace, app_dict)
+
+    TODO add idle_timeout to stop waiting for task shelving
     """
 
     import time
 
     module: str = 'lib.mp'
-    operation: str = 'join_all_from_child(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+    operation: str = 'join_or_task(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace, reset=reset_trace,
+                                          reset_w_prefix=reset_w_prefix)
 
     check: bool = False
+    my_pid: int = morpy_trace["process_id"]
 
     try:
-        # Check, if join is necessary
-        if not app_dict["morpy"]["proc_joined"]:
-            # Waiting for processes to finish.
-            log(morpy_trace, app_dict, "info",
-            lambda: f'{app_dict["loc"]["morpy"]["join_all_from_child_start"]}')
+        # Skip if run by master / single process mode
+        proc_master = app_dict["morpy"]["proc_master"]
+        if my_pid != proc_master:
+            # Waiting for processes to finish or task to run.
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["join_or_task_start"]}')
 
-            # Create join-task for morPy orchestrator
-            task = (join_all_by_master, morpy_trace, app_dict, child_pid)
-            process_enqueue(
-                morpy_trace, app_dict, priority=-1, task=task, autocorrect=False, is_process=False
-            )
+            proc_joined = False
+            while not proc_joined:
+                time.sleep(0.05)    # 0.05 seconds = 50 milliseconds
 
-        # Wait for processes to join
-        while not app_dict["morpy"]["proc_joined"]:
-            time.sleep(0.05)    # 0.05 seconds = 50 milliseconds
+                # Check for a shelved task
+                with app_dict["morpy"]["proc_waiting"].lock:
+                    proc_waiting = app_dict["morpy"]["proc_waiting"]
+                    task, priority = proc_waiting.get(my_pid, (None, None))
+
+                    # Unsubscribe from waiting dictionary if a task was assigned.
+                    if task:
+                        proc_waiting.pop(my_pid)
+                        app_dict["morpy"]["proc_waiting"] = proc_waiting  # reassign to trigger synchronization
+
+                if task:
+                    # Check for Interrupt / exit
+                    stop_while_interrupt(morpy_trace, app_dict)
+
+                    # Recreate UltraDict references in task and run it.
+                    task_recreated = reattach_ultradict_refs(morpy_trace, app_dict, task)["task_recreated"]
+                    func = task_recreated[0]
+                    args = task_recreated[1:]
+                    func(*args)
+
+                    # Clean up
+                    del task
+                    del task_recreated
+                    del func
+                    del args
+
+                # Check for Interrupt / exit
+                stop_while_interrupt(morpy_trace, app_dict)
+
+                # Re-/subscribe to waiting dictionary.
+                with app_dict["morpy"]["proc_waiting"].lock:
+                    proc_waiting = app_dict["morpy"]["proc_waiting"]
+                    if not proc_waiting.get(my_pid, None):
+                        # Add task to waiting dictionary without a shelved task.
+                        proc_waiting.update({my_pid: (None, None)})
+                        app_dict["morpy"]["proc_waiting"] = proc_waiting  # reassign to trigger synchronization
+
+                # Check, if processes have been joined yet.
+                with app_dict["morpy"].lock:
+                    proc_joined = app_dict["morpy"]["proc_joined"]
+
+        check = True
 
     except Exception as e:
         from lib.exceptions import MorPyException
@@ -4632,9 +5624,6 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
 
     :example:
         interrupt(morpy_trace, app_dict)
-
-
-    TODO finish this function
     """
 
     module: str = 'lib.mp'
@@ -4644,9 +5633,96 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
     check: bool = False
 
     try:
-        # TODO check for program exit as an exit point
-        #   > app_dict["global"]["morpy"]["exit"]
-        pass
+        # Global interrupt has been set.
+        log(morpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["morpy"]["interrupt_set"]}')
+
+        if isinstance(app_dict, UltraDict):
+            with app_dict["morpy"]:
+                app_dict["morpy"]["interrupt"] = True
+        else:
+            app_dict["morpy"]["interrupt"] = True
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+
+    finally:
+        return {
+            'morpy_trace': morpy_trace,
+            'check': check,
+        }
+
+@metrics
+def stop_while_interrupt(morpy_trace: dict, app_dict: dict) -> dict:
+    r"""
+    Wait until the global interrupt flag is set to False.
+
+    :param morpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates if the task was pulled successfully
+
+    :example:
+        stop_while_interrupt(morpy_trace, app_dict)
+
+    # TODO distribute this function throughout the framework
+    """
+
+    module: str = 'lib.mp'
+    operation: str = 'stop_while_interrupt(~)'
+    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+
+    check: bool = False
+    exit: bool = False
+
+    try:
+        with app_dict["morpy"].lock:
+            interrupt = app_dict["morpy"].get("interrupt", False)
+
+        # Global interrupt. Process is waiting for release.
+        log(morpy_trace, app_dict, "debug",
+        lambda: f'{app_dict["loc"]["morpy"]["stop_while_interrupt"]}')
+
+        while interrupt and not exit:
+            time.sleep(0.05)
+            with app_dict["morpy"].lock:
+                interrupt = app_dict["morpy"]["interrupt"]
+                exit = app_dict["morpy"]["exit"]
+
+        if exit:
+            with app_dict["morpy"]:
+                proc_master = app_dict["morpy"]["proc_master"]
+
+            # If process is orchestrator, gracefully exit
+            # TODO make sure logs are still written
+            if morpy_trace["process_id"] != proc_master:
+                # TODO enqueue a log for "aborted task"
+                # Remove own process references
+                try:
+                    # Always get the proc_refs lock first to prevent deadlocks and data loss.
+                    with app_dict["morpy"]["proc_refs"].lock:
+                        proc_refs = app_dict["morpy"]["proc_refs"]
+                        proc_refs.pop(morpy_trace['process_id'], None)
+                        app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
+
+                        with app_dict["morpy"].lock:
+                            proc_busy = app_dict["morpy"]["proc_busy"]
+                            proc_busy.remove(morpy_trace['process_id'])
+                            app_dict["morpy"]["proc_busy"] = proc_busy  # reassign to trigger synchronization
+
+                        with app_dict["morpy"]["proc_waiting"].lock:
+                            proc_waiting = app_dict["morpy"]["proc_waiting"]
+                            if proc_waiting.get(morpy_trace['process_id'], None):
+                                proc_waiting.remove(morpy_trace['process_id'])
+                                app_dict["morpy"]["proc_waiting"] = proc_waiting # reassign to trigger synchronization
+                except:
+                    pass
+
+                # TODO Make sure that this abrupt exit does not leave shared data in an inconsistent state or lead to orphaned tasks.
+                sys.exit()
 
     except Exception as e:
         from lib.exceptions import MorPyException
@@ -4660,8 +5736,23 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
 
 def shared_dict(name: str = None, create: bool = False, shared_lock: bool = True, size: int = 100_000,
               auto_unlink: bool = False, recurse: bool = False) -> UltraDict:
+    r"""
+    Create and return an UltraDict instance using shared memory.
 
-    # TODO docstring
+    :param name: The name to be used for the shared memory block.
+    :param create: If True, create a new shared memory block; if False, attach to an existing one.
+    :param shared_lock: If True, the UltraDict will use a shared lock for cross‐process synchronization.
+    :param size: The size (in bytes) of the memory buffer to be allocated.
+    :param auto_unlink: If True, the shared memory will be automatically unlinked when the dict is closed.
+    :param recurse: If True, allow nested UltraDict instances.
+
+    :return shared_dict: UltraDict instance configured with the given parameters.
+
+    TODO find a way to recreate buffer and dump sizes
+    """
+
+    from UltraDict import UltraDict
+
     shared_dict = UltraDict(
         name=name,
         create=create,
@@ -4674,11 +5765,32 @@ def shared_dict(name: str = None, create: bool = False, shared_lock: bool = True
 
     return shared_dict
 
+def is_udict(obj) -> bool:
+    r"""
+    Simple type check in the object provided. Returns True, if object is an UltraDict.
+
+    :param obj: Any object.
+
+    :return: True, if object is an UltraDict.
+
+    TODO distribute throughout the code.
+    """
+
+    from UltraDict import UltraDict
+
+    is_udict: bool = False
+
+    if isinstance(obj, UltraDict):
+        is_udict = True
+
+    return is_udict
+
 ```
 
 ## lib.msg.py
 
 ```Python
+r"""
 r"""
 morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
@@ -4693,12 +5805,15 @@ TODO make logging a class
 """
 
 import lib.fct as morpy_fct
-from lib.mp import process_enqueue
 from lib.common import textfile_write
 from lib.decorators import metrics
 
 import sys
 import time
+from heapq import heappush, heappop
+
+from lib.mp import is_udict
+
 
 @metrics
 def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbose: bool) -> None:
@@ -4726,8 +5841,16 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
 
     try:
         # Wait for an interrupt to end
-        while app_dict["morpy"]["interrupt"] == True:
+        udict_true = is_udict(app_dict["morpy"])
+        if udict_true:
+            with app_dict["morpy"].lock:
+                interrupt = app_dict["morpy"]["interrupt"]
+        else:
+            interrupt = app_dict["morpy"]["interrupt"]
+
+        while interrupt:
             time.sleep(0.05)
+
 
         # Event handling (counting and formatting)
         log_event_dict = log_event_handler(app_dict, message, level)
@@ -4777,10 +5900,8 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
             log_task(morpy_trace, app_dict, log_dict, write_log_txt, write_log_db, print_log)
         else:
             # Enqueue the orchestrator task
-            task = (log_task, morpy_trace, app_dict, log_dict, write_log_txt, write_log_db, print_log)
-            process_enqueue(
-                morpy_trace, app_dict, priority=-100, task=task, autocorrect=False, is_process=False
-            )
+            task = [log_task, morpy_trace, app_dict, log_dict, write_log_txt, write_log_db, print_log]
+            log_enqueue(app_dict, task=task)
             # Generate print required for GUIs in the regarding child process.
             if print_log:
                 msg_print(morpy_trace, app_dict, log_dict)
@@ -4789,9 +5910,48 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
         del log_dict
         del morpy_trace
 
-    except:
+    except Exception as e:
         # Severe morPy logging error.
-        raise RuntimeError(f'{app_dict["loc"]["morpy"]["log_crit_fail"]}')
+        raise RuntimeError(f'{app_dict["loc"]["morpy"]["log_crit_fail"]}:\n{e}')
+
+def log_enqueue(app_dict: dict, priority: int=-100, task: list=None) -> None:
+    r"""
+    Adds a logging task to the morPy process queue.
+
+    :param app_dict: morPy global dictionary containing app configurations
+    :param priority: Integer representing task priority (lower is higher priority)
+    :param task: Tuple of a callable, *args and **kwargs (func, *args, **kwargs)
+
+    :return: -
+
+    :example:
+        task = [log_task, morpy_trace, app_dict]
+        log_enqueue(morpy_trace, app_dict, task=task)
+    """
+
+    if task:
+        with app_dict["morpy"].lock:
+            morpy_dict = app_dict["morpy"]
+            task_lookup = morpy_dict["task_lookup"]
+            heap = morpy_dict["heap"]
+
+            # Substitute UltraDict references in task to avoid recursion issues.
+            app_dict_substitute = (f'__morPy_shared_ref__::{app_dict.name}', app_dict.shared_lock, app_dict.auto_unlink,
+                                   app_dict.recurse)
+            task[2] = app_dict_substitute
+
+            task_sys_id = id(task)
+
+            # Push task to queue
+            task_qed = (priority, 'log', task_sys_id, task, False)
+
+            heappush(heap, task_qed)
+            app_dict["morpy"]["heap"] = heap # reassign to trigger synchronization
+
+            task_lookup.add(task_sys_id)
+            app_dict["morpy"]["task_lookup"] = task_lookup # reassign to trigger synchronization
+
+            morpy_dict.apply_update()
 
 def log_task(morpy_trace: dict, app_dict: dict, log_dict: dict, write_log_txt: bool, write_log_db: bool,
              print_log: bool) -> None:
@@ -4948,15 +6108,40 @@ def log_interrupt(morpy_trace: dict, app_dict: dict) -> None:
     morpy_trace: dict = morpy_fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
     morpy_trace["log_enable"] = False
 
+    udict_true = is_udict(app_dict["morpy"])
+
     # Set the global interrupt flag
-    app_dict["morpy"]["interrupt"] = True
+    if udict_true:
+        with app_dict["morpy"].lock:
+            app_dict["morpy"]["interrupt"] = True
+    else:
+        app_dict["morpy"]["interrupt"] = True
 
-    # INTERRUPT <<< Press Enter to continue...
-    msg_text = app_dict["loc"]["morpy"]["msg_print_intrpt"]
-    log_wait_for_input(morpy_trace, app_dict, msg_text)
+    # INTERRUPT <<< Type [y]es to quit or anything else to continue.
+    input_str_long: str = app_dict["loc"]["morpy"]["msg_print_intrpt_yes"]
+    input_str_short_1: str = input_str_long[0]
+    input_str_short_2: str = input_str_long[1:]
+    msg_text = (
+        f'{app_dict["loc"]["morpy"]["msg_print_intrpt_1"]} '
+        f'[{input_str_short_1}]{input_str_short_2} '
+        f'{app_dict["loc"]["morpy"]["msg_print_intrpt_2"]}'
+    )
+    usr_input = log_wait_for_input(morpy_trace, app_dict, msg_text)
 
-    # Reset the global interrupt flag
-    app_dict["morpy"]["interrupt"] = False
+    if usr_input in {input_str_short_1, input_str_long}:
+        # Reset the global interrupt flag
+        if udict_true:
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["exit"] = False
+        else:
+            app_dict["morpy"]["exit"] = False
+    else:
+        # Reset the global interrupt flag
+        if udict_true:
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["interrupt"] = False
+        else:
+            app_dict["morpy"]["interrupt"] = False
 
 def log_msg_builder(app_dict: dict, log_dict: dict) -> str:
     r"""
@@ -9607,13 +10792,15 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
+from lib.mp import join_or_task
+from lib.fct import tracing as init_tracing
 from lib.decorators import metrics, log
 
 import sys
+from UltraDict import UltraDict
 
 @metrics
-def app_init(morpy_trace: dict, app_dict: dict) -> dict:
-
+def app_init(morpy_trace: dict, app_dict: dict | UltraDict) -> dict:
     r"""
     This function runs the initialization workflow of the app.
 
@@ -9626,14 +10813,24 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
         app_init_return: Return value (dict) of the initialization process, handed to app_run
 
     :example:
-    >>> from app import init as app_init
-    >>> init_retval = app_init(morpy_trace, app_dict)
+        from app import init as app_init
+        init_retval = app_init(morpy_trace, app_dict)
     """
+
+    try:
+        if isinstance(app_dict, UltraDict):
+            with app_dict["morpy"]["orchestrator"].lock:
+                mp = app_dict["morpy"]["orchestrator"]["mp"]
+        else:
+            mp = False
+    except:
+        # Gracefully pass in single-core mode
+        pass
 
     # morPy credentials (see init.init_cred() for all dict keys)
     module: str = 'app.init'
     operation: str = 'app_init(~)'
-    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+    morpy_trace: dict = init_tracing(module, operation, morpy_trace, reset=mp)
 
     # OPTION enable/disable logging
     # ??? morpy_trace["log_enable"] = False
@@ -9647,14 +10844,19 @@ def app_init(morpy_trace: dict, app_dict: dict) -> dict:
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
     finally:
+        # Join all spawned processes before transitioning into the next phase.
+        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
+
         # Initialization complete flag
-        # Up until this point prints to console are mirrored on splash screen
-        app_dict["run"]["init_complete"] = True
+        # TODO Up until this point prints to console are mirrored on splash screen
+        if isinstance(app_dict["run"], UltraDict):
+            with app_dict["run"].lock:
+                app_dict["run"]["init_complete"] = True
+        else:
+            app_dict["run"]["init_complete"] = True
 
         return{
             'morpy_trace' : morpy_trace,
@@ -9675,18 +10877,21 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
+from lib.mp import join_or_task
 from lib.decorators import metrics, log
 
 import sys
+from UltraDict import UltraDict
 
 @metrics
-def app_run(morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
+def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict) -> dict:
     r"""
     This function runs the main workflow of the app.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
-    :param app_init_return: Return value (dict) of the initialization process, returned by app_init
+    :param app_init_return: Return value (dict) of the initialization process, returned by app_init.
+        This dictionary is not shared with other processes by default.
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -9694,11 +10899,11 @@ def app_run(morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
         app_run_return: Return value (dict) of the app process, handed to app_exit
 
     :example:
-    >>> from app import init as app_init
-    >>> from app import run as app_run
+        from app import init as app_init
+        from app import run as app_run
 
-    >>> init_retval = app_init(morpy_trace, app_dict)
-    >>> run_retval = app_run(morpy_trace, app_dict, init_retval)
+        init_retval = app_init(morpy_trace, app_dict)
+        run_retval = app_run(morpy_trace, app_dict, init_retval)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -9714,74 +10919,20 @@ def app_run(morpy_trace: dict, app_dict: dict, app_init_return: dict) -> dict:
         import demo.ProgressTrackerTk as demo_ProgressTrackerTk
         demo_ProgressTrackerTk.run(morpy_trace, app_dict)
 
-        # app_dict["global"]["app"]["test"] = True
-
         check: bool = True
 
     except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
+        raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-    return{
-        'morpy_trace' : morpy_trace,
-        'check' : check,
-        'app_run_return' : app_run_return
-        }
+    finally:
+        # Join all spawned processes before transitioning into the next phase.
+        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
 
-@metrics
-def new_process(morpy_trace: dict, app_dict: dict, counter: int=0) -> dict:
-    r"""
-    This function runs the entire app using user input to specify
-    the actions performed.
-
-    :param morpy_trace: operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
-    :param counter: Processes opened counter
-
-    :return: dict
-        morpy_trace: Operation credentials and tracing
-        check: Indicates whether the function ended without errors
-
-    :example:
-        new_process(morpy_trace, app_dict, counter)
-    """
-
-    # morPy credentials (see init.init_cred() for all dict keys)
-    module: str = 'app.run'
-    operation: str = 'new_process(~)'
-    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
-
-    check: bool = False
-    p = None
-
-    try:
-        # TODO port to it's own demo module
-        # log(morpy_trace, app_dict, "info",
-        # lambda: "New process starting...")
-        #
-        # task = (arbitrary_parallel_task, morpy_trace, app_dict)  # Memory reference to app_dict
-        # priority = 100
-        # morPy.process_q(task=task, priority=priority)
-        #
-        # task_dqued = app_dict["proc"]["morpy"]["process_q"].dequeue(morpy_trace, app_dict)
-        #
-        # mp.run_parallel(morpy_trace, app_dict, task=task_dqued["task"], priority=task_dqued["priority"])
-
-        check: bool = True
-
-    except Exception as e:
-        log(morpy_trace, app_dict, "error",
-        lambda: f'{app_dict["loc"]["morpy"]["err_line"]} {sys.exc_info()[-1].tb_lineno} '
-                f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                f'{type(e).__name__}: {e}')
-
-    return{
-        'morpy_trace' : morpy_trace,
-        'check' : check,
-        'process' : p
-        }
+        return{
+            'morpy_trace' : morpy_trace,
+            'check' : check,
+            'app_run_return' : app_run_return
+            }
 ```
 
 ## app.exit.py
@@ -9796,13 +10947,14 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
-from lib.mp import join_all_from_child
+from lib.mp import join_or_task
 from lib.decorators import metrics, log
 
 import sys
+from UltraDict import UltraDict
 
 @metrics
-def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
+def app_exit(morpy_trace: dict, app_dict: dict | UltraDict, app_run_return: dict) -> dict:
     r"""
     This function runs the exit workflow of the app.
 
@@ -9837,7 +10989,6 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
     check: bool = False
 
     try:
-        # TODO: first statement .join()
         # TODO: MY CODE
         check: bool = True
 
@@ -9846,9 +10997,13 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
 
     finally:
         # Join all spawned processes before transitioning into the next phase.
-        join_all_from_child(morpy_trace, app_dict, child_pid=morpy_trace["process_id"])
+        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
         # Signal morPy orchestrator of app termination
-        app_dict["morpy"]["exit"] = True
+        if isinstance(app_dict["morpy"], UltraDict):
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["exit"] = True
+        else:
+            app_dict["morpy"]["exit"] = True
 
         return{
             'morpy_trace' : morpy_trace,
@@ -9856,7 +11011,159 @@ def app_exit(morpy_trace: dict, app_dict: dict, app_run_return: dict) -> dict:
             }
 ```
 
-## UltraDict.py (original)
+## demo.ProgressTrackerTk.py
+
+```Python
+r"""
+morPy Framework by supermorph.tech
+https://github.com/supermorphDotTech
+
+Author:     Bastian Neuwirth
+Descr.:     This module demonstrates how to use lib.ui_tk.ProgressTrackerTk()
+"""
+
+import morPy
+from lib.decorators import metrics, log
+
+import sys
+from math import sqrt
+from functools import partial
+
+def run(morpy_trace: dict, app_dict: dict) -> dict:
+    r"""
+    This is a demo of ProgressTrackerTk(), a preconfigured GUI for progress
+    tracking. At it's base, it uses tkinter to render the Window displayed.
+
+    :param morpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
+        app_run_return: Return value (dict) of the app process, handed to app_exit
+
+    :example:
+        # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
+        import app.demo_ProgressTrackerTk as demo_ProgressTrackerTk
+        demo_ProgressTrackerTk.run(morpy_trace, app_dict)
+
+    TODO localization
+    """
+
+    # morPy credentials (see init.init_cred() for all dict keys)
+    module = 'demo.ProgressTrackerTk'
+    operation = 'run(~)'
+    morpy_trace = morPy.tracing(module, operation, morpy_trace)
+
+    check = False
+    app_run_return = {}
+
+    try:
+        # Define repetitions and iterations of progress GUI demo
+        stages = 5
+        total_rep = 10 ** 2
+
+        # No localization for demo module
+        log(morpy_trace, app_dict, "info",
+            lambda: f'Starting {module}.{operation}')
+        task = partial(arbitrary_task, morpy_trace, app_dict, stages=stages, total_rep=total_rep, gui=None)
+
+        progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
+                                         frame_title="Progress Demo",
+                                         stages=stages,
+                                         detail_description_on=True,
+                                         console=True,
+                                         auto_close=True,
+                                         work=task  # run task in a background thread
+                                         )
+
+        progress.run(morpy_trace, app_dict)
+
+        # No localization for demo module
+        log(morpy_trace, app_dict, "info",
+            lambda: f'Finished {module}.{operation}')
+
+        check = True
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    return {
+        'morpy_trace': morpy_trace,
+        'check': check,
+        'app_run_return': app_run_return
+    }
+
+@metrics
+def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: int=0, gui=None):
+    r"""
+    This function runs the entire app using user input to specify
+    the actions performed.
+
+    :param morpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param stages: Number of stages/repetitions
+    :param total_rep: Iterations per stage
+    :param gui: GUI object (ProgressTrackerTk)
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
+
+    :example:
+        arbitrary_task(morpy_trace, app_dict)
+
+    TODO localization
+    """
+
+    # morPy credentials (see init.init_cred() for all dict keys)
+    module = 'demo.ProgressTrackerTk'
+    operation = 'arbitrary_task(~)'
+    morpy_trace = morPy.tracing(module, operation, morpy_trace)
+
+    check = False
+
+    try:
+        if not morpy_trace or not app_dict:
+            raise RuntimeError
+
+        for stage in range(1, stages + 1):
+            # Begin a stage
+            headline = f'Running Stage {stage}'
+            description = "Starting stage..."
+            gui.begin_stage(morpy_trace, app_dict, stage_limit=total_rep, headline_stage=headline,
+                                 detail_description=description)
+
+            # Prepare the list to append to
+            lst = []
+
+            for i in range(1, total_rep + 1):
+                tmp_val = 0
+                while tmp_val < total_rep:
+                    tmp_val += sqrt(i) + tmp_val
+                    lst.append(tmp_val)
+                    if gui:
+                        gui.update_text(morpy_trace, app_dict, detail_description=f'Currently at {i} - tmp_val is {tmp_val}')
+                if gui:
+                    gui.update_text(morpy_trace, app_dict, detail_description=f'Currently at {i} - tmp_val is {tmp_val}')
+                    gui.update_progress(morpy_trace, app_dict)
+
+        # No localization for demo module
+        log(morpy_trace, app_dict, "info",
+        lambda: f'Parallel task executed.')
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    return{
+        'morpy_trace' : morpy_trace,
+        'check' : check,
+        }
+```
+
+## site-packges :: UltraDict.py
 
 ```Python
 #

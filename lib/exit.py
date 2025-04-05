@@ -7,7 +7,7 @@ Descr.:     This module delivers functions to handle exiting the app.
 """
 
 import lib.fct as morpy_fct
-from lib.decorators import metrics, log_no_q
+from lib.decorators import metrics, log
 
 import sys
 
@@ -50,7 +50,7 @@ def _exit(morpy_trace: dict, app_dict: dict):
         leading_total = f'{spaces_total * " "}'
 
         # Build the exit message
-        log_no_q(morpy_trace, app_dict, "exit",
+        log(morpy_trace, app_dict, "exit",
         lambda: f'{app_dict["loc"]["morpy"]["exit_msg_done"]}\n'
                 f'{app_dict["loc"]["morpy"]["exit_msg_started"]}: {app_dict["run"]["init_date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {app_dict["run"]["init_time"]}\n'
                 f'{app_dict["loc"]["morpy"]["exit_msg_exited"]}: {datetime_exit["date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {datetime_exit["time"]}\n'

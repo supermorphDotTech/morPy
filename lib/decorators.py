@@ -7,7 +7,6 @@ Descr.:     This module yields all decorators to be used with the morPy framewor
 """
 
 import time
-
 from functools import wraps
 from UltraDict import UltraDict
 
@@ -27,38 +26,6 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, ve
         from lib.decorators import log
         log(morpy_trace, app_dict, "info",
         lambda: "Hello world!")
-
-    TODO move this to morPy, it's not a decorator
-    """
-
-    import lib.msg as msg
-
-    # Skip logging, if message is verbose and verbose is disabled
-    if verbose and not app_dict["conf"].get("msg_verbose", False):
-        return
-    else:
-        log_level = log_level.lower()
-
-        if message and app_dict["morpy"]["logs_generate"].get(log_level, False):
-            msg.log(morpy_trace, app_dict, log_level, message(), verbose)
-
-def log_no_q(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
-    r"""
-    Wrapper for conditional logging based on log level. This decorator does not enqueue
-    logs and is intended for use by morPy orchestrator only.
-
-    :param morpy_trace: operation credentials and tracing
-    :param app_dict: morPy global dictionary
-    :param log_level: Severity: debug/info/warning/error/critical/denied
-    :param message: A callable (e.g., lambda or function) that returns the log message.
-    :param verbose: If True, message is only logged in verbose mode.
-
-    :example:
-        from lib.decorators import log_no_q
-        log_no_q(morpy_trace, app_dict, level,
-        lambda: <message>)
-
-    TODO remove this decorator as lib.msg.log() takes care of "no queue"
     """
 
     import lib.msg as msg

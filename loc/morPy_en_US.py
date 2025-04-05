@@ -319,7 +319,6 @@ def loc_morpy() -> dict:
         'MorPyOrchestrator_init_rel_math_corr': 'Rounding corrected.',
         'MorPyOrchestrator_init_err_rounding_val' : "Wrong rounding parameter. Fallback to 'round' for determining maximum amount of parallel processes.",
         'MorPyOrchestrator_init_cpus_determined': 'Maximum amount of parallel processes determined.',
-        'MorPyOrchestrator_init_memory_set': 'Maximum memory set.',
         'MorPyOrchestrator_init_done': 'MorPyOrchestrator initialized.',
 
         # mp.py - MorPyOrchestrator._app_run(~)
@@ -334,6 +333,7 @@ def loc_morpy() -> dict:
         'process_enqueue_start': 'Pushing task to heap.',
         'process_enqueue_priority': 'Priority',
         'process_enqueue_none': 'Task can not be None. Skipping enqueue.',
+        'process_enqueue_task_duplicate' : 'Task is already enqueued. Referencing in queue.',
 
         # mp.py - process_pull(~)
         'process_pull_task': 'Task',
@@ -349,6 +349,7 @@ def loc_morpy() -> dict:
         'check_child_processes_rogues': 'At least one process still running, although considered terminated.',
         'check_child_processes_norec': 'Recovery is not possible, trying to terminate.',
         'check_child_processes_joined': 'All child processes are joined.',
+        'check_child_processes_recovery': 'A shelved task was recovered from a terminated task.',
 
         # mp.py - join_or_task(~)
         'join_or_task_start': 'Waiting for processes to finish or task to run.',
@@ -360,12 +361,10 @@ def loc_morpy() -> dict:
         'run_parallel_task': 'Task',
         'run_parallel_task_sys_id': 'Task ID',
         'run_parallel_start': 'Parallel process starting. ID',
+        'run_parallel_shelved': 'A task was shelved to a running process.',
         'run_parallel_exit': 'Parallel process running. ID',
         'run_parallel_call_err': 'Task provided is not callable.',
-        'run_parallel_id_abort': 'Could not get process ID. Task was enqueued again.',
-        'run_parallel_issues': 'Issues encountered:',
-        'run_parallel_id_err_avl': 'Process ID conflict. Possible concurrent process creation. Process creation skipped.',
-        'run_parallel_id_err_busy': 'Process ID conflict. ID# seemed available, is busy. Process creation skipped.',
+        'run_parallel_allocate_fail': 'Failed to allocate process ID. Re-queueing the task.',
         'run_parallel_requeue_err': 'Task could not be enqueued again. Task ID still in queue. Data loss possible.',
         'run_parallel_proc_busy': 'Processes busy',
         'run_parallel_proc_avl': 'Processes available',
@@ -373,6 +372,9 @@ def loc_morpy() -> dict:
         'run_parallel_start_prep': 'Start preparing task for spawning process.',
         'run_parallel_search_iter_end': 'Process ID determined.',
         'run_parallel_clean_up_remnants': 'Process remnant found.Cleaning up after supposed process crash.',
+
+        # mp.py - interrupt(~)
+        'interrupt_set': 'Global interrupt has been set.',
 
         # #################
         # Area: lib.msg.py
@@ -388,7 +390,9 @@ def loc_morpy() -> dict:
         'log_msg_builder_task_id': 'Task',
 
         # msg.py - log_interrupt(~)
-        'msg_print_intrpt': '>>> INTERRUPT <<< Press Enter to continue...',
+        'msg_print_intrpt_1': 'INTERRUPT <<< Type',
+        'msg_print_intrpt_yes': 'yes',
+        'msg_print_intrpt_2': 'to quit or anything else to continue.',
 
         # msg.py - log_db_connect(~)
         'log_db_connect_excpt': 'The database could not be found and/or connected.',

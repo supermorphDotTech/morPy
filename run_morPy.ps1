@@ -65,7 +65,7 @@ $sUserProfile = $env:USERPROFILE
 $sTemp = "$env:WINDIR\Temp"
 
 #Log folder
-$sLogFolder = "$sUserProfile\Documents"
+$sLogFolder = "$PSScriptRoot\log"
 
 #Set Error Action to Silently Continue
 $ErrorActionPreference = "SilentlyContinue"

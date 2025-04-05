@@ -49,7 +49,7 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
 
         # No localization for demo module
         log(morpy_trace, app_dict, "info",
-            lambda: f'Starting {module}.{operation}')
+        lambda: f'Starting {module}.{operation}')
         task = partial(arbitrary_task, morpy_trace, app_dict, stages=stages, total_rep=total_rep, gui=None)
 
         progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
@@ -116,8 +116,9 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: 
             # Begin a stage
             headline = f'Running Stage {stage}'
             description = "Starting stage..."
-            gui.begin_stage(morpy_trace, app_dict, stage_limit=total_rep, headline_stage=headline,
-                                 detail_description=description)
+            if gui:
+                gui.begin_stage(morpy_trace, app_dict, stage_limit=total_rep, headline_stage=headline,
+                                detail_description=description)
 
             # Prepare the list to append to
             lst = []

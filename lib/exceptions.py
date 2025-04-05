@@ -6,7 +6,7 @@ Author:     Bastian Neuwirth
 Descr.:     This module defines custom exceptions for the morPy framework.
 """
 
-from lib.decorators import log, log_no_q
+from lib.decorators import log
 
 import sys
 
@@ -67,7 +67,6 @@ class MorPyException(Exception):
     :param line: Line number of the original error that could not be logged.
     :param exception: Exception object as passed by sys of the parent function/method.
     :param message: Additional exception text attached to the end of the standard message.
-    :param no_q: For morPy framework internal use. Will skip PriorityQueue if True.
 
     :example:
         import morPy
@@ -84,7 +83,7 @@ class MorPyException(Exception):
     __slots__ = ['morpy_trace', 'app_dict', 'log_level', 'line', 'module', 'e']
 
     def __init__(self, morpy_trace: dict, app_dict: dict, exception: BaseException, line: int,
-                 log_level: str, message: str=None, no_q: bool=False) -> None:
+                 log_level: str, message: str=None) -> None:
         try:
             # Use .get() with default values to prevent KeyErrors
             loc = app_dict.get("loc", {}).get("morpy", {}) if app_dict else {}
@@ -96,23 +95,24 @@ class MorPyException(Exception):
             tb = sys.exc_info()[2]
             current_line = tb.tb_lineno if tb else line
 
-            # Build the core message of the original error
-            self.core_msg = (
-                f"{err_line} {current_line} {err_module} '{module}'\n"
-                f"{type(exception).__name__}: {exception}"
-            )
+            # Mitigate recursion issues and duplicate errors
+            if isinstance(exception, MorPyException):
+                return
+            else:
+                # Build the core message of the original error
+                self.core_msg = (
+                    f"{err_line} {current_line} {err_module} '{module}'\n"
+                    f"{type(exception).__name__}: {exception}"
+                )
 
             # Build the final message
             if message:
                 message = f'\n{message}'
-                self.message = f'{self.core_msg}{message}'
+                self.message = f'{self.core_msg}\n{message}'
             else:
                 self.message = f'{self.core_msg}'
 
-            if no_q:
-                log_no_q(morpy_trace, app_dict, log_level, lambda: self.message)
-            else:
-                log(morpy_trace, app_dict, log_level, lambda: self.message)
+            log(morpy_trace, app_dict, log_level, lambda: self.message)
 
         except Exception as crit_e:
 
@@ -133,7 +133,7 @@ class MorPyException(Exception):
                 cause = "module"
                 logging = True
             else:
-                cause = "INVAlID"
+                cause = "UNKNOWN"
                 logging = False
 
             raise MorPyCoreError(

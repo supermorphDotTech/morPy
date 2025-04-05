@@ -46,71 +46,19 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
 
     try:
         # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
-        import demo.ProgressTrackerTk as demo_ProgressTrackerTk
-        demo_ProgressTrackerTk.run(morpy_trace, app_dict)
+        # import demo.ProgressTrackerTk as demo_ProgressTrackerTk
+        # demo_ProgressTrackerTk.run(morpy_trace, app_dict)
 
-        # import time
-        #
-        # def fibonacci(n):
-        #     n = n * 50
-        #     if n <= 0:
-        #         return []  # Return an empty list if n is non-positive.
-        #     elif n == 1:
-        #         return [0]
-        #
-        #     sequence = [0, 1]
-        #     while len(sequence) < n:
-        #         # Append the sum of the last two numbers in the sequence.
-        #         sequence.append(sequence[-1] + sequence[-2])
-        #     return sequence
-        #
-        # def parallel_task(app_dict):
-        #     """ Task to be run in parallel with writes to app_dict """
-        #     import time
-        #     from math import sqrt
-        #     try:
-        #         if not app_dict:
-        #             raise RuntimeError("No connection to app_dict.")
-        #
-        #         i = 0
-        #         total = 10 ** 5
-        #         tmp_val = 0
-        #
-        #         # Hold on until all processes are ready
-        #         while not app_dict["lets_go"]:
-        #             time.sleep(.1)
-        #
-        #         while i < total:
-        #             i += 1
-        #             fib_seq = fibonacci(i)
-        #             # Read and write app_dict and nested dictionaries
-        #             with app_dict.lock:
-        #                 app_dict["test_count"] += 1
-        #
-        #             with app_dict["nested_udict"].lock:
-        #                 app_dict["nested_udict"]["test_count"] += 1
-        #
-        #             print(
-        #                 f'root={app_dict["test_count"]} :: nested={app_dict["nested_udict"]["test_count"]} :: fibonacci={len(fib_seq)} :: pid {morpy_trace["process_id"]}\n')
-        #             while tmp_val < total:
-        #                 tmp_val = (sqrt(sqrt(i) * i) / i) + tmp_val ** 2
-        #
-        #     except Exception as e:
-        #         print(f'Line: {sys.exc_info()[-1].tb_lineno}\n{e}\n')
-        #
-        # app_dict["test_count"] = 0
-        # app_dict["nested_udict"] = {}
-        # app_dict["nested_udict"]["test_count"] = 0
-        # app_dict["lets_go"] = False
-        # task = [parallel_task, app_dict]
-        # morPy.process_q(morpy_trace, app_dict, task=task)
-        # morPy.process_q(morpy_trace, app_dict, task=task)
-        # morPy.process_q(morpy_trace, app_dict, task=task)
-        # morPy.process_q(morpy_trace, app_dict, task=task)
-        # morPy.process_q(morpy_trace, app_dict, task=task)
-        # morPy.process_q(morpy_trace, app_dict, task=task)
-        # app_dict["lets_go"] = True
-        # time.sleep(2)
+        from morPy import process_q
+        import time
+
+        stages = 5
+        for i in range(0, 50):
+            total_rep = 10 ** i
+            task = [arbitrary_task, morpy_trace, app_dict, {"stages" : stages, "total_rep" : total_rep}]
+            process_q(morpy_trace, app_dict, task=task, priority=20)
+            print(f'process queueing :: {i}')
+            # time.sleep(0.2)
 
         check: bool = True
 
@@ -126,3 +74,73 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
             'check' : check,
             'app_run_return' : app_run_return
             }
+
+@metrics
+def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int = 0, total_rep: int = 0, gui=None):
+    r"""
+    This function runs the entire app using user input to specify
+    the actions performed.
+
+    :param morpy_trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    :param stages: Number of stages/repetitions
+    :param total_rep: Iterations per stage
+    :param gui: GUI object (ProgressTrackerTk)
+
+    :return: dict
+        morpy_trace: Operation credentials and tracing
+        check: Indicates whether the function ended without errors
+
+    :example:
+        arbitrary_task(morpy_trace, app_dict)
+    """
+
+    from math import sqrt
+
+    # morPy credentials (see init.init_cred() for all dict keys)
+    module = 'demo.ProgressTrackerTk'
+    operation = 'arbitrary_task(~)'
+    morpy_trace = morPy.tracing(module, operation, morpy_trace)
+
+    check = False
+
+    try:
+        if not morpy_trace or not app_dict:
+            raise RuntimeError
+
+        for stage in range(1, stages + 1):
+            # Begin a stage
+            headline = f'Running Stage {stage}'
+            description = "Starting stage..."
+            if gui:
+                gui.begin_stage(morpy_trace, app_dict, stage_limit=total_rep, headline_stage=headline,
+                                detail_description=description)
+
+            # Prepare the list to append to
+            lst = []
+
+            for i in range(1, total_rep + 1):
+                tmp_val = 0
+                while tmp_val < total_rep:
+                    tmp_val += sqrt(i) + tmp_val
+                    lst.append(tmp_val)
+                    if gui:
+                        gui.update_text(morpy_trace, app_dict,
+                                        detail_description=f'Currently at {i} - tmp_val is {tmp_val}')
+                if gui:
+                    gui.update_text(morpy_trace, app_dict,
+                                    detail_description=f'Currently at {i} - tmp_val is {tmp_val}')
+                    gui.update_progress(morpy_trace, app_dict)
+
+        # No localization for demo module
+        log(morpy_trace, app_dict, "info",
+        lambda: f'Parallel task executed.')
+
+    except Exception as e:
+        from lib.exceptions import MorPyException
+        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
+    return {
+        'morpy_trace': morpy_trace,
+        'check': check,
+    }

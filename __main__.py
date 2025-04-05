@@ -3,31 +3,22 @@ Author: Bastian Neuwirth, https://www.supermorph.tech/
 Date: 28.08.2024
 Version: 1.0.0c
 
-TODO IN PROGRESS
-- Unit tests
-    > common.py | common_test.py
-
-TODO improve error handling to be specific, rather than excessive/graceful
+TODO Unittests
 
 TODO Finish multiprocessing with shared memory
     > consider subprocess library
-    > make app_dict flat under the hood, if GIL
+    > Further tighten app_dict and move stuff to app_dict["morpy"]
 
-TODO Threading orchestrator: 1 for logs, 1 for dequeue, 1 for app_dict
-TODO Interrupt and exit overhaul
-    - provide function to check for interrupt/exit
-    - interrupt when logging: move from mp to the log decorator
-    - exit option to log decorator
-    - Provide an exit if CRITICAL and dump app_dict and priority queue, offer to pick up on it next restart
+FIXME Interrupt and exit
+    - interrupt/exit does not yet work in multiprocessing
+    - Additional "wait_for_join()" that is lightweight and is not prone to recursion; also for log() itself.
 
 TODO define dependencies in one of the supported manifest file types, like package.json or Gemfile.
     > This will enable GitHub to show a dependency graph
 
-TODO make use of the "with" statement
-    > Optimize own classes to be supported by with (i.e. __exit__() methods)
+TODO check entire framework if context manager "with" is sufficiently used
 
-TODO class/instantiate logging and sqlite3
-TODO class/instantiate file operations
+TODO class/instantiate sqlite3
 
 TODO use pyinstaller to generate standalone application
     > specify application icon

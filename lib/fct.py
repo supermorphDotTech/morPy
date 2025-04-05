@@ -9,9 +9,7 @@ Descr.:     This module yields the most basic functions of the morPy fork. These
             since they are fully compatible with morPy.
 """
 
-import sys
 import psutil
-import logging
 import hashlib
 
 def datetime_now() -> dict:
@@ -129,7 +127,6 @@ def sysinfo() -> dict:
     """
 
     import platform, getpass, os.path, socket
-    from tkinter import Tk
 
     system = platform.uname().system
     release = platform.uname().release

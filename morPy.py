@@ -11,10 +11,7 @@ import lib.common as common
 import lib.csv as csv
 import lib.mp as mp
 import lib.ui_tk as ui_tk
-# import lib.web as web
-# TODO fix web module
 import lib.xl as xl
-from lib.decorators import log
 from lib.exceptions import MorPyException
 
 import sys
@@ -931,7 +928,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def exception(morpy_trace: dict, app_dict: dict, exception: BaseException, line: int, log_level: str,
-              message: str=None, no_q: bool=False) -> None:
+              message: str=None) -> None:
     r"""
     This wraps errors in the standard morPy fashion. If one of the arguments
     required for logging is missing, this wrapper will raise other errors in
@@ -943,7 +940,6 @@ def exception(morpy_trace: dict, app_dict: dict, exception: BaseException, line:
     :param line: Line number of the original error that could not be logged.
     :param exception: Exception object as passed by sys of the parent function/method.
     :param message: Additional exception text attached to the end of the standard message.
-    :param no_q: For morPy framework internal use. Will skip PriorityQueue if True.
 
     :example:
         import morPy
@@ -958,7 +954,7 @@ def exception(morpy_trace: dict, app_dict: dict, exception: BaseException, line:
     """
 
     try:
-        MorPyException(morpy_trace, app_dict, exception, line, log_level, message=message, no_q=no_q)
+        MorPyException(morpy_trace, app_dict, exception, line, log_level, message=message)
 
     except Exception as e:
         import lib.fct as morpy_fct

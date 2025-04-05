@@ -90,7 +90,7 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         for time_key in init_datetime:
             init_dict["run"][f'init_{time_key}'] = init_datetime[f'{time_key}']
 
-        # Update the initialize dictionary with the parameters dictionary
+        # Get settings
         init_dict["conf"].update(conf.settings(start_time=init_dict["run"]["init_datetimestamp"]))
 
         # Evaluate log_enable
@@ -102,6 +102,7 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         morpy_trace_init["log_enable"] = init_dict["conf"]["log_enable"]
 
         # Import the morPy core functions localization into init_dict.
+        # TODO provide loop with fallback / exit with -1
         morpy_loc = importlib.import_module(init_dict["conf"]["localization"])
         init_dict["loc"]["morpy"].update(getattr(morpy_loc, 'loc_morpy')())
 
@@ -149,11 +150,13 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
             morpy_log_header(morpy_trace_init, init_dict)
 
         # Initialize the morPy debug-specific localization
+        # TODO provide loop with fallback / exit with -1
         init_dict["loc"]["morpy_dgb"].update(getattr(morpy_loc, 'loc_morpy_dbg')())
         log(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_dbg_loaded"]}')
 
         # Initialize the app-specific localization
+        # TODO provide loop with fallback / exit with -1
         app_loc = importlib.import_module(f'loc.app_{init_dict["conf"]["language"]}')
         init_dict["loc"]["app"].update(getattr(app_loc, 'loc_app')())
         init_dict["loc"]["app_dbg"].update(getattr(app_loc, 'loc_app_dbg')())
@@ -235,8 +238,6 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
     # Check for GIL and decide for an app_dict structure.
     gil = has_gil(morpy_trace)
     init_dict = None
-    init_mem = 1_000_000 # TODO get memory from config
-    min_mem = 1_000
 
     try:
         # FIXME
@@ -244,131 +245,113 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
         if True:
             from lib.mp import shared_dict
 
-            def mem_evaluation(mem, min_mem) -> int:
-                mem = mem if mem > min_mem else min_mem
-                return mem
+            memory_dict = nested_memory_sizes()
 
-            mem = mem_evaluation(init_mem, min_mem)
             init_dict = shared_dict(
                 name="app_dict",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 100, min_mem)
             init_dict["conf"] = shared_dict(
                 name="app_dict[conf]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_conf_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 10, min_mem)
             init_dict["morpy"] = shared_dict(
                 name="app_dict[morpy]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_morpy_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 1_000, min_mem)
             init_dict["morpy"]["logs_generate"] = shared_dict(
                 name="app_dict[global][morPy][logs_generate]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_morpy_logs_generate_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 100, min_mem)
             init_dict["morpy"]["orchestrator"] = shared_dict(
                 name="app_dict[morpy][orchestrator]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_morpy_orchestrator_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 100, min_mem)
             init_dict["morpy"]["proc_refs"] = shared_dict(
                 name="app_dict[morpy][proc_refs]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_morpy_proc_refs_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 10, min_mem)
             init_dict["morpy"]["proc_waiting"] = shared_dict(
                 name="app_dict[morpy][proc_waiting]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_morpy_proc_waiting_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 10, min_mem)
             init_dict["sys"] = shared_dict(
                 name="app_dict[sys]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_sys_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 10, min_mem)
             init_dict["run"] = shared_dict(
                 name="app_dict[run]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_run_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 1_000, min_mem)
             init_dict["loc"] = shared_dict(
                 name="app_dict[loc]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_loc_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem, min_mem)
             init_dict["loc"]["morpy"] = shared_dict(
                 name="app_dict[loc][morPy]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_loc_morpy_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 100, min_mem)
             init_dict["loc"]["morpy_dgb"] = shared_dict(
                 name="app_dict[loc][mpy_dbg]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_loc_morpy_dbg_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem, min_mem)
             init_dict["loc"]["app"] = shared_dict(
                 name="app_dict[loc][app]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_loc_app_mem"],
                 recurse=False
             )
 
-            mem = mem_evaluation(init_mem // 100, min_mem)
             init_dict["loc"]["app_dbg"] = shared_dict(
                 name="app_dict[loc][app_dbg]",
                 create=create,
-                size=mem,
+                size=memory_dict["app_dict_loc_app_dbg_mem"],
                 recurse=False
             )
 
         # Without GIL, allow for true nesting
         else:
             init_dict = {}
-
             init_dict["conf"] = {}
             init_dict["morpy"] = {}
             init_dict["morpy"]["logs_generate"] = {}
             init_dict["morpy"]["orchestrator"] = {}
-            init_dict["morpy"]["proc_refs"] = {}
             init_dict["sys"] = {}
             init_dict["run"] = {}
             init_dict["loc"] = {}
@@ -497,3 +480,157 @@ def has_gil(morpy_trace: dict) -> bool | None:
     except Exception as e:
         from lib.exceptions import MorPyException
         raise MorPyException(morpy_trace, None, e, sys.exc_info()[-1].tb_lineno, "error")
+
+def init_memory_size() -> tuple:
+    r"""
+    Calculate the total size of UltraDicts at initialization.
+
+    :return init_memory: Memory in bytes
+    :return memory_min_bytes: Minimum bytes from lib.conf.settings()["memory_min_mb"]
+    :return sys_memory_bytes: System total memory
+    """
+
+    import psutil
+
+    # Get settings
+    conf_dict = conf.settings()
+    memory_min_mb: int = conf_dict["memory_min_mb"]
+
+    # Get system memory
+    sys_memory_bytes: int = int(psutil.virtual_memory().total)
+
+    # Minimum memory. Change unit from MB to Byte. Fallback to 50 MB.
+    memory_min_bytes: int = memory_min_mb * 1024 * 1024 if isinstance(memory_min_mb, int) else 50 * 1024 *1024
+
+    if memory_min_bytes > sys_memory_bytes:
+        sys_memory_mb = sys_memory_bytes // 1024 // 1024
+        raise RuntimeError(f'Insufficient system memory.\nSystem: {sys_memory_mb} MB\n'
+                           f'Required per Configuration: {memory_min_mb} MB')
+
+    # Evaluate absolute/relative memory calculation. Fallback to absolute.
+    memory_use_absolute: bool = conf_dict["memory_use_absolute"]
+    memory_use_absolute = memory_use_absolute if isinstance(memory_use_absolute, bool) else True
+
+    if memory_use_absolute:
+        # Absolute Target memory. Change unit from MB to Byte. Fallback to 50 MB.
+        memory_absolute_mb: int = conf_dict["memory_absolute"]
+        init_memory = memory_absolute_mb * 1024 * 1024 if isinstance(memory_absolute_mb, int) else 50 * 1024 * 1024
+    else:
+        # Relative Target memory. Change unit from MB to Byte. Fallback to 20 MB.
+        memory_relative: float = conf_dict["memory_relative"]
+        memory_relative = memory_relative if isinstance(memory_relative, float) else 0.05
+        from math import floor
+        init_memory = floor(memory_relative * sys_memory_bytes)
+
+    if init_memory in range(memory_min_bytes, sys_memory_bytes):
+        retval = int(init_memory), int(memory_min_bytes), int(sys_memory_bytes)
+        return retval
+
+    # Compare with minimum
+    if init_memory < memory_min_bytes:
+        init_memory = memory_min_bytes
+    # Compare with maximum
+    if init_memory > sys_memory_bytes:
+        init_memory = sys_memory_bytes
+
+    retval = int(init_memory), int(memory_min_bytes), int(sys_memory_bytes)
+    return retval
+
+def nested_memory_sizes() -> dict:
+    r"""
+    Determine the size of nested dictionaries individually. Memory initialized
+    will scale with the amount of processes configured in lib.conf.settings()
+    for reliability.
+
+    !! ATTENTION !!
+    The most heavily used dictionary in multiprocessing context is `app_dict["morpy"]`.
+    If a warning shows up like
+    >>> 'WARNING:root:Full dumps too fast full_dump_counter=0 full_dump_counter_remote=5. Consider increasing buffer_size.'
+    increase buffer sizes, starting with `app_dict_morpy_mem`, which is the buffer size for
+    `app_dict["morpy"]`.
+
+    :return: dict
+        app_dict_mem                        - UltraDict name: app_dict
+        app_dict_conf_mem                   - UltraDict name: app_dict[conf]
+        app_dict_morpy_mem                  - UltraDict name: app_dict[morpy]
+        app_dict_morpy_logs_generate_mem    - UltraDict name: app_dict[morpy][logs_generate]
+        app_dict_morpy_orchestrator_mem     - UltraDict name: app_dict[morpy][orchestrator]
+        app_dict_morpy_proc_refs_mem        - UltraDict name: app_dict[morpy][proc_refs]
+        app_dict_morpy_proc_waiting_mem     - UltraDict name: app_dict[morpy][proc_waiting]
+        app_dict_sys_mem                    - UltraDict name: app_dict[sys]
+        app_dict_run_mem                    - UltraDict name: app_dict[run]
+        app_dict_loc_mem                    - UltraDict name: app_dict[loc]
+        app_dict_loc_morpy_mem              - UltraDict name: app_dict[loc][morpy]
+        app_dict_loc_morpy_dbg_mem          - UltraDict name: app_dict[loc][morpy_dbg]
+        app_dict_loc_app_mem                - UltraDict name: app_dict[loc][app]
+        app_dict_loc_app_dbg_mem            - UltraDict name: app_dict[loc][app_dbg]
+    """
+
+    init_memory, memory_min_bytes, sys_memory_bytes = init_memory_size()
+
+    # Determine minimum memories for morPy core first
+    app_dict_morpy_mem: int                 = 10 * 1024 * 1024
+    app_dict_morpy_orchestrator_mem: int    = 5 * 1024 * 1024
+    app_dict_morpy_proc_refs_mem: int       = 2 * 1024 * 1024
+    app_dict_morpy_proc_waiting_mem: int    = 2 * 1024 * 1024
+    app_dict_morpy_logs_generate_mem: int   = 1 * 1024 * 1024
+
+    app_dict_conf_mem: int  = 1 * 1024 * 1024
+    app_dict_sys_mem: int   = 2 * 1024 * 1024
+    app_dict_run_mem: int   = 5 * 1024 * 1024
+    app_dict_loc_mem: int   = 1 * 1024 * 1024
+
+    app_dict_loc_morpy_mem: int     = 2 * 1024 * 1024
+    app_dict_loc_morpy_dbg_mem: int = 1 * 1024 * 1024
+
+    # Combined size of morPy core memory
+    morpy_core_memory = sum(
+        (app_dict_morpy_mem,
+        app_dict_morpy_orchestrator_mem,
+        app_dict_morpy_proc_refs_mem,
+        app_dict_morpy_proc_waiting_mem,
+        app_dict_morpy_logs_generate_mem,
+        app_dict_conf_mem,
+        app_dict_sys_mem,
+        app_dict_run_mem,
+        app_dict_loc_morpy_mem,
+        app_dict_loc_morpy_dbg_mem)
+    )
+
+    # If memory for morPy core is greater than system memory, exit
+    if morpy_core_memory > sys_memory_bytes:
+        sys_memory_mb = sys_memory_bytes // 1024 // 1024
+        morpy_core_memory_mb = morpy_core_memory // 1024 // 1024
+        raise RuntimeError(f'Insufficient system memory.\nSystem: {sys_memory_mb} MB\n'
+                           f'morPy required: {morpy_core_memory_mb} MB')
+
+    app_dict_loc_app_mem: int       = 10 * 1024 * 1024
+    app_dict_loc_app_dbg_mem: int   = 2 * 1024 * 1024
+
+
+    app_dict_mem: int = init_memory - sum((morpy_core_memory, app_dict_loc_app_mem, app_dict_loc_app_dbg_mem))
+
+    # If root shared memory size is smaller 0, try to decrease non-core memories.
+    if app_dict_mem < 0:
+        from math import floor
+        dist_factor = app_dict_loc_app_dbg_mem // app_dict_loc_app_mem
+        app_dict_loc_app_dbg_mem = floor(dist_factor * app_dict_mem * (-1))
+        app_dict_loc_app_mem = floor(app_dict_mem * (-1) - app_dict_loc_app_dbg_mem)
+        app_dict_mem: int = init_memory - sum((morpy_core_memory, app_dict_loc_app_mem, app_dict_loc_app_dbg_mem))
+
+    return {
+        "app_dict_mem" : app_dict_mem ,
+        "app_dict_conf_mem" : app_dict_conf_mem ,
+        "app_dict_morpy_mem" : app_dict_morpy_mem ,
+        "app_dict_morpy_logs_generate_mem" : app_dict_morpy_logs_generate_mem ,
+        "app_dict_morpy_orchestrator_mem" : app_dict_morpy_orchestrator_mem ,
+        "app_dict_morpy_proc_refs_mem" : app_dict_morpy_proc_refs_mem ,
+        "app_dict_morpy_proc_waiting_mem" : app_dict_morpy_proc_waiting_mem ,
+        "app_dict_sys_mem" : app_dict_sys_mem ,
+        "app_dict_run_mem" : app_dict_run_mem ,
+        "app_dict_loc_mem" : app_dict_loc_mem ,
+        "app_dict_loc_morpy_mem" : app_dict_loc_morpy_mem ,
+        "app_dict_loc_morpy_dbg_mem" : app_dict_loc_morpy_dbg_mem ,
+        "app_dict_loc_app_mem" : app_dict_loc_app_mem ,
+        "app_dict_loc_app_dbg_mem" : app_dict_loc_app_dbg_mem
+    }
