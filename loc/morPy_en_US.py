@@ -312,13 +312,6 @@ def loc_morpy() -> dict:
         # #################
 
         # mp.py - MorPyOrchestrator._init(~)
-        'MorPyOrchestrator_init_not_bool': 'Value is not a boolean. Check lib.conf.py for correction.',
-        'MorPyOrchestrator_init_not_int': 'Value is not an integer. Check lib.conf.py for correction.',
-        'MorPyOrchestrator_init_not_float': 'Value is not a float. Check lib.conf.py for correction.',
-        'MorPyOrchestrator_init_not_str': 'Value is not a string. Check lib.conf.py for correction.',
-        'MorPyOrchestrator_init_rel_math_corr': 'Rounding corrected.',
-        'MorPyOrchestrator_init_err_rounding_val' : "Wrong rounding parameter. Fallback to 'round' for determining maximum amount of parallel processes.",
-        'MorPyOrchestrator_init_cpus_determined': 'Maximum amount of parallel processes determined.',
         'MorPyOrchestrator_init_done': 'MorPyOrchestrator initialized.',
 
         # mp.py - MorPyOrchestrator._app_run(~)
@@ -364,8 +357,7 @@ def loc_morpy() -> dict:
         'run_parallel_shelved': 'A task was shelved to a running process.',
         'run_parallel_exit': 'Parallel process running. ID',
         'run_parallel_call_err': 'Task provided is not callable.',
-        'run_parallel_allocate_fail': 'Failed to allocate process ID. Re-queueing the task.',
-        'run_parallel_requeue_err': 'Task could not be enqueued again. Task ID still in queue. Data loss possible.',
+        'run_parallel_allocate_fail': 'All processes busy, failed to allocate process ID. Re-queueing the task.',
         'run_parallel_proc_busy': 'Processes busy',
         'run_parallel_proc_avl': 'Processes available',
         'run_parallel_task_corr' : "The 'task' provided is a tuple. Autocorrected to list.",

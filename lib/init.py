@@ -68,7 +68,7 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         # ############################################
 
         # Build the app_dict
-        init_dict = build_app_dict(morpy_trace_init, create=True)
+        init_dict, init_datetime = build_app_dict(morpy_trace_init, create=True)
 
         init_dict["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
         init_dict["morpy"].update({"proc_available" : set()})
@@ -83,15 +83,9 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         # Set an initialization complete flag
         init_dict["run"]["init_complete"] = False
 
-        # Retrieve the starting time of the program
-        init_datetime = morpy_fct.datetime_now()
-
         # Store the start time and timestamps in the dictionary
         for time_key in init_datetime:
             init_dict["run"][f'init_{time_key}'] = init_datetime[f'{time_key}']
-
-        # Get settings
-        init_dict["conf"].update(conf.settings(start_time=init_dict["run"]["init_datetimestamp"]))
 
         # Evaluate log_enable
         if not init_dict["conf"]["log_db_enable"] and not init_dict["conf"]["log_txt_enable"]:
@@ -116,16 +110,9 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
                 init_dict["conf"]["msg_print"] and
                  not (log_level in init_dict["conf"]["log_lvl_noprint"]))
             ):
-                init_dict["morpy"]["logs_generate"].update({log_level : True})
+                init_dict["morpy"]["logs_generate"][log_level] = True
             else:
-                init_dict["morpy"]["logs_generate"].update({log_level : False})
-
-        # Retrieve system information
-        sysinfo = morpy_fct.sysinfo()
-
-        # Update init_dict with system information
-        for sys_key in sysinfo:
-            init_dict["sys"][sys_key] = sysinfo[sys_key]
+                init_dict["morpy"]["logs_generate"][log_level] = False
 
         # Test for elevated privileges
         # TODO make an elevation handler
@@ -215,7 +202,7 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         from lib.exceptions import MorPyException
         raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
-def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
+def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, dict):
     r"""
     This function builds the app_dict in accordance to multiprocessing and whether GIL
     is included in the Python environment.
@@ -240,12 +227,23 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
     init_dict = None
 
     try:
+        # Retrieve the starting time of the program
+        init_datetime = morpy_fct.datetime_now()
+
+        # Get project settings
+        conf_dict = conf.settings()
+
+        # Collect system information
+        sysinfo = morpy_fct.sysinfo()
+
+        processes_max = init_max_processes(conf_dict, sysinfo["logical_cpus"])
+
         # FIXME
         # if gil:
         if True:
             from lib.mp import shared_dict
 
-            memory_dict = nested_memory_sizes()
+            memory_dict = nested_memory_sizes(conf_dict, processes_max)
 
             init_dict = shared_dict(
                 name="app_dict",
@@ -360,7 +358,18 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> dict:
             init_dict["loc"]["app"] = {}
             init_dict["loc"]["app_dbg"] = {}
 
-        return init_dict
+        # Store configuration in init_dict
+        for key, val in conf_dict.items():
+            init_dict["conf"][key] = val
+
+        # Store system information
+        for sys_key, sys_val in sysinfo.items():
+            init_dict["sys"][sys_key] = sys_val
+
+        # Store maximum determined processes
+        init_dict["morpy"]["processes_max"] = processes_max
+
+        return init_dict, init_datetime
 
     # Error detection
     except Exception as e:
@@ -467,6 +476,7 @@ def has_gil(morpy_trace: dict) -> bool | None:
     # operation: str = 'has_gil(~)'
     # morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
+    # TODO add os dependant evaluation
     try:
         if sys.version_info >= (3, 13):
             status = sys._is_gil_enabled()
@@ -481,9 +491,67 @@ def has_gil(morpy_trace: dict) -> bool | None:
         from lib.exceptions import MorPyException
         raise MorPyException(morpy_trace, None, e, sys.exc_info()[-1].tb_lineno, "error")
 
-def init_memory_size() -> tuple:
+def init_max_processes(conf_dict: dict, system_logical_cpus: int) -> int:
+    r"""
+    Determine the maximum amount of processes allowed for runtime.
+
+    :param conf_dict: Dictionary equal to lib.conf.settings()
+    :param system_logical_cpus: Logical CPUs of the machine.
+
+    :return max_processes: Maximum processes evaluated for runtime.
+    """
+
+    # Set up multiprocessing
+    processes_min: int = 1
+    processes_max: int = processes_min
+    processes_count_absolute: bool = conf_dict["processes_count_absolute"]
+    conf_processes_absolute: int = conf_dict["processes_absolute"]
+    conf_processes_relative: float = conf_dict["processes_relative"]
+    processes_relative_math: str = conf_dict["processes_relative_math"]
+
+    # Evaluate absolute/relative processes calculation. Fallback to absolute.
+    processes_count_absolute: bool = processes_count_absolute if isinstance(processes_count_absolute, bool) else True
+
+    # +--- Calculate maximum processes ---+
+    if processes_count_absolute:
+        # Determine absolute process count. Fallback to half of system logical CPUs or 1.
+        if isinstance(conf_processes_absolute, int):
+            processes_max: int = max(processes_min, min(conf_processes_absolute, system_logical_cpus))
+        else:
+            from math import floor
+            processes_max: int = max(1, floor(0.5 * system_logical_cpus))
+    else:
+        # Determine relative process count. Fallback to half of system logical CPUs or 1.
+        if isinstance(conf_processes_relative, float):
+            processes_relative: float = max(float(processes_min), min(conf_processes_relative * system_logical_cpus, system_logical_cpus))
+        else:
+            processes_relative: float = max(1.0, 0.5 * system_logical_cpus)
+
+        # Determine relative calculation method.
+        if isinstance(processes_relative_math, str):
+            if processes_relative_math not in ("round", "floor", "ceil"):
+                processes_relative_math: str = "floor"
+        else:
+            processes_relative_math: str = "floor"
+
+        match processes_relative_math:
+            case "round":
+                processes_max: int = round(processes_relative)
+            case "floor":
+                from math import floor
+                processes_max: int = floor(processes_relative)
+            case "ceil":
+                from math import ceil
+                processes_max: int = ceil(processes_relative)
+
+    return processes_max
+
+def init_memory_size(conf_dict: dict, max_processes: int) -> tuple:
     r"""
     Calculate the total size of UltraDicts at initialization.
+
+    :param conf_dict: Dictionary equal to lib.conf.settings()
+    :param max_processes: Maximum processes evaluated for runtime.
 
     :return init_memory: Memory in bytes
     :return memory_min_bytes: Minimum bytes from lib.conf.settings()["memory_min_mb"]
@@ -492,15 +560,13 @@ def init_memory_size() -> tuple:
 
     import psutil
 
-    # Get settings
-    conf_dict = conf.settings()
     memory_min_mb: int = conf_dict["memory_min_mb"]
 
     # Get system memory
     sys_memory_bytes: int = int(psutil.virtual_memory().total)
 
-    # Minimum memory. Change unit from MB to Byte. Fallback to 50 MB.
-    memory_min_bytes: int = memory_min_mb * 1024 * 1024 if isinstance(memory_min_mb, int) else 50 * 1024 *1024
+    # Minimum memory. Change unit from MB to Byte. Fallback to 20 MB per process.
+    memory_min_bytes: int = memory_min_mb * 1024 * 1024 if isinstance(memory_min_mb, int) else 20 * 1024 * 1024 * max_processes
 
     if memory_min_bytes > sys_memory_bytes:
         sys_memory_mb = sys_memory_bytes // 1024 // 1024
@@ -512,35 +578,27 @@ def init_memory_size() -> tuple:
     memory_use_absolute = memory_use_absolute if isinstance(memory_use_absolute, bool) else True
 
     if memory_use_absolute:
-        # Absolute Target memory. Change unit from MB to Byte. Fallback to 50 MB.
+        # Absolute Target memory. Change unit from MB to Byte. Fallback to 20 MB per process.
         memory_absolute_mb: int = conf_dict["memory_absolute"]
-        init_memory = memory_absolute_mb * 1024 * 1024 if isinstance(memory_absolute_mb, int) else 50 * 1024 * 1024
+        init_memory = memory_absolute_mb * 1024 * 1024 if isinstance(memory_absolute_mb, int) else 20 * 1024 * 1024 * max_processes
     else:
-        # Relative Target memory. Change unit from MB to Byte. Fallback to 20 MB.
-        memory_relative: float = conf_dict["memory_relative"]
-        memory_relative = memory_relative if isinstance(memory_relative, float) else 0.05
         from math import floor
-        init_memory = floor(memory_relative * sys_memory_bytes)
+        # Relative Target memory. Fallback to 0.002% per process.
+        memory_relative: float = conf_dict["memory_relative"]
+        memory_relative = memory_relative if isinstance(memory_relative, float) else 0.0002
+        init_memory = floor(memory_relative * sys_memory_bytes) * max_processes
 
-    if init_memory in range(memory_min_bytes, sys_memory_bytes):
-        retval = int(init_memory), int(memory_min_bytes), int(sys_memory_bytes)
-        return retval
-
-    # Compare with minimum
-    if init_memory < memory_min_bytes:
-        init_memory = memory_min_bytes
-    # Compare with maximum
-    if init_memory > sys_memory_bytes:
-        init_memory = sys_memory_bytes
+    # Proactive autocorrection of memory
+    init_memory = max(memory_min_bytes, min(init_memory, sys_memory_bytes))
 
     retval = int(init_memory), int(memory_min_bytes), int(sys_memory_bytes)
     return retval
 
-def nested_memory_sizes() -> dict:
+def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
     r"""
     Determine the size of nested dictionaries individually. Memory initialized
     will scale with the amount of processes configured in lib.conf.settings()
-    for reliability.
+    for scalability.
 
     !! ATTENTION !!
     The most heavily used dictionary in multiprocessing context is `app_dict["morpy"]`.
@@ -548,6 +606,9 @@ def nested_memory_sizes() -> dict:
     >>> 'WARNING:root:Full dumps too fast full_dump_counter=0 full_dump_counter_remote=5. Consider increasing buffer_size.'
     increase buffer sizes, starting with `app_dict_morpy_mem`, which is the buffer size for
     `app_dict["morpy"]`.
+
+    :param conf_dict: Dictionary equal to lib.conf.settings()
+    :param max_processes: Maximum processes evaluated for runtime.
 
     :return: dict
         app_dict_mem                        - UltraDict name: app_dict
@@ -566,13 +627,15 @@ def nested_memory_sizes() -> dict:
         app_dict_loc_app_dbg_mem            - UltraDict name: app_dict[loc][app_dbg]
     """
 
-    init_memory, memory_min_bytes, sys_memory_bytes = init_memory_size()
+    from math import ceil
+
+    init_memory, memory_min_bytes, sys_memory_bytes = init_memory_size(conf_dict, max_processes)
 
     # Determine minimum memories for morPy core first
-    app_dict_morpy_mem: int                 = 10 * 1024 * 1024
-    app_dict_morpy_orchestrator_mem: int    = 5 * 1024 * 1024
-    app_dict_morpy_proc_refs_mem: int       = 2 * 1024 * 1024
-    app_dict_morpy_proc_waiting_mem: int    = 2 * 1024 * 1024
+    app_dict_morpy_mem: int                 = 10 * 1024 * 1024 * max_processes
+    app_dict_morpy_orchestrator_mem: int    = 5 * 1024 * 1024 * ceil(1 + 0.2 * max_processes)
+    app_dict_morpy_proc_refs_mem: int       = 2 * 1024 * 1024 * ceil(1 + 0.5 * max_processes)
+    app_dict_morpy_proc_waiting_mem: int    = 2 * 1024 * 1024 * ceil(1 + 0.5 * max_processes)
     app_dict_morpy_logs_generate_mem: int   = 1 * 1024 * 1024
 
     app_dict_conf_mem: int  = 1 * 1024 * 1024
@@ -584,7 +647,7 @@ def nested_memory_sizes() -> dict:
     app_dict_loc_morpy_dbg_mem: int = 1 * 1024 * 1024
 
     # Combined size of morPy core memory
-    morpy_core_memory = sum(
+    morpy_core_memory: int = sum(
         (app_dict_morpy_mem,
         app_dict_morpy_orchestrator_mem,
         app_dict_morpy_proc_refs_mem,
