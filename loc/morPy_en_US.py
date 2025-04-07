@@ -311,46 +311,48 @@ def loc_morpy() -> dict:
         # Area: lib.mp.py
         # #################
 
-        # mp.py - MorPyOrchestrator._init(~)
+        # lib.mp.py - MorPyOrchestrator._init(~)
         'MorPyOrchestrator_init_done': 'MorPyOrchestrator initialized.',
 
-        # mp.py - MorPyOrchestrator._app_run(~)
-        'MorPyOrchestrator_app_run_start': 'App starting.',
+        # lib.mp.py - MorPyOrchestrator.heap_pull(~)
+        'heap_pull_task': 'Task',
+        'heap_pull_start': 'Pulling task from heap.',
+        'heap_pull_name': 'Task name',
+        'heap_pull_priority': 'Priority',
+        'heap_pull_cnt': 'Counter',
+        'heap_pull_void': 'Can not pull from an empty process queue. Skipped...',
 
-        # mp.py - process_q_init(~)
+        # lib.mp.py - app_run(~)
+        'app_run_init': 'App initializing.',
+        'app_run_start': 'App starting.',
+        'app_run_exit': 'App exiting.',
+
+        # lib.mp.py - process_q_init(~)
         'process_q_init_done': 'Priority queue initialized.',
 
-        # mp.py - process_enqueue(~)
-        'process_enqueue_task': 'Task',
-        'process_enqueue_prio_corr': 'Invalid argument given to process queue. Autocorrected.',
-        'process_enqueue_start': 'Pushing task to heap.',
-        'process_enqueue_priority': 'Priority',
-        'process_enqueue_none': 'Task can not be None. Skipping enqueue.',
-        'process_enqueue_task_duplicate' : 'Task is already enqueued. Referencing in queue.',
+        # lib.mp.py - heap_shelve(~)
+        'heap_shelve_task': 'Task',
+        'heap_shelve_prio_corr': 'Invalid argument given to process queue. Autocorrected.',
+        'heap_shelve_start': 'Pushing task to heap.',
+        'heap_shelve_priority': 'Priority',
+        'heap_shelve_none': 'Task can not be None. Skipping enqueue.',
+        'heap_shelve_task_duplicate' : 'Task is already enqueued. Referencing in queue.',
 
-        # mp.py - process_pull(~)
-        'process_pull_task': 'Task',
-        'process_pull_start': 'Pulling task from heap.',
-        'process_pull_name': 'Task name',
-        'process_pull_priority': 'Priority',
-        'process_pull_cnt': 'Counter',
-        'process_pull_void': 'Can not pull from an empty process queue. Skipped...',
-
-        # mp.py - check_child_processes(~)
-        'check_child_processes_term_err': 'A child process was terminated unexpectedly. Process references will be restored.',
+        # lib.mp.py - check_child_processes(~)
+        'check_child_processes_term_err': 'A child process was terminated unexpectedly. Process references will be restored, but the task and data may be lost.',
         'check_child_processes_aff': 'Affected process is',
         'check_child_processes_rogues': 'At least one process still running, although considered terminated.',
         'check_child_processes_norec': 'Recovery is not possible, trying to terminate.',
         'check_child_processes_joined': 'All child processes are joined.',
         'check_child_processes_recovery': 'A shelved task was recovered from a terminated task.',
 
-        # mp.py - join_or_task(~)
+        # lib.mp.py - join_or_task(~)
         'join_or_task_start': 'Waiting for processes to finish or task to run.',
 
-        # mp.py - stop_while_interrupt(~)
+        # lib.mp.py - stop_while_interrupt(~)
         'stop_while_interrupt': 'Global interrupt. Process is waiting for release.',
 
-        # mp.py - run_parallel(~)
+        # lib.mp.py - run_parallel(~)
         'run_parallel_task': 'Task',
         'run_parallel_task_sys_id': 'Task ID',
         'run_parallel_start': 'Parallel process starting. ID',
@@ -360,12 +362,11 @@ def loc_morpy() -> dict:
         'run_parallel_allocate_fail': 'All processes busy, failed to allocate process ID. Re-queueing the task.',
         'run_parallel_proc_busy': 'Processes busy',
         'run_parallel_proc_avl': 'Processes available',
-        'run_parallel_task_corr' : "The 'task' provided is a tuple. Autocorrected to list.",
         'run_parallel_start_prep': 'Start preparing task for spawning process.',
         'run_parallel_search_iter_end': 'Process ID determined.',
         'run_parallel_clean_up_remnants': 'Process remnant found.Cleaning up after supposed process crash.',
 
-        # mp.py - interrupt(~)
+        # lib.mp.py - interrupt(~)
         'interrupt_set': 'Global interrupt has been set.',
 
         # #################

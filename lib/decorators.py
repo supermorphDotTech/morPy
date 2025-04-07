@@ -31,7 +31,7 @@ def log(morpy_trace: dict, app_dict: dict, log_level: str, message: callable, ve
     import lib.msg as msg
 
     # Skip logging, if message is verbose and verbose is disabled
-    if verbose and not app_dict["conf"].get("msg_verbose", False):
+    if verbose and not app_dict["morpy"]["conf"].get("msg_verbose", False):
         return
     else:
         log_level = log_level.lower()

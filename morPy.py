@@ -15,6 +15,7 @@ import lib.xl as xl
 from lib.exceptions import MorPyException
 
 import sys
+from collections.abc import Callable
 
 def PriorityQueue(morpy_trace: dict, app_dict: dict, name: str=None):
     r"""
@@ -1134,14 +1135,18 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1):
 
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
-def process_q(morpy_trace: dict, app_dict: dict, task: list, priority: int=100, autocorrect: bool=True):
+def process_q(morpy_trace: dict, app_dict: dict, task: Callable | list | tuple=None, priority: int=100,
+              autocorrect: bool=True):
     r"""
     This function enqueues a task in the morPy multiprocessing queue. The task is a
     tuple, that demands the positional arguments (func, morpy_trace, app_dict, *args, **kwargs).
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
-    :param task: Tuple of a callable, *args and **kwargs
+    :param task: Callable, list or tuple packing the task. Formats:
+        callable: partial(func, *args, **kwargs)
+        list: [func, *args, **kwargs]
+        tuple: (func, *args, **kwargs)
     :param priority: Integer representing task priority (lower is higher priority)
     :param autocorrect: If False, priority can be smaller than zero. Priority
         smaller zero is reserved for the morPy Core. However, it is a devs choice
@@ -1152,19 +1157,20 @@ def process_q(morpy_trace: dict, app_dict: dict, task: list, priority: int=100, 
 
     :example:
         from morPy import process_q
+        from functools import partial
         message = "Gimme 5"
         def gimme_5(morpy_trace, app_dict, message):
             print(message)
             return message
-        a_number = [gimme_5, morpy_trace, app_dict, message] # List of a callable, *args and **kwargs
+        a_number = partial(gimme_5, morpy_trace, app_dict, message) # List of a callable, *args and **kwargs
         enqueued = process_q(morpy_trace, app_dict, task=a_number, priority=20) #
         if not enqueued:
             print("No, thank you!")
     """
 
     try:
-        from lib.mp import process_enqueue
-        process_enqueue(morpy_trace, app_dict, priority=priority, task=task, autocorrect=autocorrect)
+        from lib.mp import heap_shelve
+        heap_shelve(morpy_trace, app_dict, priority=priority, task=task, autocorrect=autocorrect)
 
     except Exception as e:
         import lib.fct as morpy_fct

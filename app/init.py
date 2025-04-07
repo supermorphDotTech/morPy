@@ -67,11 +67,11 @@ def app_init(morpy_trace: dict, app_dict: dict | UltraDict) -> dict:
 
         # Initialization complete flag
         # TODO Up until this point prints to console are mirrored on splash screen
-        if isinstance(app_dict["run"], UltraDict):
-            with app_dict["run"].lock:
-                app_dict["run"]["init_complete"] = True
+        if isinstance(app_dict["morpy"], UltraDict):
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["init_complete"] = True
         else:
-            app_dict["run"]["init_complete"] = True
+            app_dict["morpy"]["init_complete"] = True
 
         return{
             'morpy_trace' : morpy_trace,

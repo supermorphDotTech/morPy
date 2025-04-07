@@ -46,19 +46,26 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
 
     try:
         # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
-        # import demo.ProgressTrackerTk as demo_ProgressTrackerTk
-        # demo_ProgressTrackerTk.run(morpy_trace, app_dict)
+        import demo.ProgressTrackerTk as demo_ProgressTrackerTk
+        demo_ProgressTrackerTk.run(morpy_trace, app_dict)
 
-        from morPy import process_q
-        import time
-
-        stages = 5
-        for i in range(0, 50):
-            total_rep = 10 ** 6
-            task = [arbitrary_task, morpy_trace, app_dict, {"stages" : stages, "total_rep" : total_rep}]
-            process_q(morpy_trace, app_dict, task=task, priority=20)
-            print(f'process queueing :: {i}')
-            time.sleep(0.2)
+        # from morPy import process_q
+        # from functools import partial
+        # import time
+        #
+        # for i in range(1, 21):
+        #
+        #     print(f'PARTIAL: process queueing :: {i}')
+        #     task = partial(arbitrary_task, morpy_trace, app_dict, stages=5, total_rep=10 ** 6)
+        #     process_q(morpy_trace, app_dict, task=task, priority=20)
+        #
+        #     print(f'LIST: process queueing :: {i}')
+        #     task = [arbitrary_task, morpy_trace, app_dict]
+        #     process_q(morpy_trace, app_dict, task=task, priority=20)
+        #
+        #     print(f'TUPLE: process queueing :: {i}')
+        #     task = (arbitrary_task, morpy_trace, app_dict)
+        #     process_q(morpy_trace, app_dict, task=task, priority=20)
 
         check: bool = True
 
@@ -76,7 +83,7 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
             }
 
 @metrics
-def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int = 0, total_rep: int = 0, gui=None):
+def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int = 5, total_rep: int = 10**6, gui=None):
     r"""
     This function runs the entire app using user input to specify
     the actions performed.

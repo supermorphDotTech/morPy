@@ -70,7 +70,7 @@ def settings():
     # for logging. If logging to db is activated, there is no need for this option, as all
     # relevant data is stored in the db. When logging to textfile, verbose messages are the only way
     # to get a detailed context of a log message.
-    msg_verbose: bool = True
+    msg_verbose: bool = False
 
     # Print the initialized app dictionary to console.
     # Called by: init.init(~)
@@ -121,19 +121,24 @@ def settings():
     # Select the way, how the available RAM is determined. If absolute, an integer
     # value will reflect the Megabytes of maximum memory. Otherwise, use relative.
     # Default: False or None
-    memory_use_absolute: bool = False
+    memory_use_absolute: bool = None
 
-    # Absolute amount of memory in MB. If None, all RAM can be utilized.
+    # Absolute amount of memory to be reserved at initialization in MB. If None,
+    # a default will be calculated.
     # Default: None
     memory_absolute_mb: int = None
 
-    # Set the relative amount of memory to be reserved, where 1 resembles 100%
-    # of system memory and 0 resembles 0%. If None, automatically determined.
-    # Default: None or 1.0
+    # Set the relative amount of memory to be reserved at initialization, where 1
+    # resembles 100% of system memory and 0 resembles 0%. If memory is less than
+    # the minimum for morPy, the framework will automatically see if system memory
+    # is sufficient and increase buffers to a sufficient level. If None, automatically
+    # determined.
+    # Default: None
     memory_relative: float = None
 
-    # Set the Minimum amount of memory in MB to be reserved at startup. If this threshold
-    # can not be met, app will exit.
+    # Set the Minimum amount of memory in MB to be reserved at startup. This is the
+    # total memory that morPy will have to meet, including for app data in shared
+    # memory. If this threshold can not be met, app will exit.
     # Default: None or 100
     memory_min_mb: int = None
 
@@ -144,7 +149,7 @@ def settings():
     # Select the way, how the available CPUs are determined. If absolute, an integer
     # value will reflect the maximum number of logical cores to utilize in parallel.
     # Default: False or None
-    processes_count_absolute: bool = False
+    processes_count_absolute: bool = True
 
     # Absolute amount of processes to run parallel. This value will by default not exceed
     # the logical cores available on the system. If None, all CPUs can be utilized.

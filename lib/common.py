@@ -414,7 +414,7 @@ class ProgressTracker:
             self.done = False
 
             # Evaluate verbose mode
-            if not verbose or verbose and app_dict["conf"]["msg_verbose"]:
+            if not verbose or verbose and app_dict["morpy"]["conf"]["msg_verbose"]:
                 self.verbose_check = True
             else:
                 self.verbose_check = False
@@ -1557,9 +1557,9 @@ def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, p
         # Check given filepath and eventually default to .\data
         if file_path:
             check_file_path: bool = morpy_fct.pathtool(file_path)["dir_exists"]
-            file_path = file_path if check_file_path else app_dict["conf"]["data_path"]
+            file_path = file_path if check_file_path else app_dict["morpy"]["conf"]["data_path"]
         else:
-            file_path = app_dict["conf"]["data_path"]
+            file_path = app_dict["morpy"]["conf"]["data_path"]
 
         # Default file name if needed
         file_name = f'{file_name}.png' if file_name else "qrcode.png"

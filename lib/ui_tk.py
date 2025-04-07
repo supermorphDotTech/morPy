@@ -204,21 +204,21 @@ class FileDirSelectTk:
                 self.icon_data = {
                 "app_banner" : {
                     "position" : 1,
-                    "img_path" : app_dict["conf"]["app_banner"],
+                    "img_path" : app_dict["morpy"]["conf"]["app_banner"],
                     "icon_size" : (214, 48)
                 }
             }
 
             # Set default icon size
-            icon_dim = int(app_dict["sys"]["resolution_height"] // 64)
+            icon_dim = int(app_dict["morpy"]["sys"]["resolution_height"] // 64)
             self.default_icon_size = (icon_dim, icon_dim)
 
             # Set default entry width
-            entry_dim = int(app_dict["sys"]["resolution_height"] // 24)
+            entry_dim = int(app_dict["morpy"]["sys"]["resolution_height"] // 24)
             self.default_entry_width = entry_dim
 
             # Set default link size
-            link_dim = int(app_dict["sys"]["resolution_height"] // 48)
+            link_dim = int(app_dict["morpy"]["sys"]["resolution_height"] // 48)
             self.default_link_size = (link_dim, link_dim)
 
             self.selections = {}  # Will hold the final user inputs keyed by row name.
@@ -229,7 +229,7 @@ class FileDirSelectTk:
 
             # Create the main tkinter window.
             self.root = tk.Tk()
-            self.root.iconbitmap(app_dict["conf"]["app_icon"])
+            self.root.iconbitmap(app_dict["morpy"]["conf"]["app_icon"])
             self.root.title(self.title)
             # Allow the window to be resizable.
             self.root.resizable(True, True)
@@ -238,8 +238,8 @@ class FileDirSelectTk:
             self._setup_ui(morpy_trace, app_dict)
 
             # Calculate coordinates for the window to be centered.
-            x = (int(app_dict["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
-            y = (int(app_dict["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
+            x = (int(app_dict["morpy"]["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
+            y = (int(app_dict["morpy"]["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
             self.root.geometry(f'{self.frame_width}x{self.frame_height}+{x}+{y}')
 
             # Bind the _on_close() method to closing the window
@@ -338,9 +338,9 @@ class FileDirSelectTk:
                 # If no custom image is provided, use a default icon.
                 if not custom_img:
                     if config.get("is_dir", False):
-                        custom_img = morpy_fct.pathtool(f'{app_dict["conf"]["main_path"]}\\res\\icons\\dir_open.png')["out_path"]
+                        custom_img = morpy_fct.pathtool(f'{app_dict["morpy"]["conf"]["main_path"]}\\res\\icons\\dir_open.png')["out_path"]
                     else:
-                        custom_img = morpy_fct.pathtool(f'{app_dict["conf"]["main_path"]}\\res\\icons\\file_open.png')["out_path"]
+                        custom_img = morpy_fct.pathtool(f'{app_dict["morpy"]["conf"]["main_path"]}\\res\\icons\\file_open.png')["out_path"]
 
                 # Load the image.
                 try:
@@ -410,7 +410,7 @@ class FileDirSelectTk:
             if config.get("is_dir", False):
                 # Directory selection.
                 description = config.get("description", app_dict["loc"]["morpy"]["dialog_sel_dir_select"])
-                init_dir = config.get("default_path", app_dict["conf"]["data_path"])
+                init_dir = config.get("default_path", app_dict["morpy"]["conf"]["data_path"])
 
                 path = dialog_sel_dir(morpy_trace, app_dict, init_dir=init_dir, title=description)["dir_path"]
 
@@ -418,7 +418,7 @@ class FileDirSelectTk:
                 # File selection.
                 file_types = config.get("file_types", (("All Files", "*.*"),))
                 description = config.get("description", app_dict["loc"]["morpy"]["dialog_sel_file_select"])
-                init_dir = config.get("default_path", app_dict["conf"]["data_path"])
+                init_dir = config.get("default_path", app_dict["morpy"]["conf"]["data_path"])
 
                 path = dialog_sel_file(morpy_trace, app_dict, init_dir=init_dir, file_types=file_types,
                                        title=description)["file_path"]
@@ -731,7 +731,7 @@ class GridChoiceTk:
             self.title = title if title else app_dict["loc"]["morpy"]["GridChoiceTk_title"]
 
             # Set default tile size
-            tile_dim = int(app_dict["sys"]["resolution_height"] // 8)
+            tile_dim = int(app_dict["morpy"]["sys"]["resolution_height"] // 8)
             self.default_tile_size = (tile_dim, tile_dim)
 
             if icon_data:
@@ -740,13 +740,13 @@ class GridChoiceTk:
                 self.icon_data = {
                 "app_banner" : {
                     "position" : 1,
-                    "img_path" : app_dict["conf"]["app_banner"],
+                    "img_path" : app_dict["morpy"]["conf"]["app_banner"],
                     "icon_size" : (214, 48)
                 }
             }
 
             # Set default icon size
-            icon_dim = int(app_dict["sys"]["resolution_height"] // 64)
+            icon_dim = int(app_dict["morpy"]["sys"]["resolution_height"] // 64)
             self.default_icon_size = (icon_dim, icon_dim)
 
             self.choice = None
@@ -755,7 +755,7 @@ class GridChoiceTk:
 
             # Create the main tkinter window.
             self.root = tk.Tk()
-            self.root.iconbitmap(app_dict["conf"]["app_icon"])
+            self.root.iconbitmap(app_dict["morpy"]["conf"]["app_icon"])
             self.root.title(self.title)
 
             # A dictionary to keep references to PhotoImage objects. Prevents garbage collection of images.
@@ -764,8 +764,8 @@ class GridChoiceTk:
             self._setup_ui(morpy_trace, app_dict)
 
             # Calculate coordinates for the window to be centered.
-            x = (int(app_dict["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
-            y = (int(app_dict["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
+            x = (int(app_dict["morpy"]["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
+            y = (int(app_dict["morpy"]["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
             self.root.geometry(f'{self.frame_width}x{self.frame_height}+{x}+{y}')
 
             # Bind the _on_close() method to closing the window
@@ -1285,13 +1285,13 @@ class ProgressTrackerTk:
 
             # Set frame width
             if not frame_width:
-                sys_width = int(app_dict["sys"]["resolution_width"])
+                sys_width = int(app_dict["morpy"]["sys"]["resolution_width"])
                 self.frame_width = sys_width // 3
             else:
                 self.frame_width = frame_width
 
             # Calculate factors for frame height
-            sys_height = int(app_dict["sys"]["resolution_height"])
+            sys_height = int(app_dict["morpy"]["sys"]["resolution_height"])
             height_factor = sys_height * .03125 # Height of main monitor * 32dpi // 1024px
             if not frame_height:
                 self.frame_height = 0
@@ -1341,15 +1341,15 @@ class ProgressTrackerTk:
 
                 # Add frame height for console
                 if self.frame_height_sizing:
-                    self.frame_height += app_dict["sys"]["resolution_height"] // 2
+                    self.frame_height += app_dict["morpy"]["sys"]["resolution_height"] // 2
 
             # Calculate coordinates for the window to be centered.
-            x = (int(app_dict["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
-            y = (int(app_dict["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
+            x = (int(app_dict["morpy"]["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
+            y = (int(app_dict["morpy"]["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
 
             # Tk window
             self.root = tk.Tk()
-            self.root.iconbitmap(app_dict["conf"]["app_icon"])
+            self.root.iconbitmap(app_dict["morpy"]["conf"]["app_icon"])
             self.root.title(self.frame_title)
             self.root.geometry(f'{self.frame_width}x{self.frame_height}+{x}+{y}')
 
@@ -2522,7 +2522,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
 
     try:
         if not init_dir:
-            init_dir = app_dict["conf"]["main_path"]
+            init_dir = app_dict["morpy"]["conf"]["main_path"]
         if not file_types:
             file_types = (f'{app_dict["loc"]["morpy"]["dialog_sel_file_all_files"]}', '*.*')
         if not title:
@@ -2533,7 +2533,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
         root = tk.Tk()
         root.withdraw()
         root.attributes("-topmost", True)
-        root.iconbitmap(app_dict["conf"]["app_icon"])
+        root.iconbitmap(app_dict["morpy"]["conf"]["app_icon"])
 
         # Open the actual dialog in the foreground and store the chosen folder
         file_path = filedialog.askopenfilename(
@@ -2607,7 +2607,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
 
     try:
         if not init_dir:
-            init_dir = app_dict["conf"]["main_path"]
+            init_dir = app_dict["morpy"]["conf"]["main_path"]
         if not title:
             title = f'{app_dict["loc"]["morpy"]["dialog_sel_dir_select"]}'
 
@@ -2615,7 +2615,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
         # dialog to be opened in the foreground
         root = tk.Tk()
         root.withdraw()
-        root.iconbitmap(app_dict["conf"]["app_icon"])
+        root.iconbitmap(app_dict["morpy"]["conf"]["app_icon"])
 
         # Open the actual dialog in the foreground and store the chosen folder
         root.dir_name = filedialog.askdirectory(

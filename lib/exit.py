@@ -38,11 +38,11 @@ def _exit(morpy_trace: dict, app_dict: dict):
         datetime_exit = morpy_fct.datetime_now()
 
         # determine runtime duration
-        temp_duration = morpy_fct.runtime(app_dict["run"]["init_datetime_value"])
+        temp_duration = morpy_fct.runtime(app_dict["morpy"]["init_datetime_value"])
 
         # Correction of the exit occurrance counter for the very last message
-        app_dict["run"]["events_EXIT"] += 1
-        app_dict["run"]["events_total"] += 1
+        app_dict["morpy"]["events_EXIT"] += 1
+        app_dict["morpy"]["events_total"] += 1
 
         # Determine leading spaces before app_dict["exit_msg_total"] so the colons
         # of the exit message fall in one vertcal line.
@@ -52,21 +52,23 @@ def _exit(morpy_trace: dict, app_dict: dict):
         # Build the exit message
         log(morpy_trace, app_dict, "exit",
         lambda: f'{app_dict["loc"]["morpy"]["exit_msg_done"]}\n'
-                f'{app_dict["loc"]["morpy"]["exit_msg_started"]}: {app_dict["run"]["init_date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {app_dict["run"]["init_time"]}\n'
+                f'{app_dict["loc"]["morpy"]["exit_msg_started"]}: {app_dict["morpy"]["init_date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {app_dict["morpy"]["init_time"]}\n'
                 f'{app_dict["loc"]["morpy"]["exit_msg_exited"]}: {datetime_exit["date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {datetime_exit["time"]}\n'
                 f'{app_dict["loc"]["morpy"]["exit_msg_duration"]}: {temp_duration["rnt_delta"]}\n\n'
                 f'{5 * "-"} {app_dict["loc"]["morpy"]["exit_msg_events"]} {5 * "-"}\n'
-                f'     INIT: {app_dict["run"]["events_INIT"]}\n'
-                f'    DEBUG: {app_dict["run"]["events_DEBUG"]}\n'
-                f'     INFO: {app_dict["run"]["events_INFO"]}\n'
-                f'  WARNING: {app_dict["run"]["events_WARNING"]}\n'
-                f'   DENIED: {app_dict["run"]["events_DENIED"]}\n'
-                f'    ERROR: {app_dict["run"]["events_ERROR"]}\n'
-                f' CRITICAL: {app_dict["run"]["events_CRITICAL"]}\n'
-                f'     EXIT: {app_dict["run"]["events_EXIT"]}\n'
-                f'UNDEFINED: {app_dict["run"]["events_UNDEFINED"]}\n'
+                f'     INIT: {app_dict["morpy"]["events_INIT"]}\n'
+                f'    DEBUG: {app_dict["morpy"]["events_DEBUG"]}\n'
+                f'     INFO: {app_dict["morpy"]["events_INFO"]}\n'
+                f'  WARNING: {app_dict["morpy"]["events_WARNING"]}\n'
+                f'   DENIED: {app_dict["morpy"]["events_DENIED"]}\n'
+                f'    ERROR: {app_dict["morpy"]["events_ERROR"]}\n'
+                f' CRITICAL: {app_dict["morpy"]["events_CRITICAL"]}\n'
+                f'     EXIT: {app_dict["morpy"]["events_EXIT"]}\n'
+                f'UNDEFINED: {app_dict["morpy"]["events_UNDEFINED"]}\n'
                 f'{18 * "-"}\n'
-                f'{leading_total}{app_dict["loc"]["morpy"]["exit_msg_total"]}: {app_dict["run"]["events_total"]}')
+                f'{leading_total}{app_dict["loc"]["morpy"]["exit_msg_total"]}: {app_dict["morpy"]["events_total"]}')
+
+        sys.exit(0)
 
     except Exception as e:
         from lib.exceptions import MorPyException

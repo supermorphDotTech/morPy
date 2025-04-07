@@ -65,7 +65,7 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
 
         # The log level will be evaluated as long as logging or prints to console are enabled. The
         # morpy_trace may be manipulated.
-        if app_dict["conf"]["msg_print"] or app_dict["conf"]["log_enable"]:
+        if app_dict["morpy"]["conf"]["msg_print"] or app_dict["morpy"]["conf"]["log_enable"]:
             morpy_trace_eval = log_eval(morpy_trace, app_dict, log_event_dict["level"], level_dict)
 
         # Retrieve a log specific datetimestamp
@@ -97,10 +97,10 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
         log_dict["log_msg_complete"] = msg
 
         # Buffer logging parameters
-        logging = app_dict["conf"]["log_enable"] and log_dict["log_enable"]
-        write_log_txt = logging and app_dict["conf"]["log_txt_enable"]
-        write_log_db = logging and app_dict["conf"]["log_db_enable"]
-        print_log = app_dict["conf"]["msg_print"]
+        logging = app_dict["morpy"]["conf"]["log_enable"] and log_dict["log_enable"]
+        write_log_txt = logging and app_dict["morpy"]["conf"]["log_txt_enable"]
+        write_log_db = logging and app_dict["morpy"]["conf"]["log_db_enable"]
+        print_log = app_dict["morpy"]["conf"]["msg_print"]
 
         if morpy_trace["process_id"] == app_dict["morpy"]["proc_master"]:
             # Go on with logging directly if calling process is orchestrator.
@@ -221,10 +221,10 @@ def log_eval(morpy_trace: dict, app_dict: dict, level: str, level_dict: dict) ->
     morpy_trace_eval["pnt_enable"] = True
 
     # Check, if logging is enabled globally.
-    if app_dict["conf"]["log_enable"]:
+    if app_dict["morpy"]["conf"]["log_enable"]:
 
         # Evaluate the log level, if it is excluded from logging.
-        for lvl_nolog in app_dict["conf"]["log_lvl_nolog"]:
+        for lvl_nolog in app_dict["morpy"]["conf"]["log_lvl_nolog"]:
 
             if level == lvl_nolog:
                 morpy_trace_eval["log_enable"] = False
@@ -234,10 +234,10 @@ def log_eval(morpy_trace: dict, app_dict: dict, level: str, level_dict: dict) ->
     else: log_enable = False
 
     # Check, if printing is enabled globally.
-    if app_dict["conf"]["msg_print"]:
+    if app_dict["morpy"]["conf"]["msg_print"]:
 
         # Evaluate the log level, if it is excluded from printing.
-        for lvl_noprint in app_dict["conf"]["log_lvl_noprint"]:
+        for lvl_noprint in app_dict["morpy"]["conf"]["log_lvl_noprint"]:
 
             if level == lvl_noprint:
                 morpy_trace_eval["pnt_enable"] = False
@@ -247,7 +247,7 @@ def log_eval(morpy_trace: dict, app_dict: dict, level: str, level_dict: dict) ->
     else: pnt_enable = False
 
     # Evaluate the log level, if it will raise an interrupt.
-    for lvl_intpt in app_dict["conf"]["log_lvl_interrupts"]:
+    for lvl_intpt in app_dict["morpy"]["conf"]["log_lvl_interrupts"]:
 
         if level == lvl_intpt:
             morpy_trace_eval["interrupt_enable"] = True
@@ -257,8 +257,8 @@ def log_eval(morpy_trace: dict, app_dict: dict, level: str, level_dict: dict) ->
     # (see mpy_param.py to alter behaviour)
     if log_enable or pnt_enable:
 
-        app_dict["run"]["events_total"] += 1
-        app_dict["run"][f'events_{level.upper()}'] += 1
+        app_dict["morpy"]["events_total"] += 1
+        app_dict["morpy"][f'events_{level.upper()}'] += 1
 
     return morpy_trace_eval
 
@@ -393,7 +393,7 @@ def log_msg_builder(app_dict: dict, log_dict: dict) -> str:
             msg_indented = line_indented
 
     # Build the log message
-    if app_dict["conf"]["msg_verbose"]:
+    if app_dict["morpy"]["conf"]["msg_verbose"]:
         msg = (f'{log_dict["level"].upper()} - {log_dict["datetimestamp"]}\n\t'
               f'{app_dict["loc"]["morpy"]["log_msg_builder_trace"]}: {log_dict["tracing"]}\n\n\t'
               f'{app_dict["loc"]["morpy"]["log_msg_builder_process_id"]}: {log_dict["process_id"]}\n\t'
@@ -422,7 +422,7 @@ def msg_print(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     # print messages according to their log level
     pnt = True
 
-    for lvl_pnt in app_dict["conf"]["log_lvl_noprint"]:
+    for lvl_pnt in app_dict["morpy"]["conf"]["log_lvl_noprint"]:
 
         if log_dict["level"] == lvl_pnt:
             pnt = False
@@ -458,7 +458,7 @@ def log_txt(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     morpy_trace["log_enable"] = False
 
     # Write to text file - Fallback if SQLite functionality is broken
-    filepath = app_dict["conf"]["log_txt_path"]
+    filepath = app_dict["morpy"]["conf"]["log_txt_path"]
     textfile_write(morpy_trace, app_dict, filepath, log_dict["log_msg_complete"])
 
 def log_db(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
@@ -482,8 +482,8 @@ def log_db(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     morpy_trace["log_enable"] = False
 
     # Define the table to be adressed.
-    db_path = app_dict["conf"]["log_db_path"]
-    table_name = f'log_{app_dict["run"]["init_loggingstamp"]}'
+    db_path = app_dict["morpy"]["conf"]["log_db_path"]
+    table_name = f'log_{app_dict["morpy"]["init_loggingstamp"]}'
 
     check: bool = log_db_table_check(morpy_trace, app_dict, db_path, table_name)
 

@@ -69,10 +69,10 @@ Feel free to comment, share and support this project!
 
 ### 1.1.1 Software Requirements [⇧](#toc) <a name="1.1.1"></a>
 
-| Dependency                                                                                                                                                                    | Requirement Description                                      |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| [![Python 3.10.11](https://img.shields.io/badge/Python-3.10.11+-blue.svg)](https://www.python.org/downloads/release/python-31011/)                                            | Oldest supported Python version. Introduction of match-case. |
-| [![Microsoft Visual C++ BuildTools](https://img.shields.io/badge/Microsoft-Visual%20C++%20BuildTools-orange.svg)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) | Build tools required for UltraDict pip install.              |
+| Dependency                                                                                                                                                                    | Requirement Description                                                         |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| [![Python 3.10.11](https://img.shields.io/badge/Python-3.10.11+-blue.svg)](https://www.python.org/downloads/release/python-31011/)                                            | Oldest supported Python version. Introduction of match-case and Union operator. |
+| [![Microsoft Visual C++ BuildTools](https://img.shields.io/badge/Microsoft-Visual%20C++%20BuildTools-orange.svg)](https://visualstudio.microsoft.com/visual-cpp-build-tools/) | Build tools required for UltraDict pip install.                                 |
 
 ### 1.1.2 Setup Guidance [⇧](#toc) <a name="1.1.2"></a>
 
@@ -251,7 +251,7 @@ The parallelization in morPy is done utilizing an orchestration process with whi
 
 ## 4.1 Introduction [⇧](#toc) <a name="4.1"></a>
 
-At the heart of the morPy framework a program wide dictionary is available. Within this dictionary, all morPy functions and classes store their data to be used either globally, process-, thread, or task-wide. This dictionary is further divided into dictionaries (nested) to avoid naming conflicts and provide a categorization to potentially organize data in a streamlined way. Nested dictionaries were divided into `app` and `morpy`, whereas the latter is reserved for the morPy framework core.
+To share data across processes, morPy utilizes [`UltraDict`](https://github.com/ronny-rentner/UltraDict/tree/main) to efficiently and atomically acquire locks, read and write data across spawned child processes. In single process mode, the framework falls back to the `dict` type to keep performance as high as possible.
 
 The class of `app_dict` is, in dependency to the GIL, either a regular `dict` or an `UltraDict`. The latter ensures efficient shared memory (as much as possible) when spawning processes.
 
@@ -264,7 +264,7 @@ app_dict["global"]["app"]["my_project"].update({"key" : "value"})
 ## 4.1.1 Limitations of the Shared App Dictionary [⇧](#toc) <a name="4.1.1"></a>
 
 Most in-place operations (such as `append()` for lists) are not propagated correctly between processes. Instead,
-use reassignment to force an assignment after the in–place operation. For example:
+use reassignment to force synchronization after the in–place operation. For example:
 
 ````Python
 temp = app_dict["some"]["nested_list"]
@@ -293,119 +293,97 @@ instance_mp["ob_ref"] = instance
 instance_mp["data"] = instance.my_custom_method_to_return_data()
 ```
 
+*If synchronization can not be achieved*, it is recommended to stick with simple key-value-pairs in `app_dict` with proxy functions transforming the data instead of more complex types.
+
 ## 4.2 Navigating the App Dictionary [⇧](#toc) <a name="4.2"></a>
 
 ### 4.2.1 Categorization & Sub-Dictionaries [⇧](#toc) <a name="4.2.1"></a>
 
-***Relevant dictionaries for developers to be utilized and altered will be marked `dev` in the descriptions.***
+***Relevant dictionaries for developers to beleveraged will be marked `dev` in the descriptions.***
 
 ```Python
+# Root dictionary. Data may be stored in here to be shared across processes.
 app_dict
 ```
 
-- Globally shared root dictionary
+» `dev`
 
 ```Python
+# Nested dictionary for morPy core functionality. Keep it and it's nested dictionaries untouched.
+app_dict["morpy"]
+```
+
+```Python
+# Stored information from conf.py
+app_dict["morpy"]["conf"]
+```
+
+» `dev`
+
+```Python
+# Nested dictionary serving as a shelf for child processes to put tasks in. These shelved tasks will be transferred into the heap by the orchestrator and removed from the dictionary in doing so.
+app_dict["morpy"]["heap_shelf"]
+```
+
+```Python
+# Nested dictionary storing information on which log levels have to be logged or ignored. Initialized once, improves performance.
+app_dict["morpy"]["logs_generate"]
+```
+
+```Python
+# Nested dictionary reserved for the orchestrator.
+app_dict["morpy"]["orchestrator"]
+```
+
+```Python
+# Nested dictionary with buffered references to  active processes.
+app_dict["morpy"]["proc_refs"]
+```
+
+```Python
+# Nested dictionary with buffered references to  waiting processes. It stores {PID : shelf}, where shelf may be filled with a task by the orchestrator. Massively reduces multiprocessing overhead.
+app_dict["morpy"]["proc_waiting"]
+```
+
+```Python
+# Nested dictionary storing system specific information (i.e. operating system, logical CPUs)
+app_dict["morpy"]["sys"]
+```
+
+```Python
+# Nested dictionary holding the nested dictionaries for localized messages.
 app_dict["loc"]
 ```
 
-- sd-lvl-1 root for Localization
-
 ```Python
+# Nested dictionary holding the localized messages for the morPy framework.
 app_dict["loc"]["morpy"]
 ```
 
-- Localization sd-lvl-2: morPy only
+» Data initialized from `loc.morPy_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ```Python
+# Nested dictionary holding the localized messages for the morPy framework unit tests.
 app_dict["loc"]["morpy_dbg"]
 ```
 
-- Localization sd-lvl-2: morPy unit tests and general debugging only
+» Data initialized from `loc.morPy_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ```Python
+# Nested dictionary holding the localized messages for the developed app.
 app_dict["loc"]["app"]
 ```
 
-- `dev`
-- Localization sd-lvl-2: app specific only
+» `dev`
+» Data initialized from `loc.app_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ```Python
+# Nested dictionary holding the localized messages for the developed apps unit tests.
 app_dict["loc"]["app_dbg"]
 ```
 
-- `dev`
-- Localization sd-lvl-2: app specific debugging only
-
-```Python
-app_dict["conf"]
-```
-
-- `dev`
-- sd-lvl-1 reserved for configuration and settings for runtime (see conf.py for the initialized configuration)
-
-```Python
-app_dict["sys"]
-```
-
-- sd-lvl-1 reserved for host, system and network information
-
-```Python
-app_dict["run"]
-```
-
-- sd-lvl-1 reserved for runtime and metrics information
-
-```Python
-app_dict["global"]
-```
-
-- sd-lvl-1 root for global data storage
-
-```Python
-app_dict["global"]["morpy"]
-```
-
-- sd-lvl-2 morPy core global data storage
-
-```Python
-app_dict["global"]["app"]
-```
-
-- `dev`
-- sd-lvl-2 app global data storage
-
-```Python
-app_dict["proc"]
-```
-
-- sd-lvl-1 root for process and thread specific data storage
-
-```Python
-app_dict["proc"]["morpy"]
-```
-
-- sd-lvl-2 morPy core process specific data storage
-
-```Python
-app_dict["proc"]["morpy"]["Pn"]
-```
-
-- sd-lvl-3 morPy core thread specific data storage
-
-```Python
-app_dict["proc"]["app"]
-```
-
-- `dev`
-- sd-lvl-2 app process specific data storage
-
-```Python
-app_dict["proc"]["app"]["Pn"]
-```
-
-- `dev`
-- sd-lvl-3 app thread specific data storage
+» `dev`
+» Data initialized from `loc.app_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ### 4.2.2 App Dictionary Map [⇧](#toc) <a name="4.2.2"></a>
 

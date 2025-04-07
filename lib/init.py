@@ -62,6 +62,8 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
     operation: str = 'init(~)'
     morpy_trace_init = morpy_fct.tracing(module, operation, morpy_trace)
 
+    init_dict = None
+
     try:
         # ############################################
         # START Single-threaded initialization
@@ -81,34 +83,34 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         init_dict["morpy"]["exit"] = False
 
         # Set an initialization complete flag
-        init_dict["run"]["init_complete"] = False
+        init_dict["morpy"]["init_complete"] = False
 
         # Store the start time and timestamps in the dictionary
         for time_key in init_datetime:
-            init_dict["run"][f'init_{time_key}'] = init_datetime[f'{time_key}']
+            init_dict["morpy"][f'init_{time_key}'] = init_datetime[f'{time_key}']
 
         # Evaluate log_enable
-        if not init_dict["conf"]["log_db_enable"] and not init_dict["conf"]["log_txt_enable"]:
-            init_dict["conf"]["log_enable"] = False
+        if not init_dict["morpy"]["conf"]["log_db_enable"] and not init_dict["morpy"]["conf"]["log_txt_enable"]:
+            init_dict["morpy"]["conf"]["log_enable"] = False
 
         # Pass down the log enabling parameter
-        morpy_trace["log_enable"] = init_dict["conf"]["log_enable"]
-        morpy_trace_init["log_enable"] = init_dict["conf"]["log_enable"]
+        morpy_trace["log_enable"] = init_dict["morpy"]["conf"]["log_enable"]
+        morpy_trace_init["log_enable"] = init_dict["morpy"]["conf"]["log_enable"]
 
         # Import the morPy core functions localization into init_dict.
         # TODO provide loop with fallback / exit with -1
-        morpy_loc = importlib.import_module(init_dict["conf"]["localization"])
+        morpy_loc = importlib.import_module(init_dict["morpy"]["conf"]["localization"])
         init_dict["loc"]["morpy"].update(getattr(morpy_loc, 'loc_morpy')())
 
         # Build nested dictionary for log generation
         log_levels = ("init", "debug", "info", "warning", "denied", "error", "critical", "exit")
         for log_level in log_levels:
             if (
-                (init_dict["conf"]["log_enable"] and
-                 not (log_level in init_dict["conf"]["log_lvl_nolog"])
+                (init_dict["morpy"]["conf"]["log_enable"] and
+                 not (log_level in init_dict["morpy"]["conf"]["log_lvl_nolog"])
                  ) or (
-                init_dict["conf"]["msg_print"] and
-                 not (log_level in init_dict["conf"]["log_lvl_noprint"]))
+                init_dict["morpy"]["conf"]["msg_print"] and
+                 not (log_level in init_dict["morpy"]["conf"]["log_lvl_noprint"]))
             ):
                 init_dict["morpy"]["logs_generate"][log_level] = True
             else:
@@ -118,21 +120,21 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         # TODO make an elevation handler
 
         # Prepare log levels
-        init_dict["run"]["events_total"] = 0
-        init_dict["run"]["events_DEBUG"] = 0
-        init_dict["run"]["events_INFO"] = 0
-        init_dict["run"]["events_WARNING"] = 0
-        init_dict["run"]["events_DENIED"] = 0
-        init_dict["run"]["events_ERROR"] = 0
-        init_dict["run"]["events_CRITICAL"] = 0
-        init_dict["run"]["events_UNDEFINED"] = 0
-        init_dict["run"]["events_INIT"] = 0
-        init_dict["run"]["events_EXIT"] = 0
+        init_dict["morpy"]["events_total"] = 0
+        init_dict["morpy"]["events_DEBUG"] = 0
+        init_dict["morpy"]["events_INFO"] = 0
+        init_dict["morpy"]["events_WARNING"] = 0
+        init_dict["morpy"]["events_DENIED"] = 0
+        init_dict["morpy"]["events_ERROR"] = 0
+        init_dict["morpy"]["events_CRITICAL"] = 0
+        init_dict["morpy"]["events_UNDEFINED"] = 0
+        init_dict["morpy"]["events_INIT"] = 0
+        init_dict["morpy"]["events_EXIT"] = 0
 
         # Create first log in txt-file including the app header
-        if (init_dict["conf"]["log_txt_header_enable"] and
+        if (init_dict["morpy"]["conf"]["log_txt_header_enable"] and
             morpy_trace_init["log_enable"] and
-            init_dict["conf"]["log_txt_enable"]
+            init_dict["morpy"]["conf"]["log_txt_enable"]
         ):
             morpy_log_header(morpy_trace_init, init_dict)
 
@@ -144,7 +146,7 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
 
         # Initialize the app-specific localization
         # TODO provide loop with fallback / exit with -1
-        app_loc = importlib.import_module(f'loc.app_{init_dict["conf"]["language"]}')
+        app_loc = importlib.import_module(f'loc.app_{init_dict["morpy"]["conf"]["language"]}')
         init_dict["loc"]["app"].update(getattr(app_loc, 'loc_app')())
         init_dict["loc"]["app_dbg"].update(getattr(app_loc, 'loc_app_dbg')())
         log(morpy_trace_init, init_dict, "init",
@@ -153,16 +155,16 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         # Localization initialized.
         log(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_finished"]}\n'
-                f'{init_dict["loc"]["morpy"]["init_loc_lang"]}: {init_dict["conf"]["language"]}')
+                f'{init_dict["loc"]["morpy"]["init_loc_lang"]}: {init_dict["morpy"]["conf"]["language"]}')
 
         # Load init_dict as a string
-        if init_dict["conf"]["print_init_vars"] or init_dict["conf"]["ref_create"]:
+        if init_dict["morpy"]["conf"]["print_init_vars"] or init_dict["morpy"]["conf"]["ref_create"]:
             init_dict_str = morpy_fct.app_dict_to_string(init_dict)
         else:
             init_dict_str = ""
 
         # Print init_dict to console
-        if init_dict["conf"]["print_init_vars"]:
+        if init_dict["morpy"]["conf"]["print_init_vars"]:
             print(init_dict_str)
 
         # Initialize the morPy orchestrator
@@ -181,17 +183,17 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         # ############################################
 
         # Calculate the runtime of the initialization routine
-        init_duration = morpy_fct.runtime(init_dict["run"]["init_datetime_value"])
+        init_duration = morpy_fct.runtime(init_dict["morpy"]["init_datetime_value"])
 
         # Record the duration of the initialization
-        init_dict["run"]["init_rnt_delta"] = init_duration["rnt_delta"]
+        init_dict["morpy"]["init_rnt_delta"] = init_duration["rnt_delta"]
 
         log(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_finished"]}\n'
-            f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["run"]["init_rnt_delta"]}')
+            f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["morpy"]["init_rnt_delta"]}')
 
         # Write app_dict to file: initialized_app_dict.txt
-        if init_dict["conf"]["ref_create"]:
+        if init_dict["morpy"]["conf"]["ref_create"]:
             morpy_ref(morpy_trace_init, init_dict, init_dict_str)
 
         # Exit initialization
@@ -222,8 +224,6 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
     operation: str = 'build_app_dict(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    # Check for GIL and decide for an app_dict structure.
-    gil = has_gil(morpy_trace)
     init_dict = None
 
     try:
@@ -238,9 +238,7 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
 
         processes_max = init_max_processes(conf_dict, sysinfo["logical_cpus"])
 
-        # FIXME
-        # if gil:
-        if True:
+        if processes_max > 1:
             from lib.mp import shared_dict
 
             memory_dict = nested_memory_sizes(conf_dict, processes_max)
@@ -252,13 +250,6 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
                 recurse=False
             )
 
-            init_dict["conf"] = shared_dict(
-                name="app_dict[conf]",
-                create=create,
-                size=memory_dict["app_dict_conf_mem"],
-                recurse=False
-            )
-
             init_dict["morpy"] = shared_dict(
                 name="app_dict[morpy]",
                 create=create,
@@ -266,8 +257,22 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
                 recurse=False
             )
 
+            init_dict["morpy"]["conf"] = shared_dict(
+                name="app_dict[morpy][conf]",
+                create=create,
+                size=memory_dict["app_dict_morpy_conf_mem"],
+                recurse=False
+            )
+
+            init_dict["morpy"]["heap_shelf"] = shared_dict(
+                name="app_dict[morpy][heap_shelf]",
+                create=create,
+                size=memory_dict["app_dict_morpy_heap_shelf_mem"],
+                recurse=False
+            )
+
             init_dict["morpy"]["logs_generate"] = shared_dict(
-                name="app_dict[global][morPy][logs_generate]",
+                name="app_dict[morpy][logs_generate]",
                 create=create,
                 size=memory_dict["app_dict_morpy_logs_generate_mem"],
                 recurse=False
@@ -294,17 +299,10 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
                 recurse=False
             )
 
-            init_dict["sys"] = shared_dict(
-                name="app_dict[sys]",
+            init_dict["morpy"]["sys"] = shared_dict(
+                name="app_dict[morpy][sys]",
                 create=create,
-                size=memory_dict["app_dict_sys_mem"],
-                recurse=False
-            )
-
-            init_dict["run"] = shared_dict(
-                name="app_dict[run]",
-                create=create,
-                size=memory_dict["app_dict_run_mem"],
+                size=memory_dict["app_dict_morpy_sys_mem"],
                 recurse=False
             )
 
@@ -345,13 +343,12 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
 
         # Without GIL, allow for true nesting
         else:
-            init_dict = {}
-            init_dict["conf"] = {}
+            init_dict = dict()
             init_dict["morpy"] = {}
+            init_dict["morpy"]["conf"] = {}
             init_dict["morpy"]["logs_generate"] = {}
             init_dict["morpy"]["orchestrator"] = {}
-            init_dict["sys"] = {}
-            init_dict["run"] = {}
+            init_dict["morpy"]["sys"] = {}
             init_dict["loc"] = {}
             init_dict["loc"]["morpy"] = {}
             init_dict["loc"]["morpy_dgb"] = {}
@@ -360,11 +357,11 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
 
         # Store configuration in init_dict
         for key, val in conf_dict.items():
-            init_dict["conf"][key] = val
+            init_dict["morpy"]["conf"][key] = val
 
         # Store system information
         for sys_key, sys_val in sysinfo.items():
-            init_dict["sys"][sys_key] = sys_val
+            init_dict["morpy"]["sys"][sys_key] = sys_val
 
         # Store maximum determined processes
         init_dict["morpy"]["processes_max"] = processes_max
@@ -374,7 +371,7 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
     # Error detection
     except Exception as e:
         from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+        raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def morpy_log_header(morpy_trace: dict, init_dict: dict | UltraDict) -> None:
     r"""
@@ -400,18 +397,18 @@ def morpy_log_header(morpy_trace: dict, init_dict: dict | UltraDict) -> None:
     content = (
         f'== {init_dict["loc"]["morpy"]["log_header_start"]}{3*" =="}\n\t'
         f'{init_dict["loc"]["morpy"]["log_header_author"]}: Bastian Neuwirth\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_app"]}: {init_dict["conf"]["main_path"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_timestamp"]}: {init_dict["run"]["init_datetimestamp"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_user"]}: {init_dict["sys"]["username"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_system"]}: {init_dict["sys"]["os"]} {init_dict["sys"]["os_release"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_version"]}: {init_dict["sys"]["os_version"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_architecture"]}: {init_dict["sys"]["os_arch"]}\n\t'
-        f'{init_dict["loc"]["morpy"]["log_header_threads"]}: {init_dict["sys"]["threads"]}\n'
+        f'{init_dict["loc"]["morpy"]["log_header_app"]}: {init_dict["morpy"]["conf"]["main_path"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_timestamp"]}: {init_dict["morpy"]["init_datetimestamp"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_user"]}: {init_dict["morpy"]["sys"]["username"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_system"]}: {init_dict["morpy"]["sys"]["os"]} {init_dict["morpy"]["sys"]["os_release"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_version"]}: {init_dict["morpy"]["sys"]["os_version"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_architecture"]}: {init_dict["morpy"]["sys"]["os_arch"]}\n\t'
+        f'{init_dict["loc"]["morpy"]["log_header_threads"]}: {init_dict["morpy"]["sys"]["threads"]}\n'
         f'== {init_dict["loc"]["morpy"]["log_header_begin"]}{3*" =="}\n'
     )
 
     # Write to the logfile
-    filepath = init_dict["conf"]["log_txt_path"]
+    filepath = init_dict["morpy"]["conf"]["log_txt_path"]
     textfile_write(morpy_trace, init_dict, filepath, content)
 
     # Clean up
@@ -439,7 +436,7 @@ def morpy_ref(morpy_trace: dict, init_dict: dict | UltraDict, init_dict_str: str
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
-        morpy_ref_path = os.path.join(f'{init_dict["conf"]["main_path"]}', 'initialized_app_dict.txt')
+        morpy_ref_path = os.path.join(f'{init_dict["morpy"]["conf"]["main_path"]}', 'initialized_app_dict.txt')
         init_dict_txt = open(morpy_ref_path,'w')
 
         # Write init_dict to file
@@ -457,39 +454,6 @@ def morpy_ref(morpy_trace: dict, init_dict: dict | UltraDict, init_dict_str: str
     except Exception as e:
         from lib.exceptions import MorPyException
         raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "error")
-
-def has_gil(morpy_trace: dict) -> bool | None:
-    r"""
-    Return True if we detect a standard GIL-based Python runtime on a 'typical' operating system.
-    Return False if we suspect a 'no-gil' or 'free-threading' build on Linux/macOS/Windows, or if
-    we detect certain alternative Pythons. This is *heuristic* and not a guaranteed official check.
-
-    :param morpy_trace: operation credentials and tracing information
-
-    :return gil_detected: If True, Python environment has GIL implemented. Process forking not supported.
-
-    :example:
-        gil = has_gil(morpy_trace)
-    """
-
-    # module: str = 'lib.init'
-    # operation: str = 'has_gil(~)'
-    # morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    # TODO add os dependant evaluation
-    try:
-        if sys.version_info >= (3, 13):
-            status = sys._is_gil_enabled()
-            if status:
-                return True
-            else:
-                return False
-        else:
-            return True
-
-    except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, None, e, sys.exc_info()[-1].tb_lineno, "error")
 
 def init_max_processes(conf_dict: dict, system_logical_cpus: int) -> int:
     r"""
@@ -569,9 +533,9 @@ def init_memory_size(conf_dict: dict, max_processes: int) -> tuple:
     memory_min_bytes: int = memory_min_mb * 1024 * 1024 if isinstance(memory_min_mb, int) else 20 * 1024 * 1024 * max_processes
 
     if memory_min_bytes > sys_memory_bytes:
-        sys_memory_mb = sys_memory_bytes // 1024 // 1024
-        raise RuntimeError(f'Insufficient system memory.\nSystem: {sys_memory_mb} MB\n'
-                           f'Required per Configuration: {memory_min_mb} MB')
+        sys_memory_mb: float = sys_memory_bytes / 1024 / 1024
+        raise RuntimeError(f'Insufficient system memory.\nSystem: {sys_memory_mb:.2f} MB\n'
+                           f'Required per Configuration: {memory_min_mb:.2f} MB')
 
     # Evaluate absolute/relative memory calculation. Fallback to absolute.
     memory_use_absolute: bool = conf_dict["memory_use_absolute"]
@@ -611,20 +575,20 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
     :param max_processes: Maximum processes evaluated for runtime.
 
     :return: dict
-        app_dict_mem                        - UltraDict name: app_dict
-        app_dict_conf_mem                   - UltraDict name: app_dict[conf]
-        app_dict_morpy_mem                  - UltraDict name: app_dict[morpy]
-        app_dict_morpy_logs_generate_mem    - UltraDict name: app_dict[morpy][logs_generate]
-        app_dict_morpy_orchestrator_mem     - UltraDict name: app_dict[morpy][orchestrator]
-        app_dict_morpy_proc_refs_mem        - UltraDict name: app_dict[morpy][proc_refs]
-        app_dict_morpy_proc_waiting_mem     - UltraDict name: app_dict[morpy][proc_waiting]
-        app_dict_sys_mem                    - UltraDict name: app_dict[sys]
-        app_dict_run_mem                    - UltraDict name: app_dict[run]
-        app_dict_loc_mem                    - UltraDict name: app_dict[loc]
-        app_dict_loc_morpy_mem              - UltraDict name: app_dict[loc][morpy]
-        app_dict_loc_morpy_dbg_mem          - UltraDict name: app_dict[loc][morpy_dbg]
-        app_dict_loc_app_mem                - UltraDict name: app_dict[loc][app]
-        app_dict_loc_app_dbg_mem            - UltraDict name: app_dict[loc][app_dbg]
+        app_dict_mem                        - Memory for UltraDict: app_dict
+        app_dict_morpy_mem                  - Memory for UltraDict: app_dict["morpy"]
+        app_dict_morpy_conf_mem             - Memory for UltraDict: app_dict["morpy"]["conf"]
+        app_dict_morpy_heap_shelf_mem       - Memory for UltraDict: app_dict["morpy"]["heap_shelf"]
+        app_dict_morpy_logs_generate_mem    - Memory for UltraDict: app_dict["morpy"]["logs_generate"]
+        app_dict_morpy_orchestrator_mem     - Memory for UltraDict: app_dict["morpy"]["orchestrator"]
+        app_dict_morpy_proc_refs_mem        - Memory for UltraDict: app_dict["morpy"]["proc_refs"]
+        app_dict_morpy_proc_waiting_mem     - Memory for UltraDict: app_dict["morpy"]["proc_waiting"]
+        app_dict_morpy_sys_mem              - Memory for UltraDict: app_dict["morpy"]["sys"]
+        app_dict_loc_mem                    - Memory for UltraDict: app_dict["loc"]
+        app_dict_loc_morpy_mem              - Memory for UltraDict: app_dict["loc"]["morpy"]
+        app_dict_loc_morpy_dbg_mem          - Memory for UltraDict: app_dict["loc"]["morpy_dbg"]
+        app_dict_loc_app_mem                - Memory for UltraDict: app_dict["loc"]["app"]
+        app_dict_loc_app_dbg_mem            - Memory for UltraDict: app_dict["loc"]["app_dbg"]
     """
 
     from math import ceil
@@ -632,16 +596,16 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
     init_memory, memory_min_bytes, sys_memory_bytes = init_memory_size(conf_dict, max_processes)
 
     # Determine minimum memories for morPy core first
-    app_dict_morpy_mem: int                 = 10 * 1024 * 1024 * max_processes
-    app_dict_morpy_orchestrator_mem: int    = 5 * 1024 * 1024 * ceil(1 + 0.2 * max_processes)
+    app_dict_morpy_mem: int                 = 5 * 1024 * 1024 * ceil(1 + 0.5 * max_processes)
+    app_dict_morpy_heap_shelf_mem: int      = 10 * 1024 * 1024 * max_processes
+    app_dict_morpy_orchestrator_mem: int    = 1 * 1024 * 1024 * ceil(1 + 0.2 * max_processes)
     app_dict_morpy_proc_refs_mem: int       = 2 * 1024 * 1024 * ceil(1 + 0.5 * max_processes)
     app_dict_morpy_proc_waiting_mem: int    = 2 * 1024 * 1024 * ceil(1 + 0.5 * max_processes)
     app_dict_morpy_logs_generate_mem: int   = 1 * 1024 * 1024
 
-    app_dict_conf_mem: int  = 1 * 1024 * 1024
-    app_dict_sys_mem: int   = 2 * 1024 * 1024
-    app_dict_run_mem: int   = 5 * 1024 * 1024
-    app_dict_loc_mem: int   = 1 * 1024 * 1024
+    app_dict_morpy_conf_mem: int  = 1 * 1024 * 1024
+    app_dict_morpy_sys_mem: int   = 2 * 1024 * 1024
+    app_dict_loc_mem: int         = 1 * 1024 * 1024
 
     app_dict_loc_morpy_mem: int     = 2 * 1024 * 1024
     app_dict_loc_morpy_dbg_mem: int = 1 * 1024 * 1024
@@ -649,51 +613,58 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
     # Combined size of morPy core memory
     morpy_core_memory: int = sum(
         (app_dict_morpy_mem,
+        app_dict_morpy_heap_shelf_mem,
         app_dict_morpy_orchestrator_mem,
         app_dict_morpy_proc_refs_mem,
         app_dict_morpy_proc_waiting_mem,
         app_dict_morpy_logs_generate_mem,
-        app_dict_conf_mem,
-        app_dict_sys_mem,
-        app_dict_run_mem,
+        app_dict_morpy_conf_mem,
+        app_dict_morpy_sys_mem,
         app_dict_loc_morpy_mem,
         app_dict_loc_morpy_dbg_mem)
     )
 
     # If memory for morPy core is greater than system memory, exit
     if morpy_core_memory > sys_memory_bytes:
-        sys_memory_mb = sys_memory_bytes // 1024 // 1024
-        morpy_core_memory_mb = morpy_core_memory // 1024 // 1024
-        raise RuntimeError(f'Insufficient system memory.\nSystem: {sys_memory_mb} MB\n'
-                           f'morPy required: {morpy_core_memory_mb} MB')
+        sys_memory_mb: float = sys_memory_bytes / 1024 / 1024
+        morpy_core_memory_mb: float = morpy_core_memory / 1024 / 1024
+        raise RuntimeError(f'Insufficient system memory.\nSystem: {sys_memory_mb:.2f} MB\n'
+                           f'morPy required: {morpy_core_memory_mb:.2f} MB')
 
     app_dict_loc_app_mem: int       = 10 * 1024 * 1024
     app_dict_loc_app_dbg_mem: int   = 2 * 1024 * 1024
 
-
+    # Try assign left memory space to app_dict.
     app_dict_mem: int = init_memory - sum((morpy_core_memory, app_dict_loc_app_mem, app_dict_loc_app_dbg_mem))
 
-    # If root shared memory size is smaller 0, try to decrease non-core memories.
-    if app_dict_mem < 0:
-        from math import floor
-        dist_factor = app_dict_loc_app_dbg_mem // app_dict_loc_app_mem
-        app_dict_loc_app_dbg_mem = floor(dist_factor * app_dict_mem * (-1))
-        app_dict_loc_app_mem = floor(app_dict_mem * (-1) - app_dict_loc_app_dbg_mem)
-        app_dict_mem: int = init_memory - sum((morpy_core_memory, app_dict_loc_app_mem, app_dict_loc_app_dbg_mem))
+    # If root shared memory size is too small, try to adjust.
+    if app_dict_mem < 1 * 1024 * 1024:
+        app_mem_byte = 3 * 1024 * 1024
+        if  sys_memory_bytes > app_mem_byte + morpy_core_memory:
+            app_dict_loc_app_mem: int       = 1 * 1024 * 1024
+            app_dict_loc_app_dbg_mem: int   = 1 * 1024 * 1024
+            app_dict_mem: int               = 1 * 1024 * 1024
+        else:
+            sys_memory_mb: float = sys_memory_bytes / 1024 / 1024
+            morpy_core_memory_mb: float = morpy_core_memory / 1024 / 1024
+            app_mem_mb: float = app_mem_byte / 3
+            raise RuntimeError(f'Insufficient memory configuration.\nSystem: {sys_memory_mb:.2f} MB\n'
+                               f'morPy required: {morpy_core_memory_mb:.2f} MB\n'
+                               f'App required: {app_mem_mb:.2f} MB')
 
     return {
-        "app_dict_mem" : app_dict_mem ,
-        "app_dict_conf_mem" : app_dict_conf_mem ,
-        "app_dict_morpy_mem" : app_dict_morpy_mem ,
-        "app_dict_morpy_logs_generate_mem" : app_dict_morpy_logs_generate_mem ,
-        "app_dict_morpy_orchestrator_mem" : app_dict_morpy_orchestrator_mem ,
-        "app_dict_morpy_proc_refs_mem" : app_dict_morpy_proc_refs_mem ,
-        "app_dict_morpy_proc_waiting_mem" : app_dict_morpy_proc_waiting_mem ,
-        "app_dict_sys_mem" : app_dict_sys_mem ,
-        "app_dict_run_mem" : app_dict_run_mem ,
-        "app_dict_loc_mem" : app_dict_loc_mem ,
-        "app_dict_loc_morpy_mem" : app_dict_loc_morpy_mem ,
-        "app_dict_loc_morpy_dbg_mem" : app_dict_loc_morpy_dbg_mem ,
-        "app_dict_loc_app_mem" : app_dict_loc_app_mem ,
+        "app_dict_mem" : app_dict_mem,
+        "app_dict_morpy_mem" : app_dict_morpy_mem,
+        "app_dict_morpy_conf_mem" : app_dict_morpy_conf_mem,
+        "app_dict_morpy_heap_shelf_mem" : app_dict_morpy_heap_shelf_mem,
+        "app_dict_morpy_logs_generate_mem" : app_dict_morpy_logs_generate_mem,
+        "app_dict_morpy_orchestrator_mem" : app_dict_morpy_orchestrator_mem,
+        "app_dict_morpy_proc_refs_mem" : app_dict_morpy_proc_refs_mem,
+        "app_dict_morpy_proc_waiting_mem" : app_dict_morpy_proc_waiting_mem,
+        "app_dict_morpy_sys_mem" : app_dict_morpy_sys_mem,
+        "app_dict_loc_mem" : app_dict_loc_mem,
+        "app_dict_loc_morpy_mem" : app_dict_loc_morpy_mem,
+        "app_dict_loc_morpy_dbg_mem" : app_dict_loc_morpy_dbg_mem,
+        "app_dict_loc_app_mem" : app_dict_loc_app_mem,
         "app_dict_loc_app_dbg_mem" : app_dict_loc_app_dbg_mem
     }
