@@ -9,7 +9,7 @@ Feel free to comment, share and support this project!
 ![License](https://img.shields.io/github/license/supermorphDotTech/morPy)
 ![GitHub commit activity (monthly)](https://img.shields.io/github/commit-activity/m/supermorphDotTech/morPy)
 
-# v1.0.0c - Table of contents [≛](#4.) [⇩](#7.) <a name="toc"></a>
+# v1.0.0b - Table of contents [≛](#4.) [⇩](#7.) <a name="toc"></a>
 
 `1.` [Requirements and Dependencies](#1.)  
 &nbsp;
@@ -228,12 +228,12 @@ PROJECT\.venv-win\Lib\site-packages\Tcl
 
 # 2. Versioning - α.β.γλ [⇧](#toc) <a name="2."></a>
 
-| Symbol | Description |
-| --- | --- |
-| α   | Major Version.  <br>No downward compatibility: CRITICAL errors expected. |
-| β   | Improvement Version.  <br>Limited downward compatibility: WARNING and DENIED messages expected. |
-| γ   | Bugfix Version.  <br>Full downward compatibility. |
-| λ   | Version status.  <br>*None*: Release version  <br>*a*: Alpha version with minor bugs for public testing.  <br>*b*: Beta version with potential showstopper bugs for internal testing.  <br>*c*: Gamma version. Development. Not presentable to public. |
+| Symbol | Description                                                                                                                                                                                                                                             |
+| --- |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| α   | Major Version.  <br>No downward compatibility requires architectural changes.                                                                                                                                                                           |
+| β   | Improvement Version.  <br>Limited downward compatibility. "Easy" modifications required.                                                                                                                                                                |
+| γ   | Bugfix Version.  <br>Full downward compatibility.                                                                                                                                                                                                       |
+| λ   | Version status.  <br>*None*: Golden release version  <br>*a*: Alpha version with minor bugs for public testing.  <br>*b*: Beta version with potential showstopper bugs for public testing.  <br>*c*: Gamma version. For developmental internal testing. |
 
 # 3. Parallelization [⇧](#toc) <a name="3."></a>
 
@@ -273,6 +273,12 @@ app_dict["global"]["app"]["my_project"].update({"key" : "value"})
 ```
 
 ## 4.1.1 Limitations of the Shared App Dictionary [⇧](#toc) <a name="4.1.1"></a>
+
+For more complex types like `set()` and `list()` (and others), in-place modifications may not work
+as expected. Methods like `.pop()` are not pickled and synchronized across processes. To mitigate issues,
+perform *copy-modify-write* sequences or use immutable values associated to their regarding keys.
+As an example, you may choose to define a nested shared dictionary instead of a `set()`, with the values
+being `None` if not required.
 
 Storing classes in `app_dict` to share them across processes may fail, because it's attributes
 are not propagated reliably to other processes. In multiprocessing contexts, a classes attributes are not
@@ -391,15 +397,15 @@ app_dict = [dict | UltraDict]{
         "orchestrator":     [dict | UltraDict]  # Space reserved for the morpy orchestrator.
        *"proc_refs":        [UltraDict]         # Buffer of references to child processes spawned.
        *"proc_waiting":     [UltraDict]         # References to waiting processes which may receive a task.
-        "sys":              [dict | UltraDict]  # Data regarding the machine running morPy
-        "processes_max":    [int]               # Maximum processes leveraged during runtime
-       *"proc_available":   [set]               # Pool of available processes which may be spawned.
-       *"proc_busy":        [set]               # Pool of running processes.
+        "sys":              [dict | UltraDict]  # Data regarding the machine running morPy.
+        "processes_max":    [int]               # Maximum processes leveraged during runtime.
+       *"proc_available":   [UltraDict]         # Pool of available processes which may be spawned.
+       *"proc_busy":        [UltraDict]         # Pool of running processes.
        *"proc_joined":      [bool]              # Flag signaling that all processes are joined and may be released.
         "proc_master":      [int]               # Process ID of the master process.
         "interrupt":        [bool]              # Flag to signal all processes to wait. On release terminate or continue.
         "exit":             [bool]              # Flag to signal app exit. All processes will terminate as soon as possible.
-        "init_complete"     [bool]              # Is True, once app transitioned from app.init into app.run
+        "init_complete"     [bool]              # Is True, once app transitioned from app.init() into app.run().
     }
     "loc":      [dict | UltraDict]{             # See ..\loc\
         "morpy":            [dict | UltraDict]  # Localization of morPy messages
