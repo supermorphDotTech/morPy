@@ -18,11 +18,13 @@ class MorPyCoreError(Exception):
 
     :param exc: Exception object as passed by sys of the parent function/method.
     :param root_line: Line number of the original error that could not be logged.
-    :param root_module: Module name of the original error that could not be logged.
     :param root_e: Exception object of the original error that could not be logged.
+    :param root_trace: Operation credentials and tracing information of the original caller.
+    :param logging: If True, logging is enabled. May lead to RecursionError.
+    :param cause: Additional message specifying the issue.
     """
 
-    __slots__ = ['exc', 'root_line', 'root_module', 'root_e']
+    __slots__ = ['exc', '__suppress_context__', 'root_msg', 'core_msg', 'message']
 
     def __init__(self, app_dict: dict=None, exc: BaseException=None, root_line: int=None, root_e: BaseException=None,
                  root_trace: dict=None, logging: bool=False, cause: str=None) -> None:
@@ -45,12 +47,14 @@ class MorPyCoreError(Exception):
         self.message = f"{self.core_msg}\n{self.root_msg}"
 
         if logging:
-            log(str(root_trace), app_dict, "critical", lambda: self.message)
+            log(root_trace, app_dict, "critical", lambda: self.message)
         else:
             # Suppress traceback for clarity
             self.__suppress_context__: bool = True
-            sys.tracebacklimit: int = 0
+            sys.tracebacklimit = 0
             super().__init__(self.message)
+
+        print(self.message)
 
         # Quit the program
         sys.exit(-1)

@@ -110,8 +110,9 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
             task = [log_task, morpy_trace, app_dict, log_dict, write_log_txt, write_log_db, print_log]
             log_enqueue(app_dict, task=task)
             # Generate print required for GUIs in the regarding child process.
-            if print_log:
-                msg_print(morpy_trace, app_dict, log_dict)
+            # FIXME child processes need their own io stream
+            # if print_log:
+            #     msg_print(morpy_trace, app_dict, log_dict)
 
         # Clean up
         del log_dict
@@ -119,7 +120,8 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
 
     except Exception as e:
         # Severe morPy logging error.
-        raise RuntimeError(f'{app_dict["loc"]["morpy"]["log_crit_fail"]}:\n{e}')
+        err_msg = f'{app_dict["loc"]["morpy"]["log_crit_fail"]}\n{e}'
+        raise RuntimeError(err_msg)
 
 def log_enqueue(app_dict: dict, priority: int=-100, task: list=None) -> None:
     r"""
@@ -136,33 +138,40 @@ def log_enqueue(app_dict: dict, priority: int=-100, task: list=None) -> None:
         log_enqueue(morpy_trace, app_dict, task=task)
     """
 
+    # Substitute UltraDict references to mitigate RecursionError
+    def substitute(obj):
+        from UltraDict import UltraDict
+        if isinstance(obj, UltraDict):
+            name_val = obj.name
+            return (f"__morPy_shared_ref__::{name_val}",
+                    obj.shared_lock,
+                    obj.auto_unlink,
+                    obj.recurse)
+        elif isinstance(obj, list):
+            return [substitute(item) for item in obj]
+        elif isinstance(obj, tuple):
+            return tuple(substitute(item) for item in obj)
+        elif isinstance(obj, dict):
+            return {substitute(key): substitute(value) for key, value in obj.items()}
+        else:
+            return obj
+
     if task:
+        # Substitute UltraDict references in task to avoid recursion issues.
+        task_sanitized = substitute(task)
+
         with app_dict["morpy"].lock:
-            morpy_dict = app_dict["morpy"]
-            task_lookup = morpy_dict["task_lookup"]
-            heap = morpy_dict["heap"]
+            next_task_id = app_dict["morpy"]["tasks_created"] + 1
 
-            with app_dict["morpy"]["orchestrator"].lock:
-                counter = app_dict["morpy"]["orchestrator"]["task_counter"] + 1
-                app_dict["morpy"]["orchestrator"]["task_counter"] = counter
+            with app_dict["morpy"]["heap_shelf"].lock:
+                task_sys_id = id(task)
 
-            # Substitute UltraDict references in task to avoid recursion issues.
-            app_dict_substitute = (f'__morPy_shared_ref__::{app_dict.name}', app_dict.shared_lock, app_dict.auto_unlink,
-                                   app_dict.recurse)
-            task[2] = app_dict_substitute
+                # Push task to heap shelf
+                task_qed = (priority, next_task_id, task_sys_id, task_sanitized, False)
 
-            task_sys_id = id(task)
+                app_dict["morpy"]["heap_shelf"][next_task_id] = task_qed
 
-            # Push task to queue
-            task_qed = (priority, counter, task_sys_id, task, False)
-
-            heappush(heap, task_qed)
-            app_dict["morpy"]["heap"] = heap # reassign to trigger synchronization
-
-            task_lookup.add(task_sys_id)
-            app_dict["morpy"]["task_lookup"] = task_lookup # reassign to trigger synchronization
-
-            morpy_dict.apply_update()
+        app_dict["morpy"]["tasks_created"] += 1
 
 def log_task(morpy_trace: dict, app_dict: dict, log_dict: dict, write_log_txt: bool, write_log_db: bool,
              print_log: bool) -> None:
@@ -435,7 +444,9 @@ def msg_print(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
 
     # Raise an interrupt if certain log levels are met
     if log_dict["interrupt_enable"]:
-        log_interrupt(morpy_trace, app_dict)
+        # FIXME interrupt broken
+        # log_interrupt(morpy_trace, app_dict)
+        pass
 
 def log_txt(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     r"""

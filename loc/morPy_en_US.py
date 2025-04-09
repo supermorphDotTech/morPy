@@ -322,13 +322,14 @@ def loc_morpy() -> dict:
         'heap_pull_cnt': 'Counter',
         'heap_pull_void': 'Can not pull from an empty process queue. Skipped...',
 
+        # lib.mp.py - MorPyOrchestrator._mp_loop(~)
+        'MorPyOrchestrator_exit_request': 'Exit request detected. Termination in Progress.',
+        'MorPyOrchestrator_exit_request_complete': 'App terminating after exit request. No logs left from child processes.',
+
         # lib.mp.py - app_run(~)
         'app_run_init': 'App initializing.',
         'app_run_start': 'App starting.',
         'app_run_exit': 'App exiting.',
-
-        # lib.mp.py - process_q_init(~)
-        'process_q_init_done': 'Priority queue initialized.',
 
         # lib.mp.py - heap_shelve(~)
         'heap_shelve_task': 'Task',
@@ -358,7 +359,6 @@ def loc_morpy() -> dict:
         'run_parallel_start': 'Parallel process starting. ID',
         'run_parallel_shelved': 'A task was shelved to a running process.',
         'run_parallel_exit': 'Parallel process running. ID',
-        'run_parallel_call_err': 'Task provided is not callable.',
         'run_parallel_allocate_fail': 'All processes busy, failed to allocate process ID. Re-queueing the task.',
         'run_parallel_proc_busy': 'Processes busy',
         'run_parallel_proc_avl': 'Processes available',

@@ -1145,8 +1145,8 @@ def process_q(morpy_trace: dict, app_dict: dict, task: Callable | list | tuple=N
     :param app_dict: The morPy global dictionary containing app configurations.
     :param task: Callable, list or tuple packing the task. Formats:
         callable: partial(func, *args, **kwargs)
-        list: [func, *args, **kwargs]
-        tuple: (func, *args, **kwargs)
+        list: [func, *args, {"kwarg1": val1, "kwarg2": val2, ...}]
+        tuple: (func, *args, {"kwarg1": val1, "kwarg2": val2, ...})
     :param priority: Integer representing task priority (lower is higher priority)
     :param autocorrect: If False, priority can be smaller than zero. Priority
         smaller zero is reserved for the morPy Core. However, it is a devs choice

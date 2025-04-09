@@ -502,6 +502,7 @@ class FileDirSelectTk:
             self.root.quit()
 
             # Initiate program exit
+            # TODO conditional lock
             app_dict["morpy"]["exit"] = True
 
             # Release the global interrupts
@@ -963,6 +964,7 @@ class GridChoiceTk:
             self.root.quit()
 
             # Initiate program exit
+            # TODO conditional lock
             app_dict["morpy"]["exit"] = True
 
             # Release the global interrupts

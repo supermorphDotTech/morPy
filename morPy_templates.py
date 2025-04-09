@@ -64,21 +64,8 @@ class TemplateClass:
     This class is a template.
 
     !! LIMITATIONS IN MULTIPROCESSING !!
-    In multiprocessing contexts, a classes attributes are not shared like other values
-    and types. Instead, if attributes have to be accessible by other processes, construct
-    shared dictionaries to achieve that. Make sure to avoid infinite recursions by creating
-    a new shared dict, that is not nested in app_dict.
-    This means, that you may have pseudo-attributes in your class addressing
-    app_dict["..."]["..."], instead of references to self.
-    WRONG in multiprocessing:
-        app_dict["global"]["MyClass"] = MyClass(morpy_trace, app_dict, *args, **kwargs)
-    CORRECT in multiprocessing:
-        from lib.mp import shared_dict
-        instance_mp = shared_dict(name="MyClass", create=True)
-
-        instance = MyClass(morpy_trace, app_dict, *args, **kwargs)
-        instance_mp["ob_ref"] = instance
-        instance_mp["data"] = instance.my_custom_method_to_return_data()
+    Storing classes in `app_dict` to share them across processes may fail, because it's attributes
+    are not propagated reliably to other processes. See README.md for more details.
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict) -> None:

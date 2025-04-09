@@ -73,8 +73,6 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         init_dict, init_datetime = build_app_dict(morpy_trace_init, create=True)
 
         init_dict["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
-        init_dict["morpy"].update({"proc_available" : set()})
-        init_dict["morpy"].update({"proc_busy" : {morpy_trace_init["process_id"],}})
         init_dict["morpy"]["proc_joined"] = True
         init_dict["morpy"].update({"proc_master" : morpy_trace['process_id']})
 
@@ -285,12 +283,21 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
                 recurse=False
             )
 
-            init_dict["morpy"]["proc_refs"] = shared_dict(
-                name="app_dict[morpy][proc_refs]",
+            init_dict["morpy"]["proc_available"] = shared_dict(
+                name="app_dict[morpy][proc_available]",
                 create=create,
-                size=memory_dict["app_dict_morpy_proc_refs_mem"],
+                size=memory_dict["app_dict_morpy_proc_available_mem"],
                 recurse=False
             )
+
+            init_dict["morpy"]["proc_busy"] = shared_dict(
+                name="app_dict[morpy][proc_busy]",
+                create=create,
+                size=memory_dict["app_dict_morpy_proc_busy_mem"],
+                recurse=False
+            )
+            # Insert master process ID
+            init_dict["morpy"]["proc_busy"][morpy_trace["process_id"]] = "MASTER"
 
             init_dict["morpy"]["proc_waiting"] = shared_dict(
                 name="app_dict[morpy][proc_waiting]",
@@ -581,7 +588,8 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
         app_dict_morpy_heap_shelf_mem       - Memory for UltraDict: app_dict["morpy"]["heap_shelf"]
         app_dict_morpy_logs_generate_mem    - Memory for UltraDict: app_dict["morpy"]["logs_generate"]
         app_dict_morpy_orchestrator_mem     - Memory for UltraDict: app_dict["morpy"]["orchestrator"]
-        app_dict_morpy_proc_refs_mem        - Memory for UltraDict: app_dict["morpy"]["proc_refs"]
+        app_dict_morpy_proc_available_mem   - Memory for UltraDict: app_dict["morpy"]["proc_available"]
+        app_dict_morpy_proc_busy_mem        - Memory for UltraDict: app_dict["morpy"]["proc_busy"]
         app_dict_morpy_proc_waiting_mem     - Memory for UltraDict: app_dict["morpy"]["proc_waiting"]
         app_dict_morpy_sys_mem              - Memory for UltraDict: app_dict["morpy"]["sys"]
         app_dict_loc_mem                    - Memory for UltraDict: app_dict["loc"]
@@ -596,11 +604,12 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
     init_memory, memory_min_bytes, sys_memory_bytes = init_memory_size(conf_dict, max_processes)
 
     # Determine minimum memories for morPy core first
-    app_dict_morpy_mem: int                 = 5 * 1024 * 1024 * ceil(1 + 0.5 * max_processes)
-    app_dict_morpy_heap_shelf_mem: int      = 10 * 1024 * 1024 * max_processes
-    app_dict_morpy_orchestrator_mem: int    = 1 * 1024 * 1024 * ceil(1 + 0.2 * max_processes)
-    app_dict_morpy_proc_refs_mem: int       = 2 * 1024 * 1024 * ceil(1 + 0.5 * max_processes)
-    app_dict_morpy_proc_waiting_mem: int    = 2 * 1024 * 1024 * ceil(1 + 0.5 * max_processes)
+    app_dict_morpy_mem: int                 = 2 * 1024 * 1024 * ceil(1 + 0.5 * max_processes)
+    app_dict_morpy_heap_shelf_mem: int      = 5 * 1024 * 1024 * max_processes
+    app_dict_morpy_orchestrator_mem: int    = 1 * 1024 * 1024
+    app_dict_morpy_proc_available_mem: int  = 1 * 1024 * 1024 * ceil(1 + 0.2 * max_processes)
+    app_dict_morpy_proc_busy_mem: int       = 1 * 1024 * 1024 * ceil(1 + 0.2 * max_processes)
+    app_dict_morpy_proc_waiting_mem: int    = 1 * 1024 * 1024 * ceil(1 + 0.2 * max_processes)
     app_dict_morpy_logs_generate_mem: int   = 1 * 1024 * 1024
 
     app_dict_morpy_conf_mem: int  = 1 * 1024 * 1024
@@ -615,7 +624,8 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
         (app_dict_morpy_mem,
         app_dict_morpy_heap_shelf_mem,
         app_dict_morpy_orchestrator_mem,
-        app_dict_morpy_proc_refs_mem,
+        app_dict_morpy_proc_available_mem,
+        app_dict_morpy_proc_busy_mem,
         app_dict_morpy_proc_waiting_mem,
         app_dict_morpy_logs_generate_mem,
         app_dict_morpy_conf_mem,
@@ -659,7 +669,8 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
         "app_dict_morpy_heap_shelf_mem" : app_dict_morpy_heap_shelf_mem,
         "app_dict_morpy_logs_generate_mem" : app_dict_morpy_logs_generate_mem,
         "app_dict_morpy_orchestrator_mem" : app_dict_morpy_orchestrator_mem,
-        "app_dict_morpy_proc_refs_mem" : app_dict_morpy_proc_refs_mem,
+        "app_dict_morpy_proc_available_mem" : app_dict_morpy_proc_available_mem,
+        "app_dict_morpy_proc_busy_mem" : app_dict_morpy_proc_busy_mem,
         "app_dict_morpy_proc_waiting_mem" : app_dict_morpy_proc_waiting_mem,
         "app_dict_morpy_sys_mem" : app_dict_morpy_sys_mem,
         "app_dict_loc_mem" : app_dict_loc_mem,

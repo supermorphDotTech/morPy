@@ -46,28 +46,28 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
 
     try:
         # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
-        import demo.ProgressTrackerTk as demo_ProgressTrackerTk
-        demo_ProgressTrackerTk.run(morpy_trace, app_dict)
+        # from demo.ProgressTrackerTk import run as demo_ProgressTrackerTk
+        # demo_ProgressTrackerTk(morpy_trace, app_dict)
 
-        # from morPy import process_q
-        # from functools import partial
-        # import time
-        #
-        # for i in range(1, 21):
-        #
-        #     print(f'PARTIAL: process queueing :: {i}')
-        #     task = partial(arbitrary_task, morpy_trace, app_dict, stages=5, total_rep=10 ** 6)
-        #     process_q(morpy_trace, app_dict, task=task, priority=20)
-        #
-        #     print(f'LIST: process queueing :: {i}')
-        #     task = [arbitrary_task, morpy_trace, app_dict]
-        #     process_q(morpy_trace, app_dict, task=task, priority=20)
-        #
-        #     print(f'TUPLE: process queueing :: {i}')
-        #     task = (arbitrary_task, morpy_trace, app_dict)
-        #     process_q(morpy_trace, app_dict, task=task, priority=20)
+        from morPy import process_q
+        from functools import partial
+        import time
+
+        for i in range(1, 40):
+            task = partial(arbitrary_task, morpy_trace, app_dict, stages=3, total_rep=10 ** 5)
+            process_q(morpy_trace, app_dict, task=task, priority=20)
+
+            task = [arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5}]
+            process_q(morpy_trace, app_dict, task=task, priority=34)
+
+            task = (arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
+            process_q(morpy_trace, app_dict, task=task, priority=56)
+
+            # task = [demo_ProgressTrackerTk, morpy_trace, app_dict]
+            # process_q(morpy_trace, app_dict, task=task, priority=56)
 
         check: bool = True
+        time.sleep(2)
 
     except Exception as e:
         raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
@@ -141,7 +141,8 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int = 5, total_rep
 
         # No localization for demo module
         log(morpy_trace, app_dict, "info",
-        lambda: f'Parallel task executed.')
+        lambda: f'P{morpy_trace["process_id"]} :: Parallel task executed.\n{morpy_trace["task_id"]=}\n'
+                f'{app_dict["morpy"]["tasks_created"]=}')
 
     except Exception as e:
         from lib.exceptions import MorPyException

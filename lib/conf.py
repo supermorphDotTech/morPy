@@ -80,7 +80,7 @@ def settings():
     # These log levels may still be printed to console.
     # Called by: throughout msg operations
     # Default: ["debug"]
-    log_lvl_nolog: list = []
+    log_lvl_nolog: list = ["debug"]
 
     # List object to exclude certain log levels from being printed to ui or console.
     # These log levels may still be logged to DB or text file.
@@ -118,6 +118,12 @@ def settings():
     Memory initialized will scale with the amount of processes configured for scalability.
     """
 
+    # If debugging is not working due to parallelism, it can be the solution to
+    # simulate multiprocessing in single process mode. If this flag is set to
+    # "True", the use of shared memory and queueing will be forced. Default is False.
+    # FIXME does not work yet, process flow needs modifications for this
+    shared_memory_enforce: bool = False
+
     # Select the way, how the available RAM is determined. If absolute, an integer
     # value will reflect the Megabytes of maximum memory. Otherwise, use relative.
     # Default: False or None
@@ -149,7 +155,7 @@ def settings():
     # Select the way, how the available CPUs are determined. If absolute, an integer
     # value will reflect the maximum number of logical cores to utilize in parallel.
     # Default: False or None
-    processes_count_absolute: bool = True
+    processes_count_absolute: bool = False
 
     # Absolute amount of processes to run parallel. This value will by default not exceed
     # the logical cores available on the system. If None, all CPUs can be utilized.
@@ -166,6 +172,11 @@ def settings():
     # does not reflect an integer cpu count. Allowed is "round", "floor" (default) or
     # "ceil".
     processes_relative_math: str = "floor"
+
+    # If processes can not fail or otherwise impose a risk of any sort or even unacceptable
+    # behaviour, this flag mey be set True to have the entire app shut down immediately if
+    # a process was terminated unexpectedly. Logs will still be written. Default is "True".
+    processes_are_critical: bool = False
 
     r"""
 >>> PATHS <<<
@@ -221,6 +232,7 @@ def settings():
         'log_lvl_interrupts' : log_lvl_interrupts,
         'metrics_enable' : metrics_enable,
         'metrics_perfmode' : metrics_perfmode,
+        'shared_memory_enforce' : shared_memory_enforce,
         'memory_use_absolute' : memory_use_absolute,
         'memory_relative' : memory_relative,
         'memory_absolute' : memory_absolute_mb,
@@ -229,6 +241,7 @@ def settings():
         'processes_absolute' : processes_absolute,
         'processes_relative' : processes_relative,
         'processes_relative_math' : processes_relative_math,
+        'processes_are_critical' : processes_are_critical,
         'main_path' : main_path,
         'log_path' : log_path,
         'log_db_path' : log_db_path,

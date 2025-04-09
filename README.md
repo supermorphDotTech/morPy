@@ -2,7 +2,7 @@
 
 More solutions. More insights. morPy.
 
-Multiprocessing aided Python framework with integrated logging to database. Be the master of your app by analyzing runtime. Enjoy the comfort of runtime documentation ready for use in validated environments.
+Python multiprocessing aided app foundation. Feature rich and easy to learn.
 
 Feel free to comment, share and support this project!  
 
@@ -140,7 +140,8 @@ cd $env:PythonProject
 & "$env:python_exe" -m venv .venv-win
 ```
 
-If an error occurs indicating `python<version> was not recognized as a cmdlet`, it is likely, that Python was not installed with the option "Add python.exe to PATH".
+If an error occurs indicating `python<version> was not recognized as a cmdlet`, it is likely, that Python was not
+installed with the option "Add python.exe to PATH".
 
 #### 1.1.3.2 Install Dependencies [⇧](#toc) <a name="1.1.3.2"></a>
 
@@ -202,9 +203,11 @@ pip install pillow
 
 #### 1.1.3.3 Copy Packages to Virtual Environment [⇧](#toc) <a name="1.1.3.3"></a>
 
-*Manual copy of* `tcl` *and* `tk` *from Python installation to the virtual environment. This is required, as tcl does not install correctly, otherwise.*
+*Manual copy of* `tcl` *and* `tk` *from Python installation to the virtual environment. This is required, as tcl does
+not install correctly, otherwise.*
 
-1.  Navigate to the tcl installation folder and copy it to the virtual environment. (*Change `Python312` to your Python version installed in the virtual environment!*)
+1.  Navigate to the tcl installation folder and copy it to the virtual environment.
+2. (*Change `Python312` to your Python version installed in the virtual environment!*)
 
 Copy the following path into your Windows Explorer path bar and press ENTER.
 ```
@@ -217,7 +220,8 @@ Copy the following subdirectories.
 .\tk8.6
 ```
 
-Navigate to the virtual environment and paste the directories. Your may have to create a new folder `.\Tcl`. (*Change `PROJECT` to your Python project path!*)
+Navigate to the virtual environment and paste the directories. Your may have to create a new folder `.\Tcl`.
+(*Change `PROJECT` to your Python project path!*)
 ```
 PROJECT\.venv-win\Lib\site-packages\Tcl
 ```
@@ -233,7 +237,10 @@ PROJECT\.venv-win\Lib\site-packages\Tcl
 
 # 3. Parallelization [⇧](#toc) <a name="3."></a>
 
-The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends. The process ID "0" is reserved for the orchestration process. It will take care of logging and is reserved for tasks with a priority smaller than 0 (smaller numbers equal higher priority). All app tasks priorities will default to 100, if not specified and will be autocorrected if set below 0. In case a priority is corrected, a warning will be raised.
+The parallelization in morPy is done utilizing an orchestration process with which the entire program starts and ends.
+The process ID "0" is reserved for the orchestration process. It will take care of logging and is reserved for tasks
+with a priority smaller than 0 (smaller numbers equal higher priority). All app tasks priorities will default to 100,
+if not specified and will be autocorrected if set below 0. In case a priority is corrected, a warning will be raised.
 
 ## Reserved Orchestrator Heap Priorities [⇧](#toc) <a name="3.1"></a>
 
@@ -251,9 +258,13 @@ The parallelization in morPy is done utilizing an orchestration process with whi
 
 ## 4.1 Introduction [⇧](#toc) <a name="4.1"></a>
 
-To share data across processes, morPy utilizes [`UltraDict`](https://github.com/ronny-rentner/UltraDict/tree/main) to efficiently and atomically acquire locks, read and write data across spawned child processes. In single process mode, the framework falls back to the `dict` type to keep performance as high as possible.
+To share data across processes, morPy utilizes [`UltraDict`](https://github.com/ronny-rentner/UltraDict/tree/main) to
+efficiently and atomically acquire locks, read and write data across spawned child processes. In single process mode,
+the framework falls back to the `dict` type to keep performance as high as possible.
 
-The class of `app_dict` is, in dependency to the GIL, either a regular `dict` or an `UltraDict`. The latter ensures efficient shared memory (as much as possible) when spawning processes.
+The class of `app_dict` is, in dependency to how many processes are configured in settings, either a regular `dict` in
+single process mode or an `UltraDict` if more than one process shall be leveraged. The latter ensures efficient shared
+memory (as much as possible) and a way to share data between spawned processes.
 
 ```Python
 # Exemplary dev dictionary nesting
@@ -263,16 +274,7 @@ app_dict["global"]["app"]["my_project"].update({"key" : "value"})
 
 ## 4.1.1 Limitations of the Shared App Dictionary [⇧](#toc) <a name="4.1.1"></a>
 
-Most in-place operations (such as `append()` for lists) are not propagated correctly between processes. Instead,
-use reassignment to force synchronization after the in–place operation. For example:
-
-````Python
-temp = app_dict["some"]["nested_list"]
-temp.append(new_item)
-app_dict["some"]["nested_list"] = temp  # reassign to trigger synchronization
-````
-
-In addition, storing classes in `app_dict` to share them across processes may fail, because it's attributes
+Storing classes in `app_dict` to share them across processes may fail, because it's attributes
 are not propagated reliably to other processes. In multiprocessing contexts, a classes attributes are not
 shared like other values and types. Instead, if attributes have to be accessible by other processes, construct
 shared dictionaries to achieve that. Make sure to avoid infinite recursions by creating a new
@@ -280,20 +282,8 @@ shared dict, that is not nested in app_dict.
 This means, that you may have pseudo-attributes in your class addressing
 `app_dict["..."]["..."]`, instead of references to self.
 
-```Python
-# WRONG in multiprocessing:
-app_dict["global"]["MyClass"] = MyClass(morpy_trace, app_dict, *args, **kwargs)
-
-# CORRECT in multiprocessing:
-from lib.mp import shared_dict
-instance_mp = shared_dict(name="MyClass", create=True)
-
-instance = MyClass(morpy_trace, app_dict, *args, **kwargs)
-instance_mp["ob_ref"] = instance
-instance_mp["data"] = instance.my_custom_method_to_return_data()
-```
-
-*If synchronization can not be achieved*, it is recommended to stick with simple key-value-pairs in `app_dict` with proxy functions transforming the data instead of more complex types.
+*If synchronization can not be achieved*, it is recommended to stick with simple key-value-pairs in `app_dict` with
+proxy functions transforming the data instead of more complex types.
 
 ## 4.2 Navigating the App Dictionary [⇧](#toc) <a name="4.2"></a>
 
@@ -374,7 +364,7 @@ app_dict["loc"]["morpy_dbg"]
 app_dict["loc"]["app"]
 ```
 
-» `dev`
+» `dev`\
 » Data initialized from `loc.app_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ```Python
@@ -382,100 +372,40 @@ app_dict["loc"]["app"]
 app_dict["loc"]["app_dbg"]
 ```
 
-» `dev`
+» `dev`\
 » Data initialized from `loc.app_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ### 4.2.2 App Dictionary Map [⇧](#toc) <a name="4.2.2"></a>
 
+Following is a map of `app_dict` illustrating how it is organized. The standard nested dictionaries are not meant to be
+tampered with, as that may lead to unexpected behaviour and all kinds of issues and crashes. Dictionaries which are
+only marked with a `*` will not exist in a single process context.
 *See [Abbreviations](#6.) for further explanations.*  
-Pn ... Process with ID 'n'  
-Tm ... Thread with ID 'm'
 
 ```Python
-app_dict = [dict]{
-    "loc" : [dict]{ # See ..\loc\
-        "morpy" : [dict]{"key" : val,...}
-        "morpy_dbg" : [dict]{"key" : val,...}
-        "app" : [dict]{"key" : val,...}
-        "app_dbg" : [dict]{"key" : val,...}
+app_dict = [dict | UltraDict]{
+    "morpy":    [dict | UltraDict]{
+        "conf":             [dict | UltraDict]  # Copy of lib.conf.settings()
+       *"heap_shelf":       [UltraDict]         # Shelf for child processes to put tasks in. Will be picked up by the orchestrator.
+        "logs_generate":    [dict | UltraDict]  # Log levels and their on/off switches. Performance improvement.
+        "orchestrator":     [dict | UltraDict]  # Space reserved for the morpy orchestrator.
+       *"proc_refs":        [UltraDict]         # Buffer of references to child processes spawned.
+       *"proc_waiting":     [UltraDict]         # References to waiting processes which may receive a task.
+        "sys":              [dict | UltraDict]  # Data regarding the machine running morPy
+        "processes_max":    [int]               # Maximum processes leveraged during runtime
+       *"proc_available":   [set]               # Pool of available processes which may be spawned.
+       *"proc_busy":        [set]               # Pool of running processes.
+       *"proc_joined":      [bool]              # Flag signaling that all processes are joined and may be released.
+        "proc_master":      [int]               # Process ID of the master process.
+        "interrupt":        [bool]              # Flag to signal all processes to wait. On release terminate or continue.
+        "exit":             [bool]              # Flag to signal app exit. All processes will terminate as soon as possible.
+        "init_complete"     [bool]              # Is True, once app transitioned from app.init into app.run
     }
-    "conf" : [dict]{
-    }
-    "sys" : [dict]{
-        "mproc" : [dict]{
-            "procs_available" : [int] n
-        }
-        "mthread" : [dict]{
-            "threads_available" : [int] m
-        }
-    }
-    "run" : [dict]{
-        "m.op" : [dict]{"key" : val,...}
-        "key" : val,...
-    }
-    "global" [dict]{
-        "morpy" : [dict]{
-            "m.op" : [dict]{"key" : val,...}
-            "key" : val,...
-        }
-        "app" : [dict]{
-            "m.op" : [dict]{"key" : val,...}
-            "key" : val,...
-        }
-    }
-    "proc" : [dict]{
-        "morpy" : [dict]{
-            "P0" : [dict]{
-                "T0" : [dict]{
-                    "m.op" : [dict]{"key" : val,...}
-                    "key" : val,...
-                }
-                "Tm" : [dict]{
-                    "m.op" : [dict]{"key" : val,...}
-                    "key" : val,...
-                }
-                "m.op" : [dict]{"key" : val,...}
-                "key" : val,...
-            }
-            "Pn" [dict]{
-                "T0" : [dict]{
-                    "m.op" : [dict]{"key" : val,...}
-                    "key" : val,...
-                }
-                "Tm" : [dict]{
-                    "m.op" : [dict]{"key" : val,...}
-                    "key" : val,...
-                }
-                "m.op" : [dict]{"key" : val,...}
-                "key" : val,...
-            }
-        }
-        "app" : [dict]{
-            "P0" : [dict]{
-                "T0" : [dict]{
-                    "m.op" : [dict]{"key" : val,...}
-                    "key" : val,...
-                }
-                "Tm" : [dict]{
-                    "m.op" : [dict]{"key" : val,...}
-                    "key" : val,...
-                }
-                "m.op" : [dict]{"key" : val,...}
-                "key" : val,...
-            }
-            "Pn" [dict]{
-                "T0" : [dict]{
-                    "m.op" : [dict]{"key" : val,...}
-                    "key" : val,...
-                }
-                "Tm" : [dict]{
-                    "m.op" : [dict]{"key" : val,...}
-                    "key" : val,...
-                }
-                "m.op" : [dict]{"key" : val,...}
-                "key" : val,...
-            }
-        }
+    "loc":      [dict | UltraDict]{             # See ..\loc\
+        "morpy":            [dict | UltraDict]  # Localization of morPy messages
+        "morpy_dbg":        [dict | UltraDict]  # Localization of morPy unit test messages
+        "app":              [dict | UltraDict]  # Localization of app messages
+        "app_dbg":          [dict | UltraDict]  # Localization of app unit test messages
     }
 }
 ```
@@ -644,8 +574,4 @@ As an example, it is not advisory to allow installation of `jkuri/bore`, as it a
 | --- | --- | --- |
 | dev | Documentation | `dev` marks a (nested/shared) dictionary as relevant for developers. These datasections may be leveraged freely. |
 | dict | Python Code | Python dictionary object |
-| sdict | Python Code | Python dictionary object - sub-dictionary |
-| sd-lvl-n | Python Code | Python dictionary object - sub-dictionary at level n relative to the root dictionary |
 | m.op | Python Code | Operation identifier string (module.operation) |
-| "key" | Python Code | Generic key of a Python dictionary |
-| val | Python Code | Generic value or variable |

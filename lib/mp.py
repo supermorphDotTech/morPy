@@ -67,7 +67,10 @@ class MorPyOrchestrator:
 
             # Determine if multiprocessing is enabled
             self.processes_max: int = app_dict["morpy"]["processes_max"]
-            self._mp: bool = True if self.processes_max > 1 else False
+            if self.processes_max > 1:
+                self._mp: bool = True
+            else:
+                self._mp: bool = False
             app_dict["morpy"]["orchestrator"]["mp"] = self._mp
 
             # Construct arguments for heap and tasks
@@ -80,8 +83,10 @@ class MorPyOrchestrator:
                 self.curr_task["task"] = None
                 self.curr_task["is_process"] = None
 
+                # Build references to available and busy process IDs
+                self._init_processes(morpy_trace, app_dict)
+
             # Set up first tasks
-            self._init_app_dict(morpy_trace, app_dict)
             self._init_run(morpy_trace, app_dict)
 
             # MorPyOrchestrator initialized.
@@ -100,7 +105,7 @@ class MorPyOrchestrator:
         }
 
     @metrics
-    def _init_app_dict(self, morpy_trace: dict, app_dict: dict) -> dict:
+    def _init_processes(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Prepare nested dictionaries and store data in app_dict.
 
@@ -109,30 +114,26 @@ class MorPyOrchestrator:
         """
 
         module: str = 'lib.mp'
-        operation: str = 'MorPyOrchestrator._init_app_dict(~)'
+        operation: str = 'MorPyOrchestrator._init_processes(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
-            # Initialize the total task counter
-            # TODO clean up, currently '[morpy][tasks_created]' is used
-            app_dict["morpy"]["orchestrator"]["task_counter"] = 0
-
             # Get global process sets for membership testing
             processes_available = app_dict["morpy"]["proc_available"]
             processes_busy = app_dict["morpy"]["proc_busy"]
+            proc_master = app_dict["morpy"]["proc_master"]
 
             p = 0
             while p < self.processes_max:
-                # Check for process IDs reserved during early initialization of morPy
+                # Check for process IDs reserved during early initialization of morPy.
                 if p in processes_busy:
                     pass
                 elif p in processes_available:
                     pass
                 else:
-                    # Append to available processes
-                    processes_available = app_dict["morpy"]["proc_available"]
-                    processes_available.add(p)
-                    app_dict["morpy"]["proc_available"] = processes_available # reassign to trigger synchronization
+                    if p != proc_master:
+                        # Append to available processes without a reference to a running process.
+                        app_dict["morpy"]["proc_available"][p] = None
 
                 p += 1
 
@@ -166,10 +167,6 @@ class MorPyOrchestrator:
             self.ref_operation: str = operation
             self.morpy_trace: dict = morpy_trace
 
-            # Activate the process queue
-            if self._mp:
-                process_q_init(morpy_trace, app_dict)
-
             check: bool = True
 
         except Exception as e:
@@ -200,18 +197,16 @@ class MorPyOrchestrator:
         check: bool = False
 
         try:
-            # Start the app
-            app_task = [app_run, morpy_trace_app, app_dict]
-            app_task_sanitized = substitute_ultradict_refs(morpy_trace, app_dict, app_task)["task_sanitized"]
-            heap_shelve(morpy_trace, app_dict, priority=-90, task=app_task, autocorrect=False, force=self._mp)
-            # heappush(self.heap, (-90, 0, id(app_task), app_task_sanitized, self._mp))
-
+            # Start the app - multiprocessing loop
             if self._mp:
+                app_task = [app_run, morpy_trace_app, app_dict]
+                heap_shelve(morpy_trace, app_dict, priority=-90, task=app_task, autocorrect=False, force=self._mp)
                 terminate = False
-                while not terminate:
-                    self._mp_loop(morpy_trace, app_dict)
-                    with app_dict["morpy"]["orchestrator"].lock:
-                        terminate = app_dict["morpy"]["orchestrator"]["terminate"]
+                self._mp_loop(morpy_trace, app_dict)
+
+            # Start the app - single process
+            else:
+                app_run(morpy_trace_app, app_dict)
 
             check: bool = True
 
@@ -260,20 +255,18 @@ class MorPyOrchestrator:
         try:
             # Pull tasks from shelf and feed the heap
             with app_dict["morpy"]["heap_shelf"].lock:
-                heap_shelf = app_dict["morpy"]["heap_shelf"]
-                for pid, task_shelved in heap_shelf.items():
+                for pid, task_shelved in app_dict["morpy"]["heap_shelf"].items():
                     heappush(self.heap, task_shelved)
                     pulled_tasks.add(pid)
 
                 # Clean up and remove pulled tasks from shelf
                 for key in pulled_tasks:
-                    del heap_shelf[key]
-                app_dict["morpy"]["heap_shelf"] = heap_shelf
+                    del app_dict["morpy"]["heap_shelf"][key]
 
             if len(self.heap) > 0:
                 task_pulled = heappop(self.heap)
-                self.curr_task["priority"] = priority = task_pulled[0]
-                self.curr_task["counter"] = counter = task_pulled[1]
+                self.curr_task["priority"] = task_pulled[0]
+                self.curr_task["counter"] = task_pulled[1]
                 self.curr_task["task_sys_id"] = task_pulled[2]
                 self.curr_task["task"] = task_pulled[3]
                 self.curr_task["is_process"] = task_pulled[4]
@@ -281,8 +274,8 @@ class MorPyOrchestrator:
                 # Pulling task from heap. Priority: INT Counter: INT
                 log(morpy_trace_pull, app_dict, "debug",
                 lambda: f'{app_dict["loc"]["morpy"]["heap_pull_start"]}\n'
-                        f'{app_dict["loc"]["morpy"]["heap_pull_priority"]}: {priority}\n'
-                        f'{app_dict["loc"]["morpy"]["heap_pull_cnt"]}: {counter}',
+                        f'{app_dict["loc"]["morpy"]["heap_pull_priority"]}: {self.curr_task["priority"]}\n'
+                        f'{app_dict["loc"]["morpy"]["heap_pull_cnt"]}: {self.curr_task["counter"]}',
                 verbose=True)
 
                 check = True
@@ -323,16 +316,18 @@ class MorPyOrchestrator:
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         check: bool = False
+        terminate: bool = False
+        check_join: bool = False
 
         try:
             heap_len = len(self.heap) + len(app_dict["morpy"]["heap_shelf"].keys())
 
-            terminate = False
             while not terminate or heap_len > 0:
                 # Check process queue for tasks
                 if heap_len > 0:
                     self.heap_pull(morpy_trace, app_dict)
                     task = self.curr_task["task"]
+                    task_id = self.curr_task["counter"]
 
                     if task:
                         is_process = self.curr_task["is_process"]
@@ -345,7 +340,7 @@ class MorPyOrchestrator:
                             # Only run new processes if not exiting.
                             if not exit_flag:
                                 app_dict["morpy"]["proc_joined"] = False
-                                run_parallel(morpy_trace, app_dict, task=task, priority=priority)
+                                run_parallel(morpy_trace, app_dict, task=task, priority=priority, task_id=task_id)
                                 terminate = False
                                 with app_dict["morpy"]["orchestrator"].lock:
                                     app_dict["morpy"]["orchestrator"]["terminate"] = terminate
@@ -356,16 +351,20 @@ class MorPyOrchestrator:
                             execute = task_to_partial(task_recreated)
                             execute()
 
-                    heap_len = len(self.heap) + len(app_dict["morpy"]["heap_shelf"].keys())
+                        # Clean up after cycle
+                        del task
 
                 else:
-                    # First, see if lost tasks need to be recovered
-                    check_child_processes(morpy_trace, app_dict)
                     # Sleep if heap is empty / wait for shelved process acceptance
                     time.sleep(0.2)  # 0.2 seconds = 200 milliseconds
 
-                    # If heap is still empty, mark processes as joined.
-                    if len(self.heap) > 0:
+                    # Check on child processes: signal join or pass tasks
+                    with app_dict["morpy"].lock:
+                        with app_dict["morpy"]["proc_waiting"].lock:
+                            if (not app_dict["morpy"]["proc_joined"]
+                                and len(app_dict["morpy"]["proc_waiting"].keys())):
+                                check_join = True
+                    if not app_dict["morpy"]["proc_joined"] and heap_len == 0:
                         check_child_processes(morpy_trace, app_dict, check_join=True)
 
                 # TODO make use of program exit with critical exceptions
@@ -373,11 +372,31 @@ class MorPyOrchestrator:
                 with app_dict["morpy"].lock:
                     # Check for the global exit flag
                     exit_flag = app_dict["morpy"]["exit"]
+
+                    # Exit request detected. Termination in Progress.
+                    log(morpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request"]}',
+                            verbose=True)
+
+
+                    # Finish writing logs first
                     if exit_flag:
-                        no_children = True if len(app_dict["morpy"]["proc_busy"]) < 2 else False
-                        no_heap = True if len(self.heap) == 0 else False
-                        if no_children and no_heap:
-                            terminate = True
+                        logs_written = False if any(task[0] == -100 for task in self.heap) else True
+
+                        if logs_written:
+                            no_children = True if len(app_dict["morpy"]["proc_busy"]) < 2 else False
+                            if no_children:
+                                terminate = True
+                                self.heap = []
+                                heap_len = 0
+
+                                with app_dict["morpy"]["orchestrator"].lock:
+                                    app_dict["morpy"]["orchestrator"]["terminate"] = terminate
+
+                                # App terminating after exit request. No logs left from child processes.
+                                log(morpy_trace, app_dict, "debug",
+                                lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request_complete"]}')
+
 
                 # In case of global exit, delete the heap.
                 # if exit_flag:
@@ -388,11 +407,16 @@ class MorPyOrchestrator:
                 if terminate and not exit_flag:
                     # TODO call check_child_processes()
                     # terminate = RESULT
+                    # exit_flag = RESULT
                     pass
 
                 if terminate:
                     with app_dict["morpy"]["orchestrator"].lock:
                         app_dict["morpy"]["orchestrator"]["terminate"] = terminate
+
+                # Calculate open tasks
+                with app_dict["morpy"]["heap_shelf"].lock:
+                    heap_len = len(self.heap) + len(app_dict["morpy"]["heap_shelf"].keys())
 
             check: bool = True
 
@@ -419,10 +443,14 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
     operation: str = 'app_run(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
+    udict: bool = False
+
     try:
         from app.init import app_init
         from app.run import app_run
         from app.exit import app_exit
+
+        udict = True if isinstance(app_dict, UltraDict) else False
 
         # App initializing.
         log(morpy_trace, app_dict, "info",
@@ -430,12 +458,18 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
 
         # Initialize and run the app
         app_init_return = app_init(morpy_trace, app_dict)["app_init_return"]
+        if udict:
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["proc_joined"] = False
 
         # App starting.
         log(morpy_trace, app_dict, "info",
         lambda: f'{app_dict["loc"]["morpy"]["app_run_start"]}')
 
         app_run_return = app_run(morpy_trace, app_dict, app_init_return)["app_run_return"]
+        if udict:
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["proc_joined"] = False
 
         # App exiting.
         log(morpy_trace, app_dict, "info",
@@ -456,46 +490,8 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
     }
 
 @metrics
-def process_q_init(morpy_trace: dict, app_dict: dict) -> dict:
-    r"""
-    Initialize the morPy process queue in a separated non-nested shared dictionary.
-
-    :param morpy_trace: Operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
-
-    :return: dict
-        morpy_trace: Operation credentials and tracing
-        check: Indicates whether initialization completed without errors
-        process_q_dict: Shared dictionary for the process queue
-    """
-
-    module: str = 'lib.mp'
-    operation: str = 'process_q_init(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    try:
-        with app_dict["morpy"].lock:
-            morpy_dict = app_dict["morpy"]
-            morpy_dict["process_q_counter"] = 0
-
-            # Priority queue initialized.
-            log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["process_q_init_done"]}')
-
-            check = True
-
-    except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
-
-    return {
-        'morpy_trace': morpy_trace,
-        'check': check
-    }
-
-@metrics
 def heap_shelve(morpy_trace: dict, app_dict: dict, priority: int=100, task: Callable | list | tuple=None,
-                    autocorrect: bool=True, is_process: bool=True, force: bool = False) -> dict:
+                    autocorrect: bool=True, is_process: bool=True, force: bool = False, task_id: int=None) -> dict:
     r"""
     Adds a task to the morPy process queue.
 
@@ -504,13 +500,14 @@ def heap_shelve(morpy_trace: dict, app_dict: dict, priority: int=100, task: Call
     :param priority: Integer representing task priority (lower is higher priority)
     :param task: Callable, list or tuple packing the task. Formats:
         callable: partial(func, *args, **kwargs)
-        list: [func, *args, **kwargs]
-        tuple: (func, *args, **kwargs)
+        list: [func, *args, {"kwarg1": val1, "kwarg2": val2, ...}]
+        tuple: (func, *args, {"kwarg1": val1, "kwarg2": val2, ...})
     :param autocorrect: If False, priority can be smaller than zero. Priority
         smaller zero is reserved for the morPy Core.
     :param is_process: If True, task is run in a new process (not by morPy orchestrator)
     :param force: If True, enforces queueing instead of direct execution. Used by morPy
         orchestrator to spawn the first app process.
+    :param task_id: Value representing a task ID. Here it is only used to recover and re-shelve a task.
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -534,21 +531,15 @@ def heap_shelve(morpy_trace: dict, app_dict: dict, priority: int=100, task: Call
         stop_while_interrupt(morpy_trace, app_dict)
 
         if task:
-            # Transform task to a list if possible
+            # Transform task to a list, if possible
             task = normalize_task(task)
             proc_master = app_dict["morpy"]["proc_master"]
 
             # Skip queuing, if in single core mode
             if not (morpy_trace["process_id"] == proc_master) or force:
-                from lib.fct import hashify
-                from datetime import datetime
-
                 with app_dict["morpy"].lock:
                     with app_dict["morpy"]["heap_shelf"].lock:
                         morpy_dict = app_dict["morpy"]
-                        heap_shelf = morpy_dict["heap_shelf"]
-                        counter = morpy_dict["process_q_counter"]
-                        tasks_created = morpy_dict["tasks_created"]
 
                         # Substitute UltraDict references in task to avoid recursion issues.
                         task_sanitized = substitute_ultradict_refs(morpy_trace, app_dict, task)["task_sanitized"]
@@ -566,25 +557,17 @@ def heap_shelve(morpy_trace: dict, app_dict: dict, priority: int=100, task: Call
                         lambda: f'{app_dict["loc"]["morpy"]["heap_shelve_start"]}\n'
                                 f'{app_dict["loc"]["morpy"]["heap_shelve_priority"]}: {priority}')
 
-                        next_task_id = app_dict["morpy"]["tasks_created"] + 1
+                        next_task_id = task_id if task_id is not None else app_dict["morpy"]["tasks_created"] + 1
                         task_sys_id = id(task)
 
                         # Push task to heap shelf
                         task_qed = (priority, next_task_id, task_sys_id, task_sanitized, is_process)
 
-                        heap_shelf[next_task_id] = task_qed
-                        morpy_dict["heap_shelf"] = heap_shelf
+                        morpy_dict["heap_shelf"][next_task_id] = task_qed
 
                         # Updating global tasks created last in case an error occurs
-                        counter += 1
-                        morpy_dict["process_q_counter"] = counter
-                        tasks_created += 1
-                        morpy_dict["tasks_created"] = tasks_created
-                        morpy_trace["task_id"] = tasks_created
-
-                    with app_dict["morpy"]["orchestrator"].lock:
-                        counter = app_dict["morpy"]["orchestrator"]["task_counter"] + 1
-                        app_dict["morpy"]["orchestrator"]["task_counter"] = counter
+                        if not task_id:
+                            morpy_dict["tasks_created"] += 1
 
             # If run by morPy orchestrator or in single core mode, execute without queueing.
             else:
@@ -630,6 +613,7 @@ def substitute_ultradict_refs(morpy_trace: dict, app_dict: dict, task: list) -> 
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:
+        # Substitute UltraDict references to mitigate RecursionError
         def substitute(obj):
             if isinstance(obj, UltraDict):
                 name_val = obj.name
@@ -700,15 +684,16 @@ def reattach_ultradict_refs(task) -> list:
     return task_recreated
 
 @metrics
-def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=None) -> dict:
+def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority: int=None, task_id: int=None) -> dict:
     r"""
-    This function is takes a task from the morPy priority queue, reserves a process ID, modifies the
+    Takes a task from the morPy heap, reserves a process ID, modifies the
     morpy_trace of the task and ultimately starts the parallel process.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
     :param task: The pulled task list
     :param priority: Integer representing task priority (lower is higher priority)
+    :param task_id: Value representing the unique, continuing task ID
 
     :return: dict
         morpy_trace: Operation credentials and tracing
@@ -733,58 +718,50 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
         log(morpy_trace, app_dict, "debug",
         lambda: f'{app_dict["loc"]["morpy"]["run_parallel_start_prep"]}')
 
-        # Fetch the maximum processes to be utilized by morPy
-        processes_max = app_dict["morpy"]["processes_max"]
+        # See, if processes are waiting with an empty shelf.
+        with app_dict["morpy"]["proc_waiting"].lock:
+            proc_waiting = app_dict["morpy"]["proc_waiting"]
+            for process in proc_waiting.keys():
+                # Only unpack the task to check, if it is Nine
+                task_shelved = proc_waiting[process][0]
+                # Put the task on the shelf and return.
+                if task_shelved is None:
+                    proc_waiting[process] = (task, priority, task_id)
+                    shelved = True
+                    break
 
-        if callable(task[0]):
+        # Exit, if task has been shelved
+        if shelved:
+            # A task was shelved to a running process.
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["run_parallel_shelved"]}')
 
-            # See, if processes are waiting with an empty shelf.
-            with app_dict["morpy"]["proc_waiting"].lock:
-                proc_waiting = app_dict["morpy"]["proc_waiting"]
-                for process in proc_waiting:
-                    task_shelved, priority = proc_waiting[process]
-                    # Put the task on the shelf and return.
-                    if not task_shelved:
-                        proc_waiting[process] = (task, priority)
-                        shelved = True
+            return {
+                'morpy_trace': morpy_trace,
+                'check': True,
+            }
 
-            # Exit, if task has been shelved
-            if shelved:
-                # A task was shelved to a running process.
-                log(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["run_parallel_shelved"]}')
-
-                return {
-                    'morpy_trace': morpy_trace,
-                    'check': check,
-                }
-
-            with app_dict["morpy"].lock:
-                processes_available = app_dict["morpy"]["proc_available"]
+        with app_dict["morpy"]["proc_available"].lock:
+            with app_dict["morpy"]["proc_busy"].lock:
+                proc_available_keys = app_dict["morpy"]["proc_available"].keys()
                 processes_busy = app_dict["morpy"]["proc_busy"]
                 process_id = None
-                proc_master = app_dict["morpy"]["proc_master"]
 
-                # Try up to 2 * processes_max attempts
-                for attempt in range(2 * processes_max):
-                    if not processes_available:
-                        break  # No IDs available
-                    process_id = min(processes_available)
-                    # Remove candidate immediately from available_ids
-                    processes_available.remove(process_id)
-                    # If candidate is not busy, reserve it
-                    if process_id not in processes_busy:
-                        processes_busy.add(process_id)
-                        break
+                # Look up for an available process ID and create a shell for the new process.
+                if len(proc_available_keys) > 0:
+                    process_id = min(proc_available_keys)
+                    processes_busy[process_id] = None
+                    app_dict["morpy"]["proc_available"].pop(process_id)
 
-                app_dict["morpy"]["proc_available"] = processes_available # reassign to trigger synchronization
-                app_dict["morpy"]["proc_busy"] = processes_busy # reassign to trigger synchronization
-
-            if process_id:
+        if process_id:
+            with app_dict["morpy"].lock:
                 # Process ID determined.
                 log(morpy_trace, app_dict, "debug",
                 lambda: f'{app_dict["loc"]["morpy"]["run_parallel_search_iter_end"]}:\n'
-                        f'{attempt=}')
+                        f'{process_id=}')
+
+                proc_master = app_dict["morpy"]["proc_master"]
+
                 # Execute the task
                 if process_id != proc_master:
 
@@ -792,44 +769,40 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
                     log(morpy_trace, app_dict, "debug",
                     lambda: f'{app_dict["loc"]["morpy"]["run_parallel_start"]}: {process_id}')
 
-                    # Increment the total task count
-                    with app_dict["morpy"]["orchestrator"].lock:
-                        app_dict["morpy"]["orchestrator"]["task_counter"] += 1
+                    if not task_id:
+                        app_dict["morpy"]["tasks_created"] += 1
+                        task_id = app_dict["morpy"]["tasks_created"]
 
                     # Tracing update and ID assignment for the new process
                     task[1].update({"process_id" : process_id})
                     task[1].update({"thread_id" : 0})
-                    task[1].update({"task_id" : app_dict["morpy"]["orchestrator"]["task_counter"]})
+                    task[1].update({"task_id" : task_id})
                     task[1].update({"tracing" : ""})
 
                     # Run the task
-                    if task is not None:
-                        p = Process(target=partial(spawn, task))
-                        p.start()
+                    from lib.spawn import SpawnWrapper
+                    task_spawn = SpawnWrapper(task)
+                    p = Process(target=task_spawn)
+                    p.start()
 
-                        # Create references to the process
-                        with app_dict["morpy"]["proc_refs"].lock:
-                            proc_refs = app_dict["morpy"]["proc_refs"]
-                            proc_refs.update({process_id : p.name})
-                            app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
+                    # Store the reference of the process
+                    with app_dict["morpy"]["proc_busy"].lock:
+                        app_dict["morpy"]["proc_busy"][process_id] = f'{p.name}'
 
-            else:
-                # Enqueue the task again to prevent data loss
-                heap_shelve(
-                    morpy_trace, app_dict, priority=priority, task=[task, morpy_trace, app_dict]
-                )
-
-                # All processes busy, failed to allocate process ID. Re-queueing the task.
-                log(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["run_parallel_allocate_fail"]}')
-
-            # Parallel process running.
-            log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["run_parallel_exit"]}: {process_id}')
+                    # Parallel process running.
+                    log(morpy_trace, app_dict, "debug",
+                    lambda: f'{app_dict["loc"]["morpy"]["run_parallel_exit"]}: {process_id}')
 
         else:
-            # Task provided is not callable.
-            raise ValueError(f'{app_dict["loc"]["morpy"]["run_parallel_call_err"]}\n{task[0]}')
+            # Enqueue the task again to prevent data loss
+            existing_id = task[1].get("task_id", None)
+            heap_shelve(
+                morpy_trace, app_dict, priority=priority, task=task, force=True, task_id= existing_id
+            )
+
+            # All processes busy, failed to allocate process ID. Re-queueing the task.
+            log(morpy_trace, app_dict, "debug",
+            lambda: f'{app_dict["loc"]["morpy"]["run_parallel_allocate_fail"]}')
 
     except Exception as e:
         from lib.exceptions import MorPyException
@@ -841,84 +814,6 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority=No
             'check': check,
         }
 
-def spawn(task: list) -> None:
-    r"""
-    This function registers a task in app_dict and executes it.
-
-    :param task: Task represented by a list
-
-    :return: dict
-        morpy_trace: operation credentials and tracing information
-        check: Indicates if the task was pulled successfully
-        process_partial: Process to be spawned, packed with partial
-
-    :example:
-        TODO example
-
-    TODO redirect stdout and stderr for this process to only show it's own and not duplicate in master process
-        > Make custom I/O stream optional, because for app it is not generally desired.
-    """
-
-    morpy_trace = None
-    my_id = None
-
-    try:
-        # Extract morpy_trace and app_dict (which must be provided by the parent).
-        morpy_trace = task[1]
-        my_id = morpy_trace["process_id"]
-
-        # Recreate UltraDict references in task
-        task_recreated = reattach_ultradict_refs(task)
-        app_dict = task_recreated[2]
-        execute = task_to_partial(task_recreated)
-        execute()
-
-        module = morpy_trace["module"]
-        operation = morpy_trace["operation"]
-
-        # Wait until all are joined or take on a task.
-        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
-
-        # Remove own process reference.
-        # Always get the proc_refs lock first to prevent deadlocks and data loss.
-        with app_dict["morpy"]["proc_refs"].lock:
-            proc_refs = app_dict["morpy"]["proc_refs"]
-            proc_refs.pop(my_id, None)
-            app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
-
-            with app_dict["morpy"].lock:
-                proc_busy = app_dict["morpy"]["proc_busy"]
-                proc_busy.remove(my_id)
-                app_dict["morpy"]["proc_busy"] = proc_busy # reassign to trigger synchronization
-
-    except Exception as e:
-        # Remove own process references if left after exception
-        try:
-            # Always get the proc_refs lock first to prevent deadlocks and data loss.
-            # Here fetch data from app_dict first, to crash early if KeyError.
-            proc_refs = app_dict["morpy"]["proc_refs"]
-            with app_dict["morpy"]["proc_refs"].lock:
-                proc_refs.pop(my_id, None)
-                app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
-
-                proc_busy = app_dict["morpy"]["proc_busy"]
-                with app_dict["morpy"].lock:
-                    proc_busy.remove(my_id)
-                    app_dict["morpy"]["proc_busy"] = proc_busy  # reassign to trigger synchronization
-
-                proc_waiting = app_dict["morpy"]["proc_waiting"]
-                with app_dict["morpy"]["proc_waiting"].lock:
-                    if proc_waiting.get(my_id, None):
-                        proc_waiting.remove(my_id)
-                        app_dict["morpy"]["proc_waiting"] = proc_waiting # reassign to trigger synchronization
-
-            from lib.exceptions import MorPyException
-            morpy_trace["module"] = 'lib.mp'
-            morpy_trace["operation"] = 'spawn(~)'
-            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
-        except Exception as e:
-            print(e)
-
 @metrics
 def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = False) -> dict:
     r"""
@@ -926,10 +821,10 @@ def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = 
     the process references in app_dict if necessary.
 
     This function compares the list of active child processes with the
-    process references stored in app_dict["morpy"]["proc_refs"]. If a process
+    process references stored in app_dict["morpy"]["proc_busy"]. If a process
     is referenced but no longer active, it logs an error and removes that reference.
     It also attempts to terminate any processes that are still running but are not
-    referenced in proc_refs (rogue processes).
+    referenced in proc_busy (rogue processes).
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -953,86 +848,91 @@ def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = 
     proc_left_over: set = set()
 
     try:
-        # Always get the proc_refs lock first to prevent deadlocks and data loss.
-        with (app_dict["morpy"]["proc_refs"].lock):
-            proc_refs = app_dict["morpy"]["proc_refs"]
+        proc_master = app_dict["morpy"]["proc_master"]
 
-            # Build a set of active child process names
-            for child in active_children():
-                child_processes.update({child.name : child})
+        with app_dict["morpy"]["proc_busy"].lock:
+            proc_busy = app_dict["morpy"]["proc_busy"]
 
-            # Compare morPy process references with active_children()
-            for p_id, p_name in proc_refs.items():
+        # Build a set of active child process names
+        for child in active_children():
+            child_processes.update({child.name : child})
+
+        # Compare morPy process references with active_children()
+        for p_id, p_name in proc_busy.items():
+            if p_id != proc_master:
                 try:
                     child_processes.pop(p_name)
                 except KeyError:
+                    # Check whether the app needs to exit
+                    severity = "critical" if app_dict["morpy"]["conf"]["processes_are_critical"] else "warning"
+
                     # A child process was terminated unexpectedly. Process references will be restored,
                     # but the task and data may be lost.
-                    log(morpy_trace, app_dict, "error",
+                    log(morpy_trace, app_dict, severity,
                     lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_term_err"]}\n'
                             f'{app_dict["loc"]["morpy"]["check_child_processes_aff"]} "{p_id}: {p_name}"')
+
+                    with app_dict["morpy"].lock:
+                        app_dict["morpy"]["exit"] = True
 
                     # Collect leftover process IDs
                     proc_left_over.add(p_id)
 
-            # Try to terminate roque processes.
-            roque_proc_names = child_processes.keys()
-            if len(roque_proc_names) > 0:
-                # At least one process still running, although considered terminated.
-                # Recovery is not possible, trying to terminate.
-                log(morpy_trace, app_dict, "warning",
-                lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_rogues"]}\n'
-                        f'{app_dict["loc"]["morpy"]["check_child_processes_norec"]}'
-                        f'{roque_proc_names}')
+        # Try to terminate roque processes.
+        roque_proc_names = child_processes.keys()
+        if len(roque_proc_names) > 0:
+            # At least one process still running, although considered terminated.
+            # Recovery is not possible, trying to terminate.
+            log(morpy_trace, app_dict, "warning",
+            lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_rogues"]}\n'
+                    f'{app_dict["loc"]["morpy"]["check_child_processes_norec"]}'
+                    f'{roque_proc_names}')
 
-                for rogue_name, rogue_obj in child_processes.items():
-                    try:
-                        rogue_obj.terminate()
-                    except:
-                        pass
+            for rogue_name, rogue_obj in child_processes.items():
+                try:
+                    rogue_obj.terminate()
+                except ProcessLookupError | OSError:
+                    pass
 
-            # Finally, sanitize the process references
-            with app_dict["morpy"].lock:
-                proc_busy = app_dict["morpy"]["proc_busy"]
+        # Sanitize the process references
+        if len(proc_left_over) > 0:
+            with app_dict["morpy"]["proc_available"].lock:
+                with app_dict["morpy"]["proc_busy"].lock:
+                    for proc_remnant_id in proc_left_over:
+                        # Remove process from busy
+                        app_dict["morpy"]["proc_busy"].pop(proc_remnant_id)
+                        # Add available process ID
+                        app_dict["morpy"]["proc_available"][proc_remnant_id] = None
+
+            # Attempt task recovery
+            with app_dict["morpy"]["proc_waiting"].lock:
+                proc_waiting = app_dict["morpy"]["proc_waiting"]
 
                 for proc_remnant_id in proc_left_over:
-                    del proc_refs[proc_remnant_id]
-                    app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
+                    if proc_waiting.get(proc_remnant_id, None):
+                        # Proactively Recover a task from shelve
+                        task_recovered, priority, task_id = proc_waiting[proc_remnant_id]
+                        if task_recovered:
+                            heap_shelve(morpy_trace, app_dict, priority=priority, task=task_recovered,
+                                        task_id=task_id)
+                            # A shelved task was recovered from a terminated task.
+                            log(morpy_trace, app_dict, "warning",
+                            lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_recovery"]}'
+                                    f'{roque_proc_names}')
 
-                    proc_available = app_dict["morpy"]["proc_available"]
-                    proc_available.add(proc_remnant_id)
-                    app_dict["morpy"]["proc_available"] = proc_available # reassign to trigger synchronization
+                        proc_waiting.pop(proc_remnant_id)
 
-                    proc_busy.discard(proc_remnant_id)
-                    app_dict["morpy"]["proc_busy"] = proc_busy # reassign to trigger synchronization
+        if check_join:
+            with app_dict["morpy"]["proc_waiting"].lock:
+                proc_waiting = app_dict["morpy"]["proc_waiting"]
 
-                    with app_dict["morpy"]["proc_waiting"].lock:
-                        proc_waiting = app_dict["morpy"]["proc_waiting"]
+            # Have in mind, that the orchestrator is never waiting (therefore +1).
+            if len(app_dict["morpy"]["proc_busy"].keys()) == (len(proc_waiting.keys()) + 1):
+                app_dict["morpy"]["proc_joined"] = True
 
-                        if proc_waiting.get(proc_remnant_id, None):
-                            # Proactively Recover a task from shelve
-                            task_recovered, priority = proc_waiting[proc_remnant_id]
-                            if task_recovered:
-                                heap_shelve(morpy_trace, app_dict, priority=priority, task=task_recovered)
-                                # A shelved task was recovered from a terminated task.
-                                log(morpy_trace, app_dict, "warning",
-                                lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_recovery"]}'
-                                        f'{roque_proc_names}')
-
-                            proc_waiting.remove(proc_remnant_id)
-                            app_dict["morpy"]["proc_waiting"] = proc_waiting  # reassign to trigger synchronization
-
-                if check_join:
-                    with app_dict["morpy"]["proc_waiting"].lock:
-                        proc_waiting = app_dict["morpy"]["proc_waiting"]
-
-                    # Have in mind, that the orchestrator is never waiting.
-                    if len(proc_busy) == len(proc_waiting.keys()) + 1:
-                        app_dict["morpy"]["proc_joined"] = True
-
-                        # All child processes are joined.
-                        log(morpy_trace, app_dict, "debug",
-                        lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_joined"]}')
+                # All child processes are joined.
+                log(morpy_trace, app_dict, "debug",
+                lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_joined"]}')
 
         check: bool = True
 
@@ -1099,16 +999,19 @@ def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, r
                 # Check for a shelved task
                 with app_dict["morpy"]["proc_waiting"].lock:
                     proc_waiting = app_dict["morpy"]["proc_waiting"]
-                    task, priority = proc_waiting.get(my_pid, (None, None))
+                    task, priority, task_id = proc_waiting.get(my_pid, (None, None, None))
 
                     # Unsubscribe from waiting dictionary if a task was assigned.
                     if task:
                         proc_waiting.pop(my_pid)
-                        app_dict["morpy"]["proc_waiting"] = proc_waiting  # reassign to trigger synchronization
 
                 if task:
                     # Check for Interrupt / exit
                     stop_while_interrupt(morpy_trace, app_dict)
+
+                    # Assign task ID to own trace and claim task
+                    morpy_trace["task_id"] = task_id
+                    task[1] = morpy_trace
 
                     # Recreate UltraDict references in task and run it.
                     task_recreated = reattach_ultradict_refs(task)
@@ -1127,8 +1030,7 @@ def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, r
                     proc_waiting = app_dict["morpy"]["proc_waiting"]
                     if not proc_waiting.get(my_pid, None):
                         # Add task to waiting dictionary without a shelved task.
-                        proc_waiting.update({my_pid: (None, None)})
-                        app_dict["morpy"]["proc_waiting"] = proc_waiting  # reassign to trigger synchronization
+                        proc_waiting.update({my_pid: (None, None, None)})
 
                 # Check, if processes have been joined yet.
                 with app_dict["morpy"].lock:
@@ -1244,22 +1146,17 @@ def stop_while_interrupt(morpy_trace: dict, app_dict: dict) -> dict:
                     # TODO enqueue a log for "aborted task"
                     # Remove own process references
                     try:
-                        # Always get the proc_refs lock first to prevent deadlocks and data loss.
-                        with app_dict["morpy"]["proc_refs"].lock:
-                            proc_refs = app_dict["morpy"]["proc_refs"]
-                            proc_refs.pop(morpy_trace['process_id'], None)
-                            app_dict["morpy"]["proc_refs"] = proc_refs # reassign to trigger synchronization
+                        with app_dict["morpy"]["proc_available"].lock:
+                            with app_dict["morpy"]["proc_busy"].lock:
+                                # Remove from busy processes
+                                app_dict["morpy"]["proc_busy"].pop(morpy_trace['process_id'])
+                                # Add to processes available IDs (hygiene only, no other use at app exit)
+                                app_dict["morpy"]["proc_available"]["process_id"] = None
 
-                            with app_dict["morpy"].lock:
-                                proc_busy = app_dict["morpy"]["proc_busy"]
-                                proc_busy.remove(morpy_trace['process_id'])
-                                app_dict["morpy"]["proc_busy"] = proc_busy  # reassign to trigger synchronization
-
-                            with app_dict["morpy"]["proc_waiting"].lock:
-                                proc_waiting = app_dict["morpy"]["proc_waiting"]
-                                if proc_waiting.get(morpy_trace['process_id'], None):
-                                    proc_waiting.remove(morpy_trace['process_id'])
-                                    app_dict["morpy"]["proc_waiting"] = proc_waiting # reassign to trigger synchronization
+                        with app_dict["morpy"]["proc_waiting"].lock:
+                            proc_waiting = app_dict["morpy"]["proc_waiting"]
+                            if proc_waiting.get(morpy_trace['process_id'], None):
+                                proc_waiting.remove(morpy_trace['process_id'])
                     except Exception as e:
                         print(e)
 
