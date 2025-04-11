@@ -23,70 +23,10 @@ class FileDirSelectTk:
     r"""
     A tkinter GUI for file and directory selection. Each row represents a file or directory selection.
     Optionally displays a top row of icons (display only).
-    selection rows.
-
-    :param morpy_trace: Operation credentials and tracing information.
-    :param app_dict: morPy global dictionary containing app configurations.
-    :param rows_data: Dictionary defining the selection rows.
-        Expected structure:
-            {
-                "selection_name" : {
-                    "is_dir" : True | False,  # True for directory selection, False for file selection.
-                    "file_types" : (('PDF','*.pdf'), ('Textfile','*.txt'), ('All Files','*.*')),  # For file dialogs.
-                    "image_path" : "path/to/image.png",  # Optional custom image.
-                    "image_size" : (width, height),  # Optional; defaults to (48, 48) if not provided.
-                    "default_path" : "prefilled/default/path"  # Optional prefill for the input.
-                },
-                ...
-            }
-    :param title: Title of the tkinter window. Defaults to morPy localization if not provided.
-    :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
-        Expected structure:
-        {
-            "icon_name" : {
-                "position" : 1,         # placement, order (lowest first)
-                "img_path" : "path/to/image.png",     # image file path
-                "icon_size" : (width, height),        # (optional) size for the icon
-            },
-            ...
-        }
-
-    :return: dict
-        morpy_trace: Operation credentials and tracing
-        check: Indicates whether initialization completed without errors
-        selections: Dictionary with selections made, keyed with the row name. Example:
-            {"selection_name" : value}
-
-    :example:
-        import morPy
-
-        icon_data = {
-            "company_logo1" : {
-                "position" : 1,                       # placement, order (lowest first)
-                "img_path" : "path/to/image.png",     # image file path
-            }
-        }
-
-        selection_config = {
-            "file_select" : {
-                "is_dir" : False,
-                "file_types" : (('Textfile','*.txt'), ('All Files','*.*')),
-                "default_path" : "prefilled/default/path"
-            },
-            "dir_select" : {
-                "is_dir" : True,
-                "default_path" : "prefilled/default/path"
-            }
-        }
-
-        gui = morPy.FileDirSelectTk(morpy_trace, app_dict, rows_data, title="Select...")
-        results = gui.run(morpy_trace, app_dict)["selections"]
-        file = results["file_selected"]
-        dir = results["dir_selected"]
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, rows_data: dict, title: str = None,
-                 icon_data: dict = None):
+                 icon_data: dict = None) -> None:
         r"""
         Initializes the GUI for grid of image tiles.
 
@@ -112,7 +52,7 @@ class FileDirSelectTk:
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict, rows_data: dict, title: str = None,
-                 icon_data: dict = None):
+                 icon_data: dict = None) -> dict:
         r"""
         A tkinter GUI for file and directory selection. Each row represents a file or directory selection.
         Optionally displays a top row of icons (display only).
@@ -560,64 +500,6 @@ class GridChoiceTk:
     r"""
     A tkinter GUI displaying a dynamic grid of image tiles. Each tile shows an image
     with a text label below it. Clicking a tile returns its associated value.
-
-    :param morpy_trace: Operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
-    :param tile_data: Dictionary containing configuration for each tile.
-        The expected structure is:
-        {
-            "tile_name" : {
-                "row_column" : (row, column),         # grid placement
-                "img_path" : "path/to/image.png",     # image file path
-                "text" : "Descriptive text",          # label under the image
-                "return_value" : some_value,          # value returned when clicked
-                "tile_size" : (width, height),        # (optional) size for the image tile
-            },
-            ...
-        }
-    :param title: Title of the tkinter window. Defaults to morPy localization.
-    :param default_tile_size: Default (width, height) if a tile does not specify its own size. Defaults to
-                              a fraction of main monitor height.
-    :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
-        Expected structure:
-        {
-            "icon_name" : {
-                "position" : 1,         # placement, order (lowest first)
-                "img_path" : "path/to/image.png",     # image file path
-                "icon_size" : (width, height),        # (optional) size for the icon
-            },
-            ...
-        }
-
-    :return: dict
-        morpy_trace: Operation credentials and tracing
-        check: Indicates whether initialization completed without errors
-
-    :example:
-        import morPy
-
-        icon_data = {
-            "company_logo1" : {
-                "position" : 1,                       # placement, order (lowest first)
-                "img_path" : "path/to/image.png",     # image file path
-            }
-        }
-
-        tile_data = {
-            "start" : {
-                "row_column" : (row, column),
-                "img_path" : "path/to/image.png",
-                "text" : "Start the App",
-                "return_value" : 1,
-            },
-            ...
-        }
-        gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
-            title="Start Menu",
-            default_tile_size=(128, 128),
-            icon_data=icon_data
-        )
-        result = gui.run(morpy_trace, app_dict)["choice"]
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, tile_data: dict, title: str=None,
@@ -657,29 +539,25 @@ class GridChoiceTk:
         :param app_dict: morPy global dictionary containing app configurations
         :param tile_data: Dictionary containing configuration for each tile.
             The expected structure is:
-            {
-                "tile_name" : {
+            {"tile_name" : {
                     "row_column" : (row, column),         # grid placement
                     "img_path" : "path/to/image.png",     # image file path
                     "text" : "Descriptive text",          # label under the image
                     "return_value" : some_value,          # value returned when clicked
                     "tile_size" : (width, height),        # (optional) size for the image tile
-                },
-                ...
-            }
+                    },
+            ...}
         :param title: Title of the tkinter window. Defaults to morPy localization.
         :param default_tile_size: Default (width, height) if a tile does not specify its own size. Defaults to
                                   a fraction of main monitor height.
         :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
             Expected structure:
-            {
-                "icon_name" : {
+            {"icon_name" : {
                     "position" : 1,         # placement, order (lowest first)
                     "img_path" : "path/to/image.png",     # image file path
                     "icon_size" : (width, height),        # (optional) size for the icon
-                },
-                ...
-            }
+                    },
+            ...}
 
         :return: dict
             morpy_trace: Operation credentials and tracing
@@ -701,9 +579,8 @@ class GridChoiceTk:
                     "img_path" : "path/to/image.png",
                     "text" : "Start the App",
                     "return_value" : 1,
-                },
-                ...
-            }
+                    },
+            ...}
             gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
                 title="Start Menu",
                 default_tile_size=(128, 128),
@@ -980,7 +857,7 @@ class GridChoiceTk:
             "morpy_trace" : morpy_trace,
             "check" : check,
         }
-
+    @metrics
     def run(self, morpy_trace: dict, app_dict: dict):
         r"""
         Launches the GUI and waits for the user to make a selection.
@@ -1003,8 +880,7 @@ class GridChoiceTk:
                     "text" : "Start the App",
                     "return_value" : 1,
                 },
-                ...
-            }
+            ...}
             gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
                 title="Start Menu",
                 default_tile_size=(128, 128),
@@ -1037,129 +913,12 @@ class GridChoiceTk:
 
 class ProgressTrackerTk:
     r"""
-    A progress tracking GUI using tkinter to visualize the progress of a background task. The GUI can
-    be adjusted with the arguments during construction.
-
-    :param morpy_trace: Operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
-    :param frame_title: Window frame title as shown in the title bar.
-        :param frame_width: Frame width in pixels.
-                            Defaults to 1/3rd of main monitor width.
-    :param frame_height: Frame height in pixels.
-                         Defaults to a value depending on which widgets are displayed.
-    :param headline_total: Descriptive name for the overall progress.
-                           Defaults to morPy localization.
-    :param headline_font_size: Font size for both, overall and stage descriptive names.
-                               Defaults to 10.
-    :param detail_description_on: If True, a widget for the detail messages will be drawn to GUI.
-                                  Defaults to False.
-    :param description_font_size: Font size for description/status.
-                                  Defaults to 8.
-    :param font: Font to be used in the GUI, except for the title bar and console widget.
-                 Defaults to "Arial".
-    :param stages: Sum of stages until complete. Will not show progress bar for overall progress if equal to 1.
-                   Defaults to 1.
-    :param console: If True, will reroute console output to GUI.
-                    Defaults to False.
-    :param auto_close: If True, window automatically closes at 100%. If False, user must click "Close".
-                       Defaults to False.
-    :param work: A callable (e.g. functools.partial()). Will run in a new thread.
-
-    :methods:
-        .run(morpy_trace: dict, app_dict: dict)
-            Start the GUI main loop.
-
-        .begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
-                    detail_description: str=None)
-            Start a new stage of progress. Will set the stage prior to 100%, if
-            not already the case.
-
-            :param stage_limit: This is the maximum value of the stage progress. Set it to 0 to turn off the stage progress.
-                                It represents the maximum value the stage progress will reach until 100%, which is
-                                determined by which value you choose to increment the progress with (defaults to 1 per
-                                increment). A value of 10 for example amounts to 10% per increment.
-                                Defaults to 1.
-            :param headline_stage: Descriptive name for the actual stage.
-                                   Defaults to morPy localization.
-            :param detail_description: Description or status. Will
-                                       not be shown if None at construction.
-                                       Defaults to None.
-            :param ticks: [optional] Percentage of total to log the progress. I.e. at ticks=10.7 at every
-                          10.7% progress exceeded the exact progress will be logged. Defaults to 0.01.
-
-        .update_progress(morpy_trace: dict, app_dict: dict, current: float = None, stage_limit: int = None)
-            Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
-            switch button text to "Close" and stop console redirection. Enqueues a UI request for the
-            main thread to process. Safe to call from any thread.
-
-            :param current: Current progress count. If None, each call of this method will add +1
-                to the progress count. Defaults to None.
-
-        .update_text(morpy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
-                    detail_description: str = None)
-            Update the headline texts or description at runtime. Enqueues a UI request for the
-            main thread to process. Safe to call from any thread.
-
-            :param headline_total: If not None, sets the overall progress headline text.
-            :param headline_stage: If not None, sets the stage progress headline text.
-            :param detail_description: If not None, sets the description text beneath the stage headline.
-
-        .end_stage(self, morpy_trace: dict, app_dict: dict)
-            End the current stage by setting it to 100%.
-
-    :example:
-        from functools import partial
-        import time
-
-        # Define a function or method to be progress tracked. It will be executed in a new thread, because
-        # tkinter needs to run in main thread. The argument "gui" will be referenced automatically by the
-        # GUI, no explicit assignment is needed.
-        def my_func(morpy_trace, app_dict, gui=None):
-            outer_loop_count = 2 # Amount stages, i.e. folders to walk
-            inner_loop_count = 10 # Increments in the stage, i.e. files modified
-
-            if gui:
-                gui.update_text(morpy_trace, app_dict, headline_total=f'My Demo')
-
-            # Loop to demo amount of stages
-            for i in range(outer_loop_count):
-                # Begin a stage
-                headline = "Currently querying"
-                description = "Starting stage..."
-                progress.begin_stage(morpy_trace, app_dict, stage_limit=inner_loop_count, headline_stage=headline,
-                                     detail_description=description)
-
-                # Update Headline for overall progress
-                if gui:
-                    gui.update_text(morpy_trace, app_dict, headline_stage=f'Stage {i}')
-
-                time.sleep(.5) # Wait time, so progress can be viewed (mocking execution time)
-
-                # Loop to demo stage progression
-                for j in range(1, inner_loop_count + 1):
-                    time.sleep(.2) # Wait time, so progress can be viewed (mocking execution time)
-
-                    # Update progress and text for actual stage
-                    if gui:
-                        gui.update_text(morpy_trace, app_dict, detail_description=f'This describes progress no. {j} of the stage.')
-                        gui.update_progress(morpy_trace, app_dict)
-
-        if name == "__main__":
-            # Run function with GUI. For full customization during construction see the
-            # ProgressTrackerTk.__init__() description.
-
-            # Define a callable to be progress tracked
-            work = partial(my_func, morpy_trace, app_dict)
-
-            # Construct the GUI
-            gui = morPy.ProgressTrackerTk(morpy_trace, app_dict,
-                frame_title="My Demo Progress GUI",
-                stages=2,
-                detail_description_on=True,
-                work=work)
-
-            # Start GUI in main thread and run "work" in separate thread
-            gui.run(morpy_trace, app_dict)
+    A progress tracking GUI using tkinter to visualize the progress of a task.
+    If progress consists of several stages, a separate progress bar for the
+    stages progress is displayed. The total count of progress steps is set by
+    initializing a stage with the 'begin_stage()' method, regardless of the total
+    amount of stages. Optionally allows to display console messages in a console
+    widget.
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, frame_title: str=None, frame_width: int=None,
@@ -1219,8 +978,6 @@ class ProgressTrackerTk:
                      Defaults to "Arial".
         :param stages: Sum of stages until complete. Will not show progress bar for overall progress if equal to 1.
                        Defaults to 1.
-        :param ticks: [optional] Percentage of total to log the progress. I.e. at ticks=10.7 at every
-                      10.7% progress exceeded the exact progress will be logged. Defaults to 0.01.
         :param console: If True, will reroute console output to GUI.
                         Defaults to False.
         :param auto_close: If True, window automatically closes at 100%. If False, user must click "Close".
@@ -1914,7 +1671,7 @@ class ProgressTrackerTk:
         }
 
     @metrics
-    def update_progress(self, morpy_trace: dict, app_dict: dict, current: float = None):
+    def update_progress(self, morpy_trace: dict, app_dict: dict, current: float = None) -> dict:
         r"""
         Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
         switch button text to "Close" and stop console redirection. Enqueues a UI request for the
@@ -2141,8 +1898,7 @@ class ProgressTrackerTk:
             gui.update_text(morpy_trace, app_dict,
                 headline_total="Processing Outer Loop 3",
                 headline_stage="Processing File 5",
-                detail_description="Now copying data...",
-            )
+                detail_description="Now copying data...")
         """
 
         module: str = 'ui_tk'

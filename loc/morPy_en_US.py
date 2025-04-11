@@ -383,27 +383,27 @@ def loc_morpy() -> dict:
         'log_msg_builder_task_id': 'Task',
 
         # msg.py - log_interrupt(~)
-        'msg_print_intrpt_1': 'INTERRUPT <<< Type',
-        'msg_print_intrpt_yes': 'yes',
-        'msg_print_intrpt_2': 'to quit or anything else to continue.',
+        'log_interrupt_1': 'INTERRUPT <<< Type',
+        'log_interrupt_yes': 'yes',
+        'log_interrupt_2': 'to quit or anything else to try continuing.',
 
         # msg.py - log_db_connect(~)
-        'log_db_connect_excpt': 'The database could not be found and/or connected.',
+        'log_db_connect_exception': 'The database could not be found and/or connected.',
 
         # msg.py - log_db_disconnect(~)
-        'log_db_disconnect_excpt': 'The database could not be found and/or disconnected.',
+        'log_db_disconnect_exception': 'The database could not be found and/or disconnected.',
 
         # msg.py - log_db_table_create(~)
-        'log_db_table_create_excpt': 'The log table for runtime could not be created.',
+        'log_db_table_create_exception': 'The log table for runtime could not be created.',
         'log_db_table_create_stmt': 'Statement',
 
         # msg.py - log_db_table_add_column(~)
-        'log_db_table_add_column_excpt': 'The log table could not be edited.',
+        'log_db_table_add_column_exception': 'The log table could not be edited.',
         'log_db_table_add_column_stmt': 'Statement',
         'log_db_table_add_column_failed': 'The log table could not be found. Logging not possible.',
 
         # msg.py - log_db_row_insert(~)
-        'log_db_row_insert_excpt': 'The log entry could not be created.',
+        'log_db_row_insert_exception': 'The log entry could not be created.',
         'log_db_row_insert_stmt': 'Statement',
         'log_db_row_insert_failed': 'The log table could not be found. Logging not possible.',
 

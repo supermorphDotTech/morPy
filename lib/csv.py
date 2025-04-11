@@ -59,7 +59,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
 
     :example:
         src_file_path = 'C:\myfile.csv'
-        delimiter = '","'
+        delimiter = '\",\"'
         csv = csv_read(morpy_trace, app_dict, src_file_path, delimiter)
         csv_dict = csv["csv_dict"]
         csv_header1 = csv["csv_dict"]["DATA1"]["header"]

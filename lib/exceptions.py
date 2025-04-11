@@ -10,6 +10,99 @@ from lib.decorators import log
 
 import sys
 
+class MorPyException(Exception):
+    r"""
+    This wraps errors in the standard morPy fashion. If one of the arguments
+    required for logging is missing, this wrapper will raise other errors in
+    order to reduce tracebacks and specifically point to the issue at hand.
+    """
+
+    __slots__ = ['morpy_trace', 'app_dict', 'log_level', 'line', 'module', 'e']
+
+    def __init__(self, morpy_trace: dict, app_dict: dict, exception_obj: BaseException, line: int,
+                 log_level: str, message: str=None) -> None:
+        r"""
+        :param morpy_trace: Operation credentials and tracing information.
+        :param app_dict: The morPy global dictionary containing app configurations.
+        :param log_level: Severity: debug/info/warning/error/critical/denied
+        :param line: Line number of the original error that could not be logged.
+        :param exception_obj: Exception object as passed by sys of the parent function/method.
+        :param message: Additional exception text attached to the end of the standard message.
+
+        :example:
+            import morPy
+            import sys
+            try:
+                pass # some code
+            except Exception as e:
+                raise morPy.exception(
+                    morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "info",
+                    message="Specifics regarding the error"
+                )
+        """
+
+        try:
+            # Use .get() with default values to prevent KeyErrors
+            loc = app_dict.get("loc", {}).get("morpy", {}) if app_dict else {}
+            err_line = loc.get("err_line", "Line unknown")
+            err_module = loc.get("err_module", "Module unknown")
+            module = morpy_trace.get("module", "Module unknown") if morpy_trace else "Module unknown"
+
+            # Safely extract current line number; if not available, use provided line
+            tb = sys.exc_info()[2]
+            current_line = tb.tb_lineno if tb else line
+
+            # Mitigate recursion issues and duplicate errors
+            if isinstance(exception_obj, MorPyException):
+                return
+            else:
+                # Build the core message of the original error
+                self.core_msg = (
+                    f"{err_line} {current_line} {err_module} '{module}'\n"
+                    f"{type(exception_obj).__name__}: {exception_obj}"
+                )
+
+            # Build the final message
+            if message:
+                message = f'\n{message}'
+                self.message = f'{self.core_msg}\n{message}'
+            else:
+                self.message = f'{self.core_msg}'
+
+            log(morpy_trace, app_dict, log_level, lambda: self.message)
+
+        except Exception as crit_e:
+
+            # Raise critical error in hierarchical order
+            if not app_dict:
+                cause = "app_dict"
+                logging = False
+            elif not morpy_trace:
+                cause = "morpy_trace"
+                logging = True
+            elif not log_level:
+                cause = "log_level"
+                logging = True
+            elif not line:
+                cause = "line"
+                logging = True
+            elif not exception:
+                cause = "module"
+                logging = True
+            else:
+                cause = "UNKNOWN"
+                logging = False
+
+            raise MorPyCoreError(
+                app_dict=app_dict,
+                exc=crit_e,
+                root_line=line,
+                root_e=exception,
+                root_trace=morpy_trace,
+                logging=logging,
+                cause=cause
+            )
+
 class MorPyCoreError(Exception):
     r"""
     This error is raised whenever MorPyException fails to generate and log an error
@@ -58,94 +151,3 @@ class MorPyCoreError(Exception):
 
         # Quit the program
         sys.exit(-1)
-
-class MorPyException(Exception):
-    r"""
-    This wraps errors in the standard morPy fashion. If one of the arguments
-    required for logging is missing, this wrapper will raise other errors in
-    order to reduce tracebacks and specifically point to the issue at hand.
-
-    :param morpy_trace: Operation credentials and tracing information.
-    :param app_dict: The morPy global dictionary containing app configurations.
-    :param log_level: Severity: debug/info/warning/error/critical/denied
-    :param line: Line number of the original error that could not be logged.
-    :param exception: Exception object as passed by sys of the parent function/method.
-    :param message: Additional exception text attached to the end of the standard message.
-
-    :example:
-        import morPy
-        import sys
-        try:
-            pass # some code
-        except Exception as e:
-            raise morPy.exception(
-                morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "info",
-                message="Specifics regarding the error"
-            )
-    """
-
-    __slots__ = ['morpy_trace', 'app_dict', 'log_level', 'line', 'module', 'e']
-
-    def __init__(self, morpy_trace: dict, app_dict: dict, exception: BaseException, line: int,
-                 log_level: str, message: str=None) -> None:
-        try:
-            # Use .get() with default values to prevent KeyErrors
-            loc = app_dict.get("loc", {}).get("morpy", {}) if app_dict else {}
-            err_line = loc.get("err_line", "Line unknown")
-            err_module = loc.get("err_module", "Module unknown")
-            module = morpy_trace.get("module", "Module unknown") if morpy_trace else "Module unknown"
-
-            # Safely extract current line number; if not available, use provided line
-            tb = sys.exc_info()[2]
-            current_line = tb.tb_lineno if tb else line
-
-            # Mitigate recursion issues and duplicate errors
-            if isinstance(exception, MorPyException):
-                return
-            else:
-                # Build the core message of the original error
-                self.core_msg = (
-                    f"{err_line} {current_line} {err_module} '{module}'\n"
-                    f"{type(exception).__name__}: {exception}"
-                )
-
-            # Build the final message
-            if message:
-                message = f'\n{message}'
-                self.message = f'{self.core_msg}\n{message}'
-            else:
-                self.message = f'{self.core_msg}'
-
-            log(morpy_trace, app_dict, log_level, lambda: self.message)
-
-        except Exception as crit_e:
-
-            # Raise critical error in hierarchical order
-            if not app_dict:
-                cause = "app_dict"
-                logging = False
-            elif not morpy_trace:
-                cause = "morpy_trace"
-                logging = True
-            elif not log_level:
-                cause = "log_level"
-                logging = True
-            elif not line:
-                cause = "line"
-                logging = True
-            elif not exception:
-                cause = "module"
-                logging = True
-            else:
-                cause = "UNKNOWN"
-                logging = False
-
-            raise MorPyCoreError(
-                app_dict=app_dict,
-                exc=crit_e,
-                root_line=line,
-                root_e=exception,
-                root_trace=morpy_trace,
-                logging=logging,
-                cause=cause
-            )

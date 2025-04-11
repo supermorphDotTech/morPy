@@ -4,9 +4,6 @@ https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
 Descr.:     Multiprocessing functionality for morPy.
-
-TODO provide a general purpose lock
-    > Find a way to lock file objects and dirs
 """
 
 import lib.fct as morpy_fct
@@ -179,7 +176,7 @@ class MorPyOrchestrator:
         }
 
     @metrics
-    def _run(self, morpy_trace: dict, app_dict: dict) -> dict:
+    def run(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Routine of the morPy orchestrator. Cyclic program.
 
@@ -188,7 +185,7 @@ class MorPyOrchestrator:
         """
 
         module: str = 'lib.mp'
-        operation: str = 'MorPyOrchestrator._run(~)'
+        operation: str = 'MorPyOrchestrator.run(~)'
         # TODO Find out, why morpy_trace["process_id"] is overwritten in app trace
         # The enforced deepcopy morpy_fct.tracing() is a workaround.
         morpy_trace_app: dict = morpy_fct.tracing(module, operation, morpy_trace)
@@ -452,24 +449,48 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
 
         udict = True if isinstance(app_dict, UltraDict) else False
 
+        # --- APP INITIALIZATION --- #
+
         # App initializing.
         log(morpy_trace, app_dict, "info",
         lambda: f'{app_dict["loc"]["morpy"]["app_run_init"]}')
 
-        # Initialize and run the app
+        # Execute
         app_init_return = app_init(morpy_trace, app_dict)["app_init_return"]
+
+        # Join all spawned processes before transitioning into the next phase.
+        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
+
+        # Set the "initialization complete" flag
+        # TODO Up until this point prints to console are mirrored on splash screen
+        if isinstance(app_dict["morpy"], UltraDict):
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["init_complete"] = True
+        else:
+            app_dict["morpy"]["init_complete"] = True
+
+        # Un-join
         if udict:
             with app_dict["morpy"].lock:
                 app_dict["morpy"]["proc_joined"] = False
+
+        # --- APP RUN --- #
 
         # App starting.
         log(morpy_trace, app_dict, "info",
         lambda: f'{app_dict["loc"]["morpy"]["app_run_start"]}')
 
         app_run_return = app_run(morpy_trace, app_dict, app_init_return)["app_run_return"]
+
+        # Join all spawned processes before transitioning into the next phase.
+        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
+
+        # Un-join
         if udict:
             with app_dict["morpy"].lock:
                 app_dict["morpy"]["proc_joined"] = False
+
+        # --- APP EXIT --- #
 
         # App exiting.
         log(morpy_trace, app_dict, "info",
@@ -477,6 +498,16 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
 
         # Exit the app and signal morPy to exit
         app_exit(morpy_trace, app_dict, app_run_return)
+
+        # Join all spawned processes before transitioning into the next phase.
+        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
+
+        # Signal morPy orchestrator of app termination
+        if isinstance(app_dict["morpy"], UltraDict):
+            with app_dict["morpy"].lock:
+                app_dict["morpy"]["exit"] = True
+        else:
+            app_dict["morpy"]["exit"] = True
 
         check: bool = True
 

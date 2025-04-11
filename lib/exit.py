@@ -12,7 +12,7 @@ from lib.decorators import metrics, log
 import sys
 
 @metrics
-def _exit(morpy_trace: dict, app_dict: dict):
+def exit(morpy_trace: dict, app_dict: dict):
     r"""
     This is the mpy exit routine. It is not intended to be used as part of an app, but it may be executed however,
     at any time after initialization.
@@ -30,7 +30,7 @@ def _exit(morpy_trace: dict, app_dict: dict):
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.exit'
-    operation: str = '_exit(~)'
+    operation: str = 'exit(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     try:

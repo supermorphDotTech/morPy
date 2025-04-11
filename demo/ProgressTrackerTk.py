@@ -4,6 +4,8 @@ https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
 Descr.:     This module demonstrates how to use lib.ui_tk.ProgressTrackerTk()
+
+TODO use frontend (i.e. for exceptions)
 """
 
 import morPy

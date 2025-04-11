@@ -53,6 +53,8 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
         from functools import partial
         import time
 
+        make_interrupt = app_dict["no_key_here"]
+
         for i in range(1, 40):
             task = partial(arbitrary_task, morpy_trace, app_dict, stages=3, total_rep=10 ** 5)
             process_q(morpy_trace, app_dict, task=task, priority=20)
@@ -70,12 +72,9 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
         time.sleep(2)
 
     except Exception as e:
-        raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise morPy.Exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     finally:
-        # Join all spawned processes before transitioning into the next phase.
-        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
-
         return{
             'morpy_trace' : morpy_trace,
             'check' : check,
@@ -141,8 +140,7 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int = 5, total_rep
 
         # No localization for demo module
         log(morpy_trace, app_dict, "info",
-        lambda: f'P{morpy_trace["process_id"]} :: Parallel task executed.\n{morpy_trace["task_id"]=}\n'
-                f'{app_dict["morpy"]["tasks_created"]=}')
+        lambda: f'P{morpy_trace["process_id"]} :: Parallel task executed.')
 
     except Exception as e:
         from lib.exceptions import MorPyException

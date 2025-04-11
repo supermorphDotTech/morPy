@@ -50,17 +50,19 @@ Feel free to comment, share and support this project!
 └─│`5.2` [Visualize Dependencies (Microsoft Windows)](#5.2)  
 `6.` [Security and Dependency Analysis](#6.)  
 &nbsp;
-└─│`6.1` [Scan installed packages against known vulnerabilities](#6.1)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-└─│`6.1.1` [Install required libraries](#6.1.1)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-└─│`6.1.2` [Scan Installed Packages](#6.1.2)  
+└─│`6.1` [Known Vulnerabilities of morPy](#6.1)  
 &nbsp;
-└─│`6.2` [Security Guidance](#6.2)  
+└─│`6.2` [Scan installed packages against known vulnerabilities](#6.2)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-└─│`6.2.1` [Constant Security checks in productive environments](#6.2.1)  
+└─│`6.2.1` [Install required libraries](#6.2.1)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-└─│`6.2.2` [Lock Down Virtual Environments](#6.2.2)  
+└─│`6.2.2` [Scan Installed Packages](#6.2.2)  
+&nbsp;
+└─│`6.3` [Security Guidance](#6.3)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`6.3.1` [Constant Security checks in productive environments](#6.3.1)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+└─│`6.3.2` [Lock Down Virtual Environments](#6.3.2)  
 `7.` [Abbreviations](#7.)  
 
 # 1. Requirements and Dependencies [⇧](#toc) <a name="1."></a>
@@ -510,9 +512,22 @@ pydeps --cluster --rankdir "LR" --include-missing ".\"
 
 # 6. Security and Dependency Analysis [⇧](#toc) <a name="6."></a>
 
-## 6.1 Scan installed packages against known vulnerabilities [⇧](#toc) <a name="6.1"></a>
+## 6.1 Known Vulnerabilities of morPy [⇧](#toc) <a name="6.1"></a>
 
-### 6.1.1 Install required libraries [⇧](#toc) <a name="6.1.1"></a>
+### 6.1.1 Code Insertion [⇧](#toc) <a name="6.1.1"></a>
+
+I f an attacker gains access to the machine on which morPy is running, it is possible for the
+attacker to query through shared memory segments and identify those holding the UltraDict
+instances `app_dict["morpy"]["heap_shelf"]` or `app_dict["morpy"]["proc_waiting"]` of currently
+running apps. In that case, functions can be written into either of those which will then be picked
+up for execution. The shared memory segments are obscured by their names to harden a little against
+this threat. It is also noteworthy, that the inserted code must adhere to the morPy templates
+and be importable by the interpreter in order to be executed successfully. This issue will
+be addressed in a future release.
+
+## 6.2 Scan installed packages against known vulnerabilities [⇧](#toc) <a name="6.2"></a>
+
+### 6.2.1 Install required libraries [⇧](#toc) <a name="6.2.1"></a>
 
 1.  Setup the path to the Python project as an environment variable (for this PowerShell session only), i.e.
 
@@ -544,7 +559,7 @@ pip install pip-audit
 pip install safety; safety auth
 ```
 
-### 6.1.2 Scan Installed Packages [⇧](#toc) <a name="6.1.2"></a>
+### 6.2.2 Scan Installed Packages [⇧](#toc) <a name="6.2.2"></a>
 
 6.  Run `pip-audit`:
 
@@ -563,13 +578,13 @@ safety scan
 [CVEdetails.com - Python](https://www.cvedetails.com/version-list/10210/18230/1/Python-Python.html)  
 [CVEdetails.com - Python Vulnerability Satistics](https://www.cvedetails.com/vendor/10210/Python.html)
 
-## 6.2 Security Guidance [⇧](#toc) <a name="6.2"></a>
+## 6.3 Security Guidance [⇧](#toc) <a name="6.2"></a>
 
-### 6.2.1 Constant Security checks in a productive environment [⇧](#toc) <a name="6.2.1"></a>
+### 6.3.1 Constant Security checks in a productive environment [⇧](#toc) <a name="6.3.1"></a>
 
 It is advisable to keep a clone of the Python virtual environment including all dependencies used in the production code on a non-critical server. The vulnerability Checks may then be automated to run at least once a day and send reports to the security dev team.
 
-### 6.2.2 Lock Down Virtual Environments [⇧](#toc) <a name="6.2.2"></a>
+### 6.3.2 Lock Down Virtual Environments [⇧](#toc) <a name="6.3.2"></a>
 
 Disallow any changes in the virtual environment to prevent the use of dangerous libraries. To do this, make the virtual environment a read-only directory and only allow for write-access to patch vulnerabilities.   
 As an example, it is not advisory to allow installation of `jkuri/bore`, as it allows circumventing certain network security features.  

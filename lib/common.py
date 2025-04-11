@@ -21,46 +21,9 @@ from heapq import heappush, heappop
 
 class PriorityQueue:
     r"""
-    This class delivers a priority queue solution. Any task may be enqueued.
-    When dequeuing, the highest priority task (lowest number) is pulled
-    first. In case there is more than one, the oldest is pulled.
-
-    :param morpy_trace: Operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
-    :param name: Name or description of the instance
-
-    :methods:
-        .enqueue(morpy_trace: dict, app_dict: dict, priority: int=100, task: tuple=None, autocorrect: bool=True,
-            is_process: bool=True)
-            Adds a task to the priority queue.
-
-            :param priority: Integer representing task priority (lower is higher priority)
-            :param task: Tuple of a callable, *args and **kwargs (func, *args, **kwargs)
-            :param autocorrect: If False, priority can be smaller than zero. Priority
-                smaller zero is reserved for the morPy Core.
-            :param is_process: If True, task is run in a new process (not by morPy orchestrator)
-
-        .pull(morpy_trace: dict, app_dict: dict)
-            Removes and returns the highest priority task from the priority queue.
-
-            :return: dict
-                priority: Integer representing task priority (lower is higher priority)
-                counter: Number of the task when enqueued
-                task_id : Continuously incremented task ID (counter).
-                task_sys_id : ID of the task determined by Python core
-                task: The pulled task list
-                task_callable: The pulled task callable
-                is_process: If True, task is run in a new process (not by morPy orchestrator)
-
-    :example:
-        from functools import partial
-        # Create queue instance
-        queue = morPy.PriorityQueue(morpy_trace, app_dict, name="example_queue")
-        # Add a task to the queue
-        queue.enqueue(morpy_trace, app_dict, priority=25, task=partial(task, morpy_trace, app_dict))
-        # Fetch a task and run it
-        task = queue.pull(morpy_trace, app_dict)['task']
-        task()
+    PriorityQueue implements a task queue with priority handling.
+    When tasks are enqueued, the task with the lowest (highest priority) number
+    is pulled first.
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, name: str=None) -> None:
@@ -295,31 +258,7 @@ class PriorityQueue:
 
 class ProgressTracker:
     r"""
-    This class instantiates a progress counter. If ticks, total or counter
-    are floats, progress of 100 % may not be displayed.
-
-    :param morpy_trace: operation credentials and tracing information
-    :param app_dict: morPy global dictionary containing app configurations
-    :param description: Describe, what is being processed (i.e. file path or calculation)
-    :param total: Mandatory - The total count for completion
-    :param ticks: Mandatory - Percentage of total to log the progress. I.e. at ticks=10.7 at every
-        10.7% progress exceeded the exact progress will be logged.
-    :param float_progress: For efficient progress tracking, by default the progress is not tracked with
-        floats. If True, the amount of ticks at which to update progress may be a lot more expensive.
-        Defaults to False.
-    :param verbose: If True, progress is only logged in verbose mode except for the 100% mark. Defaults to False.
-
-    .update(morpy_trace: dict, app_dict: dict, current: float=None)
-        Method to update current progress and log progress if tick is passed.
-
-        :return: dict
-            prog_rel: Relative progress, float between 0 and 1
-            message: Message generated. None, if no tick was hit.
-
-    :example:
-        from morPy import ProgressTracker
-        progress = ProgressTracker(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=10)["prog_rel"]
-        progress.update(morpy_trace, app_dict, current=current_count)
+    Progress counter to continuously keep track of operations.
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
@@ -1519,11 +1458,11 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
 def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, password: str = None,
                           file_path: str = None, file_name: str = None, overwrite: bool = True) -> dict:
     r"""
-    Create a QR-code for a Wifi network. Files will be overwritten by default.
+    Create a QR-code for a Wi-Fi network. Files will be overwritten by default.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
-    :param ssid: Name of the Wifi network.
+    :param ssid: Name of the Wi-Fi network.
     :param password: WPA2 password of the network. Consider handing the password via prompt instead
         of in code for better security.
     :param file_path: Path where the qr-code generated will be saved. If None, save in '.\data'.
@@ -1614,7 +1553,8 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
         usr_input: The input provided by the user.
 
     :example:
-        result = wait_for_input(morpy_trace, app_dict, "Please enter your name: ")["usr_input"]
+        prompt = "Please enter your name: "
+        result = wait_for_input(morpy_trace, app_dict, prompt)["usr_input"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)

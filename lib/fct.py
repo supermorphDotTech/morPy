@@ -111,12 +111,12 @@ def runtime(in_ref_time) -> dict:
 
 def sysinfo() -> dict:
     r"""
-    This function returns various information about the hardware and operating system.
+    This function returns information about the hardware and operating system.
 
     :return: dict
         system - Operating system.
         release - Major version of the operating system.
-        version - Major and subversions of the operating system.
+        version - Major and sub-version of the operating system.
         arch - Architecture of the operating system.
         processor - Processor running the code.
         logical_cpus - Amount of processes, that could run in parallel.

@@ -7,8 +7,7 @@ Descr.:     This module delivers functions to debug, warn and log any operations
             executed within the morPy framework. At the same time it processes
             all kinds of messaging, whether it be via console or ui.
 
-TODO make logging a class
-    > Needed to efficiently share the lock on the db
+TODO Set the db lock during init and release it on exit
 """
 
 import lib.fct as morpy_fct
@@ -17,7 +16,6 @@ from lib.decorators import metrics
 
 import sys
 import time
-from heapq import heappush, heappop
 
 from lib.mp import is_udict
 
@@ -44,7 +42,7 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
         > Preferably auto delete logs based on "no errors occurred" per process, task, thread and __main__
     """
 
-    morpy_trace_eval: dict = None
+    morpy_trace_eval: dict | None = None
 
     try:
         # Wait for an interrupt to end
@@ -57,16 +55,20 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
 
         while interrupt:
             time.sleep(0.05)
+            if udict_true:
+                with app_dict["morpy"].lock:
+                    interrupt = app_dict["morpy"]["interrupt"]
+            else:
+                interrupt = app_dict["morpy"]["interrupt"]
 
 
         # Event handling (counting and formatting)
-        log_event_dict = log_event_handler(app_dict, message, level)
-        level_dict = log_event_dict["level_dict"]
+        log_event_dict = log_event_handler(level)
 
         # The log level will be evaluated as long as logging or prints to console are enabled. The
         # morpy_trace may be manipulated.
         if app_dict["morpy"]["conf"]["msg_print"] or app_dict["morpy"]["conf"]["log_enable"]:
-            morpy_trace_eval = log_eval(morpy_trace, app_dict, log_event_dict["level"], level_dict)
+            morpy_trace_eval = log_eval(morpy_trace, app_dict, log_event_dict["level"])
 
         # Retrieve a log specific datetimestamp
         time_lst = morpy_fct.datetime_now()
@@ -204,24 +206,23 @@ def log_task(morpy_trace: dict, app_dict: dict, log_dict: dict, write_log_txt: b
         # Print the events according to their log level
         msg_print(morpy_trace, app_dict, log_dict)
 
-def log_eval(morpy_trace: dict, app_dict: dict, level: str, level_dict: dict) -> dict:
+def log_eval(morpy_trace: dict, app_dict: dict, level: str) -> dict:
     r"""
     This function evaluates the log level and makes manipulation of morpy_trace
-    possible for passdown only. That means, for the purpose of logging, certain
+    possible for pass-down only. That means, for the purpose of logging, certain
     parameters (keys) may be altered in check with mpy_param.py or other parts
     of the code to hide, extend, enable or what else is needed for a log.
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
     :param level: uppercase formatted level
-    :param level_dict: Dictionary defining all possible log levels of the morPy framework
 
     :return morpy_trace_eval: Evaluated and/or manipulated morpy_trace
     """
 
     import copy
 
-    # Deepcopy morpy_trace to manipulate it "passdown only"
+    # Deepcopy morpy_trace to manipulate it "pass-down only"
     morpy_trace_eval = copy.deepcopy(morpy_trace)
 
     # Set defaults
@@ -256,9 +257,9 @@ def log_eval(morpy_trace: dict, app_dict: dict, level: str, level_dict: dict) ->
     else: pnt_enable = False
 
     # Evaluate the log level, if it will raise an interrupt.
-    for lvl_intpt in app_dict["morpy"]["conf"]["log_lvl_interrupts"]:
+    for lvl_interrupt in app_dict["morpy"]["conf"]["log_lvl_interrupts"]:
 
-        if level == lvl_intpt:
+        if level == lvl_interrupt:
             morpy_trace_eval["interrupt_enable"] = True
             break
 
@@ -271,12 +272,10 @@ def log_eval(morpy_trace: dict, app_dict: dict, level: str, level_dict: dict) ->
 
     return morpy_trace_eval
 
-def log_event_handler(app_dict: dict, message: str, level: str) -> dict:
+def log_event_handler(level: str) -> dict:
     r"""
     This function handles the log levels by formatting and counting events.
 
-    :param app_dict: morPy global dictionary
-    :param message: The message to be logged
     :param level: Defines the log level as handed by the calling function
 
     :return: dict
@@ -302,7 +301,7 @@ def log_event_handler(app_dict: dict, message: str, level: str) -> dict:
 
     # Set logging level UNDEFINED if not part of level definition
     try: level = level_dict[level]
-    except: level = 'undefined'
+    except KeyError: level = 'undefined'
 
     return {
             'level' : level,
@@ -317,13 +316,7 @@ def log_interrupt(morpy_trace: dict, app_dict: dict) -> None:
     :param app_dict: morPy global dictionary
 
     :return: -
-
-    FIXME function is unstable.
-        > Input after prompt does not work
-        > Overwritten for the time being
     """
-
-    import lib.fct as morpy_fct
 
     morpy_trace: dict = morpy_fct.tracing(morpy_trace["module"], morpy_trace["operation"], morpy_trace)
     morpy_trace["log_enable"] = False
@@ -337,28 +330,27 @@ def log_interrupt(morpy_trace: dict, app_dict: dict) -> None:
     else:
         app_dict["morpy"]["interrupt"] = True
 
-    # INTERRUPT <<< Type [y]es to quit or anything else to continue.
-    input_str_long: str = app_dict["loc"]["morpy"]["msg_print_intrpt_yes"]
+    # INTERRUPT <<< Type [y]es to quit or anything else to try continuing.
+    input_str_long: str = app_dict["loc"]["morpy"]["log_interrupt_yes"]
     input_str_short_1: str = input_str_long[0]
     input_str_short_2: str = input_str_long[1:]
     interrupt_prompt = (
-        f'{app_dict["loc"]["morpy"]["msg_print_intrpt_1"]} '
+        f'{app_dict["loc"]["morpy"]["log_interrupt_1"]} '
         f'[{input_str_short_1}]{input_str_short_2} '
-        f'{app_dict["loc"]["morpy"]["msg_print_intrpt_2"]}'
+        f'{app_dict["loc"]["morpy"]["log_interrupt_2"]}'
     )
 
     # Flush any buffered output so that no stray log messages are printed
     sys.stdout.flush()
     sys.stderr.flush()
-    time.sleep(0.1)
 
     # Instead of using sys.stdout (which may be redirected), use sys.__stdout__
     # to ensure that the prompt is printed cleanly.
     sys.__stdout__.write(f"{interrupt_prompt}\n")
     sys.__stdout__.flush()
-    # usr_input = sys.__stdin__.readline().strip()
-    # FIXME
-    usr_input = "y"
+    usr_input = sys.__stdin__.readline().strip()
+
+    print('\n')
 
     if usr_input.strip().lower() in {input_str_short_1.lower(), input_str_long.lower()}:
         # Reset the global interrupt flag
@@ -366,14 +358,14 @@ def log_interrupt(morpy_trace: dict, app_dict: dict) -> None:
             with app_dict["morpy"].lock:
                 app_dict["morpy"]["exit"] = True
         else:
-            app_dict["morpy"]["exit"] = True
-    else:
-        # Reset the global interrupt flag
-        if udict_true:
-            with app_dict["morpy"].lock:
-                app_dict["morpy"]["interrupt"] = False
-        else:
+            app_dict["morpy"]["exit"] = False
+
+    # Reset the global interrupt flag
+    if udict_true:
+        with app_dict["morpy"].lock:
             app_dict["morpy"]["interrupt"] = False
+    else:
+        app_dict["morpy"]["interrupt"] = False
 
 def log_msg_builder(app_dict: dict, log_dict: dict) -> str:
     r"""
@@ -444,9 +436,7 @@ def msg_print(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
 
     # Raise an interrupt if certain log levels are met
     if log_dict["interrupt_enable"]:
-        # FIXME interrupt broken
-        # log_interrupt(morpy_trace, app_dict)
-        pass
+        log_interrupt(morpy_trace, app_dict)
 
 def log_txt(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     r"""
@@ -459,8 +449,6 @@ def log_txt(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     :return:
         -
     """
-
-    import lib.fct as morpy_fct
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'msg'
@@ -484,15 +472,13 @@ def log_db(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
         -
     """
 
-    import lib.fct as morpy_fct
-
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'msg'
     operation: str = 'log_db(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
     morpy_trace["log_enable"] = False
 
-    # Define the table to be adressed.
+    # Define the table to be addressed.
     db_path = app_dict["morpy"]["conf"]["log_db_path"]
     table_name = f'log_{app_dict["morpy"]["init_loggingstamp"]}'
 
@@ -512,7 +498,7 @@ def log_db(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
         log_db_table_add_column(morpy_trace, app_dict, db_path, table_name, columns, col_types)
 
     # Insert the actual log into the logging database table.
-    log_db_row_insert(morpy_trace, app_dict, db_path, table_name, columns, log_dict)
+    log_db_row_insert(morpy_trace, app_dict, db_path, table_name, log_dict)
 
 def log_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> object | None:
     r"""
@@ -527,7 +513,6 @@ def log_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> object | 
         conn - Connection object or None
     """
 
-    import lib.fct as morpy_fct
     import sys, sqlite3
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -545,7 +530,7 @@ def log_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> object | 
         from lib.exceptions import MorPyException
         msg = (
             f'{type(e).__name__}: {e}\n'
-            f'{app_dict["loc"]["morpy"]["log_db_connect_excpt"]}\n'
+            f'{app_dict["loc"]["morpy"]["log_db_connect_exception"]}\n'
             f'db_path: {db_path}'
         )
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error", message=msg)
@@ -562,7 +547,6 @@ def log_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> None:
         -
     """
 
-    import lib.fct as morpy_fct
     import sys, sqlite3
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -579,7 +563,7 @@ def log_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> None:
         from lib.exceptions import MorPyException
         msg = (
             f'{type(e).__name__}: {e}\n'
-            f'{app_dict["loc"]["morpy"]["log_db_disconnect_excpt"]}\n'
+            f'{app_dict["loc"]["morpy"]["log_db_disconnect_exception"]}\n'
             f'db_path: {db_path}'
         )
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error", message=msg)
@@ -601,7 +585,6 @@ def log_db_table_create(morpy_trace: dict, app_dict: dict, db_path: str, table_n
         -
     """
 
-    import lib.fct as morpy_fct
     import sys
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -622,7 +605,7 @@ def log_db_table_create(morpy_trace: dict, app_dict: dict, db_path: str, table_n
         # Connect the database
         conn = log_db_connect(morpy_trace, app_dict, db_path)
 
-        # Activate WAL mode to acces the database
+        # Activate WAL mode to access the database
         conn.execute('pragma journal_mode=wal;')
 
         # Create the actual table
@@ -638,7 +621,7 @@ def log_db_table_create(morpy_trace: dict, app_dict: dict, db_path: str, table_n
         from lib.exceptions import MorPyException
         msg = (
             f'{type(e).__name__}: {e}\n'
-            f'{app_dict["loc"]["morpy"]["log_db_table_create_excpt"]}\n'
+            f'{app_dict["loc"]["morpy"]["log_db_table_create_exception"]}\n'
             f'{app_dict["loc"]["morpy"]["log_db_table_create_stmt"]}: {exec_statement}'
         )
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error", message=msg)
@@ -656,7 +639,6 @@ def log_db_table_check(morpy_trace: dict, app_dict: dict, db_path: str, table_na
     :return check: If TRUE, the table was found
     """
 
-    import lib.fct as morpy_fct
     import sys
 
     module: str = 'msg'
@@ -668,13 +650,13 @@ def log_db_table_check(morpy_trace: dict, app_dict: dict, db_path: str, table_na
     check: bool = False
 
     # Define the execution statement
-    exec_statement = (f'SELECT count(name) FROM sqlite_master WHERE type=\'table\' AND name=\'{table_name}\'')
+    exec_statement = f'SELECT count(name) FROM sqlite_master WHERE type=\'table\' AND name=\'{table_name}\''
 
     try:
         # Connect the database
         conn = log_db_connect(morpy_trace, app_dict, db_path)
 
-        # Activate WAL mode to acces the database
+        # Activate WAL mode to access the database
         conn.execute('pragma journal_mode=wal;')
 
         c = conn.cursor()
@@ -706,7 +688,7 @@ def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, tab
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
-    :param db_path: Path to the db to be adressed or altered
+    :param db_path: Path to the db to be addressed or altered
     :param table_name: Name of the database table to be created
     :param columns: List of the columns to be added
     :param col_types: List of datatypes for the columns as specified for SQLite
@@ -714,7 +696,6 @@ def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, tab
     :return check: If TRUE, the function was successful
     """
 
-    import lib.fct as morpy_fct
     import sys
 
     module: str = 'msg'
@@ -733,12 +714,12 @@ def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, tab
             # Connect the database
             conn = log_db_connect(morpy_trace, app_dict, db_path)
 
-            # Activate WAL mode to acces the database
+            # Activate WAL mode to access the database
             conn.execute('pragma journal_mode=wal;')
 
             i = 0
 
-            for col in columns:
+            for _ in columns:
                 # Define the execution statement
                 exec_statement = f'ALTER TABLE {table_name} ADD COLUMN {columns[i]} {col_types[i]}'
 
@@ -754,8 +735,8 @@ def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, tab
                 except Exception as e:
                     # The log table could not be edited.
                     raise RuntimeError(
-                        f'{app_dict["loc"]["morpy"]["log_db_table_add_column_excpt"]}\n'
-                        f'{app_dict["loc"]["morpy"]["log_db_table_add_column_stmt"]}: {exec_statement}'
+                        f'{app_dict["loc"]["morpy"]["log_db_table_add_column_exception"]}\n'
+                        f'{app_dict["loc"]["morpy"]["log_db_table_add_column_stmt"]}: {exec_statement}\n{e}'
                     )
 
                 i += 1
@@ -774,17 +755,15 @@ def log_db_table_add_column(morpy_trace: dict, app_dict: dict, db_path: str, tab
         from lib.exceptions import MorPyException
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list,
-                      log_dict: dict) -> dict[str, int | bool | None] | None:
+def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, log_dict: dict) -> dict[str, int | bool | None] | None:
     r"""
     This function inserts a row into a table inside a given SQLite
     database.
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
-    :param db_path: Path to the db to be adressed or altered
+    :param db_path: Path to the db to be addressed or altered
     :param table_name: Name of the database table to be created
-    :param columns: List of the columns to be added
     :param log_dict: Passthrough dictionary for logging operations
 
     :return: dict
@@ -792,7 +771,6 @@ def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
         row_id - ID of the row inserted
     """
 
-    import lib.fct as morpy_fct
     import sys
 
     module: str = 'msg'
@@ -815,7 +793,7 @@ def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
             # Connect the database
             conn = log_db_connect(morpy_trace, app_dict, db_path)
 
-            # Activate WAL mode to acces the database
+            # Activate WAL mode to access the database
             conn.execute('pragma journal_mode=wal;')
 
             # Execution
@@ -846,8 +824,8 @@ def log_db_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
             except Exception as e:
                 # The log entry could not be created.
                 raise RuntimeError(
-                    f'{app_dict["loc"]["morpy"]["log_db_row_insert_excpt"]}\n'
-                    f'{app_dict["loc"]["morpy"]["log_db_row_insert_stmt"]}: {exec_statement}'
+                    f'{app_dict["loc"]["morpy"]["log_db_row_insert_exception"]}\n'
+                    f'{app_dict["loc"]["morpy"]["log_db_row_insert_stmt"]}: {exec_statement}\n{e}'
                 )
 
             # Disconnect from the database

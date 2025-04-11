@@ -3,8 +3,7 @@ morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
-Descr.:     This module holds all functions used for initialization of the
-            morPy framework.
+Descr.:     Initialization of the morPy framework.
 """
 
 import lib.fct as morpy_fct
@@ -241,57 +240,65 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
 
             memory_dict = nested_memory_sizes(conf_dict, processes_max)
 
+            # app_dict
             init_dict = shared_dict(
-                name="app_dict",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_mem"],
                 recurse=False
             )
 
+            # app_dict["morpy"]
             init_dict["morpy"] = shared_dict(
-                name="app_dict[morpy]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_morpy_mem"],
                 recurse=False
             )
 
+            # app_dict["morpy"]["conf"]
             init_dict["morpy"]["conf"] = shared_dict(
-                name="app_dict[morpy][conf]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_morpy_conf_mem"],
                 recurse=False
             )
 
+            # app_dict["morpy"]["heap_shelf"]
             init_dict["morpy"]["heap_shelf"] = shared_dict(
-                name="app_dict[morpy][heap_shelf]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_morpy_heap_shelf_mem"],
                 recurse=False
             )
 
+            # app_dict["morpy"]["logs_generate"]
             init_dict["morpy"]["logs_generate"] = shared_dict(
-                name="app_dict[morpy][logs_generate]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_morpy_logs_generate_mem"],
                 recurse=False
             )
 
+            # app_dict["morpy"]["orchestrator"]
             init_dict["morpy"]["orchestrator"] = shared_dict(
-                name="app_dict[morpy][orchestrator]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_morpy_orchestrator_mem"],
                 recurse=False
             )
 
+            # app_dict["morpy"]["proc_available"]
             init_dict["morpy"]["proc_available"] = shared_dict(
-                name="app_dict[morpy][proc_available]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_morpy_proc_available_mem"],
                 recurse=False
             )
 
+            # app_dict["morpy"]["proc_busy"]
             init_dict["morpy"]["proc_busy"] = shared_dict(
-                name="app_dict[morpy][proc_busy]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_morpy_proc_busy_mem"],
                 recurse=False
@@ -299,50 +306,57 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
             # Insert master process ID
             init_dict["morpy"]["proc_busy"][morpy_trace["process_id"]] = "MASTER"
 
+            # app_dict["morpy"]["proc_waiting"]
             init_dict["morpy"]["proc_waiting"] = shared_dict(
-                name="app_dict[morpy][proc_waiting]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_morpy_proc_waiting_mem"],
                 recurse=False
             )
 
+            # app_dict["morpy"]["sys"]
             init_dict["morpy"]["sys"] = shared_dict(
-                name="app_dict[morpy][sys]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_morpy_sys_mem"],
                 recurse=False
             )
 
+            # app_dict["loc"]
             init_dict["loc"] = shared_dict(
-                name="app_dict[loc]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_loc_mem"],
                 recurse=False
             )
 
+            # app_dict["loc"]["morPy"]
             init_dict["loc"]["morpy"] = shared_dict(
-                name="app_dict[loc][morPy]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_loc_morpy_mem"],
                 recurse=False
             )
 
+            # app_dict["loc"]["mpy_dbg"]
             init_dict["loc"]["morpy_dgb"] = shared_dict(
-                name="app_dict[loc][mpy_dbg]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_loc_morpy_dbg_mem"],
                 recurse=False
             )
 
+            # app_dict["loc"]["app"]
             init_dict["loc"]["app"] = shared_dict(
-                name="app_dict[loc][app]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_loc_app_mem"],
                 recurse=False
             )
 
+            # app_dict["loc"]["app_dbg"]
             init_dict["loc"]["app_dbg"] = shared_dict(
-                name="app_dict[loc][app_dbg]",
+                name=obscure_shared_name(),
                 create=create,
                 size=memory_dict["app_dict_loc_app_dbg_mem"],
                 recurse=False
@@ -679,3 +693,38 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
         "app_dict_loc_app_mem" : app_dict_loc_app_mem,
         "app_dict_loc_app_dbg_mem" : app_dict_loc_app_dbg_mem
     }
+
+def obscure_shared_name() -> str:
+    r"""
+    Generate a random name for the shared memory segments. This is to make it
+    harder for an attacker to identify the shared memory segments of runtime.
+    UltraDict provides random standard names, but with lesser variability.
+
+    :return shared_name: String with random signs and length.
+    """
+
+    import secrets
+    import random
+    from UltraDict import UltraDict
+
+    shared_name: str = ''
+    unique: bool = False
+    min_len: int = 16
+    max_len: int = 48
+
+    # Loop to ensure that the dictionaries will not attach to a running app.
+    while not unique:
+        token_hex: str = secrets.token_hex(max_len)
+        cut_off: int = random.randint(min_len, max_len) + min_len
+        shared_name: str = token_hex[:cut_off]
+        try:
+            UltraDict(create=False, name=shared_name)
+        except Exception as e:
+            # Check if the caught exception is effectively a "CannotAttachSharedMemory"
+            if e.__class__.__name__ == "CannotAttachSharedMemory":
+                unique = True
+            else:
+                # Re-raise if it is an unexpected error
+                raise
+
+    return shared_name

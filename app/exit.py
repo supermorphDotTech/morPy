@@ -53,18 +53,9 @@ def app_exit(morpy_trace: dict, app_dict: dict | UltraDict, app_run_return: dict
         check: bool = True
 
     except Exception as e:
-        raise morPy.exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise morPy.Exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     finally:
-        # Join all spawned processes before transitioning into the next phase.
-        join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
-        # Signal morPy orchestrator of app termination
-        if isinstance(app_dict["morpy"], UltraDict):
-            with app_dict["morpy"].lock:
-                app_dict["morpy"]["exit"] = True
-        else:
-            app_dict["morpy"]["exit"] = True
-
         return{
             'morpy_trace' : morpy_trace,
             'check' : check,
