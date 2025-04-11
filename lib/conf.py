@@ -226,7 +226,6 @@ def settings():
         'log_lvl_interrupts' : log_lvl_interrupts,
         'metrics_enable' : metrics_enable,
         'metrics_perfmode' : metrics_perfmode,
-        'shared_memory_enforce' : shared_memory_enforce,
         'memory_use_absolute' : memory_use_absolute,
         'memory_relative' : memory_relative,
         'memory_absolute' : memory_absolute_mb,
