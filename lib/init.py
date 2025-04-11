@@ -95,7 +95,6 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
         morpy_trace_init["log_enable"] = init_dict["morpy"]["conf"]["log_enable"]
 
         # Import the morPy core functions localization into init_dict.
-        # TODO provide loop with fallback / exit with -1
         morpy_loc = importlib.import_module(init_dict["morpy"]["conf"]["localization"])
         init_dict["loc"]["morpy"].update(getattr(morpy_loc, 'loc_morpy')())
 
@@ -112,9 +111,6 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
                 init_dict["morpy"]["logs_generate"][log_level] = True
             else:
                 init_dict["morpy"]["logs_generate"][log_level] = False
-
-        # Test for elevated privileges
-        # TODO make an elevation handler
 
         # Prepare log levels
         init_dict["morpy"]["events_total"] = 0
@@ -136,13 +132,11 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
             morpy_log_header(morpy_trace_init, init_dict)
 
         # Initialize the morPy debug-specific localization
-        # TODO provide loop with fallback / exit with -1
         init_dict["loc"]["morpy_dgb"].update(getattr(morpy_loc, 'loc_morpy_dbg')())
         log(morpy_trace_init, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_dbg_loaded"]}')
 
         # Initialize the app-specific localization
-        # TODO provide loop with fallback / exit with -1
         app_loc = importlib.import_module(f'loc.app_{init_dict["morpy"]["conf"]["language"]}')
         init_dict["loc"]["app"].update(getattr(app_loc, 'loc_app')())
         init_dict["loc"]["app_dbg"].update(getattr(app_loc, 'loc_app_dbg')())

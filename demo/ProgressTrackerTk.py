@@ -4,8 +4,6 @@ https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
 Descr.:     This module demonstrates how to use lib.ui_tk.ProgressTrackerTk()
-
-TODO use frontend (i.e. for exceptions)
 """
 
 import morPy
@@ -32,8 +30,6 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
         import app.demo_ProgressTrackerTk as demo_ProgressTrackerTk
         demo_ProgressTrackerTk.run(morpy_trace, app_dict)
-
-    TODO localization
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -49,13 +45,14 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         stages = 5
         total_rep = 10 ** 2
 
-        # No localization for demo module
+        # Starting
         log(morpy_trace, app_dict, "info",
-        lambda: f'Starting {module}.{operation}')
+            lambda: f'{app_dict["loc"]["app"]["demo_starting"]} {module}.{operation}')
+
         task = partial(arbitrary_task, morpy_trace, app_dict, stages=stages, total_rep=total_rep, gui=None)
 
         progress = morPy.ProgressTrackerTk(morpy_trace, app_dict,
-                                         frame_title="Progress Demo",
+                                         frame_title=f'{app_dict["loc"]["app"]["demo_title"]}',
                                          stages=stages,
                                          detail_description_on=True,
                                          console=True,
@@ -65,15 +62,14 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
 
         progress.run(morpy_trace, app_dict)
 
-        # No localization for demo module
+        # Finished
         log(morpy_trace, app_dict, "info",
-            lambda: f'Finished {module}.{operation}')
+            lambda: f'{app_dict["loc"]["app"]["demo_finished"]} {module}.{operation}')
 
         check = True
 
     except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return {
         'morpy_trace': morpy_trace,
@@ -99,8 +95,6 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: 
 
     :example:
         arbitrary_task(morpy_trace, app_dict)
-
-    TODO localization
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -115,9 +109,9 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: 
             raise RuntimeError
 
         for stage in range(1, stages + 1):
-            # Begin a stage
-            headline = f'Running Stage {stage}'
-            description = "Starting stage..."
+            # Beginning stage
+            headline = f'{app_dict["loc"]["app"]["demo_begin_stage"]} {stage}'
+            description = f'{app_dict["loc"]["app"]["demo_starting"]}...'
             if gui:
                 gui.begin_stage(morpy_trace, app_dict, stage_limit=total_rep, headline_stage=headline,
                                 detail_description=description)
@@ -131,18 +125,23 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: 
                     tmp_val += sqrt(i) + tmp_val
                     lst.append(tmp_val)
                     if gui:
-                        gui.update_text(morpy_trace, app_dict, detail_description=f'Currently at {i} - tmp_val is {tmp_val}')
+                        gui.update_text(
+                            morpy_trace, app_dict,
+                            detail_description=f'{app_dict["loc"]["app"]["demo_step"]} {i} :: {tmp_val=}'
+                        )
                 if gui:
-                    gui.update_text(morpy_trace, app_dict, detail_description=f'Currently at {i} - tmp_val is {tmp_val}')
+                    gui.update_text(
+                        morpy_trace, app_dict,
+                        detail_description=f'{app_dict["loc"]["app"]["demo_step"]} {i} :: {tmp_val=}'
+                    )
                     gui.update_progress(morpy_trace, app_dict)
 
-        # No localization for demo module
+        # Parallel task executed.
         log(morpy_trace, app_dict, "info",
-        lambda: f'Parallel task executed.')
+            lambda: f'{app_dict["loc"]["app"]["demo_executed"]}')
 
     except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,

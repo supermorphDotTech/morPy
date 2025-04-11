@@ -118,12 +118,6 @@ def settings():
     Memory initialized will scale with the amount of processes configured for scalability.
     """
 
-    # If debugging is not working due to parallelism, it can be the solution to
-    # simulate multiprocessing in single process mode. If this flag is set to
-    # "True", the use of shared memory and queueing will be forced. Default is False.
-    # FIXME does not work yet, process flow needs modifications for this
-    shared_memory_enforce: bool = False
-
     # Select the way, how the available RAM is determined. If absolute, an integer
     # value will reflect the Megabytes of maximum memory. Otherwise, use relative.
     # Default: False or None

@@ -7,7 +7,6 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
-from lib.mp import join_or_task
 from lib.fct import tracing as init_tracing
 from lib.decorators import metrics, log
 
@@ -59,7 +58,7 @@ def app_init(morpy_trace: dict, app_dict: dict | UltraDict) -> dict:
         check: bool = True
 
     except Exception as e:
-        raise morPy.Exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     finally:
         return{

@@ -7,7 +7,6 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
-from lib.mp import join_or_task
 from lib.decorators import metrics, log
 
 import sys
@@ -53,8 +52,6 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
         from functools import partial
         import time
 
-        make_interrupt = app_dict["no_key_here"]
-
         for i in range(1, 40):
             task = partial(arbitrary_task, morpy_trace, app_dict, stages=3, total_rep=10 ** 5)
             process_q(morpy_trace, app_dict, task=task, priority=20)
@@ -72,7 +69,7 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
         time.sleep(2)
 
     except Exception as e:
-        raise morPy.Exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     finally:
         return{

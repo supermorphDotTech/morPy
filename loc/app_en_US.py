@@ -28,7 +28,12 @@ def loc_app() -> dict:
 
         # App specific area - BEGIN
 
-        "my_app_message" : "A message!",
+        "demo_starting" : "Starting",
+        "demo_title" : "Progress Tracking Demo",
+        "demo_finished" : "Finished",
+        "demo_begin_stage" : "Beginning stage",
+        "demo_step" : "Step",
+        "demo_executed" : "Parallel task executed.",
 
         # App specific area - END
     }

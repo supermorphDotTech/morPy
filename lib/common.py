@@ -1458,7 +1458,8 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
 def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, password: str = None,
                           file_path: str = None, file_name: str = None, overwrite: bool = True) -> dict:
     r"""
-    Create a QR-code for a Wi-Fi network. Files will be overwritten by default.
+    Create a QR-code for a Wi-Fi network. Scanning the QR-Code will offer a quick-connect to
+    the regarding Wi-Fi network. Output file will be overwritten by default.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations

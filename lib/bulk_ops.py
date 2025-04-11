@@ -14,7 +14,7 @@ from lib.decorators import metrics, log
 import sys
 
 @metrics
-def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_tpl: tuple, save_as: str,
+def find_replace_save_as(morpy_trace: dict, app_dict: dict, search_obj, replace_tpl: tuple, save_as: str,
                         overwrite: bool=False) -> dict:
     r"""
     This function finds and replaces strings in a readable object
@@ -38,11 +38,11 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         replace_tpl = (("replace1", "with1"), ("replace2", "with2"))
         save_as = "C:\my_replaced_strings.txt"
         overwrite = True
-        retval = find_replace_saveas(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
+        retval = find_replace_save_as(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
     """
 
     module: str = 'lib.bulk_ops'
-    operation: str = 'find_replace_saveas(~)'
+    operation: str = 'find_replace_save_as(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     check: bool = False
@@ -51,7 +51,7 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
     try:
         # Operation start.
         log(morpy_trace, app_dict, "debug",
-        lambda: f'{app_dict["find_replace_saveas_start"]}')
+        lambda: f'{app_dict["find_replace_save_as_start"]}')
 
         # Check if file exists
         file_exists = morpy_fct.pathtool(save_as)["file_exists"]
@@ -60,7 +60,7 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
         if file_exists and not overwrite:
             # File already exists. Operation skipped.
             log(morpy_trace, app_dict, "warning",
-            lambda: f'{app_dict["find_replace_saveas_f_ex_skip"]}')
+            lambda: f'{app_dict["find_replace_save_as_f_ex_skip"]}')
         else:
             # Delete the target file if it exists and overwrite is true.
             if file_exists:
@@ -74,7 +74,7 @@ def find_replace_saveas(morpy_trace: dict, app_dict: dict, search_obj, replace_t
             if not isinstance(replace_tpl[0], tuple):
                 # Wrong type. Input must be a tuple of tuples.
                 log(morpy_trace, app_dict, "error",
-                lambda: f'{app_dict["loc"]["morpy"]["find_replace_saveas_tpl_err"]}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["find_replace_save_as_tpl_err"]}\n'
                         f'type(replace_tpl): {type(replace_tpl)}\n'
                         f'replace_tpl: {replace_tpl}\n'
                         f'type(replace_tpl[0]): {type(replace_tpl[0])}\n'

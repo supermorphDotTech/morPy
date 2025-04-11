@@ -75,10 +75,10 @@ def loc_morpy() -> dict:
         # Area: lib.bulk_ops.py
         # #################
 
-        # lib.bulk_ops.py - find_replace_saveas(~)
-        'find_replace_saveas_start': 'Operation start.',
-        'find_replace_saveas_f_ex_skip': 'File already exists. Operation skipped.',
-        'find_replace_saveas_tpl_err': 'Wrong type. Input must be a tuple of tuples.',
+        # lib.bulk_ops.py - find_replace_save_as(~)
+        'find_replace_save_as_start': 'Operation start.',
+        'find_replace_save_as_f_ex_skip': 'File already exists. Operation skipped.',
+        'find_replace_save_as_tpl_err': 'Wrong type. Input must be a tuple of tuples.',
 
         # #################
         # Area: lib.common.py

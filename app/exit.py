@@ -53,7 +53,7 @@ def app_exit(morpy_trace: dict, app_dict: dict | UltraDict, app_run_return: dict
         check: bool = True
 
     except Exception as e:
-        raise morPy.Exception(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     finally:
         return{

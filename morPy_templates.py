@@ -10,7 +10,7 @@ Annotations:
     #FIXME
 """
 
-import morPy as morPy
+import morPy
 from lib.decorators import metrics, log
 
 import sys
@@ -42,17 +42,18 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
     check: bool = False
 
     try:
+        """
+        >>> MY CODE
+        """
+
         # LOCALIZED_MESSAGE
         log(morpy_trace, app_dict, "info",
         lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
 
-        # TODO: MY CODE
-
         check: bool = True
 
     except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
         'morpy_trace' : morpy_trace,
@@ -97,8 +98,7 @@ class TemplateClass:
             self._init(morpy_trace, app_dict)
 
         except Exception as e:
-            from lib.exceptions import MorPyException
-            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+            raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict) -> dict:
@@ -127,7 +127,10 @@ class TemplateClass:
         check: bool = False
 
         try:
-            # TODO: MY INSTANCE INITIALIZATION
+            """
+            >>> MY INSTANCE INITIALIZATION
+            """
+
             # LOCALIZED_MESSAGE
             log(morpy_trace, app_dict, "debug",
             lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
@@ -135,8 +138,7 @@ class TemplateClass:
             check: bool = True
 
         except Exception as e:
-            from lib.exceptions import MorPyException
-            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+            raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,
@@ -168,7 +170,10 @@ class TemplateClass:
         check: bool = False
 
         try:
-            # TODO: MY CLASS METHOD
+            """
+            >>> MY CLASS METHOD
+            """
+
             # LOCALIZED_MESSAGE
             log(morpy_trace, app_dict, "info",
             lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
@@ -176,8 +181,7 @@ class TemplateClass:
             check: bool = True
 
         except Exception as e:
-            from lib.exceptions import MorPyException
-            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+            raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
             'morpy_trace' : morpy_trace,
