@@ -86,7 +86,7 @@ class MorPyException(Exception):
             elif not line:
                 cause = "line"
                 logging = True
-            elif not exception:
+            elif not exception_obj:
                 cause = "module"
                 logging = True
             else:
@@ -97,7 +97,7 @@ class MorPyException(Exception):
                 app_dict=app_dict,
                 exc=crit_e,
                 root_line=line,
-                root_e=exception,
+                root_e=exception_obj,
                 root_trace=morpy_trace,
                 logging=logging,
                 cause=cause

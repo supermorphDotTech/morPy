@@ -50,10 +50,12 @@ def app_init(morpy_trace: dict, app_dict: dict | UltraDict) -> dict:
     # ??? morpy_trace["log_enable"] = False
 
     check: bool = False
+
+    # Handshake dictionary for app.run
     app_init_return = {}
 
     try:
-        # TODO: MY CODE
+        # MY CODE
 
         check: bool = True
 

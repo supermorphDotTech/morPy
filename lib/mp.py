@@ -22,6 +22,16 @@ class MorPyOrchestrator:
     Class of morPy orchestrators.
     """
 
+    __slots__ = [
+        '_mp',
+        'curr_task',
+        'heap',
+        'morpy_trace',
+        'processes_max',
+        'ref_module',
+        'ref_operation'
+    ]
+
     def __init__(self, morpy_trace: dict, app_dict: dict) -> None:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
@@ -186,9 +196,6 @@ class MorPyOrchestrator:
 
         module: str = 'lib.mp'
         operation: str = 'MorPyOrchestrator.run(~)'
-        # TODO Find out, why morpy_trace["process_id"] is overwritten in app trace
-        # The enforced deepcopy morpy_fct.tracing() is a workaround.
-        morpy_trace_app: dict = morpy_fct.tracing(module, operation, morpy_trace)
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         check: bool = False
@@ -196,14 +203,13 @@ class MorPyOrchestrator:
         try:
             # Start the app - multiprocessing loop
             if self._mp:
-                app_task = [app_run, morpy_trace_app, app_dict]
+                app_task = [app_run, morpy_trace, app_dict]
                 heap_shelve(morpy_trace, app_dict, priority=-90, task=app_task, autocorrect=False, force=self._mp)
-                terminate = False
                 self._mp_loop(morpy_trace, app_dict)
 
             # Start the app - single process
             else:
-                app_run(morpy_trace_app, app_dict)
+                app_run(morpy_trace, app_dict)
 
             check: bool = True
 
@@ -273,7 +279,7 @@ class MorPyOrchestrator:
                 lambda: f'{app_dict["loc"]["morpy"]["heap_pull_start"]}\n'
                         f'{app_dict["loc"]["morpy"]["heap_pull_priority"]}: {self.curr_task["priority"]}\n'
                         f'{app_dict["loc"]["morpy"]["heap_pull_cnt"]}: {self.curr_task["counter"]}',
-                verbose=True)
+                        verbose=True)
 
                 check = True
 
@@ -312,9 +318,9 @@ class MorPyOrchestrator:
         operation: str = 'MorPyOrchestrator._mp_loop(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-        terminate: bool = False
-        check_join: bool = False
+        check: bool             = False
+        terminate: bool         = False
+        exit_in_progress: bool  = False
 
         try:
             heap_len = len(self.heap) + len(app_dict["morpy"]["heap_shelf"].keys())
@@ -323,7 +329,7 @@ class MorPyOrchestrator:
                 # Check process queue for tasks
                 if heap_len > 0:
                     self.heap_pull(morpy_trace, app_dict)
-                    task = self.curr_task["task"]
+                    task: list | tuple | partial | None = self.curr_task["task"]
                     task_id = self.curr_task["counter"]
 
                     if task:
@@ -357,59 +363,38 @@ class MorPyOrchestrator:
 
                     # Check on child processes: signal join or pass tasks
                     with app_dict["morpy"].lock:
-                        with app_dict["morpy"]["proc_waiting"].lock:
-                            if (not app_dict["morpy"]["proc_joined"]
-                                and len(app_dict["morpy"]["proc_waiting"].keys())):
-                                check_join = True
-                    if not app_dict["morpy"]["proc_joined"] and heap_len == 0:
-                        check_child_processes(morpy_trace, app_dict, check_join=True)
+                        if not app_dict["morpy"]["proc_joined"] and heap_len == 0:
+                            check_child_processes(morpy_trace, app_dict, check_join=True)
 
-                # TODO make use of program exit with critical exceptions
-                # TODO make sure no memory leaks are introduced when exiting
+                # Check exit request issued by any process
                 with app_dict["morpy"].lock:
                     # Check for the global exit flag
                     exit_flag = app_dict["morpy"]["exit"]
 
+                # Log the exit routine beginning only once.
+                if exit_flag and not exit_in_progress:
                     # Exit request detected. Termination in Progress.
-                    log(morpy_trace, app_dict, "debug",
-                    lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request"]}',
-                            verbose=True)
+                    log(morpy_trace, app_dict, "exit",
+                    lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request"]}')
+                    exit_in_progress = True
 
+                # Finish writing logs first
+                if exit_flag:
+                    logs_written = False if any(task[0] == -100 for task in self.heap) else True
 
-                    # Finish writing logs first
-                    if exit_flag:
-                        logs_written = False if any(task[0] == -100 for task in self.heap) else True
-
-                        if logs_written:
+                    if logs_written:
+                        with app_dict["morpy"]["proc_busy"].lock:
                             no_children = True if len(app_dict["morpy"]["proc_busy"]) < 2 else False
-                            if no_children:
-                                terminate = True
-                                self.heap = []
-                                heap_len = 0
+                        if no_children:
+                            terminate = True
+                            self.heap = []
 
-                                with app_dict["morpy"]["orchestrator"].lock:
-                                    app_dict["morpy"]["orchestrator"]["terminate"] = terminate
+                            with app_dict["morpy"]["orchestrator"].lock:
+                                app_dict["morpy"]["orchestrator"]["terminate"] = terminate
 
-                                # App terminating after exit request. No logs left from child processes.
-                                log(morpy_trace, app_dict, "debug",
-                                lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request_complete"]}')
-
-
-                # In case of global exit, delete the heap.
-                # if exit_flag:
-                #     with app_dict["morpy"].lock:
-                #         app_dict["morpy"]["heap"] = []
-
-                # Fail-safe check if really no child processes are running anymore.
-                if terminate and not exit_flag:
-                    # TODO call check_child_processes()
-                    # terminate = RESULT
-                    # exit_flag = RESULT
-                    pass
-
-                if terminate:
-                    with app_dict["morpy"]["orchestrator"].lock:
-                        app_dict["morpy"]["orchestrator"]["terminate"] = terminate
+                            # App terminating after exit request. No logs left from child processes.
+                            log(morpy_trace, app_dict, "debug",
+                            lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request_complete"]}')
 
                 # Calculate open tasks
                 with app_dict["morpy"]["heap_shelf"].lock:
@@ -440,14 +425,12 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
     operation: str = 'app_run(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    udict: bool = False
-
     try:
         from app.init import app_init
         from app.run import app_run
         from app.exit import app_exit
 
-        udict = True if isinstance(app_dict, UltraDict) else False
+        udict = is_udict(app_dict)
 
         # --- APP INITIALIZATION --- #
 
@@ -674,7 +657,7 @@ def substitute_ultradict_refs(morpy_trace: dict, app_dict: dict, task: list) -> 
         "task_sanitized": task_sanitized
     }
 
-def reattach_ultradict_refs(task) -> list:
+def reattach_ultradict_refs(task: list | tuple | dict | UltraDict) -> list:
     r"""
     Recursively traverse a task (which can be a list, tuple, or dict) and replace any
     placeholder tuple with the actual UltraDict instance. A placeholder tuple must have the form:
@@ -916,7 +899,7 @@ def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = 
             # Recovery is not possible, trying to terminate.
             log(morpy_trace, app_dict, "warning",
             lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_rogues"]}\n'
-                    f'{app_dict["loc"]["morpy"]["check_child_processes_norec"]}'
+                    f'{app_dict["loc"]["morpy"]["check_child_processes_no_rec"]}'
                     f'{roque_proc_names}')
 
             for rogue_name, rogue_obj in child_processes.items():
@@ -1025,6 +1008,15 @@ def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, r
 
             proc_joined = False
             while not proc_joined:
+
+                # Exit if required
+                with app_dict["morpy"].lock:
+                    exit_flag = app_dict["morpy"]["exit"]
+                if exit_flag:
+                    # child_exit_routine(morpy_trace, app_dict)
+                    sys.exit()
+
+                # Wait time to avoid busy wait
                 time.sleep(0.05)    # 0.05 seconds = 50 milliseconds
 
                 # Check for a shelved task
@@ -1139,9 +1131,6 @@ def stop_while_interrupt(morpy_trace: dict, app_dict: dict) -> dict:
         stop_while_interrupt(morpy_trace, app_dict)
 
     TODO distribute this function throughout the framework
-    FIXME upon interrupt and then "exit"
-        > Orchestrator does not start exit routine
-        > Processes may not terminate
     """
 
     module: str = 'lib.mp'
@@ -1168,31 +1157,15 @@ def stop_while_interrupt(morpy_trace: dict, app_dict: dict) -> dict:
                     exit_flag = app_dict["morpy"]["exit"]
 
             if exit_flag:
-                with app_dict["morpy"]:
+                with app_dict["morpy"].lock:
                     proc_master = app_dict["morpy"]["proc_master"]
 
-                # If process is orchestrator, gracefully exit
-                # TODO make sure logs are still written
+                # If process is orchestrator, gracefully exit. Otherwise, abort task.
                 if morpy_trace["process_id"] != proc_master:
                     # TODO enqueue a log for "aborted task"
-                    # Remove own process references
-                    try:
-                        with app_dict["morpy"]["proc_available"].lock:
-                            with app_dict["morpy"]["proc_busy"].lock:
-                                # Remove from busy processes
-                                app_dict["morpy"]["proc_busy"].pop(morpy_trace['process_id'])
-                                # Add to processes available IDs (hygiene only, no other use at app exit)
-                                app_dict["morpy"]["proc_available"]["process_id"] = None
-
-                        with app_dict["morpy"]["proc_waiting"].lock:
-                            proc_waiting = app_dict["morpy"]["proc_waiting"]
-                            if proc_waiting.get(morpy_trace['process_id'], None):
-                                proc_waiting.remove(morpy_trace['process_id'])
-                    except Exception as e:
-                        print(e)
-
-                    # TODO Make sure that this abrupt exit does not leave shared data in an inconsistent state or lead to orphaned tasks.
-                    sys.exit()
+                    # Remove own process references and exit
+                    child_exit_routine(morpy_trace, app_dict)
+                    pass
 
     except Exception as e:
         from lib.exceptions import MorPyException
@@ -1217,8 +1190,6 @@ def shared_dict(name: str = None, create: bool = False, shared_lock: bool = True
     :param recurse: If True, allow nested UltraDict instances.
 
     :return shared_dict: UltraDict instance configured with the given parameters.
-
-    TODO find a way to recreate buffer and dump sizes
     """
 
     from UltraDict import UltraDict
@@ -1235,6 +1206,40 @@ def shared_dict(name: str = None, create: bool = False, shared_lock: bool = True
 
     return connect_udict
 
+def child_exit_routine(morpy_trace: dict, app_dict: dict | UltraDict) -> None:
+    r"""
+    Cleans up the registers regarding a terminating child process. This
+    function also enforces the ordered locking of shared dictionaries to
+    prevent deadlocks.
+
+    :param morpy_trace: Operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+
+    :return: -
+    """
+
+    try:
+        # Remove own process references
+        with app_dict["morpy"]["proc_available"].lock:
+            with app_dict["morpy"]["proc_busy"].lock:
+                # Remove from busy processes
+                app_dict["morpy"]["proc_busy"].pop(morpy_trace['process_id'])
+                # Add to processes available IDs (hygiene only, no other use at app exit)
+                app_dict["morpy"]["proc_available"]["process_id"] = None
+
+        with app_dict["morpy"]["proc_waiting"].lock:
+            proc_waiting = app_dict["morpy"]["proc_waiting"]
+            if proc_waiting.get(morpy_trace['process_id'], None):
+                proc_waiting.pop(morpy_trace['process_id'])
+
+    # In case of a KeyError, the processes references were already cleaned up. This
+    # may happen when an exit is requested and the spawned process still cleans up
+    # regularly.
+    except KeyError:
+        pass
+
+    sys.exit()
+
 def is_udict(obj) -> bool:
     r"""
     Simple type check in the object provided. Returns True, if object is an UltraDict.
@@ -1242,20 +1247,16 @@ def is_udict(obj) -> bool:
     :param obj: Any object.
 
     :return: True, if object is an UltraDict.
-
-    TODO distribute throughout the code.
     """
 
     from UltraDict import UltraDict
 
     check: bool = False
-
     if isinstance(obj, UltraDict):
         check = True
-
     return check
 
-def normalize_task(task):
+def normalize_task(task: Any):
     r"""
     Converts a task defined as a partial into the list format:
         [func, *args, {**keywords}]
@@ -1275,14 +1276,13 @@ def normalize_task(task):
     elif isinstance(task, tuple):
         return list(task)
     elif isinstance(task, partial):
-        normalized = [task.func] + list(task.args)
+        normalized: List[Any] = [task.func] + list(task.args)
         if task.keywords:
             normalized.append(task.keywords)
         return normalized
     else:
         # For other callables, we return them as-is.
         return task
-
 
 def task_to_partial(task: List[Any]) -> Callable:
     r"""

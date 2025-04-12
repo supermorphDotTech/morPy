@@ -72,11 +72,9 @@ class XlWorkbook:
 
         try:
             # Use self._init() for initialization
-            check: bool = self._init(morpy_trace, app_dict, workbook, create)["check"]
-
-            if not check:
-                # Instance construction aborted.
-                raise RuntimeError(f'{app_dict["loc"]["morpy"]["XlWorkbook_inst_abort"]}')
+            self._init(
+                morpy_trace, app_dict, workbook, create=create, data_only=data_only, keep_vba=keep_vba
+            )
 
         except Exception as e:
             from lib.exceptions import MorPyException
@@ -111,8 +109,6 @@ class XlWorkbook:
         module: str = 'lib.xl'
         operation: str = 'XlWorkbook._init(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
 
         try:
             self.wb_path = morpy_fct.pathtool(workbook)["out_path"]
@@ -204,8 +200,6 @@ class XlWorkbook:
         operation: str = 'XlWorkbook._create_workbook(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             wb = Workbook()
             wb.save(filename=f'{self.wb_path}')
@@ -253,7 +247,6 @@ class XlWorkbook:
         operation: str = 'XlWorkbook._update_meta(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
         table_range = None
         table_sheet = None
         table_list = None
@@ -404,16 +397,12 @@ class XlWorkbook:
                         col_to_sum = int(ord(col_to[0])) - 64
     
                     # Temporarily store col_from and col_to for eventual reordering
-                    tmp_col_from = col_from
                     tmp_col_from_sum = col_from_sum
-                    tmp_col_to = col_to
                     tmp_col_to_sum = col_to_sum
     
                     # Compare columns by the enumerated values and exchange them if necessary
                     if col_from_sum > col_to_sum:
-                        col_from = tmp_col_to
                         col_from_sum = tmp_col_to_sum
-                        col_to = tmp_col_from
                         col_to_sum = tmp_col_from_sum
     
                     # 2) Extract rows
@@ -445,8 +434,8 @@ class XlWorkbook:
                         # 2) Loop through rows
                         while row_counter <= row_to:
                             # Rebuild the cell
-                            clmn = openpyxl.utils.cell.get_column_letter(col_counter)
-                            cll = f'{clmn}{row_counter}'
+                            column = openpyxl.utils.cell.get_column_letter(col_counter)
+                            cll = f'{column}{row_counter}'
     
                             # Add the cell to the dictionary
                             cl_dict.update({cll : ''})
@@ -519,7 +508,6 @@ class XlWorkbook:
         operation: str = 'XlWorkbook.save_workbook(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
         wb_obj_return = self
 
         try:
@@ -571,8 +559,6 @@ class XlWorkbook:
         operation: str = 'XlWorkbook.close_workbook(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             # Close the workbook
             wb_path = self.wb_path
@@ -622,8 +608,6 @@ class XlWorkbook:
         operation: str = 'XlWorkbook.activate_worksheet(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             # Check if the requested sheet exists in the workbook
             if worksheet in self.wb_sheets:
@@ -645,7 +629,7 @@ class XlWorkbook:
             else:
                 # The requested sheet was not found.
                 raise ValueError(
-                    f'{app_dict["loc"]["morpy"]["activate_worksheet_nfnd"]}\n'
+                    f'{app_dict["loc"]["morpy"]["activate_worksheet_not_found"]}\n'
                     f'{app_dict["loc"]["morpy"]["activate_worksheet_file"]}: {self.wb_path}\n'
                     f'{app_dict["loc"]["morpy"]["activate_worksheet_req_sht"]}: {worksheet}'
                 )
@@ -749,9 +733,6 @@ class XlWorkbook:
         operation: str = 'XlWorkbook.read_cells(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-        cl_dict = {}
-
         try:
             # Update metadata of the workbook instance
             self._update_meta(morpy_trace, app_dict)
@@ -775,10 +756,10 @@ class XlWorkbook:
                 else:
                     # Could not find the requested worksheet.
                     raise ValueError(
-                        f'{app_dict["loc"]["morpy"]["read_cells_nfnd"]}\n'
+                        f'{app_dict["loc"]["morpy"]["read_cells_not_found"]}\n'
                         f'{app_dict["loc"]["morpy"]["read_cells_file"]}: {self.wb_path}\n'
                         f'{app_dict["loc"]["morpy"]["read_cells_sht"]}: {worksheet}\n'
-                        f'{app_dict["loc"]["morpy"]["read_cells_av_shts"]}: {self.wb_sheets}'
+                        f'{app_dict["loc"]["morpy"]["read_cells_av_sheets"]}: {self.wb_sheets}'
                     )
 
             if not cell_range:
@@ -791,6 +772,7 @@ class XlWorkbook:
             cl_dict = self._cell_ref_autoformat(morpy_trace, app_dict, cell_range)["cl_dict"]
 
             # Loop through all the cells and read them
+            # TODO implement gui here, total progress is len(cl_dict.keys())
             for cl in cl_dict:
                 cell_obj = worksheet_obj[cl]
 
@@ -980,7 +962,6 @@ class XlWorkbook:
         operation: str = 'write_ranges(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
         wb_obj_return = self
 
         try:
@@ -1102,9 +1083,6 @@ class XlWorkbook:
         operation: str = 'XlWorkbook.get_table_attributes(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-        table_attr = None
-
         try:
             # Update metadata of the workbook instance
             self._update_meta(morpy_trace, app_dict, minimal=True)
@@ -1119,7 +1097,7 @@ class XlWorkbook:
 
             # Retrieved all values of an MS Excel table.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["get_table_attributes_retr"]}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["get_table_attributes_retrieved"]}\n'
                     f'{app_dict["loc"]["morpy"]["get_table_attributes_path"]}: {self.wb_path}\n'
                     f'{app_dict["loc"]["morpy"]["get_table_attributes_sheet"]}: {worksheet}\n'
                     f'{app_dict["loc"]["morpy"]["get_table_attributes_table"]}: {table}')
@@ -1153,18 +1131,17 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
     :return: dict
         morpy_trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
-        table_attr: List containing all attributes of the OpenPyXL databook.
+        table_attr: List containing all attributes of the OpenPyXL data book.
 
     :example:
-        openpyxl_table_data_dict(morpy_trace, app_dict, databook_obj, "Table1")
+        openpyxl_table_data_dict(morpy_trace, app_dict, data_book_obj, "Table1")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.xl'
-    operation: str = 'table_opyxl_datb_dict(~)'
+    operation: str = 'openpyxl_table_data_dict(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check: bool = False
     table_data = f'{table_data}'
     table_item = ""
     table_attr = []
@@ -1177,7 +1154,7 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
         table_data = common.regex_replace(morpy_trace, app_dict, table_data, r'\s', '')
 
         # 2. Split the data-book into a list of distinct table attributes
-        delimiter = '<openpyxl.worksheet.table.Tableobject>'
+        delimiter = '<openpyxl.worksheet.table.Table object>'
         table_data_list = common.regex_split(morpy_trace, app_dict, table_data, delimiter)
 
         # 3. Iterate through the list in search for the table and delete
@@ -1196,7 +1173,7 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
 
         # 5. Add the first delimiter and reinsert some spaces for compatibility
         # with OpenPyXL
-        table_item = f'<openpyxl.worksheet.table.Tableobject>{table_item}'
+        table_item = f'<openpyxl.worksheet.table.Table object>{table_item}'
         table_item = common.regex_replace(morpy_trace, app_dict, table_item, 'object>', ' object>')
 
         # 6. Split the string into different sections

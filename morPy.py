@@ -52,25 +52,25 @@ class FileDirSelectTk:
 
             icon_data = {
                 "company_logo1" : {
-                    "position" : 1,                       # placement, order (lowest first)
-                    "img_path" : "path/to/image.png",     # image file path
+                    "position" : 1,                                         # placement, order (lowest first)
+                    "img_path" : app_dict["morpy"]["conf"]["app_icon"],     # image file path
                 }
             }
             selection_config = {
                 "file_select" : {
                     "is_dir" : False,
                     "file_types" : (('Textfile','*.txt'), ('All Files','*.*')),
-                    "default_path" : "prefilled/default/path"
+                    "default_path" : app_dict["morpy"]["conf"]["data_path"]
                 },
                 "dir_select" : {
                     "is_dir" : True,
-                    "default_path" : "prefilled/default/path"
+                    "default_path" : app_dict["morpy"]["conf"]["data_path"]
                 }
             }
-            gui = morPy.FileDirSelectTk(morpy_trace, app_dict, rows_data, title="Select...")
+            gui = morPy.FileDirSelectTk(morpy_trace, app_dict, selection_config, title="Select...")
             results = gui.run(morpy_trace, app_dict)["selections"]
             file = results["file_selected"]
-            dir = results["dir_selected"]
+            directory = results["dir_selected"]
         """
         import lib.ui_tk
         # Instantiate the underlying implementation.
@@ -1285,7 +1285,7 @@ def pathtool(in_path):
     import lib.fct
     return lib.fct.pathtool(in_path)
 
-def perfinfo():
+def perf_info():
     r"""
     This function returns performance metrics.
 
@@ -1297,14 +1297,14 @@ def perfinfo():
         cpu_freq_min - Return the minimum CPU frequency expressed in Mhz.
         cpu_freq_comb - Return the combined CPU frequency expressed in Mhz.
         cpu_perc_comb - Returns the current combined system-wide CPU utilization as a percentage.
-        cpu_perc_indv - Returns the current individual system-wide CPU utilization as a percentage.
-        mem_total_MB - Total physical memory in MB (exclusive swap).
-        mem_available_MB - Memory in MB that can be given instantly to processes without the system going into swap.
-        mem_used_MB - Memory used in MB.
-        mem_free_MB - Memory not being used at all (zeroed) that is readily available in MB.
+        cpu_percent_individual - Returns the current individual system-wide CPU utilization as a percentage.
+        mem_total_mb - Total physical memory in MB (exclusive swap).
+        mem_available_mb - Memory in MB that can be given instantly to processes without the system going into swap.
+        mem_used_mb - Memory used in MB.
+        mem_free_mb - Memory not being used at all (zeroed) that is readily available in MB.
     """
     import lib.fct
-    return lib.fct.perfinfo()
+    return lib.fct.perf_info()
 
 def process_q(morpy_trace: dict, app_dict: dict, task: Callable | list | tuple=None, priority: int=100,
               autocorrect: bool=True):
@@ -1521,7 +1521,7 @@ def sysinfo():
         logical_cpus - Amount of processes, that could run in parallel.
         sys_memory_bytes - Physical system memory in bytes
         username - Returns the username.
-        homedir - Returns the home directory.
+        home_dir - Returns the home directory.
         hostname - Returns the host name.
     """
     import lib.fct
@@ -1576,7 +1576,7 @@ def tracing(module, operation, morpy_trace):
     :param operation: Name of the operation executed (i.e. 'tracing(~)')
     :param morpy_trace: operation credentials and tracing
 
-    :return morpy_trace_passdown: operation credentials and tracing
+    :return morpy_trace_pass_down: operation credentials and tracing
     """
     import lib.fct
     return lib.fct.tracing(module, operation, morpy_trace)

@@ -41,32 +41,55 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
     morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
     check: bool = False
+
+    # Satisfying the linter
+    if not app_init_return:
+        del app_init_return
+
+    # Handshake dictionary for app.exit
     app_run_return = {}
 
     try:
         # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
-        # from demo.ProgressTrackerTk import run as demo_ProgressTrackerTk
-        # demo_ProgressTrackerTk(morpy_trace, app_dict)
+        from demo.ProgressTrackerTk import run as demo_ProgressTrackerTk
+        demo_ProgressTrackerTk(morpy_trace, app_dict)
 
-        from morPy import process_q
-        from functools import partial
-        import time
+        # from morPy import process_q
+        # from functools import partial
+        # import time
+        #
+        # for i in range(1, 40):
+        #     task = partial(arbitrary_task, morpy_trace, app_dict, stages=3, total_rep=10 ** 5)
+        #     process_q(morpy_trace, app_dict, task=task, priority=20)
+        #
+        #     task = [arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5}]
+        #     process_q(morpy_trace, app_dict, task=task, priority=34)
+        #
+        #     task = (arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
+        #     process_q(morpy_trace, app_dict, task=task, priority=56)
+        #
+        #     # task = [demo_ProgressTrackerTk, morpy_trace, app_dict]
+        #     # process_q(morpy_trace, app_dict, task=task, priority=56)
 
-        for i in range(1, 40):
-            task = partial(arbitrary_task, morpy_trace, app_dict, stages=3, total_rep=10 ** 5)
-            process_q(morpy_trace, app_dict, task=task, priority=20)
-
-            task = [arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5}]
-            process_q(morpy_trace, app_dict, task=task, priority=34)
-
-            task = (arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
-            process_q(morpy_trace, app_dict, task=task, priority=56)
-
-            # task = [demo_ProgressTrackerTk, morpy_trace, app_dict]
-            # process_q(morpy_trace, app_dict, task=task, priority=56)
+        # from morPy import FileDirSelectTk
+        # selection_config = {
+        #     "file_select" : {
+        #         "is_dir" : False,
+        #         "file_types" : (('Textfile','*.txt'), ('All Files','*.*')),
+        #         "default_path" : app_dict["morpy"]["conf"]["data_path"]
+        #     },
+        #     "dir_select" : {
+        #         "is_dir" : True,
+        #         "default_path" : app_dict["morpy"]["conf"]["data_path"]
+        #     }
+        # }
+        # gui = FileDirSelectTk(morpy_trace, app_dict, selection_config, title="Select...")
+        # results = gui.run(morpy_trace, app_dict)["selections"]
+        # file = results["file_select"]
+        # directory = results["dir_select"]
+        # print(f'{file=}\n{directory=}')
 
         check: bool = True
-        time.sleep(2)
 
     except Exception as e:
         raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")

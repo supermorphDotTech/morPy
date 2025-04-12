@@ -39,8 +39,6 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
     # OPTION enable/disable logging
     # ??? morpy_trace["log_enable"] = False
 
-    check: bool = False
-
     try:
         """
         >>> MY CODE
@@ -124,8 +122,6 @@ class TemplateClass:
         # OPTION enable/disable logging
         # ??? morpy_trace["log_enable"] = False
 
-        check: bool = False
-
         try:
             """
             >>> MY INSTANCE INITIALIZATION
@@ -166,8 +162,6 @@ class TemplateClass:
 
         # OPTION enable/disable logging
         # ??? morpy_trace["log_enable"] = False
-
-        check: bool = False
 
         try:
             """

@@ -6,19 +6,16 @@ Author:     Bastian Neuwirth
 Descr.:     This module delivers functions to debug, warn and log any operations
             executed within the morPy framework. At the same time it processes
             all kinds of messaging, whether it be via console or ui.
-
-TODO Set the db lock during init and release it on exit
 """
 
 import lib.fct as morpy_fct
 from lib.common import textfile_write
 from lib.decorators import metrics
+from lib.mp import is_udict
 
 import sys
 import time
-
-from lib.mp import is_udict
-
+from sqlite3 import Connection as sqlite3_Connection
 
 @metrics
 def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbose: bool) -> None:
@@ -500,7 +497,7 @@ def log_db(morpy_trace: dict, app_dict: dict, log_dict: dict) -> None:
     # Insert the actual log into the logging database table.
     log_db_row_insert(morpy_trace, app_dict, db_path, table_name, log_dict)
 
-def log_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> object | None:
+def log_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> sqlite3_Connection:
     r"""
     This function connects to a SQLite database. The database will be
     created if it does not exist already.

@@ -81,7 +81,7 @@ def metrics(func):
                 # (only if we found both morpy_trace and app_dict)
                 if isinstance(morpy_trace, dict) and isinstance(app_dict, (UltraDict, dict)):
                     enable_metrics = app_dict.get("lib.conf", {}).get("metrics_enable", False)
-                    perf_mode = app_dict.get("lib.conf", {}).get("metrics_perfmode", False)
+                    perf_mode = app_dict.get("lib.conf", {}).get("metrics_perf_mode", False)
 
             except (IndexError, TypeError):
                 # If we still don't have them, leave them as None

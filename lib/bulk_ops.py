@@ -46,7 +46,7 @@ def find_replace_save_as(morpy_trace: dict, app_dict: dict, search_obj, replace_
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     check: bool = False
-    search_obj = f'{search_obj}'
+    search_obj: str = f'{search_obj}'
 
     try:
         # Operation start.
@@ -81,7 +81,7 @@ def find_replace_save_as(morpy_trace: dict, app_dict: dict, search_obj, replace_
                         f'replace_tpl[0]: {replace_tpl[0]}')
             else:
                 # Search line by line
-                for line in search_obj.readlines():
+                for line in search_obj.splitlines():
                     # Loop through all replace tuples.
                     for tpl in replace_tpl:
                         # Replace the actual findings

@@ -39,8 +39,8 @@ def main(main_trace, main_dict, main_orch):
 def finalize_morpy(final_trace, final_dict):
     r""" Finalize morPy runtime """
 
-    from lib.exit import exit
-    exit(final_trace, final_dict)
+    from lib.exit import end_runtime
+    end_runtime(final_trace, final_dict)
 
     # Quit the program
     sys.exit()

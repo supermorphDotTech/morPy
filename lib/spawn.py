@@ -6,7 +6,7 @@ Author:     Bastian Neuwirth
 Descr.:     Enables a spawning child process to unpickle callables.
 """
 
-from lib.mp import reattach_ultradict_refs, join_or_task
+from lib.mp import reattach_ultradict_refs, join_or_task, child_exit_routine
 
 class SpawnWrapper:
     r"""
@@ -61,16 +61,7 @@ class SpawnWrapper:
         # Wait until all child processes are joined or take on a task.
         join_or_task(self.trace, self.app_dict, reset_trace=True, reset_w_prefix=f'{self.module_name}.{self.func_name}')
 
-        # Clean up after self - tidy up process references
-        with self.app_dict["morpy"]["proc_available"].lock:
-            with self.app_dict["morpy"]["proc_busy"].lock:
-                # Remove from busy processes
-                self.app_dict["morpy"]["proc_busy"].pop(self.trace['process_id'])
-                # Add to processes available IDs
-                self.app_dict["morpy"]["proc_available"][self.trace['process_id']] = None
-
-        with self.app_dict["morpy"]["proc_waiting"].lock:
-            self.app_dict["morpy"]["proc_waiting"].pop(self.pid, None)
+        child_exit_routine(self.trace, self.app_dict)
 
     def __repr__(self):
         return (f"<TaskWrapper {self.module_name}.{self.func_name} "

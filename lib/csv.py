@@ -10,7 +10,6 @@ import lib.fct as morpy_fct
 import lib.xl as xl
 from lib.decorators import metrics, log
 from lib.common import ProgressTracker
-from lib.ui_tk import ProgressTrackerTk
 
 import sys
 from openpyxl.utils.cell import get_column_letter
@@ -71,20 +70,20 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
     operation: str = 'csv_read(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check: bool = False
-    csv_copy_dict: dict = {}
-    csv_dict: dict = {}
-    header: tuple = ()
-    data_table: str = ''
-    columns: int = 0
-    header_row: int = -1
-    data_rows: int = 0 # Sum of data rows in a data table
-    r_data: int = 0 # Row counter for file processing
-    delim_check: bool = False # True, if delimiter identified
-    header_cnt_delimiters: int = -1 # Number of determined columns in header
-    data_subdict_nr: int = 0
-    data_cnt_row: int = 0 # Counter for printing the data row sub-dictionary
-    csv_read_progress = None
+    csv_copy_dict: dict         = {}
+    csv_dict: dict              = {}
+    header: tuple               = ()
+    data_table: str             = ''
+    columns: int                = 0
+    header_row: int             = -1
+    data_rows: int              = 0         # Sum of data rows in a data table
+    r_data: int                 = 0         # Row counter for file processing
+    delimiter_identified: bool  = False     # True, if delimiter was successfully identified
+    header_cnt_delimiters: int  = -1        # Number of determined columns in header
+    data_subdict_nr: int        = 0
+    data_cnt_row: int           = 0         # Counter for printing the data row sub-dictionary
+    csv_read_progress           = None
+    gui_msg_row: str            = ''
 
     try:
         # Started processing CSV-file.
@@ -155,7 +154,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
                             if header_cnt_delimiters == data_cnt_delimiters:
                                 # Check, if new data table
                                 if data_row == header_row + 1:
-                                    delim_check: bool = True
+                                    delimiter_identified: bool = True
                                     data_subdict_nr += 1
                                     data_table = f'DATA{data_subdict_nr}'
                                     csv_dict[f'{data_table}'] = {}
@@ -182,7 +181,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
                         header = ()
 
             # Process CSV into dictionary
-            if delim_check:
+            if delimiter_identified:
                 # CSV file processed. Dictionary contains ## rows.
                 log(morpy_trace, app_dict, "info",
                 lambda: f'{app_dict["loc"]["morpy"]["csv_read_done"]}: {data_rows}')
@@ -317,7 +316,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         log(morpy_trace, app_dict, "info",
             lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_start"]}\n'
                     f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_path"]}: {xl_path}\n'
-                    f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
+                    f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_overwrite"]}: {overwrite}')
 
         # Log the progress
         if log_progress:
@@ -334,10 +333,10 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
                         lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_fail"]}')
 
             # Instantiate progress logging
-            progress = ProgressTracker(morpy_trace, app_dict,
-                                          description=f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_descr"]}',
-                                          total=total_prog_count,
-                                          ticks=progress_ticks)
+            progress = ProgressTracker(
+                morpy_trace, app_dict, description=f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_prog_descr"]}',
+                total=total_prog_count, ticks=progress_ticks
+            )
 
         # Check target file path
         if xl_path:
@@ -394,19 +393,15 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
                     worksheet=worksheet,
                     cell_range=header_range,
                     cell_writes=cell_writes_for_header,
-                    fill_range=False,  # no re-cycling of style/data in the same row
-                    style_default=False,  # keep default or user-specified style
-                    save_workbook=False,  # we'll do a final save after everything
+                    fill_range=False,                       # no re-cycling of style/data in the same row
+                    style_default=False,                    # keep default or user-specified style
+                    save_workbook=False,                    # we'll do a final save after everything
                     close_workbook=False,
                 )
 
                 row_index += 1  # move to the next row to start writing data
 
                 # 2) Write all data rows
-                # Each row is a dictionary keyed by the column header
-                # E.g. { 'Name': 'Alice', 'Age': '42', ... }
-                data_count = data_block_val.get("rows", 0)
-
                 # Convert string keys to int, sort them if needed
                 # The block might have items like "1", "2", ... representing row1, row2...
                 # We'll gather them in sorted order
@@ -466,16 +461,16 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         if xl_exists and overwrite:
             # MS Excel file exists. Overwritten.
             log(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_xl_ovwr"]}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_xl_overwrite"]}\n'
                         f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_path"]}: {xl_path}\n'
-                        f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
+                        f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_overwrite"]}: {overwrite}')
 
         elif xl_exists and not overwrite:
             # MS Excel file exists. Operation skipped.
             log(morpy_trace, app_dict, "debug",
-                lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_xl_novwr"]}\n'
+                lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_xl_not_overwrite"]}\n'
                         f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_path"]}: {xl_path}'
-                        f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_ovwr"]}: {overwrite}')
+                        f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_overwrite"]}: {overwrite}')
 
         if not xl_path:
             # Missing path to MS Excel file. Operation skipped.
@@ -486,7 +481,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         if not xl_valid:
             # Invalid path to MS Excel file. Operation skipped.
             log(morpy_trace, app_dict, "warning",
-            lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_inval_xl"]}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_invalid_xl"]}\n'
                     f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_path"]}: {xl_path}')
 
         elif not csv_dict:

@@ -87,7 +87,7 @@ def hashify(string: str) -> str:
 
     :param string: The input string to hash.
 
-    :return str: A SHA-256 hash of the string as a hexadecimal string.
+    :return str: SHA-256 hash of the string as a hexadecimal string.
     """
     return hashlib.sha256(string.encode('utf-8')).hexdigest()
 
@@ -122,7 +122,7 @@ def sysinfo() -> dict:
         logical_cpus - Amount of processes, that could run in parallel.
         sys_memory_bytes - Physical system memory in bytes
         username - Returns the username.
-        homedir - Returns the home directory.
+        home_dir - Returns the home directory.
         hostname - Returns the host name.
     """
 
@@ -133,11 +133,11 @@ def sysinfo() -> dict:
     version = platform.uname().version
     arch = platform.uname().machine
     processor = platform.uname().processor
-    logical_cpus = perfinfo()["cpu_count_log"]
+    logical_cpus = perf_info()["cpu_count_log"]
     sys_memory_bytes = psutil.virtual_memory().total
 
     username = getpass.getuser()
-    homedir = os.path.expanduser("~")
+    home_dir = os.path.expanduser("~")
     hostname = socket.gethostname()
 
     # Try to get main monitor info
@@ -147,7 +147,7 @@ def sysinfo() -> dict:
         try:
             # For Windows 8.1 or later
             ctypes.windll.shcore.SetProcessDpiAwareness(1)  # or use 2 for per-monitor DPI awareness
-        except Exception:
+        except AttributeError | OSError:
             # Fallback for older systems or if the call fails.
             ctypes.windll.user32.SetProcessDPIAware()
         # Get primary monitor resolution using Windows API
@@ -155,7 +155,7 @@ def sysinfo() -> dict:
         res_width = user32.GetSystemMetrics(0)
         res_height = user32.GetSystemMetrics(1)
     # Fallback to tkinter, if ctypes is not supported. May not return info of main monitor.
-    except Exception:
+    except AttributeError | OSError | ImportError:
         # Fallback: use tkinter to get the resolution
         from tkinter import Tk
         root = Tk()
@@ -172,7 +172,7 @@ def sysinfo() -> dict:
         'logical_cpus' : logical_cpus,
         'sys_memory_bytes' : sys_memory_bytes,
         'username' : username,
-        'homedir' : homedir,
+        'home_dir' : home_dir,
         'hostname' : hostname,
         'resolution_height' : res_height,
         'resolution_width' : res_width,
@@ -292,7 +292,7 @@ def path_join(path_parts, file_extension):
 
     return path_obj
 
-def perfinfo() -> dict:
+def perf_info() -> dict:
     r"""
     This function returns hardware stats relevant for performance.
 
@@ -304,11 +304,11 @@ def perfinfo() -> dict:
         cpu_freq_min - Return the minimum CPU frequency expressed in Mhz.
         cpu_freq_comb - Return the combined CPU frequency expressed in Mhz.
         cpu_perc_comb - Returns the current combined system-wide CPU utilization as a percentage.
-        cpu_perc_indv - Returns the current individual system-wide CPU utilization as a percentage.
-        mem_total_MB - Total physical memory in MB (exclusive swap).
-        mem_available_MB - Memory in MB that can be given instantly to processes without the system going into swap.
-        mem_used_MB - Memory used in MB.
-        mem_free_MB - Memory not being used at all (zeroed) that is readily available in MB.
+        cpu_percent_individual - Returns the current individual system-wide CPU utilization as a percentage.
+        mem_total_mb - Total physical memory in MB (exclusive swap).
+        mem_available_mb - Memory in MB that can be given instantly to processes without the system going into swap.
+        mem_used_mb - Memory used in MB.
+        mem_free_mb - Memory not being used at all (zeroed) that is readily available in MB.
     """
 
     import psutil
@@ -329,15 +329,15 @@ def perfinfo() -> dict:
 
     # CPU percentages:
     # Use a small interval so psutil measures CPU usage instead of returning a cached value.
-    cpu_percent_list = psutil.cpu_percent(interval=0.1, percpu=True)
-    cpu_perc_indv    = cpu_percent_list
-    cpu_perc_comb    = sum(cpu_percent_list) / len(cpu_percent_list) if cpu_percent_list else 0.0
+    cpu_percent_list        = psutil.cpu_percent(interval=0.1, percpu=True)
+    cpu_percent_individual  = cpu_percent_list
+    cpu_perc_comb           = sum(cpu_percent_list) / len(cpu_percent_list) if cpu_percent_list else 0.0
 
     # Memory info in MB
-    mem_total_MB    = psutil.virtual_memory().total / 1024**2
-    mem_available_MB= psutil.virtual_memory().available / 1024**2
-    mem_used_MB     = psutil.virtual_memory().used / 1024**2
-    mem_free_MB     = psutil.virtual_memory().free / 1024**2
+    mem_total_mb    = psutil.virtual_memory().total / 1024**2
+    mem_available_mb= psutil.virtual_memory().available / 1024**2
+    mem_used_mb     = psutil.virtual_memory().used / 1024**2
+    mem_free_mb     = psutil.virtual_memory().free / 1024**2
 
     return{
         'boot_time' : boot_time,
@@ -347,14 +347,14 @@ def perfinfo() -> dict:
         'cpu_freq_min' : cpu_freq_min,
         'cpu_freq_comb' : cpu_freq_comb,
         'cpu_perc_comb' : cpu_perc_comb,
-        'cpu_perc_indv' : cpu_perc_indv,
-        'mem_total_MB' : mem_total_MB,
-        'mem_available_MB' : mem_available_MB,
-        'mem_used_MB' : mem_used_MB,
-        'mem_free_MB' : mem_free_MB,
+        'cpu_percent_individual' : cpu_percent_individual,
+        'mem_total_mb' : mem_total_mb,
+        'mem_available_mb' : mem_available_mb,
+        'mem_used_mb' : mem_used_mb,
+        'mem_free_mb' : mem_free_mb,
     }
 
-def app_dict_to_string(app_dict, depth: int=0) -> str:
+def app_dict_to_string(app_dict, depth: int=0) -> str | None:
     r"""
     This function creates a string for the entire app_dict. May exceed memory.
 
@@ -370,9 +370,6 @@ def app_dict_to_string(app_dict, depth: int=0) -> str:
     """
 
     if isinstance(app_dict, dict):
-
-        # Define the priority order for level-1 nested dictionaries
-        app_dict_order = ["conf", "sys", "run", "morpy", "loc"]
 
         lines = []
         indent = 4 * " " * depth  # 4 spaces per depth level
@@ -414,28 +411,28 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: 
     :param reset_w_prefix: If reset is True, a custom preset can be set in order to retain
         a customized trace.
 
-    :return morpy_trace_passdown: operation credentials and tracing
+    :return morpy_trace_pass_down: operation credentials and tracing
     """
 
     # Deepcopy the morpy_trace dictionary. Any change in either dictionary is not reflected
     # in the other one. This is important to pass down a functions trace effectively.
     if clone:
         import copy
-        morpy_trace_passdown = copy.deepcopy(morpy_trace)
+        morpy_trace_pass_down = copy.deepcopy(morpy_trace)
     else:
-        morpy_trace_passdown = morpy_trace
+        morpy_trace_pass_down = morpy_trace
 
     if process_id:
-        morpy_trace_passdown["process_id"] = process_id
+        morpy_trace_pass_down["process_id"] = process_id
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    morpy_trace_passdown["module"] = f'{module}'
-    morpy_trace_passdown["operation"] = f'{operation}'
+    morpy_trace_pass_down["module"] = f'{module}'
+    morpy_trace_pass_down["operation"] = f'{operation}'
 
     if reset:
-        morpy_trace_passdown["tracing"] = \
+        morpy_trace_pass_down["tracing"] = \
             f'{reset_w_prefix} > {module}.{operation}' if reset_w_prefix else f'{module}.{operation}'
     else:
-        morpy_trace_passdown["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
+        morpy_trace_pass_down["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
 
-    return morpy_trace_passdown
+    return morpy_trace_pass_down

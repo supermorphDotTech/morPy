@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import ttk
 from tkinter import TclError
 from PIL import Image, ImageTk
+from queue import Empty
 
 class FileDirSelectTk:
     r"""
@@ -62,27 +63,21 @@ class FileDirSelectTk:
         :param app_dict: morPy global dictionary containing app configurations.
         :param rows_data: Dictionary defining the selection rows.
             Expected structure:
-                {
-                    "selection_name" : {
-                        "is_dir" : True | False,  # True for directory selection, False for file selection.
-                        "file_types" : (('PDF','*.pdf'), ('Textfile','*.txt'), ('All Files','*.*')),  # For file dialogs.
-                        "image_path" : "path/to/image.png",  # Optional custom image.
-                        "image_size" : (width, height),  # Optional; defaults to (48, 48) if not provided.
-                        "default_path" : "prefilled/default/path"  # Optional prefill for the input.
-                    },
-                    ...
-                }
+                {"selection_name" : {
+                    "is_dir" : True | False,  # True for directory selection, False for file selection.
+                    "file_types" : (('PDF','*.pdf'), ('Textfile','*.txt'), ('All Files','*.*')),  # For file dialogs.
+                    "image_path" : "path/to/image.png",  # Optional custom image.
+                    "image_size" : (width, height),  # Optional; defaults to (48, 48) if not provided.
+                    "default_path" : "prefilled/default/path"  # Optional prefill for the input.},
+                    ...}
         :param title: Title of the tkinter window. Defaults to morPy localization if not provided.
         :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
             Expected structure:
-            {
-                "icon_name" : {
+                {"icon_name" : {
                     "position" : 1,         # placement, order (lowest first)
                     "img_path" : "path/to/image.png",     # image file path
-                    "icon_size" : (width, height),        # (optional) size for the icon
-                },
-                ...
-            }
+                    "icon_size" : (width, height),        # (optional) size for the icon},
+                    ...}
 
         :return: dict
             morpy_trace: Operation credentials and tracing
@@ -95,27 +90,25 @@ class FileDirSelectTk:
 
             icon_data = {
                 "company_logo1" : {
-                    "position" : 1,                       # placement, order (lowest first)
-                    "img_path" : "path/to/image.png",     # image file path
+                    "position" : 1,                                         # placement, order (lowest first)
+                    "img_path" : app_dict["morpy"]["conf"]["app_icon"],     # image file path
                 }
             }
-
             selection_config = {
                 "file_select" : {
                     "is_dir" : False,
                     "file_types" : (('Textfile','*.txt'), ('All Files','*.*')),
-                    "default_path" : "prefilled/default/path"
+                    "default_path" : app_dict["morpy"]["conf"]["data_path"]
                 },
                 "dir_select" : {
                     "is_dir" : True,
-                    "default_path" : "prefilled/default/path"
+                    "default_path" : app_dict["morpy"]["conf"]["data_path"]
                 }
             }
-
-            gui = morPy.FileDirSelectTk(morpy_trace, app_dict, rows_data, title="Select...")
+            gui = morPy.FileDirSelectTk(morpy_trace, app_dict, selection_config, title="Select...")
             results = gui.run(morpy_trace, app_dict)["selections"]
             file = results["file_selected"]
-            dir = results["dir_selected"]
+            directory = results["dir_selected"]
         """
 
         module: str = 'ui_tk'
@@ -129,10 +122,10 @@ class FileDirSelectTk:
             # TODO port into os-class instead of hardcoding and make sure that each spawn will run this.
             try:
                 ctypes.windll.shcore.SetProcessDpiAwareness(1)
-            except Exception:
+            except AttributeError | OSError:
                 try:
                     ctypes.windll.user32.SetProcessDPIAware()
-                except Exception:
+                except AttributeError | OSError:
                     pass
 
             self.rows_data = rows_data
@@ -220,10 +213,7 @@ class FileDirSelectTk:
             if self.icon_data:
                 icon_frame = tk.Frame(self.root)
                 icon_frame.pack(fill='x', anchor='e', padx=20, pady=(20, 10))
-                if hasattr(Image, "Resampling"):
-                    resample_filter = Image.Resampling.LANCZOS
-                else:
-                    resample_filter = Image.ANTIALIAS
+                resample_filter = Image.Resampling.LANCZOS
 
                 for icon_name, config in sorted(self.icon_data.items(),
                                                 key=lambda item: item[1].get("position", 0)):
@@ -235,14 +225,15 @@ class FileDirSelectTk:
                     except Exception as e:
                         raise RuntimeError(
                             f'{app_dict["loc"]["morpy"]["FileDirSelectTk_img_fail"]}\n'
-                            f'Icon {icon_name}: {img_path}'
+                            f'Icon {icon_name}: {img_path}\n{e}'
                         )
 
                     img = img.resize(icon_size, resample_filter)
                     photo = ImageTk.PhotoImage(img)
                     self._photos[icon_name] = photo
-                    lbl = tk.Label(icon_frame, image=photo)
-                    lbl.pack(side=tk.RIGHT, padx=5)
+                    # ImageTk.PhotoImage instances work perfectly with Tkinter widgets. Lint ignore.
+                    label = tk.Label(icon_frame, image=photo)  # type: ignore
+                    label.pack(side=tk.RIGHT, padx=5)
 
             # Create a frame to contain all selection rows.
             rows_container = tk.Frame(self.root)
@@ -251,6 +242,9 @@ class FileDirSelectTk:
             # For each selection row, create a container frame.
             self.row_widgets = {}  # To store per-row widgets.
             for row_name, config in self.rows_data.items():
+                # Prefill return dictionary in case of immediate exit
+                self.selections[row_name] = None
+
                 # Container for a single row (including its optional description).
                 row_container = tk.Frame(rows_container)
                 row_container.pack(fill='x', pady=10)
@@ -291,24 +285,32 @@ class FileDirSelectTk:
                     raise RuntimeError(
                         f'{app_dict["loc"]["morpy"]["FileDirSelectTk_img_fail"]}\n'
                         f'{app_dict["loc"]["morpy"]["FileDirSelectTk_row_name"]}: {row_name}\n'
-                        f'{app_dict["loc"]["morpy"]["FileDirSelectTk_img"]}: {custom_img}'
+                        f'{app_dict["loc"]["morpy"]["FileDirSelectTk_img"]}: {custom_img}\n{e}'
                     )
 
                 if image_size:
-                    img = img.resize(image_size, resample_filter if "resample_filter" in locals() else Image.ANTIALIAS)
+                    resample_filter = Image.Resampling.LANCZOS
+                    img = img.resize(image_size, resample_filter)
+
                 photo = ImageTk.PhotoImage(img)
                 self._photos[row_name] = photo  # Keep a reference.
 
                 # Button to trigger the selection dialog.
-                btn = tk.Button(row_frame, image=photo,
-                                command=lambda rn=row_name, cfg=config: self._on_select(morpy_trace, app_dict, rn, cfg))
-                btn.pack(side=tk.RIGHT)
-                self.row_widgets[row_name]["button"] = btn
+                # ImageTk.PhotoImage instances work perfectly with Tkinter widgets. Lint ignore.
+                button = tk.Button(
+                    row_frame,
+                    # ImageTk.PhotoImage instances work perfectly with Tkinter widgets. Lint ignore.
+                    image=photo,   # type: ignore
+                    command=lambda rn=row_name,
+                    cfg=config: self._on_select(morpy_trace, app_dict, rn, cfg)
+                )
+                button.pack(side=tk.RIGHT)
+                self.row_widgets[row_name]["button"] = button
 
             # At the bottom, add a confirmation button.
-            confirm_btn = ttk.Button(self.root, text=f'{app_dict["loc"]["morpy"]["FileDirSelectTk_confirm"]}',
+            confirm_button = ttk.Button(self.root, text=f'{app_dict["loc"]["morpy"]["FileDirSelectTk_confirm"]}',
                                      command=lambda: self._on_confirm(morpy_trace, app_dict))
-            confirm_btn.pack(pady=(10, 20))
+            confirm_button.pack(pady=(10, 20))
 
             # Update frame dimensions.
             self.root.update_idletasks()  # Process pending geometry updates
@@ -435,8 +437,6 @@ class FileDirSelectTk:
         module: str = 'ui_tk'
         operation: str = 'FileDirSelectTk._on_close(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
 
         try:
             self.root.quit()
@@ -594,23 +594,33 @@ class GridChoiceTk:
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         check: bool = False
+        default_tile_size_ok: bool = False
 
         try:
             # Try to make the process DPI-aware
             try:
                 ctypes.windll.shcore.SetProcessDpiAwareness(1)
-            except Exception:
+            except AttributeError | OSError:
                 try:
                     ctypes.windll.user32.SetProcessDPIAware()
-                except Exception:
+                except AttributeError | OSError:
                     pass
 
             self.tile_data = tile_data
             self.title = title if title else app_dict["loc"]["morpy"]["GridChoiceTk_title"]
 
             # Set default tile size
-            tile_dim = int(app_dict["morpy"]["sys"]["resolution_height"] // 8)
-            self.default_tile_size = (tile_dim, tile_dim)
+            if default_tile_size:
+                self.default_tile_size = default_tile_size
+                # Default tile size
+                if (isinstance(self.default_tile_size, tuple)
+                    and isinstance(self.default_tile_size[0], int)
+                    and isinstance(self.default_tile_size[1], int)):
+                    default_tile_size_ok = True
+
+            if not default_tile_size_ok:
+                tile_dim = int(app_dict["morpy"]["sys"]["resolution_height"] // 8)
+                self.default_tile_size = (tile_dim, tile_dim)
 
             if icon_data:
                 self.icon_data = icon_data
@@ -689,11 +699,7 @@ class GridChoiceTk:
                 icon_frame = tk.Frame(self.root)
                 icon_frame.pack(fill='x', anchor='e', padx=20, pady=(20, 10))  # extra top padding if desired
 
-                # Determine the resampling filter (same as for tiles).
-                if hasattr(Image, "Resampling"):
-                    resample_filter = Image.Resampling.LANCZOS
-                else:
-                    resample_filter = Image.ANTIALIAS
+                resample_filter = Image.Resampling.LANCZOS
 
                 # Process icons in sorted order (using the "position" value).
                 for icon_name, config in sorted(self.icon_data.items(),
@@ -707,7 +713,7 @@ class GridChoiceTk:
                         raise RuntimeError(
                             f'{app_dict["loc"]["morpy"]["GridChoiceTk_img_fail"]}\n'
                             f'{app_dict["loc"]["morpy"]["GridChoiceTk_path"]}: {img_path}\n'
-                            f'{app_dict["loc"]["morpy"]["GridChoiceTk_tile"]}: {icon_name}'
+                            f'{app_dict["loc"]["morpy"]["GridChoiceTk_tile"]}: {icon_name}\n{e}'
                         )
                     if icon_size:
                         img = img.resize(icon_size, resample_filter)
@@ -715,8 +721,9 @@ class GridChoiceTk:
                     self._photos[icon_name] = photo  # Prevent garbage collection
 
                     # Create a label to display the icon.
-                    lbl = tk.Label(icon_frame, image=photo)
-                    lbl.pack(side=tk.RIGHT, padx=5)
+                    # ImageTk.PhotoImage instances work perfectly with Tkinter widgets. Lint ignore.
+                    label = tk.Label(icon_frame, image=photo)  # type: ignore
+                    label.pack(side=tk.RIGHT, padx=5)
 
             # Create the container for the grid of tiles.
             container = tk.Frame(self.root)
@@ -733,11 +740,7 @@ class GridChoiceTk:
                 tile_frame = tk.Frame(container)
                 tile_frame.grid(row=row, column=column, padx=10, pady=10)
 
-                # Determine the appropriate resampling filter.
-                if hasattr(Image, "Resampling"):
-                    resample_filter = Image.Resampling.LANCZOS
-                else:
-                    resample_filter = Image.ANTIALIAS
+                resample_filter = Image.Resampling.LANCZOS
 
                 # Load and resize the image.
                 try:
@@ -747,7 +750,7 @@ class GridChoiceTk:
                     raise RuntimeError(
                         f'{app_dict["loc"]["morpy"]["GridChoiceTk_img_fail"]}\n'
                         f'{app_dict["loc"]["morpy"]["GridChoiceTk_path"]}: {img_path}\n'
-                        f'{app_dict["loc"]["morpy"]["GridChoiceTk_tile"]}: {tile_name}'
+                        f'{app_dict["loc"]["morpy"]["GridChoiceTk_tile"]}: {tile_name}\n{e}'
                     )
 
                 img = img.resize(tile_size, resample_filter)
@@ -755,13 +758,16 @@ class GridChoiceTk:
                 self._photos[tile_name] = photo  # Save a reference to avoid garbage collection.
 
                 # Create a button with the image.
-                btn = tk.Button(tile_frame, image=photo,
-                                command=lambda val=return_value: self._on_select(morpy_trace, app_dict, val))
-                btn.pack()
+                button = tk.Button(
+                    tile_frame,
+                    # ImageTk.PhotoImage instances work perfectly with Tkinter widgets. Lint ignore.
+                    image=photo,   # type: ignore
+                    command=lambda val=return_value: self._on_select(morpy_trace, app_dict, val))
+                button.pack()
 
                 # Create a label below the image.
-                lbl = tk.Label(tile_frame, text=text, font=("Arial", 8, "bold"))
-                lbl.pack(pady=(5, 0))
+                label = tk.Label(tile_frame, text=text, font=("Arial", 8, "bold"))
+                label.pack(pady=(5, 0))
 
                 # Update frame dimensions.
                 self.root.update_idletasks()  # Process pending geometry updates
@@ -834,8 +840,6 @@ class GridChoiceTk:
         module: str = 'ui_tk'
         operation: str = 'GridChoiceTk._on_close(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
 
         try:
             self.root.quit()
@@ -1010,10 +1014,10 @@ class ProgressTrackerTk:
             # Try to make the process DPI-aware
             try:
                 ctypes.windll.shcore.SetProcessDpiAwareness(1)
-            except Exception:
+            except AttributeError | OSError:
                 try:
                     ctypes.windll.user32.SetProcessDPIAware()
-                except Exception:
+                except AttributeError | OSError:
                     pass
 
             self.console_on = console
@@ -1025,7 +1029,7 @@ class ProgressTrackerTk:
             self.frame_title = (app_dict["loc"]["morpy"]["ProgressTrackerTk_prog"]
                                 if not frame_title else frame_title)
             self.frame_width = frame_width
-            self.headline_total_nocol = (f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_overall"]}'
+            self.headline_total_no_col = (f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_overall"]}'
                              if not headline_total else f'{headline_total}')
             self.detail_description_on = detail_description_on
             self.headline_font_size = headline_font_size
@@ -1074,12 +1078,12 @@ class ProgressTrackerTk:
 
                 # Construct the overall progress tracker
                 self.overall_progress_tracker = common.ProgressTracker(
-                    morpy_trace, app_dict, description=self.headline_total_nocol, total=self.stages, ticks=.01,
+                    morpy_trace, app_dict, description=self.headline_total_no_col, total=self.stages, ticks=.01,
                     verbose=True
                 )
 
                 # Finalize overall headline
-                self.headline_total = f'{self.headline_total_nocol}:'
+                self.headline_total = f'{self.headline_total_no_col}:'
             else:
                 self.overall_progress_on = False
 
@@ -1154,7 +1158,6 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk._create_widgets(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
         self.overall_progress_text = None
         self.stage_progress_text = None
 
@@ -1245,7 +1248,7 @@ class ProgressTrackerTk:
                 # Create a vertical Scrollbar
                 self.console_scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=self.console_output.yview)
                 self.console_scrollbar.grid(row=3, column=3, sticky="ns", padx=(0, 10), pady=5)
-                self.console_output["yscrollcommand"] = self.console_scrollbar.set
+                self.console_output["yscrollcommand"] = self.console_scrollbar.set # noqa: SPELLCHECK
             else:
                 self.console_output = None
 
@@ -1313,8 +1316,6 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk._redirect_console(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             sys.stdout = self
             sys.stderr = self
@@ -1368,8 +1369,6 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk._stop_console_redirection(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
@@ -1406,8 +1405,6 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk._main_loop(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             # Immediately exit if done/closing.
             if self.done or not self.root.winfo_exists():
@@ -1430,7 +1427,7 @@ class ProgressTrackerTk:
 
             # Only schedule the next loop if still alive
             if not self.done and self.root.winfo_exists():
-                self.root.after(self.main_loop_interval, lambda: self._main_loop(morpy_trace, app_dict))
+                self.root.after(self.main_loop_interval, self._main_loop, morpy_trace, app_dict)
 
             check: bool = True
 
@@ -1462,8 +1459,6 @@ class ProgressTrackerTk:
         module: str = 'ui_tk'
         operation: str = 'ProgressTrackerTk._update_console(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
 
         try:
             # Check, if running in main thread
@@ -1527,14 +1522,13 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk.begin_stage(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             # Prevent updates after the GUI is closed.
             if not self.done:
 
                 call_kwargs = {
                     "stage_limit" : stage_limit,
+                    "headline_stage" : headline_stage,
                     "detail_description" : detail_description,
                     "ticks" : ticks
                 }
@@ -1589,8 +1583,6 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk.begin_stage(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             # Prevent updates after the GUI is closed.
             if not self.done:
@@ -1599,23 +1591,23 @@ class ProgressTrackerTk:
                     self._real_update_progress(morpy_trace, app_dict, current=0)
 
                 # Stage headline
-                self.headline_stage_nocol = (f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_curr"]}'
+                self.headline_stage_no_col = (f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_curr"]}'
                                  if not headline_stage else f'{headline_stage}')
                 # Finalize stage headline
-                self.headline_stage = f'{self.headline_stage_nocol}:'
+                self.headline_stage = f'{self.headline_stage_no_col}:'
 
                 self.detail_description = detail_description
                 self.stage_limit = stage_limit
 
                 # Construct the stage progress tracker
                 self.stage_progress_tracker = common.ProgressTracker(
-                    morpy_trace, app_dict, description=self.headline_stage_nocol, total=self.stage_limit,
+                    morpy_trace, app_dict, description=self.headline_stage_no_col, total=self.stage_limit,
                     ticks=ticks, verbose=True
                 )
 
                 # Send text updates to the queue
                 call_kwargs = {
-                    "headline_stage" : self.headline_stage_nocol,
+                    "headline_stage" : self.headline_stage_no_col,
                     "detail_description" : self.detail_description,
                 }
                 self.ui_calls.put(("update_text", call_kwargs))
@@ -1653,8 +1645,6 @@ class ProgressTrackerTk:
         module: str = 'ui_tk'
         operation: str = 'ProgressTrackerTk.end_stage(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
 
         try:
             self.update_progress(morpy_trace, app_dict, current=self.stage_limit)
@@ -1721,8 +1711,6 @@ class ProgressTrackerTk:
         module: str = 'ui_tk'
         operation: str = 'ProgressTrackerTk.update_progress(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
 
         try:
             # Prevent updates after the GUI is closed.
@@ -1905,8 +1893,6 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk.update_text(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             # Prevent updates after the GUI is closed.
             if not self.done:
@@ -1951,8 +1937,7 @@ class ProgressTrackerTk:
             gui.update_text(morpy_trace, app_dict,
                 headline_total="Processing Outer Loop 3",
                 headline_stage="Processing File 5",
-                detail_description="Now copying data...",
-            )
+                detail_description="Now copying data...")
         """
 
         module: str = 'ui_tk'
@@ -1970,10 +1955,10 @@ class ProgressTrackerTk:
                 # Update overall headline
                 if headline_total is not None and self.overall_progress_on:
                     # Retain the final colon to stay consistent with constructor
-                    self.headline_total_nocol = headline_total
-                    self.headline_total = self.headline_total_nocol + ":"
+                    self.headline_total_no_col = headline_total
+                    self.headline_total = self.headline_total_no_col + ":"
                     if hasattr(self, "overall_progress_tracker"):
-                        self.overall_progress_tracker.description = self.headline_total_nocol
+                        self.overall_progress_tracker.description = self.headline_total_no_col
                     if self.total_headline_label is not None:
                         self.total_headline_label.config(text=self.headline_total)
 
@@ -1983,10 +1968,10 @@ class ProgressTrackerTk:
                 # Update stage headline
                 if headline_stage is not None:
                     # Retain the final colon to stay consistent with constructor
-                    self.headline_stage_nocol = headline_stage
-                    self.headline_stage = self.headline_stage_nocol + ":"
+                    self.headline_stage_no_col = headline_stage
+                    self.headline_stage = self.headline_stage_no_col + ":"
                     if hasattr(self, "stage_progress_tracker"):
-                        self.stage_progress_tracker.description = self.headline_stage_nocol
+                        self.stage_progress_tracker.description = self.headline_stage_no_col
                     if self.stage_headline_label is not None:
                         self.stage_headline_label.config(text=self.headline_stage)
 
@@ -2046,8 +2031,6 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk.run(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             # Start our custom loop
             self._main_loop(morpy_trace, app_dict)
@@ -2087,19 +2070,17 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk._start_work_thread(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         def _thread_wrapper():
             try:
                 # Automatically pass gui=self to the work_callable
                 self.work_callable(gui=self)
-            except Exception as e:
+            except Exception as thread_e:
                 # Exception in the worker thread.
                 log(morpy_trace, app_dict, "error",
                 lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_start_work_thread_err"]}\n'
                         f'{app_dict["loc"]["morpy"]["err_line"]}: {sys.exc_info()[-1].tb_lineno} '
                         f'{app_dict["loc"]["morpy"]["err_module"]} {module}\n'
-                        f'{type(e).__name__}: {e}')
+                        f'{type(e).__name__}: {thread_e}')
 
         try:
             self.worker_thread = threading.Thread(target=_thread_wrapper, daemon=True)
@@ -2136,8 +2117,6 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk._on_close(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
-
         try:
             # In case of aborting progress quit the program.
             if not self.done:
@@ -2156,7 +2135,7 @@ class ProgressTrackerTk:
             while not self.ui_calls.empty():
                 try:
                     self.ui_calls.get_nowait()
-                except Exception:
+                except Empty:
                     break
 
             # Clear any pending console messages.
@@ -2164,7 +2143,7 @@ class ProgressTrackerTk:
                 while not self.console_queue.empty():
                     try:
                         self.console_queue.get_nowait()
-                    except Exception:
+                    except Empty:
                         break
 
             # Restore original console if not already done
@@ -2203,7 +2182,6 @@ class ProgressTrackerTk:
         operation: str = 'ProgressTrackerTk.get_console_output(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
         console_text = ""
 
         try:
@@ -2236,7 +2214,7 @@ def check_main_thread(app_dict: dict):
         check_main_thread(app_dict)
     """
 
-    # UI must run in main thread. Currently in ###
+    # UI must run in main thread. Current thread ###
     if threading.current_thread() is not threading.main_thread():
         raise RuntimeError(
             f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_check_main"]}: {threading.current_thread()}'
@@ -2274,7 +2252,6 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
     operation: str = 'dialog_sel_file(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check: bool = False
     file_path = None
     file_selected = False
 
@@ -2304,14 +2281,14 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
         if not file_path:
             # No file was chosen by the user.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_nosel"]}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_no_sel"]}\n'
                     f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_cancel"]}')
 
         else:
             file_selected = True
             # A file was chosen by the user.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_asel"]}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_sel"]}\n'
                     f'{app_dict["loc"]["morpy"]["dialog_sel_file_path"]}: {file_path}\n'
                     f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_open"]}')
 
@@ -2359,7 +2336,6 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
     operation: str = 'dialog_sel_dir(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check: bool = False
     dir_path = None
     dir_selected = False
 
@@ -2386,13 +2362,13 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
         if not dir_path:
             # No directory was chosen by the user.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_nosel"]}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_no_sel"]}\n'
                 f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_cancel"]}')
         else:
             dir_selected = True
             # A directory was chosen by the user.
             log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_asel"]}\n'
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_sel"]}\n'
                     f'{app_dict["loc"]["morpy"]["dialog_sel_dir_path"]}: {dir_path}\n'
                     f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_open"]}')
 

@@ -118,20 +118,20 @@ def loc_morpy() -> dict:
         'decode_to_plain_text_val_fail' : 'Validation of encoding failed.',
 
         # common.py - dialog_sel_file(~)
-        'dialog_sel_file_nosel' : 'No file was chosen by the user.',
+        'dialog_sel_file_no_sel' : 'No file was chosen by the user.',
         'dialog_sel_file_choice' : 'Choice',
         'dialog_sel_file_cancel' : 'Cancel',
-        'dialog_sel_file_asel' : 'A file was chosen by the user.',
+        'dialog_sel_file_sel' : 'A file was chosen by the user.',
         'dialog_sel_file_open' : 'Open',
         'dialog_sel_file_all_files' : 'All Files',
         'dialog_sel_file_select' : 'Select a File',
         'dialog_sel_file_path' : 'Path',
 
         # common.py - dialog_sel_dir(~)
-        'dialog_sel_dir_nosel' : 'No directory was chosen by the user.',
+        'dialog_sel_dir_no_sel' : 'No directory was chosen by the user.',
         'dialog_sel_dir_choice' : 'Choice',
         'dialog_sel_dir_cancel' : 'Cancel',
-        'dialog_sel_dir_asel' : 'A directory was chosen by the user.',
+        'dialog_sel_dir_sel' : 'A directory was chosen by the user.',
         'dialog_sel_dir_open' : 'Open',
         'dialog_sel_dir_select' : 'Select a Directory',
         'dialog_sel_dir_path' : 'Path',
@@ -139,8 +139,8 @@ def loc_morpy() -> dict:
         # common.py - fso_copy_file(~)
         'fso_copy_file_source' : 'Source',
         'fso_copy_file_dest' : 'Destination',
-        'fso_copy_file_copy_ovwr' : 'A file has been copied and was overwritten.',
-        'fso_copy_file_copy_not_ovwr' : 'A file was not copied because it already exists and no overwrite permission was given.',
+        'fso_copy_file_copy_overwrite' : 'A file has been copied and was overwritten.',
+        'fso_copy_file_copy_not_overwrite' : 'A file was not copied because it already exists and no overwrite permission was given.',
         'fso_copy_file_copy' : 'A file has been copied.',
         'fso_copy_file_not_exist' : 'A file has been copied and was overwritten.',
 
@@ -241,12 +241,12 @@ def loc_morpy() -> dict:
 
         # csv.py - csv_dict_to_excel(~)
         'csv_dict_to_excel_prog_fail': 'Missing row count in csv_dict. Skipping progress logging.',
-        'csv_dict_to_excel_xl_ovwr': 'MS Excel file exists. Overwritten.',
+        'csv_dict_to_excel_xl_overwrite': 'MS Excel file exists. Overwritten.',
         'csv_dict_to_excel_path': 'File Path',
-        'csv_dict_to_excel_ovwr': 'Overwrite',
-        'csv_dict_to_excel_xl_novwr': 'MS Excel file exists. Operation skipped.',
+        'csv_dict_to_excel_overwrite': 'Overwrite',
+        'csv_dict_to_excel_xl_no_overwrite': 'MS Excel file exists. Operation skipped.',
         'csv_dict_to_excel_missing_xl': 'Missing path to MS Excel file. Operation skipped.',
-        'csv_dict_to_excel_inval_xl': 'Invalid path to MS Excel file. Operation skipped.',
+        'csv_dict_to_excel_invalid_xl': 'Invalid path to MS Excel file. Operation skipped.',
         'csv_dict_to_excel_missing_data': 'Missing data book from csv file. operation skipped.',
         'csv_dict_to_excel_data': 'csv_dict',
         'csv_dict_to_excel_start': 'Writing data to MS Excel file.',
@@ -256,7 +256,7 @@ def loc_morpy() -> dict:
         # Area: lib.exit.py
         # #################
 
-        # exit.py - _exit(~)
+        # exit.py - end_runtime(~)
         'exit_msg_done': 'App exited.',
         'exit_msg_started': 'Started',
         'exit_msg_at': 'at',
@@ -343,7 +343,7 @@ def loc_morpy() -> dict:
         'check_child_processes_term_err': 'A child process was terminated unexpectedly. Process references will be restored, but the task and data may be lost.',
         'check_child_processes_aff': 'Affected process is',
         'check_child_processes_rogues': 'At least one process still running, although considered terminated.',
-        'check_child_processes_norec': 'Recovery is not possible, trying to terminate.',
+        'check_child_processes_no_rec': 'Recovery is not possible, trying to terminate.',
         'check_child_processes_joined': 'All child processes are joined.',
         'check_child_processes_recovery': 'A shelved task was recovered from a terminated task.',
 
@@ -558,7 +558,7 @@ def loc_morpy() -> dict:
         'ProgressTrackerTk_start_work_thread_err': 'Exception in the worker thread.',
 
         # ui_tk.py - ProgressTrackerTk.check_main_thread(~)
-        'ProgressTrackerTk_check_main': 'UI must run in main thread. Currently in',
+        'ProgressTrackerTk_check_main': 'UI must run in main thread. Current thread',
 
         # ui_tk.py - ProgressTrackerTk._real_update_progress(~)
         'ProgressTrackerTk_exit_dirty': 'GUI ended ungracefully.',
@@ -573,7 +573,6 @@ def loc_morpy() -> dict:
         'XlWorkbook_wb': 'Workbook',
         'XlWorkbook_path_invalid': 'The path to the workbook is invalid.',
         'XlWorkbook_path': 'Path',
-        'XlWorkbook_inst_abort': 'Instance construction aborted.',
         'XlWorkbook_not_create': 'File does not exist and was not created.',
         'XlWorkbook_create': 'Create',
 
@@ -594,15 +593,15 @@ def loc_morpy() -> dict:
 
         # xl.py - XlWorkbook.activate_worksheet(~)
         'activate_worksheet_done': 'The worksheet was successfully activated.',
-        'activate_worksheet_nfnd': 'The requested sheet was not found.',
+        'activate_worksheet_not_found': 'The requested sheet was not found.',
         'activate_worksheet_file': 'Workbook',
         'activate_worksheet_req_sht': 'Sheet requested',
 
         # xl.py - XlWorkbook.read_cells(~)
         'read_cells_file' : 'File',
         'read_cells_sht' : 'Sheet',
-        'read_cells_nfnd' : 'Could not find the requested worksheet.',
-        'read_cells_av_shts' : 'Available Sheets',
+        'read_cells_not_found' : 'Could not find the requested worksheet.',
+        'read_cells_av_sheets' : 'Available Sheets',
         'read_cells_read' : 'The worksheet was read from.',
         'read_cells_cls' : 'Cells',
 
@@ -612,7 +611,7 @@ def loc_morpy() -> dict:
 
         # xl.py - XlWorkbook.edit_worksheet(~)
         'edit_worksheet_found' : 'The requested worksheet was found.',
-        'edit_worksheet_nfnd' : 'Could not find the requested worksheet.',
+        'edit_worksheet_not_found' : 'Could not find the requested worksheet.',
         'edit_worksheet_file' : 'File',
         'edit_worksheet_sht' : 'Sheet',
         'edit_worksheet_name' : 'Sheet Name',
@@ -620,13 +619,13 @@ def loc_morpy() -> dict:
         'edit_worksheet_new_name' : 'New Sheet Name',
         'edit_worksheet_position' : 'Worksheet Position',
         'edit_worksheet_dup_name' : 'Duplicate Name',
-        'edit_worksheet_shts' : 'Sheets in Workbook',
+        'edit_worksheet_sheets' : 'Sheets in Workbook',
         'edit_worksheet_create_sheet_done' : 'Worksheet created.',
         'edit_worksheet_rename_sheet_done' : 'Worksheet renamed.',
         'edit_worksheet_duplicate_sheet_done' : 'Worksheet duplicated.',
 
         # xl.py - XlWorkbook.get_table_attributes(~)
-        'get_table_attributes_retr' : 'Retrieved all values of an MS Excel table.',
+        'get_table_attributes_retrieved' : 'Retrieved all values of an MS Excel table.',
         'get_table_attributes_path' : 'Path',
         'get_table_attributes_sheet' : 'Sheet',
         'get_table_attributes_tbl' : 'Table',

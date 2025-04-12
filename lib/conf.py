@@ -107,7 +107,7 @@ def settings():
 
     # Perform metrics gathering in performance mode.
     # Data collected: function name, trace, runtime
-    metrics_perfmode: bool = False
+    metrics_perf_mode: bool = False
 
     r"""
 >>> MEMORY <<<
@@ -121,12 +121,12 @@ def settings():
     # Select the way, how the available RAM is determined. If absolute, an integer
     # value will reflect the Megabytes of maximum memory. Otherwise, use relative.
     # Default: False or None
-    memory_use_absolute: bool = None
+    memory_use_absolute: bool | None = None
 
     # Absolute amount of memory to be reserved at initialization in MB. If None,
     # a default will be calculated.
     # Default: None
-    memory_absolute_mb: int = None
+    memory_absolute_mb: int | None = None
 
     # Set the relative amount of memory to be reserved at initialization, where 1
     # resembles 100% of system memory and 0 resembles 0%. If memory is less than
@@ -134,13 +134,13 @@ def settings():
     # is sufficient and increase buffers to a sufficient level. If None, automatically
     # determined.
     # Default: None
-    memory_relative: float = None
+    memory_relative: float | None = None
 
     # Set the Minimum amount of memory in MB to be reserved at startup. This is the
     # total memory that morPy will have to meet, including for app data in shared
     # memory. If this threshold can not be met, app will exit.
     # Default: None or 100
-    memory_min_mb: int = None
+    memory_min_mb: int | None = None
 
     r"""
 >>> MULTI-PROCESSING <<<
@@ -149,17 +149,17 @@ def settings():
     # Select the way, how the available CPUs are determined. If absolute, an integer
     # value will reflect the maximum number of logical cores to utilize in parallel.
     # Default: False or None
-    processes_count_absolute: bool = False
+    processes_count_absolute: bool | None = False
 
     # Absolute amount of processes to run parallel. This value will by default not exceed
     # the logical cores available on the system. If None, all CPUs can be utilized.
     # Default: None
-    processes_absolute: int = 1
+    processes_absolute: int | None = 1
 
     # Set the relative maximum amount of processes to be utilized, where 1 resembles 100%
     # utilization and 0 resembles 0% utilization. If None, all CPUs can be utilized.
     # Default: None or 1.0
-    processes_relative: float = 0.92
+    processes_relative: float | None = 0.92
 
     # If the relative determination of maximum processes is used, it is necessary
     # to set how the maximum thread count should be rounded in case process_relative
@@ -170,7 +170,7 @@ def settings():
     # If processes can not fail or otherwise impose a risk of any sort or even unacceptable
     # behaviour, this flag mey be set True to have the entire app shut down immediately if
     # a process was terminated unexpectedly. Logs will still be written. Default is "True".
-    processes_are_critical: bool = False
+    processes_are_critical: bool | None = False
 
     r"""
 >>> PATHS <<<
@@ -225,7 +225,7 @@ def settings():
         'log_lvl_noprint' : log_lvl_noprint,
         'log_lvl_interrupts' : log_lvl_interrupts,
         'metrics_enable' : metrics_enable,
-        'metrics_perfmode' : metrics_perfmode,
+        'metrics_perf_mode' : metrics_perf_mode,
         'memory_use_absolute' : memory_use_absolute,
         'memory_relative' : memory_relative,
         'memory_absolute' : memory_absolute_mb,
