@@ -10,6 +10,7 @@ from morPy import log
 
 import sys
 
+
 class MorPyException(Exception):
     r"""
     This wraps errors in the standard morPy fashion. If one of the arguments
@@ -19,10 +20,10 @@ class MorPyException(Exception):
 
     __slots__ = ['trace', 'app_dict', 'log_level', 'line', 'module', 'e']
 
-    def __init__(self, morpy_trace: dict, app_dict: dict, exception_obj: BaseException, line: int,
+    def __init__(self, trace: dict, app_dict: dict, exception_obj: BaseException, line: int,
                  log_level: str, message: str=None) -> None:
         r"""
-        :param morpy_trace: Operation credentials and tracing information.
+        :param trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
         :param log_level: Severity: debug/info/warning/error/critical/denied
         :param line: Line number of the original error that could not be logged.
@@ -46,7 +47,7 @@ class MorPyException(Exception):
             loc = app_dict.get("loc", {}).get("morpy", {}) if app_dict else {}
             err_line = loc.get("err_line", "Line unknown")
             err_module = loc.get("err_module", "Module unknown")
-            module = morpy_trace.get("module", "Module unknown") if morpy_trace else "Module unknown"
+            module = trace.get("module", "Module unknown") if trace else "Module unknown"
 
             # Safely extract current line number; if not available, use provided line
             tb = sys.exc_info()[2]
@@ -69,7 +70,7 @@ class MorPyException(Exception):
             else:
                 self.message = f'{self.core_msg}'
 
-            log(morpy_trace, app_dict, log_level, lambda: self.message)
+            log(trace, app_dict, log_level, lambda: self.message)
 
         except Exception as crit_e:
 
@@ -77,7 +78,7 @@ class MorPyException(Exception):
             if not app_dict:
                 cause = "app_dict"
                 logging = False
-            elif not morpy_trace:
+            elif not trace:
                 cause = "trace"
                 logging = True
             elif not log_level:
@@ -98,10 +99,11 @@ class MorPyException(Exception):
                 exc=crit_e,
                 root_line=line,
                 root_e=exception_obj,
-                root_trace=morpy_trace,
+                root_trace=trace,
                 logging=logging,
                 cause=cause
             )
+
 
 class MorPyCoreError(Exception):
     r"""

@@ -18,6 +18,7 @@ Feel free to comment, share and support this project!
 # Backlog [⇧](#toc) <a name="Backlog"></a>
 
 - [ ] Enhance documentation with tutorial videos
+- [ ] Finish SQLite3 module
 - [ ] Develop unittests in a way, that the logs serve as an audit trail for a version release
   - [ ] Ideally leverage the morPy wrapper for automated unit tests
   - [ ] Inside the morPy wrapper any exceptions could be handled gracefully if they were expected
@@ -44,19 +45,19 @@ Clean Release for public testing. Linux compatibility tested.
 
 ### Changes
 
-- [ ] New Wrapper for morPy
+- [x] New Wrapper for morPy
     - [ ] Include metrics
-    - [ ] Eliminate the standard returns
-    - [ ] Eliminate the try-except-blocks
-    - [ ] Eliminate the declarations for tracing and remove `tracing()` from frontend
-    - [ ] Eliminate the helper `_init()` methods
+    - [x] Eliminate the standard returns
+    - [x] Eliminate the try-except-blocks
+    - [x] Eliminate the tracing updates and remove `tracing()` from the frontend
+    - [x] Eliminate the helper `_init()` methods
 - [ ] Finish metrics functionality
 - [ ] Zero Lints
   - [x] Changed function name `find_replace_saveas()` to `find_replace_save_as()`
   - [x] Overhaul of the frontend `.\morPy.py`
 - [ ] Reduce `TODO` and `FIXME` left in the code. Only keep when, if it points to known bugs.
 - [ ] Provide a "process join" function
-- [ ] Acquire lock on log DB during init and release it on exit
+- [x] Acquire lock on log DB during init and release it on exit
 - [ ] Improve locks on `app_dict` to remove the ternary statements used now to determine type `dict | UltraDict`
   - [ ] Develop a `dict`-inherited class which simply ignores context managers
   - [ ] Eliminate `lib.mp.is_udit()`
@@ -64,8 +65,6 @@ Clean Release for public testing. Linux compatibility tested.
   - [ ] Eliminate inside `lib.ui_tk.GridChoiceTk._init()`
   - [ ] Eliminate inside `lib.ui_tk.ProgressTrackerTk._init()`
   - [ ] Spread to other classes & functions for thread safety
-- [ ] Finish metrics functionality
-- [ ] Finish SQLite3 module
 - [ ] Clean up localization from unused strings
 - [ ] Improve docstrings
 - [ ] Use type hints wherever useful
@@ -75,9 +74,7 @@ Clean Release for public testing. Linux compatibility tested.
   - [ ] Check, if generators are useful
   - [ ] Check, if assert has use cases somewhere
 - [ ] Provide GUI connection in `lib.xl.XlWorkbook.read_cells()` for `ProgressTrackerTk()`
-- [ ] Transform `trace` into a custom class
-  - [ ] Simplify `lib.decorators.evaluate_trace()` with `isinstance()`
-- [ ] Refactored `morpy_trace` to `trace`
+- [x] Refactor `morpy_trace` to `trace`
 
 # v1.0.0b [⇧](#toc) <a name="v1.0.0b"></a>
 

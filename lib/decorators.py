@@ -7,9 +7,126 @@ Descr.:     This module yields all decorators to be used with the morPy framewor
 """
 
 from lib.fct import tracing
+from lib.exceptions import MorPyException
+
+import sys
 import time
 from functools import wraps
 from UltraDict import UltraDict
+
+
+def core_wrap(func):
+    r"""
+    Decorator for morPy core functionality. Exactly like 'morpy_wrap()', except for:
+        > Exception log level is 'critical'
+
+    :param func: morPy compatible function. Needs to at least carry the morPy specific 'trace'
+        in its signature.
+
+    :return retval: Return value of the wrapped function
+
+    :example:
+        from lib.decorators import morpy_wrap
+        @morpy_wrap
+        my_function_call(trace, app_dict, *args, **kwargs)
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+
+        got_trace: bool                     = False
+        got_app_dict: bool                  = False
+        trace_pos: int | None               = None
+        trace: dict | None                  = None
+        app_dict: dict | UltraDict | None   = None
+
+        # Search for 'trace' and 'app_dict' in the function signature.
+        for count, arg in enumerate(args):
+            if not trace:
+                got_trace: bool = evaluate_trace(arg)
+                if got_trace:
+                    trace = arg
+                    trace_pos = count
+                    continue
+            if not app_dict:
+                got_app_dict: bool = evaluate_app_dict(arg)
+                if got_app_dict:
+                    app_dict = arg
+                    break
+
+        # Skip metrics, if arguments trace or app_dict are missing
+        if not got_trace:
+            raise IndexError("CRITICAL missing 'trace'. Operation is not morPy compatible!")
+
+        # Detect, if operation is a class method and extract its name
+        if trace_pos > 0:
+            operation: str      = f'{type(args[0]).__name__}.{func.__name__}()'
+        else:
+            operation: str      = f'{func.__name__}()'
+
+        # Update the trace
+        module: str         = func.__module__
+        trace: dict         = tracing(module, operation, trace)
+
+        # Insert new 'trace' into the signature
+        args = args[:trace_pos] + (trace,) + args[trace_pos+1:]
+
+        if got_app_dict:
+            metrics_enable = app_dict["morpy"]["conf"]["metrics_enable"]
+            perf_mode = app_dict["morpy"]["conf"]["metrics_perf_mode"]
+
+            if metrics_enable:
+                start_time = time.perf_counter()
+
+                try:
+                    retval = func(*args, **kwargs)
+                except Exception as e:
+                    # Extract the innermost traceback line number.
+                    tb = sys.exc_info()[2]
+                    # Skip the wrapper’s frame if available.
+                    if tb.tb_next is not None:
+                        line_no = tb.tb_next.tb_lineno
+                    else:
+                        line_no = tb.tb_lineno
+                    raise MorPyException(trace, app_dict, e, line_no, "critical") from e
+
+                end_time = time.perf_counter()
+                run_time = end_time - start_time
+
+                # Metrics performance mode vs. full mode
+                if perf_mode:
+                    metrics_perf(trace, run_time)
+                else:
+                    metrics_full(trace, run_time)
+                return retval
+            else:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    # Extract the innermost traceback line number.
+                    tb = sys.exc_info()[2]
+                    # Skip the wrapper’s frame if available.
+                    if tb.tb_next is not None:
+                        line_no = tb.tb_next.tb_lineno
+                    else:
+                        line_no = tb.tb_lineno
+                    raise MorPyException(trace, app_dict, e, line_no, "critical") from e
+
+        # If no 'app_dict' was detected
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            # Extract the innermost traceback line number.
+            tb = sys.exc_info()[2]
+            # Skip the wrapper’s frame if available.
+            if tb.tb_next is not None:
+                line_no = tb.tb_next.tb_lineno
+            else:
+                line_no = tb.tb_lineno
+            raise MorPyException(trace, app_dict, e, line_no, "critical") from e
+
+    return wrapper
+
 
 def morpy_wrap(func):
     r"""
@@ -55,11 +172,16 @@ def morpy_wrap(func):
 
         # Skip metrics, if arguments trace or app_dict are missing
         if not got_trace:
-            raise IndexError("CRITICAL missing 'trace'. This is not a morPy compatible operation!")
+            raise IndexError("ERROR missing 'trace'. Operation is not morPy compatible!")
+
+        # Detect, if operation is a class method and extract its name
+        if trace_pos > 0:
+            operation: str      = f'{type(args[0]).__name__}.{func.__name__}()'
+        else:
+            operation: str      = f'{func.__name__}()'
 
         # Update the trace
         module: str         = func.__module__
-        operation: str      = f'{func.__name__}()'
         trace: dict         = tracing(module, operation, trace)
 
         # Insert new 'trace' into the signature
@@ -71,23 +193,56 @@ def morpy_wrap(func):
 
             if metrics_enable:
                 start_time = time.perf_counter()
-                retval = func(*args, **kwargs)
+
+                try:
+                    retval = func(*args, **kwargs)
+                except Exception as e:
+                    # Extract the innermost traceback line number.
+                    tb = sys.exc_info()[2]
+                    # Skip the wrapper’s frame if available.
+                    if tb.tb_next is not None:
+                        line_no = tb.tb_next.tb_lineno
+                    else:
+                        line_no = tb.tb_lineno
+                    raise MorPyException(trace, app_dict, e, line_no, "error") from e
+
                 end_time = time.perf_counter()
                 run_time = end_time - start_time
 
-                # Performance Mode vs. Full Mode
+                # Metrics performance mode vs. full mode
                 if perf_mode:
                     metrics_perf(trace, run_time)
                 else:
                     metrics_full(trace, run_time)
                 return retval
             else:
-                return func(*args, **kwargs)
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    # Extract the innermost traceback line number.
+                    tb = sys.exc_info()[2]
+                    # Skip the wrapper’s frame if available.
+                    if tb.tb_next is not None:
+                        line_no = tb.tb_next.tb_lineno
+                    else:
+                        line_no = tb.tb_lineno
+                    raise MorPyException(trace, app_dict, e, line_no, "error") from e
 
         # If no 'app_dict' was detected
-        return func(*args, **kwargs)
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            # Extract the innermost traceback line number.
+            tb = sys.exc_info()[2]
+            # Skip the wrapper’s frame if available.
+            if tb.tb_next is not None:
+                line_no = tb.tb_next.tb_lineno
+            else:
+                line_no = tb.tb_lineno
+            raise MorPyException(trace, app_dict, e, line_no, "error") from e
 
     return wrapper
+
 
 def metrics_perf(trace, run_time):
     r"""
@@ -104,10 +259,8 @@ def metrics_perf(trace, run_time):
         check: Indicates whether the function ended without errors
     """
 
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    # module: str = 'decorators'
-    # operation: str = 'metrics_perf(~)'
-    # trace: dict = morPy.tracing(module, operation, trace)
+    pass
+
 
 def metrics_full(trace, run_time):
     r"""
@@ -124,10 +277,8 @@ def metrics_full(trace, run_time):
         check: Indicates whether the function ended without errors
     """
 
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    # module: str = 'decorators'
-    # operation: str = 'metrics_full(~)'
-    # trace: dict = morPy.tracing(module, operation, trace)
+    pass
+
 
 def evaluate_trace(obj) -> bool:
     r"""
@@ -163,6 +314,7 @@ def evaluate_trace(obj) -> bool:
             return False
     return True
 
+
 def evaluate_app_dict(obj) -> bool:
     r"""
     Helper function which compares any object with the morPy specific 'app_dict' dictionary
@@ -176,11 +328,9 @@ def evaluate_app_dict(obj) -> bool:
     # Evaluation for single process mode
     if isinstance(obj, dict):
         try:
-            if not isinstance(obj["morpy"], dict):
-                return False
             if not isinstance(obj["morpy"]["conf"], dict):
                 return False
-            if not isinstance(obj["loc"], dict):
+            if not isinstance(obj["loc"]["morpy"], dict):
                 return False
             return True
         except KeyError:
@@ -189,11 +339,9 @@ def evaluate_app_dict(obj) -> bool:
     # Evaluation for shared dictionary
     elif isinstance(obj, UltraDict):
         try:
-            if not isinstance(obj["morpy"], UltraDict):
-                return False
             if not isinstance(obj["morpy"]["conf"], UltraDict):
                 return False
-            if not isinstance(obj["loc"], UltraDict):
+            if not isinstance(obj["loc"]["morpy"], UltraDict):
                 return False
             return True
         except KeyError:

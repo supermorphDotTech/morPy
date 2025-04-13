@@ -85,7 +85,6 @@ def loc_morpy() -> dict:
         # #################
 
         # common.py - PriorityQueue.__init__(~)
-        'PriorityQueue_name' : 'Entity name',
         'PriorityQueue_init_done' : 'Priority queue initialized.',
 
         # common.py - PriorityQueue.enqueue(~)
@@ -146,55 +145,55 @@ def loc_morpy() -> dict:
 
         # common.py - fso_create_dir(~)
         'fso_create_dir_directory' : 'Directory',
-        'fso_create_dir_direxist' : 'Directory exists',
+        'fso_create_dir_dir_exist' : 'Directory exists',
         'fso_create_dir_not_created' : 'The directory already exists.',
         'fso_create_dir_created' : 'The directory has been created.',
 
         # common.py - fso_delete_dir(~)
         'fso_delete_dir_directory' : 'Directory',
-        'fso_delete_dir_direxist' : 'Directory exists',
+        'fso_delete_dir_dir_exist' : 'Directory exists',
         'fso_delete_dir_deleted' : 'The directory has been deleted.',
-        'fso_delete_dir_notexist' : 'The directory does not exist.',
+        'fso_delete_dir_not_exist' : 'The directory does not exist.',
 
         # common.py - fso_delete_file(~)
         'fso_delete_file_file' : 'File',
         'fso_delete_file_exist' : 'File exists',
         'fso_delete_file_deleted' : 'The file has been deleted.',
-        'fso_delete_file_notexist' : 'The file does not exist.',
+        'fso_delete_file_not_exist' : 'The file does not exist.',
 
         # common.py - fso_walk(~)
         'fso_walk_path_done' : 'Directory analyzed.',
         'fso_walk_path_dir' : 'Directory',
-        'fso_walk_path_notexist' : 'The directory does not exist.',
+        'fso_walk_path_not_exist' : 'The directory does not exist.',
 
         # common.py - regex_findall(~)
         'regex_findall_init' : 'Searching for regular expressions.',
         'regex_findall_pattern' : 'Pattern',
         'regex_findall_result' : 'Result',
-        'regex_findall_compl' : 'Search completed.',
+        'regex_findall_complete' : 'Search completed.',
 
         # common.py - regex_find1st(~)
         'regex_find1st_init' : 'Searching for regular expressions.',
         'regex_find1st_pattern' : 'Pattern',
         'regex_find1st_result' : 'Result',
-        'regex_find1st_compl' : 'Search completed.',
+        'regex_find1st_complete' : 'Search completed.',
         'regex_find1st_none' : 'String is NoneType. No Regex executed.',
 
         # common.py - regex_split(~)
         'regex_split_init' : 'Splitting a string by a given delimiter.',
         'regex_split_delimiter' : 'Delimiter',
         'regex_split_result' : 'Result',
-        'regex_split_compl' : 'String has been split.',
+        'regex_split_complete' : 'String has been split.',
         'regex_split_none' : 'String is NoneType. No Split executed.',
 
         # common.py - regex_replace(~)
         'regex_replace_init' : 'Changing a string by given parameters.',
-        'regex_replace_compl' : 'String substituted.',
+        'regex_replace_complete' : 'String substituted.',
         'regex_replace_result' : 'Result',
 
         # common.py - regex_remove_special(~)
         'regex_remove_special_init' : 'Removing special characters of a string and replacing them.',
-        'regex_remove_special_compl' : 'String substituted.',
+        'regex_remove_special_complete' : 'String substituted.',
         'regex_remove_special_result' : 'Result',
         'regex_remove_special_tuple' : 'Tuple',
         'regex_remove_special_special' : 'Special',
@@ -209,12 +208,12 @@ def loc_morpy() -> dict:
         'qrcode_generator_wifi_done': 'QR code generated and saved.',
 
         # common.py - wait_for_input(~)
-        'wait_for_input_compl' : 'A user input was made.',
+        'wait_for_input_complete' : 'A user input was made.',
         'wait_for_input_message' : 'Message',
         'wait_for_input_usr_inp' : 'User input',
 
         # common.py - wait_for_select(~)
-        'wait_for_select_compl' : 'A user input was made.',
+        'wait_for_select_complete' : 'A user input was made.',
         'wait_for_select_message' : 'Message',
         'wait_for_select_usr_inp' : 'User input',
         "wait_for_select_yes_selector": "y",
@@ -245,7 +244,6 @@ def loc_morpy() -> dict:
         'csv_dict_to_excel_path': 'File Path',
         'csv_dict_to_excel_overwrite': 'Overwrite',
         'csv_dict_to_excel_xl_no_overwrite': 'MS Excel file exists. Operation skipped.',
-        'csv_dict_to_excel_missing_xl': 'Missing path to MS Excel file. Operation skipped.',
         'csv_dict_to_excel_invalid_xl': 'Invalid path to MS Excel file. Operation skipped.',
         'csv_dict_to_excel_missing_data': 'Missing data book from csv file. operation skipped.',
         'csv_dict_to_excel_data': 'csv_dict',
@@ -326,7 +324,7 @@ def loc_morpy() -> dict:
         'MorPyOrchestrator_exit_request': 'Exit request detected. Termination in Progress.',
         'MorPyOrchestrator_exit_request_complete': 'App terminating after exit request. No logs left from child processes.',
 
-        # lib.mp.py - app_run(~)
+        # lib.mp.py - run(~)
         'app_run_init': 'App initializing.',
         'app_run_start': 'App starting.',
         'app_run_exit': 'App exiting.',
@@ -396,11 +394,6 @@ def loc_morpy() -> dict:
         # msg.py - log_db_table_create(~)
         'log_db_table_create_exception': 'The log table for runtime could not be created.',
         'log_db_table_create_stmt': 'Statement',
-
-        # msg.py - log_db_table_add_column(~)
-        'log_db_table_add_column_exception': 'The log table could not be edited.',
-        'log_db_table_add_column_stmt': 'Statement',
-        'log_db_table_add_column_failed': 'The log table could not be found. Logging not possible.',
 
         # msg.py - log_db_row_insert(~)
         'log_db_row_insert_exception': 'The log entry could not be created.',

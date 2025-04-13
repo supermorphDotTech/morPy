@@ -9,6 +9,7 @@ Descr.:     This module yields the most basic functions of the morPy fork. These
             since they are fully compatible with morPy.
 """
 
+
 def datetime_now() -> dict:
     r"""
     This function reads the current date and time and returns formatted
@@ -78,6 +79,7 @@ def datetime_now() -> dict:
         'loggingstamp' : loggingstamp
     }
 
+
 def hashify(string: str) -> str:
     """
     Hash the given string using SHA-256 and return the hexadecimal digest.
@@ -88,6 +90,7 @@ def hashify(string: str) -> str:
     """
     import hashlib
     return hashlib.sha256(string.encode('utf-8')).hexdigest()
+
 
 def runtime(in_ref_time) -> dict:
     r"""
@@ -106,6 +109,7 @@ def runtime(in_ref_time) -> dict:
     return{
         'rnt_delta' : rnt_delta
     }
+
 
 def sysinfo() -> dict:
     r"""
@@ -176,6 +180,7 @@ def sysinfo() -> dict:
         'resolution_width' : res_width,
     }
 
+
 def pathtool(in_path) -> dict:
     r"""
     This function takes a string and converts it to a path. Additionally,
@@ -233,6 +238,7 @@ def pathtool(in_path) -> dict:
         'parent_dir' : parent_dir,
     }
 
+
 def path_join(path_parts, file_extension):
     r"""
     This function joins components of a tuple to a path with auto-detection of a file extension.
@@ -289,6 +295,7 @@ def path_join(path_parts, file_extension):
         path_obj = None
 
     return path_obj
+
 
 def perf_info() -> dict:
     r"""
@@ -352,6 +359,7 @@ def perf_info() -> dict:
         'mem_free_mb' : mem_free_mb,
     }
 
+
 def app_dict_to_string(app_dict, depth: int=0) -> str | None:
     r"""
     This function creates a string for the entire app_dict. May exceed memory.
@@ -388,18 +396,15 @@ def app_dict_to_string(app_dict, depth: int=0) -> str | None:
     else:
         return None
 
-def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: bool=False,
+
+def tracing(module, operation, trace, clone=True, process_id=None, reset: bool=False,
             reset_w_prefix: str=None) -> dict:
     r"""
-    This function formats the trace to any given operation. This function is
-    necessary to alter the trace as a pass down rather than pointing to the
-    same trace passed down by the calling operation. If trace is to be altered
-    in any way (i.e. 'log_enable') it needs to be done after calling this function.
-    This is why this function is called at the top of any morPy-operation.
+    This function formats the trace of morPy compatible operations.
 
     :param module: Name of the module, the operation is defined in (i.e. 'lib.common')
     :param operation: Name of the operation executed (i.e. 'tracing(~)')
-    :param morpy_trace: operation credentials and tracing
+    :param trace: operation credentials and tracing
     :param clone: If true (default), a clone of the trace will be created ensuring the tracing
         within morPy. If false, the parent trace will be altered directly (intended for
         initialization only).
@@ -409,28 +414,28 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: 
     :param reset_w_prefix: If reset is True, a custom preset can be set in order to retain
         a customized trace.
 
-    :return morpy_trace_pass_down: operation credentials and tracing
+    :return trace_pass_down: operation credentials and tracing
     """
 
     # Deepcopy the trace dictionary. Any change in either dictionary is not reflected
     # in the other one. This is important to pass down a functions trace effectively.
     if clone:
         import copy
-        morpy_trace_pass_down = copy.deepcopy(morpy_trace)
+        trace_pass_down = copy.deepcopy(trace)
     else:
-        morpy_trace_pass_down = morpy_trace
+        trace_pass_down = trace
 
     if process_id:
-        morpy_trace_pass_down["process_id"] = process_id
+        trace_pass_down["process_id"] = process_id
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    morpy_trace_pass_down["module"] = f'{module}'
-    morpy_trace_pass_down["operation"] = f'{operation}'
+    trace_pass_down["module"] = f'{module}'
+    trace_pass_down["operation"] = f'{operation}'
 
     if reset:
-        morpy_trace_pass_down["tracing"] = \
+        trace_pass_down["tracing"] = \
             f'{reset_w_prefix} > {module}.{operation}' if reset_w_prefix else f'{module}.{operation}'
     else:
-        morpy_trace_pass_down["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
+        trace_pass_down["tracing"] = f'{trace["tracing"]} > {module}.{operation}'
 
-    return morpy_trace_pass_down
+    return trace_pass_down

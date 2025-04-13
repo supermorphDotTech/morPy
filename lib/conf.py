@@ -6,6 +6,7 @@ Author:     Bastian Neuwirth
 Descr.:     Initialization parameters for the morPy framework.
 """
 
+
 def settings():
     r"""
     Initialization parameters for the morPy framework. These settings are

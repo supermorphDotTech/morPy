@@ -13,14 +13,19 @@ import sys
 def initialize_morpy():
     r""" Initialize the morPy framework """
 
+    from lib.init import init, init_cred
+
     check: bool = False
     init_trace: dict | None = None
     init_dict: dict | None = None
 
     try:
-        from lib import init
-        init_trace: dict = init.init_cred()
-        init_dict, init_orch = init.init(init_trace)
+
+        trace_pattern = init_cred()
+        init_trace, init_dict, init_orch = init(trace_pattern)
+        init_trace["module"] = trace_pattern["module"]
+        init_trace["operation"] = trace_pattern["operation"]
+        init_trace["tracing"] = trace_pattern["tracing"]
 
         if init_dict and init_orch:
             check: bool = True
