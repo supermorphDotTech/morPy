@@ -36,14 +36,12 @@ class FileDirSelectTk:
         :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
             Expected structure:
                 {"icon_name" : {
-                    "position" : 1,                       # placement, order (lowest first)
+                    "position" : 1,         # placement, order (lowest first)
                     "img_path" : "path/to/image.png",     # image file path
                     "icon_size" : (width, height),        # (optional) size for the icon},
                     ...}
 
         :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether initialization completed without errors
             selections: Dictionary with selections made, keyed with the row name. Example:
                 {"selection_name" : value}
 
@@ -77,7 +75,7 @@ class FileDirSelectTk:
             trace, app_dict, rows_data=rows_data, title=title, icon_data=icon_data
         )
 
-    def run(self, trace: dict, app_dict: dict):
+    def run(self, trace: dict, app_dict: dict) -> dict:
         r"""
         Launches the GUI and waits for the user to complete the selection.
 
@@ -85,8 +83,6 @@ class FileDirSelectTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether initialization completed without errors
             selections: A dictionary of user inputs keyed by row name.
         """
         return self._impl.run(trace, app_dict)
@@ -98,7 +94,7 @@ class GridChoiceTk:
     """
 
     def __init__(self, trace: dict, app_dict: dict, tile_data: dict, title: str=None,
-                 default_tile_size: tuple=None, icon_data: dict=None):
+                 default_tile_size: tuple=None, icon_data: dict=None) -> None:
         r"""
         A tkinter GUI displaying a dynamic grid of image tiles. Each tile shows an image
         with a text label below it. Clicking a tile returns its associated value.
@@ -126,10 +122,6 @@ class GridChoiceTk:
                     "icon_size" : (width, height),        # (optional) size for the icon
                     },
             ...}
-
-        :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether initialization completed without errors
 
         :example:
             import morPy
@@ -170,8 +162,6 @@ class GridChoiceTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether initialization completed without errors
             choice: The value associated with the selected tile.
 
         :example:
@@ -355,7 +345,7 @@ class ProgressTrackerTk:
     def __init__(self, trace: dict, app_dict: dict, frame_title: str=None, frame_width: int=None,
               frame_height: int=None, headline_total: str=None, headline_font_size: int=10,
               detail_description_on: bool=False, description_font_size: int=8, font: str="Arial",
-              stages: int=1, console: bool=False, auto_close: bool=False, work=None):
+              stages: int=1, console: bool=False, auto_close: bool=False, work=None) -> None:
 
         r"""
         Initializes the GUI with progress tracking.
@@ -385,17 +375,15 @@ class ProgressTrackerTk:
                            Defaults to False.
         :param work: A callable (e.g. functools.partial()). Will run in a new thread.
 
-        :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether initialization completed without errors
-
         :example:
-            gui = morPy.ProgressTrackerTk(trace: dict, app_dict,
+            progress_gui = morPy.ProgressTrackerTk(
+                trace: dict, app_dict, 
                 frame_title="My Demo Progress GUI",
                 detail_description="Generic Progress stage",
                 stages=outer_loop_count,
                 stage_limit=inner_loop_count,
-                work=work)
+                work=work
+            )
         """
         import lib.ui_tk
         self._impl = lib.ui_tk.ProgressTrackerTk(
@@ -405,31 +393,29 @@ class ProgressTrackerTk:
             stages=stages, console=console, auto_close=auto_close, work=work
         )
 
-    def run(self, trace: dict, app_dict: dict):
+    def run(self, trace: dict, app_dict: dict) -> None:
         r"""
         Start the GUI main loop and run the Tk mainloop on the main thread.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
-        :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether initialization completed without errors
-
         :example:
-            progress = morPy.ProgressTrackerTk(trace: dict, app_dict,
+            progress_gui = morPy.ProgressTrackerTk(
+                trace, app_dict,
                 frame_title="My Demo Progress GUI",
                 detail_description="Generic Progress stage",
                 stages=1,
                 stage_limit=10,
-                work=work)
+                work=work
+            )
 
-            progress.run(trace, app_dict)
+            progress_gui.run(trace, app_dict)
         """
         return self._impl.run(trace, app_dict)
 
     def begin_stage(self, trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
-                    detail_description: str=None, ticks: float=.01):
+                    detail_description: str=None, ticks: float=.01) -> None:
         r"""
         Start a new stage of progress. Will set the stage prior to 100%, if
         not already the case.
@@ -465,7 +451,7 @@ class ProgressTrackerTk:
             detail_description=detail_description, ticks=ticks
         )
 
-    def update_progress(self, trace: dict, app_dict: dict, current: float = None) -> dict:
+    def update_progress(self, trace: dict, app_dict: dict, current: float = None) -> None:
         r"""
         Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
         switch button text to "Close" and stop console redirection. Enqueues a UI request for the
@@ -476,45 +462,43 @@ class ProgressTrackerTk:
         :param current: Current progress count. If None, each call of this method will add +1
             to the progress count. Defaults to None.
 
-        :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether initialization completed without errors
-
         :example:
-            progress = morPy.ProgressTrackerTk(trace: dict, app_dict,
+            progress_gui = morPy.ProgressTrackerTk(
+                trace, app_dict,
                 frame_title="My Demo Progress GUI",
                 detail_description="Starting stage 1",
                 stages=2,
                 stage_limit=10,
-                work=work)
+                work=work
+            )
 
-            progress.run(trace, app_dict)
+            progress_gui.run(trace, app_dict)
 
             curr_cnt = 5.67
             msg = f'Currently at {curr_cnt}'
-            progress.update_progress(trace, app_dict, current=curr_cnt, detail_description=msg)
+            progress_gui.update_progress(trace, app_dict, current=curr_cnt, detail_description=msg)
 
             # stage 1 is at 100%
             curr_cnt = 10
             msg = f'Currently at {curr_cnt}'
-            progress.update_progress(trace, app_dict, current=curr_cnt, detail_description=msg)
+            progress_gui.update_progress(trace, app_dict, current=curr_cnt, detail_description=msg)
 
             # Setup stage 2
-            progress.update_text(trace, app_dict,
+            progress_gui.update_text(trace, app_dict,
                 headline_stage="Starting stage 2",
                 detail_description="Now copying data...",
             )
-            progress.update_progress(trace, app_dict, current=0, stage_limit=15)
+            progress_gui.update_progress(trace, app_dict, current=0, stage_limit=15)
 
             # stage 2 is at 100%
             curr_cnt = 15
             msg = f'Currently at {curr_cnt}'
-            progress.update_progress(trace, app_dict, current=curr_cnt, detail_description=msg)
+            progress_gui.update_progress(trace, app_dict, current=curr_cnt, detail_description=msg)
         """
         return self._impl.update_progress(trace, app_dict, current=current)
 
     def update_text(self, trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
-                    detail_description: str = None):
+                    detail_description: str = None) -> None:
         r"""
         Update the headline texts or description at runtime. Enqueues a UI request for the
         main thread to process. Safe to call from any thread.
@@ -525,12 +509,8 @@ class ProgressTrackerTk:
         :param headline_stage: If not None, sets the stage progress headline text.
         :param detail_description: If not None, sets the description text beneath the stage headline.
 
-        :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether text update completed without errors
-
         :example:
-            gui.update_text(trace, app_dict,
+            progress_gui.update_text(trace, app_dict,
                 headline_total="Processing Outer Loop 3",
                 headline_stage="Processing File 5",
                 detail_description="Now copying data...")
@@ -540,19 +520,15 @@ class ProgressTrackerTk:
             detail_description=detail_description
         )
 
-    def end_stage(self, trace: dict, app_dict: dict):
+    def end_stage(self, trace: dict, app_dict: dict) -> None:
         r"""
         End the current stage by setting it to 100%.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
-        :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether initialization completed without errors
-
         :example:
-            self.end_stage(trace, app_dict)
+            progress_gui.end_stage(trace, app_dict)
         """
         return self._impl.end_stage(trace, app_dict)
 
@@ -565,7 +541,7 @@ class XlWorkbook:
     def __init__(self, trace: dict, app_dict: dict, workbook: str, create: bool=False,
               data_only: bool=False, keep_vba: bool=True) -> None:
         r"""
-        Helper method for initialization to ensure @metrics decorator usage.
+        Class constructor.
 
         :param trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -578,12 +554,12 @@ class XlWorkbook:
                     on workbooks supporting vba (i.e. xlsm-files). These elements remain immutable. Closing
                     and reopening the workbook is required to change behaviour.
 
-        :return: dict
-            trace: Operation credentials and tracing
-            check: Indicates whether the function ended without errors
-
         :example:
-            self._init(trace, app_dict)
+            import morPy
+            wb_path = "C:\my_file.xlsx"
+
+            # Create an Excel workbook
+            wb = morPy.XlWorkbook(trace, app_dict, wb_path, create=True)
         """
 
         import lib.xl
@@ -591,7 +567,7 @@ class XlWorkbook:
             trace, app_dict, workbook, create=create, data_only=data_only, keep_vba=keep_vba
         )
 
-    def save_workbook(self, trace: dict, app_dict: dict, close_workbook: bool=False) -> dict:
+    def save_workbook(self, trace: dict, app_dict: dict, close_workbook: bool=False) -> None:
         r"""
         Saves the changes to the MS Excel workbook.
 
@@ -599,44 +575,34 @@ class XlWorkbook:
         :param app_dict: The morPy global dictionary containing app configurations.
         :param close_workbook: If True, closes the workbook.
 
-        :return: dict
-            trace: Operation credentials and tracing.
-            check: Indicates whether the function executed successfully (True/False).
-            wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
-                reference to an instance.
-
         :example:
-            wb_path = "C:\my.xlsx"
-            wb = XlWorkbook(trace, app_dict, wb_path)
+            import morPy
+            wb_path = "C:\my_file.xlsx"
+            wb = morPy.XlWorkbook(trace, app_dict, wb_path)
 
             # Save and close the workbook. Write "None" to the reference "wb".
-            wb = wb.save_workbook(trace, app_dict, close=True)["wb_obj"]
-            print(f'{wb}')
+            wb.save_workbook(trace, app_dict, close=True)
         """
         return self._impl.save_workbook(trace, app_dict, close_workbook=close_workbook)
 
-    def close_workbook(self, trace: dict, app_dict: dict) -> dict:
+    def close_workbook(self, trace: dict, app_dict: dict) -> None:
         r"""
         Closes the MS Excel workbook.
 
         :param trace: Operation credentials and tracing information.
         :param app_dict: The morPy global dictionary containing app configurations.
 
-        :return: dict
-            wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
-                reference to an instance.
-
         :example:
-            wb_path = "C:\my.xlsx"
-            wb = XlWorkbook(trace, app_dict, wb_path)
+            import morPy
+            wb_path = "C:\my_file.xlsx"
+            wb = morPy.XlWorkbook(trace, app_dict, wb_path, create=True)
 
             # Close the workbook. Write "None" to the reference "wb".
-            wb = wb.close_workbook(trace, app_dict)["wb_obj"]
-            print(f'{wb}')
+            wb.close_workbook(trace, app_dict)
         """
         return self._impl.close_workbook(trace, app_dict)
 
-    def activate_worksheet(self, trace: dict, app_dict: dict, worksheet: str) -> dict:
+    def activate_worksheet(self, trace: dict, app_dict: dict, worksheet: str) -> None:
         r"""
         Activates a specified worksheet in the workbook. If the sheet is not found,
         an error is logged.
@@ -646,9 +612,10 @@ class XlWorkbook:
         :param worksheet: The name of the worksheet to activate.
 
         :example:
-            wb_path = "C:\my.xlsx"
-            wb = XlWorkbook(trace, app_dict, wb_path)
+            import morPy
+            wb_path = "C:\my_file.xlsx"
             w_sht = "Sheet1"
+            wb = morPy.XlWorkbook(trace, app_dict, wb_path)
             wb.activate_worksheet(trace, app_dict, w_sht)
         """
         return self._impl.activate_worksheet(trace, app_dict, worksheet)
@@ -673,8 +640,6 @@ class XlWorkbook:
         :param gui: User Interface reference. Automatically referenced by morPy.ProgressTrackerTk()
 
         :return: dict
-            trace: Operation credentials and tracing.
-            check: Indicates whether the function executed successfully (True/False).
             cl_dict: Dictionary of cell content dictionaries containing values and styles of cells. Following is
                     an example of a single complete cell write:
                 cl_dict = {
@@ -730,10 +695,11 @@ class XlWorkbook:
                 }
 
         :example:
-            wb_path = "C:\my.xlsx"
+            import morPy
+            wb_path = "C:\my_file.xlsx"
             wb = morPy.XlWorkbook(trace, app_dict, wb_path)
-            cl_dict = wb.read_cells(trace, app_dict, worksheet="Sheet1", cell_range=["A1", "B2:C3"])["cl_dict"]
-            print(f'{cl_dict}')
+            range = ["A1", "B2:C3", "B1:ZZ5"]
+            cell_dict = wb.read_cells(trace, app_dict, worksheet="Sheet1", cell_range=range)["cl_dict"]
         """
         return self._impl.read_cells(
             trace, app_dict, cell_range=cell_range, cell_styles=cell_styles, worksheet=worksheet, gui=gui
@@ -741,7 +707,7 @@ class XlWorkbook:
 
     def write_ranges(self, trace: dict, app_dict: dict, worksheet: str=None, cell_range: list=None,
                      cell_writes: list=None, fill_range: bool=False, style_default: bool=False,
-                     save_workbook: bool=True, close_workbook: bool=False) -> dict:
+                     save_workbook: bool=True, close_workbook: bool=False) -> None:
         r"""
         Writes data into cells of an Excel workbook. OpenPyXL documentation:
         https://openpyxl.readthedocs.io/en/stable/api/openpyxl.cell.cell.html#openpyxl.cell.cell.Cell
@@ -817,13 +783,13 @@ class XlWorkbook:
         :param save_workbook: If True, saves the workbook after the changes.
         :param close_workbook: If True, closes the workbook.
 
-        :return: dict
-            wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
-                reference to an instance.
-
         :example:
+            import morPy
+            wb_path = "C:\my_file.xlsx"
+            wb = morPy.XlWorkbook(trace, app_dict, wb_path)
+
             w_sh = "Sheet1"
-            cl_rng = ["A1:A10"]
+            range = ["A1", "B2:C3", "B1:ZZ5"]
             cell_writes = []
             cell_writes.append(
                 {"value": "Example"}
@@ -834,8 +800,13 @@ class XlWorkbook:
                     "color" : "D1760C",
                     },
             })
-            wb = wb.write_cells(trace, app_dict, worksheet=w_sh, cell_range=cl_rng, cell_writes=cell_writes
-                                save_workbook=True, close_workbook=True)["wb_obj"]
+            wb.write_cells(
+                trace, app_dict,
+                worksheet=w_sh,
+                cell_range=cl_rng,
+                cell_writes=cell_writes,
+                save_workbook=True, close_workbook=True
+            )
         """
         return self._impl.write_ranges(
             trace, app_dict, worksheet=worksheet, cell_range=cell_range, cell_writes=cell_writes,
@@ -1040,7 +1011,7 @@ def dialog_sel_file(trace: dict, app_dict: dict, init_dir: str=None, file_types:
     import lib.ui_tk
     return lib.ui_tk.dialog_sel_file(trace, app_dict, init_dir, file_types, title)
 
-def dialog_sel_dir(trace: dict, app_dict: dict, init_dir: str=None, title: str=None):
+def dialog_sel_dir(trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
     r"""
     This function opens a dialog for the user to select a directory.
 
@@ -1050,8 +1021,6 @@ def dialog_sel_dir(trace: dict, app_dict: dict, init_dir: str=None, title: str=N
     :param title: Title of the open directory dialog
 
     :return: dict
-        trace: [dictionary] operation credentials and tracing
-        check: The function ended with no errors and a file was chosen
         dir_path: Path of the selected directory
         dir_selected: True, if directory was selected. False, if canceled.
 

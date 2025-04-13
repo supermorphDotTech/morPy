@@ -59,7 +59,7 @@ Clean Release for public testing. Linux compatibility tested.
 - [ ] Provide a "process join" function
 - [x] Acquire lock on log DB during init and release it on exit
 - [ ] Improve locks on `app_dict` to remove the ternary statements used now to determine type `dict | UltraDict`
-  - [ ] Develop a `dict`-inherited class which simply ignores context managers
+  - [ ] Develop a `dict`-inherited class which can ignore context managers
   - [ ] Eliminate `lib.mp.is_udit()`
   - [ ] Eliminate inside `lib.ui_tk.FileDirSelectTk._init()`
   - [ ] Eliminate inside `lib.ui_tk.GridChoiceTk._init()`
@@ -73,7 +73,9 @@ Clean Release for public testing. Linux compatibility tested.
   - [ ] Use more list comprehensions
   - [ ] Check, if generators are useful
   - [ ] Check, if assert has use cases somewhere
-- [ ] Provide GUI connection in `lib.xl.XlWorkbook.read_cells()` for `ProgressTrackerTk()`
+- [ ] Connect `lib.xl.XlWorkbook()` with GUI
+  - [ ] Provide GUI connection in `lib.xl.XlWorkbook.write_ranges()` for `ProgressTrackerTk()`
+  - [ ] Provide GUI connection in `lib.xl.XlWorkbook.read_cells()` for `ProgressTrackerTk()`
 - [x] Refactor `morpy_trace` to `trace`
 
 # v1.0.0b [⇧](#toc) <a name="v1.0.0b"></a>

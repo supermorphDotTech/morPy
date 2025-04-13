@@ -13,6 +13,9 @@ Annotations:
 import morPy
 from lib.decorators import morpy_wrap
 
+
+# Suppress linting for mandatory arguments.
+# noinspection PyUnusedLocal
 @morpy_wrap
 def template(trace: dict, app_dict: dict) -> None:
     r"""
@@ -38,6 +41,7 @@ def template(trace: dict, app_dict: dict) -> None:
     >>> CODE OF FUNCTION
     """
 
+
 class TemplateClass:
     r"""
     This class is a template.
@@ -47,6 +51,9 @@ class TemplateClass:
     are not propagated reliably to other processes. See README.md for more details.
     """
 
+
+    # Suppress linting for mandatory arguments.
+    # noinspection PyUnusedLocal
     @morpy_wrap
     def __init__(self, trace: dict, app_dict: dict) -> None:
         r"""
@@ -70,6 +77,9 @@ class TemplateClass:
         >>> CODE OF INITIALIZATION
         """
 
+
+    # Suppress linting for mandatory arguments.
+    # noinspection PyUnusedLocal
     @morpy_wrap
     def method(self, trace: dict, app_dict: dict) -> None:
         r"""

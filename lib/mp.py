@@ -773,7 +773,7 @@ def join_or_task(trace: dict, app_dict: dict, reset_trace: bool = False, reset_w
             with app_dict["morpy"].lock:
                 exit_flag = app_dict["morpy"]["exit"]
             if exit_flag:
-                # child_exit_routine(trace, app_dict)
+                child_exit_routine(trace, app_dict)
                 sys.exit()
 
             # Wait time to avoid busy wait
