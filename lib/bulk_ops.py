@@ -9,11 +9,12 @@ Descr.:     This module includes operations used to massively repeat/automize
 
 import lib.fct as morpy_fct
 import lib.common as common
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import morpy_wrap
 
 import sys
 
-@metrics
+@morpy_wrap
 def find_replace_save_as(morpy_trace: dict, app_dict: dict, search_obj, replace_tpl: tuple, save_as: str,
                         overwrite: bool=False) -> dict:
     r"""
@@ -31,14 +32,14 @@ def find_replace_save_as(morpy_trace: dict, app_dict: dict, search_obj, replace_
 
     :return: dict
         check - The function ended with no errors
-        morpy_trace - operation credentials and tracing
+        trace - operation credentials and tracing
 
     :example:
         search_obj = "Let's replace1 and replace2!"
         replace_tpl = (("replace1", "with1"), ("replace2", "with2"))
         save_as = "C:\my_replaced_strings.txt"
         overwrite = True
-        retval = find_replace_save_as(morpy_trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
+        retval = find_replace_save_as(trace, app_dict, search_obj, replace_tpl, save_as, overwrite)
     """
 
     module: str = 'lib.bulk_ops'
@@ -95,6 +96,6 @@ def find_replace_save_as(morpy_trace: dict, app_dict: dict, search_obj, replace_
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return {
-        'morpy_trace': morpy_trace,
+        'trace': morpy_trace,
         'check': check,
     }

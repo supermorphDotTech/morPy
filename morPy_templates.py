@@ -6,16 +6,17 @@ Author:     AUTHOR
 Descr.:     DESCRIPTION
 
 Annotations:
-    #TODO
-    #FIXME
+    TODO
+    FIXME
 """
 
 import morPy
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import morpy_wrap
 
 import sys
 
-@metrics
+@morpy_wrap
 def template(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
     This function is a template.
@@ -24,11 +25,11 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
     :param app_dict: morPy global dictionary containing app configurations
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
 
     :example:
-        template(morpy_trace, app_dict)
+        template(trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -37,16 +38,16 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
     morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
     # OPTION enable/disable logging
-    # ??? morpy_trace["log_enable"] = False
+    # ??? trace["log_enable"] = False
 
     try:
         """
         >>> MY CODE
         """
 
-        # LOCALIZED_MESSAGE
+        # FULL TEXT HERE
         log(morpy_trace, app_dict, "info",
-        lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
+            lambda: f'{app_dict["loc"]["app"]["MESSAGE_KEY"]}')
 
         check: bool = True
 
@@ -54,7 +55,7 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
         raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         }
 
@@ -71,7 +72,7 @@ class TemplateClass:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
-        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+        {'trace' : trace}, which __init__() can not do (needs to be None).
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -80,7 +81,7 @@ class TemplateClass:
             -
 
         :example:
-            instance = TemplateClass(morpy_trace, app_dict)
+            instance = TemplateClass(trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -89,7 +90,7 @@ class TemplateClass:
         morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
         # OPTION enable/disable logging
-        # ??? morpy_trace["log_enable"] = False
+        # ??? trace["log_enable"] = False
 
         try:
             # Use self._init() for initialization
@@ -98,7 +99,7 @@ class TemplateClass:
         except Exception as e:
             raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-    @metrics
+    @morpy_wrap
     def _init(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Helper method for initialization to ensure @metrics decorator usage.
@@ -107,11 +108,11 @@ class TemplateClass:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether the function ended without errors
 
         :example:
-            self._init(morpy_trace, app_dict)
+            self._init(trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -120,16 +121,16 @@ class TemplateClass:
         morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
 
         # OPTION enable/disable logging
-        # ??? morpy_trace["log_enable"] = False
+        # ??? trace["log_enable"] = False
 
         try:
             """
             >>> MY INSTANCE INITIALIZATION
             """
 
-            # LOCALIZED_MESSAGE
-            log(morpy_trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
+            # FULL TEXT HERE
+            log(morpy_trace, app_dict, "info",
+                lambda: f'{app_dict["loc"]["app"]["MESSAGE_KEY"]}')
 
             check: bool = True
 
@@ -137,47 +138,47 @@ class TemplateClass:
             raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             }
 
-    @metrics
-    def method(self, morpy_trace: dict, app_dict: dict) -> dict:
+    @morpy_wrap
+    def method(self, trace: dict, app_dict: dict) -> dict:
         r"""
-        :param morpy_trace: operation credentials and tracing information
+        :param trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether the function ended without errors
 
         :example:
-            self.method(morpy_trace, app_dict)
+            self.method(trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module: str = 'app.my_module'
         operation: str = 'TemplateClass.method(~)'
-        morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+        trace: dict = morPy.tracing(module, operation, trace)
 
         # OPTION enable/disable logging
-        # ??? morpy_trace["log_enable"] = False
+        # ??? trace["log_enable"] = False
 
         try:
             """
             >>> MY CLASS METHOD
             """
 
-            # LOCALIZED_MESSAGE
-            log(morpy_trace, app_dict, "info",
-            lambda: f'{app_dict["loc"]["app"]["LOCALIZED_MESSAGE"]}')
+            # FULL TEXT HERE
+            log(trace, app_dict, "info",
+                lambda: f'{app_dict["loc"]["app"]["MESSAGE_KEY"]}')
 
             check: bool = True
 
         except Exception as e:
-            raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+            raise morPy.MorPyException(trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : trace,
             'check' : check,
             }

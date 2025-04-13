@@ -8,8 +8,8 @@ Descr.:     Initialization of the morPy framework.
 
 import lib.fct as morpy_fct
 import lib.conf as conf
+from morPy import log
 from lib.common import textfile_write
-from lib.decorators import log
 from lib.mp import MorPyOrchestrator
 
 import importlib
@@ -26,40 +26,40 @@ def init_cred() -> dict:
         -
 
     :return: dict
-        morpy_trace - operation credentials and tracing
+        trace - operation credentials and tracing
     """
 
     # Initialize operation credentials and tracing.
     # Each operation/function/object will fill the dictionary with data
-    # by executing morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+    # by executing trace: dict = morPy.tracing(module, operation, trace)
     # as a first step before execution.
-    morpy_trace: dict = {
-        'module' : '__main__',
-        'operation' : '',
-        'tracing' : '__main__',
-        'process_id' : int(0),
-        'thread_id' : int(0),
-        'task_id' : int(0),
-        'log_enable' : False,
-        'interrupt_enable' : False,
+    trace: dict = {
+        "module" : "__main__",
+        "operation" : "",
+        "tracing" : "__main__",
+        "process_id" : int(0),
+        "thread_id" : int(0),
+        "task_id" : int(0),
+        "log_enable" : False,
+        "interrupt_enable" : False,
     }
 
-    return morpy_trace
+    return trace
 
-def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
+def init(trace) -> (dict | UltraDict, MorPyOrchestrator):
     r"""
     Initializes the app dictionary and yields app
     specific information to be handed down through called functions.
 
-    :param morpy_trace: operation credentials and tracing
+    :param trace: operation credentials and tracing
 
     :return app_dict: morPy global dictionary containing app configurations
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.init'
-    operation: str = 'init(~)'
-    morpy_trace_init = morpy_fct.tracing(module, operation, morpy_trace)
+    operation: str = 'init()'
+    morpy_trace_init = morpy_fct.tracing(module, operation, trace)
 
     init_dict = None
 
@@ -73,7 +73,7 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
 
         init_dict["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
         init_dict["morpy"]["proc_joined"] = True
-        init_dict["morpy"].update({"proc_master" : morpy_trace['process_id']})
+        init_dict["morpy"].update({"proc_master" : trace['process_id']})
 
         # Initialize the global interrupt flag and exit flag
         init_dict["morpy"]["interrupt"] = False
@@ -91,7 +91,7 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
             init_dict["morpy"]["conf"]["log_enable"] = False
 
         # Pass down the log enabling parameter
-        morpy_trace["log_enable"] = init_dict["morpy"]["conf"]["log_enable"]
+        trace["log_enable"] = init_dict["morpy"]["conf"]["log_enable"]
         morpy_trace_init["log_enable"] = init_dict["morpy"]["conf"]["log_enable"]
 
         # Import the morPy core functions localization into init_dict.
@@ -193,7 +193,7 @@ def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
 
     except Exception as e:
         from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+        raise MorPyException(trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, dict):
     r"""
@@ -207,7 +207,7 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
     :return init_dict: morPy global dictionary containing app configurations
 
     :example:
-        init_dict = build_app_dict(morpy_trace, create=True)
+        init_dict = build_app_dict(trace, create=True)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -400,7 +400,7 @@ def morpy_log_header(morpy_trace: dict, init_dict: dict | UltraDict) -> None:
         -
 
     :example:
-        morpy_log_header(morpy_trace, init_dict)
+        morpy_log_header(trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -442,7 +442,7 @@ def morpy_ref(morpy_trace: dict, init_dict: dict | UltraDict, init_dict_str: str
         -
 
     :example:
-        morpy_ref(morpy_trace, init_dict)
+        morpy_ref(trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)

@@ -8,13 +8,14 @@ Descr.:     Module of operations concerning csv-files.
 
 import lib.fct as morpy_fct
 import lib.xl as xl
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import morpy_wrap
 from lib.common import ProgressTracker
 
 import sys
 from openpyxl.utils.cell import get_column_letter
 
-@metrics
+@morpy_wrap
 def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
              print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None, gui=None) -> dict:
     r"""
@@ -35,7 +36,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
     :param gui: User Interface reference. Automatically referenced by morPy.ProgressTrackerTk()
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
         csv_dict: Dictionary containing all tags. The line numbers of data are
             the keys of the parent dictionary, and the csv header consists of
@@ -59,7 +60,7 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
     :example:
         src_file_path = 'C:\my_file.csv'
         delimiter = '\",\"'
-        csv = csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+        csv = csv_read(trace, app_dict, src_file_path, delimiter)
         csv_dict = csv["csv_dict"]
         csv_header1 = csv["csv_dict"]["DATA1"]["header"]
         print(f'{csv_header1}')
@@ -233,12 +234,12 @@ def csv_read(morpy_trace: dict, app_dict: dict, src_file_path: str=None, delimit
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'csv_dict' : csv_dict
         }
 
-@metrics
+@morpy_wrap
 def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, overwrite: bool=False,
                       worksheet: str=None, close_workbook: bool=False, csv_dict: dict=None,
                       log_progress: bool=False, progress_ticks: float=None) -> dict:
@@ -277,7 +278,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         10.7% progress exceeded the exact progress will be logged. If None or greater 100, will default to 10.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
         wb_obj: Returns None, if the object was closed. Else returns an instance of "xl.XlWorkbook()".
             Used to delete the reference to an instance.
@@ -285,13 +286,13 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
     :example:
         src_file_path = 'C:\my.csv'
         delimiter = '","'
-        csv = morPy.csv_read(morpy_trace, app_dict, src_file_path, delimiter)
+        csv = morPy.csv_read(trace, app_dict, src_file_path, delimiter)
 
         # ... process data in csv["csv_dict"] ...
 
         target_path = 'C:\my.xlsx'
         wb_sht = 'Sheet1'
-        wb = csv_dict_to_excel(morpy_trace, app_dict, csv_dict=csv["csv_dict"], xl_path=target_path,
+        wb = csv_dict_to_excel(trace, app_dict, csv_dict=csv["csv_dict"], xl_path=target_path,
             overwrite=True, worksheet=wb_sht)["wb_obj"]
 
         # ... modify 'C:\my.xlsx' ...
@@ -495,7 +496,7 @@ def csv_dict_to_excel(morpy_trace: dict, app_dict: dict, xl_path: str=None, over
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'wb_obj' : wb_obj,
         }

@@ -7,7 +7,8 @@ Descr.:     This module demonstrates how to use lib.ui_tk.ProgressTrackerTk()
 """
 
 import morPy
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import morpy_wrap
 
 import sys
 from math import sqrt
@@ -22,14 +23,14 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
     :param app_dict: morPy global dictionary containing app configurations
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
         app_run_return: Return value (dict) of the app process, handed to app_exit
 
     :example:
         # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
         import app.demo_ProgressTrackerTk as demo_ProgressTrackerTk
-        demo_ProgressTrackerTk.run(morpy_trace, app_dict)
+        demo_ProgressTrackerTk.run(trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -37,7 +38,6 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
     operation = 'run(~)'
     morpy_trace = morPy.tracing(module, operation, morpy_trace)
 
-    check = False
     app_run_return = {}
 
     try:
@@ -72,12 +72,12 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return {
-        'morpy_trace': morpy_trace,
+        'trace': morpy_trace,
         'check': check,
         'app_run_return': app_run_return
     }
 
-@metrics
+@morpy_wrap
 def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: int=0, gui=None):
     r"""
     This function runs the entire app using user input to specify
@@ -90,11 +90,11 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: 
     :param gui: GUI object (ProgressTrackerTk)
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
 
     :example:
-        arbitrary_task(morpy_trace, app_dict)
+        arbitrary_task(trace, app_dict)
     """
 
     # morPy credentials (see init.init_cred() for all dict keys)
@@ -144,6 +144,6 @@ def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int=0, total_rep: 
         raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         }

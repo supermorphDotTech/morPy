@@ -7,13 +7,14 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
+from morPy import log
 from lib.fct import tracing as init_tracing
-from lib.decorators import metrics, log
+from lib.decorators import morpy_wrap
 
 import sys
 from UltraDict import UltraDict
 
-@metrics
+@morpy_wrap
 def app_init(morpy_trace: dict, app_dict: dict | UltraDict) -> dict:
     r"""
     This function runs the initialization workflow of the app.
@@ -22,13 +23,15 @@ def app_init(morpy_trace: dict, app_dict: dict | UltraDict) -> dict:
     :param app_dict: morPy global dictionary containing app configurations
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
-        app_init_return: Return value (dict) of the initialization process, handed to app_run
+        app_dict_n_shared: App dictionary, which is not shared with child processes
+            or the orchestrator. Efficient to share data in between app phases 'app.init',
+            'app.run' and 'app.exit'.
 
     :example:
         from app import init as app_init
-        init_retval = app_init(morpy_trace, app_dict)
+        init_retval = app_init(trace, app_dict)
     """
 
     try:
@@ -47,14 +50,16 @@ def app_init(morpy_trace: dict, app_dict: dict | UltraDict) -> dict:
     morpy_trace: dict = init_tracing(module, operation, morpy_trace, reset=mp)
 
     # OPTION enable/disable logging
-    # ??? morpy_trace["log_enable"] = False
+    # ??? trace["log_enable"] = False
 
     check: bool = False
-
-    # Handshake dictionary for app.run
-    app_init_return = {}
+    app_dict_n_shared = dict()
 
     try:
+        # FULL TEXT HERE
+        # log(trace, app_dict, "info",
+        # lambda: f'{app_dict["loc"]["app"]["MESSAGE_KEY"]}')
+
         # MY CODE
 
         check: bool = True
@@ -64,7 +69,7 @@ def app_init(morpy_trace: dict, app_dict: dict | UltraDict) -> dict:
 
     finally:
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
-            'app_init_return' : app_init_return
+            'app_dict_n_shared' : app_dict_n_shared
             }

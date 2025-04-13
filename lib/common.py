@@ -8,7 +8,8 @@ Descr.:     Module of generally useful functions.
 
 import lib.fct as morpy_fct
 import lib.mp as mp
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import morpy_wrap
 
 import sys
 import chardet
@@ -30,14 +31,14 @@ class PriorityQueue:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
-        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+        {'trace' : trace}, which __init__() can not do (needs to be None).
 
         :param: See ._init() for details
 
         :return: self
 
         :example:
-            queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
+            queue = PriorityQueue(trace, app_dict, name="example_queue")
         """
 
         module: str = 'lib.common'
@@ -57,7 +58,7 @@ class PriorityQueue:
                 message=err_msg
             )
 
-    @metrics
+    @morpy_wrap
     def _init(self, morpy_trace: dict, app_dict: dict, name: str) -> dict:
         r"""
         Helper method for initialization to ensure @metrics decorator functionality.
@@ -67,15 +68,13 @@ class PriorityQueue:
         :param name: Name or description of the instance
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
         """
 
         module: str = 'lib.common'
         operation: str = 'PriorityQueue._init(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
 
         try:
             self.name = name if name else 'queue'
@@ -100,11 +99,11 @@ class PriorityQueue:
             )
 
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check
         }
 
-    @metrics
+    @morpy_wrap
     def enqueue(self, morpy_trace: dict, app_dict: dict, priority: int=100, task: tuple=None) -> dict:
         r"""
         Adds a task to the priority queue.
@@ -115,14 +114,14 @@ class PriorityQueue:
         :param task: Tuple of a callable, *args and **kwargs (func, *args, **kwargs)
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates if the task was enqueued successfully
 
         :example:
             from functools import partial
-            queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
-            task = partial(my_func, morpy_trace, app_dict)
-            queue.enqueue(morpy_trace, app_dict, priority=25, task=task)
+            queue = PriorityQueue(trace, app_dict, name="example_queue")
+            task = partial(my_func, trace, app_dict)
+            queue.enqueue(trace, app_dict, priority=25, task=task)
         """
 
         module: str = 'lib.common'
@@ -175,11 +174,11 @@ class PriorityQueue:
             )
 
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check
         }
 
-    @metrics
+    @morpy_wrap
     def pull(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Removes and returns the highest priority task from the priority queue.
@@ -188,7 +187,7 @@ class PriorityQueue:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates if the task was pulled successfully
             priority: Integer representing task priority (lower is higher priority)
             counter: Number of the task when enqueued
@@ -199,8 +198,8 @@ class PriorityQueue:
 
         :example:
             from functools import partial
-            queue = PriorityQueue(morpy_trace, app_dict, name="example_queue")
-            task = queue.pull(morpy_trace, app_dict)['task']
+            queue = PriorityQueue(trace, app_dict, name="example_queue")
+            task = queue.pull(trace, app_dict)['task']
             task()
         """
 
@@ -247,7 +246,7 @@ class PriorityQueue:
             )
 
         return {
-            'morpy_trace': morpy_trace_pull,
+            'trace': morpy_trace_pull,
             'check': check,
             'priority' : priority,
             'counter' : counter,
@@ -266,7 +265,7 @@ class ProgressTracker:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
-        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+        {'trace' : trace}, which __init__() can not do (needs to be None).
 
         :param: See ._init() for details
 
@@ -274,7 +273,7 @@ class ProgressTracker:
             -
 
         :example:
-            progress = ProgressTracker(morpy_trace, app_dict, description='App Progress', total=100, ticks=10)
+            progress = ProgressTracker(trace, app_dict, description='App Progress', total=100, ticks=10)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -291,7 +290,7 @@ class ProgressTracker:
             from lib.exceptions import MorPyException
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-    @metrics
+    @morpy_wrap
     def _init(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
               float_progress: bool=False, verbose: bool=False) -> dict:
         r"""
@@ -309,19 +308,17 @@ class ProgressTracker:
         :param verbose: If True, progress is only logged in verbose mode except for the 100% mark. Defaults to False.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether the function ended without errors
 
         :example:
-            self._init(morpy_trace, app_dict, description=description, total=total, ticks=ticks)
+            self._init(trace, app_dict, description=description, total=total, ticks=ticks)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module: str = 'lib.common'
         operation: str = 'ProgressTracker._init(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
 
         try:
             # Missing total count. Can not track progress if point of completion is unknown.
@@ -368,11 +365,11 @@ class ProgressTracker:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             }
 
-    @metrics
+    @morpy_wrap
     def _init_ticks(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         This method determines the ticks, at which to log the progress.
@@ -381,19 +378,17 @@ class ProgressTracker:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether the function ended without errors
 
         :example:
-            self._init_ticks(morpy_trace, app_dict)
+            self._init_ticks(trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
         module: str = 'lib.common'
         operation: str = 'ProgressTracker._init_ticks(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-        check: bool = False
 
         try:
             # Convert total to integer and determine the factor
@@ -425,11 +420,11 @@ class ProgressTracker:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             }
 
-    @metrics
+    @morpy_wrap
     def update(self, morpy_trace: dict, app_dict: dict, current: float=None) -> dict:
         r"""
         Method to update current progress and log progress if tick is passed.
@@ -440,7 +435,7 @@ class ProgressTracker:
             to the progress count. Defaults to None.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether the function ended without errors
             prog_rel: Relative progress, float between 0 and 1
             prog_abs: Absolute progress, float between 0.00 and 100.00
@@ -451,10 +446,10 @@ class ProgressTracker:
 
             tot_cnt = 100
             tks = 12.5
-            progress = morPy.ProgressTracker(morpy_trace, app_dict, description='App Progress', total=total_count, ticks=tks)
+            progress = morPy.ProgressTracker(trace, app_dict, description='App Progress', total=total_count, ticks=tks)
 
             curr_cnt = 37
-            progress.update(morpy_trace, app_dict, current=curr_cnt)
+            progress.update(trace, app_dict, current=curr_cnt)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -462,7 +457,6 @@ class ProgressTracker:
         operation: str = 'ProgressTracker.update(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-        check: bool = False
         prog_rel = None
         prog_abs_short = None
         message = None
@@ -516,14 +510,14 @@ class ProgressTracker:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             'prog_rel' : prog_rel,
             'prog_abs' : prog_abs_short,
             'message' : message
             }
 
-@metrics
+@morpy_wrap
 def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding: str='') -> dict:
     r"""
     This function decodes different types of data and returns
@@ -537,7 +531,7 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding:
 
     :return: dict
         check: Indicates whether the function executed successfully (True/False).
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         result: Decoded result. Buffered object that may be used with the readlines() method.
         encoding: String containing the encoding of src_input.
         lines: Number of lines in the file.
@@ -546,7 +540,7 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding:
         src_file = "C:\my_file.enc"
         src_input = open(src_file, 'rb')
         encoding: str = 'utf-16-le'
-        retval = decode_to_plain_text(morpy_trace, app_dict, src_input, encoding)
+        retval = decode_to_plain_text(trace, app_dict, src_input, encoding)
     """
 
     module: str = 'lib.common'
@@ -554,9 +548,7 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding:
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
     check: bool = False
-    result = None
     decode = False
-    lines = 0
 
     try:
         # Copy all contents
@@ -613,14 +605,14 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return {
-        'morpy_trace': morpy_trace,
+        'trace': morpy_trace,
         'check' : check,
         'result': result,
         'encoding': encoding,
         'lines': lines,
     }
 
-@metrics
+@morpy_wrap
 def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, overwrite: bool=False) -> dict:
     r"""
     Copies a single file from the source to the destination. Includes a file
@@ -633,13 +625,13 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
     :param overwrite: Boolean indicating if the destination file may be overwritten. Defaults to False.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         source: Path to the source file as a path object.
         dest: Path to the destination file as a path object.
 
     :example:
-        result = fso_copy_file(morpy_trace, app_dict, "path/to/source.txt", "path/to/destination.txt", True)
+        result = fso_copy_file(trace, app_dict, "path/to/source.txt", "path/to/destination.txt", True)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -714,13 +706,13 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'source' : source,
         'dest' : dest
         }
 
-@metrics
+@morpy_wrap
 def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str) -> dict:
     r"""
     Creates a directory and its parent directories recursively.
@@ -730,19 +722,17 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str) -> dict:
     :param mk_dir: Path to the directory or directory tree to be created.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
 
     :example:
-        result = fso_create_dir(morpy_trace, app_dict, "path/to/new_directory")
+        result = fso_create_dir(trace, app_dict, "path/to/new_directory")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.common'
     operation: str = 'fso_create_dir(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    check: bool = False
 
     try:
         # Check the directory
@@ -772,11 +762,11 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str) -> dict:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check
         }
 
-@metrics
+@morpy_wrap
 def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
     r"""
     Deletes an entire directory, including its contents. A directory check
@@ -787,19 +777,17 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
     :param del_dir: Path to the directory to be deleted.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
 
     :example:
-        result = fso_delete_dir(morpy_trace, app_dict, "path/to/directory_to_delete")
+        result = fso_delete_dir(trace, app_dict, "path/to/directory_to_delete")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.common'
     operation: str = 'fso_delete_dir(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    check: bool = False
 
     try:
         # Check the directory
@@ -830,11 +818,11 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check
         }
 
-@metrics
+@morpy_wrap
 def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str) -> dict:
     r"""
     Deletes a file. Will check path before deletion.
@@ -844,19 +832,17 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str) -> dict:
     :param del_file: Path to the file to be deleted.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
 
     :example:
-        result = fso_delete_file(morpy_trace, app_dict, "path/to/file_to_delete.txt")
+        result = fso_delete_file(trace, app_dict, "path/to/file_to_delete.txt")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.common'
     operation: str = 'fso_delete_file(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
-
-    check: bool = False
 
     try:
         # Check the directory
@@ -887,11 +873,11 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str) -> dict:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check
         }
 
-@metrics
+@morpy_wrap
 def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict:
     r"""
     Returns the contents of a directory.
@@ -904,7 +890,7 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict
                    0: Path only.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         walk_dict: Dictionary of root directories and their contents. Example:
                    {
@@ -922,7 +908,7 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict
                    }
 
     :example:
-        result = fso_walk(morpy_trace, app_dict, "path/to/directory", -1)["walk_dict"]
+        result = fso_walk(trace, app_dict, "path/to/directory", -1)["walk_dict"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -930,7 +916,6 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict
     operation: str = 'fso_delete_file(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check: bool = False
     walk_dict: dict = {}
     cnt_roots: int = 0
 
@@ -963,12 +948,12 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'walk_dict' : walk_dict
         }
 
-@metrics
+@morpy_wrap
 def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str) -> dict:
     r"""
     Searches for a regular expression in a given object and returns a list of found expressions.
@@ -979,14 +964,14 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
     :param pattern: The regular expression pattern to search for.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         result: List of expressions found in the input, or None if nothing was found.
 
     :example:
         string = "Find digits 12345"
         pattern = r"\\d+"
-        result = regex_findall(morpy_trace, app_dict, string, pattern)["result"]
+        result = regex_findall(trace, app_dict, string, pattern)["result"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -994,7 +979,6 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
     operation: str = 'regex_findall(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check =False
     search_obj: str = f'{search_obj}'
     pattern: str = f'{pattern}'
     result = None
@@ -1022,12 +1006,12 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'result' : result
         }
 
-@metrics
+@morpy_wrap
 def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str) -> dict:
     r"""
     Searches for a regular expression in a given object and returns the first match.
@@ -1038,14 +1022,14 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
     :param pattern: The regular expression pattern to search for.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         result: The first match found in the input, or None if nothing was found.
 
     :example:
         string = "Find digits 12345"
         pattern = r"\\d+"
-        result = regex_find1st(morpy_trace, app_dict, string, pattern)["result"]
+        result = regex_find1st(trace, app_dict, string, pattern)["result"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1090,12 +1074,12 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'result' : result
         }
 
-@metrics
+@morpy_wrap
 def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter: str) -> dict:
     r"""
     Splits an object into a list using a given delimiter.
@@ -1108,14 +1092,14 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
                       to use '.' as a delimiter).
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         result: The list of parts split from the input.
 
     :example:
         string = "apple.orange.banana"
         split = r"\\."
-        result = regex_split(morpy_trace, app_dict, string, split)["result"]
+        result = regex_split(trace, app_dict, string, split)["result"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1159,12 +1143,12 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'result' : result
         }
 
-@metrics
+@morpy_wrap
 def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_for: str, replace_by: str) -> dict:
     r"""
     Substitutes characters or strings in an input object based on a regular expression.
@@ -1176,7 +1160,7 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
     :param replace_by: The character or string to substitute in place of the matches.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         result: The modified string with substitutions applied.
 
@@ -1184,7 +1168,7 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
         string = "apple.orange.banana"
         search_for = r"\\."
         replace_by = r"-"
-        result = regex_replace(morpy_trace, app_dict, string, search_for, replace_by)["result"]
+        result = regex_replace(trace, app_dict, string, search_for, replace_by)["result"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1192,7 +1176,6 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
     operation: str = 'regex_replace(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check: bool = False
     search_obj: str = f'{search_obj}'
     search_for: str = f'{search_for}'
     replace_by: str = f'{replace_by}'
@@ -1220,12 +1203,12 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'result' : result
         }
 
-@metrics
+@morpy_wrap
 def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spec_lst: list) -> dict:
     r"""
     Removes or replaces special characters in a given string. The `spec_lst` parameter
@@ -1244,13 +1227,13 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
                      standard replacement list.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         result: The modified string with special characters replaced or removed.
 
     :example:
         result = regex_remove_special(
-            morpy_trace, app_dict, "Hello!@#$%^&*()", [("@", "AT"), ("!", "")]
+            trace, app_dict, "Hello!@#$%^&*()", [("@", "AT"), ("!", "")]
         )
     """
 
@@ -1259,7 +1242,6 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
     operation: str = 'regex_remove_special(~)'
     morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
-    check: bool = False
     load_std: bool = False
     inp_string: str = f'{inp_string}'
     result = None
@@ -1347,12 +1329,12 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'result' : result
         }
 
-@metrics
+@morpy_wrap
 def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: str) -> dict:
     r"""
     Appends content to a text file, creating the file if it does not already exist.
@@ -1363,11 +1345,11 @@ def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: st
     :param content: The content to be written to the file, converted to a string if necessary.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
 
     :example:
-        result = textfile_write(morpy_trace, app_dict, "path/to/file.txt", "This is some text.")
+        result = textfile_write(trace, app_dict, "path/to/file.txt", "This is some text.")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1408,11 +1390,11 @@ def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: st
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         }
 
-@metrics
+@morpy_wrap
 def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
     r"""
     Prints any value provided. This function is intended for debugging purposes.
@@ -1422,11 +1404,11 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
     :param message: The value to be printed, converted to a string if necessary.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check - The function ended with no errors
 
     :example:
-        testprint(morpy_trace, app_dict, "This is a test value.")
+        testprint(trace, app_dict, "This is a test value.")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1450,11 +1432,11 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         }
 
-@metrics
+@morpy_wrap
 def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, password: str = None,
                           file_path: str = None, file_name: str = None, overwrite: bool = True) -> dict:
     r"""
@@ -1471,12 +1453,12 @@ def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, p
     :param overwrite: If False, will not overwrite existing files. Defaults to True.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates whether the function ended without errors
 
     :example:
         from morPy import qrcode_generator_wifi
-        qrcode_generator_wifi(morpy_trace, app_dict,
+        qrcode_generator_wifi(trace, app_dict,
             ssid="ExampleNET",
             password="3x4mp13pwd"
         )
@@ -1533,11 +1515,11 @@ def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, p
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         }
 
-@metrics
+@morpy_wrap
 def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
     r"""
     Pauses program execution until a user provides input. The input is then
@@ -1549,13 +1531,13 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
     :param message: The text to be displayed as a prompt before user input.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check - The function ended with no errors
         usr_input: The input provided by the user.
 
     :example:
         prompt = "Please enter your name: "
-        result = wait_for_input(morpy_trace, app_dict, prompt)["usr_input"]
+        result = wait_for_input(trace, app_dict, prompt)["usr_input"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1586,12 +1568,12 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'usr_input' : usr_input
         }
 
-@metrics
+@morpy_wrap
 def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection: tuple=None) -> dict:
     r"""
     Pauses program execution until a user provides input. The input needs to
@@ -1605,14 +1587,14 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection:
         evaluation will be skipped.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check - The function ended with no errors
         usr_input: The input provided by the user.
 
     :example:
         msg_text = "Select 1. this or 2. that"
         collection = (1, 2)
-        result = wait_for_select(morpy_trace, app_dict, msg_text, collection)["usr_input"]
+        result = wait_for_select(trace, app_dict, msg_text, collection)["usr_input"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1666,7 +1648,7 @@ def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'usr_input' : usr_input
         }

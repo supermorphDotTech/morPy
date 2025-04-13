@@ -8,7 +8,8 @@ Descr.:     This module provides UI-building functions using the Tkinter.
 
 import lib.fct as morpy_fct
 import lib.common as common
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import morpy_wrap
 
 import sys
 import threading, queue
@@ -33,7 +34,7 @@ class FileDirSelectTk:
 
         In order to get metrics for __init__(), call helper method _init()
         for the @metrics decorator to work. It relies on the returned
-        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+        {'trace' : trace}, which __init__() can not do (needs to be None).
 
         :param: See ._init() for details
 
@@ -51,7 +52,7 @@ class FileDirSelectTk:
             from lib.exceptions import MorPyException
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-    @metrics
+    @morpy_wrap
     def _init(self, morpy_trace: dict, app_dict: dict, rows_data: dict, title: str = None,
                  icon_data: dict = None) -> dict:
         r"""
@@ -80,7 +81,7 @@ class FileDirSelectTk:
                     ...}
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
             selections: Dictionary with selections made, keyed with the row name. Example:
                 {"selection_name" : value}
@@ -105,8 +106,8 @@ class FileDirSelectTk:
                     "default_path" : app_dict["morpy"]["conf"]["data_path"]
                 }
             }
-            gui = morPy.FileDirSelectTk(morpy_trace, app_dict, selection_config, title="Select...")
-            results = gui.run(morpy_trace, app_dict)["selections"]
+            gui = morPy.FileDirSelectTk(trace, app_dict, selection_config, title="Select...")
+            results = gui.run(trace, app_dict)["selections"]
             file = results["file_selected"]
             directory = results["dir_selected"]
         """
@@ -186,7 +187,7 @@ class FileDirSelectTk:
 
         finally:
             return {
-                "morpy_trace" : morpy_trace,
+                "trace" : morpy_trace,
                 "check" : check
             }
 
@@ -198,7 +199,7 @@ class FileDirSelectTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
         """
 
@@ -325,7 +326,7 @@ class FileDirSelectTk:
 
         finally:
             return {
-                "morpy_trace": morpy_trace,
+                "trace": morpy_trace,
                 "check": check
             }
 
@@ -338,7 +339,7 @@ class FileDirSelectTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
         """
 
@@ -378,7 +379,7 @@ class FileDirSelectTk:
 
         finally:
             return {
-                "morpy_trace": morpy_trace,
+                "trace": morpy_trace,
                 "check": check
             }
 
@@ -391,7 +392,7 @@ class FileDirSelectTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
         """
 
@@ -414,11 +415,11 @@ class FileDirSelectTk:
 
         finally:
             return {
-                "morpy_trace": morpy_trace,
+                "trace": morpy_trace,
                 "check": check
             }
 
-    @metrics
+    @morpy_wrap
     def _on_close(self, morpy_trace: dict, app_dict: dict):
         r"""
         Close or abort the GUI.
@@ -427,11 +428,11 @@ class FileDirSelectTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._on_close(morpy_trace, app_dict)
+            self._on_close(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -455,7 +456,7 @@ class FileDirSelectTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
@@ -467,7 +468,7 @@ class FileDirSelectTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
             selections: A dictionary of user inputs keyed by row name.
         """
@@ -491,7 +492,7 @@ class FileDirSelectTk:
 
         finally:
             return {
-                "morpy_trace": morpy_trace,
+                "trace": morpy_trace,
                 "check": check,
                 "selections": self.selections
             }
@@ -509,7 +510,7 @@ class GridChoiceTk:
 
         In order to get metrics for __init__(), call helper method _init()
         for the @metrics decorator to work. It relies on the returned
-        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+        {'trace' : trace}, which __init__() can not do (needs to be None).
 
         :param: See ._init() for details
 
@@ -528,7 +529,7 @@ class GridChoiceTk:
             from lib.exceptions import MorPyException
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-    @metrics
+    @morpy_wrap
     def _init(self, morpy_trace: dict, app_dict: dict, tile_data: dict, title: str=None,
               default_tile_size: tuple=None, icon_data: dict=None):
         r"""
@@ -560,7 +561,7 @@ class GridChoiceTk:
             ...}
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
@@ -581,12 +582,12 @@ class GridChoiceTk:
                     "return_value" : 1,
                     },
             ...}
-            gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
+            gui = morPy.GridChoiceTk(trace, app_dict, tile_data,
                 title="Start Menu",
                 default_tile_size=(128, 128),
                 icon_data=icon_data
             )
-            result = gui.run(morpy_trace, app_dict)["choice"]
+            result = gui.run(trace, app_dict)["choice"]
         """
 
         module: str = 'ui_tk'
@@ -670,7 +671,7 @@ class GridChoiceTk:
 
         finally:
             return {
-                "morpy_trace" : morpy_trace,
+                "trace" : morpy_trace,
                 "check" : check,
             }
 
@@ -682,7 +683,7 @@ class GridChoiceTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
         """
 
@@ -782,7 +783,7 @@ class GridChoiceTk:
 
         finally:
             return {
-                "morpy_trace" : morpy_trace,
+                "trace" : morpy_trace,
                 "check" : check,
             }
 
@@ -795,7 +796,7 @@ class GridChoiceTk:
         :param value: Selected value relating to the clicked tile.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
         """
 
@@ -817,11 +818,11 @@ class GridChoiceTk:
 
         finally:
             return {
-                "morpy_trace" : morpy_trace,
+                "trace" : morpy_trace,
                 "check" : check,
             }
 
-    @metrics
+    @morpy_wrap
     def _on_close(self, morpy_trace: dict, app_dict: dict):
         r"""
         Close or abort the GUI.
@@ -830,11 +831,11 @@ class GridChoiceTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._on_close(morpy_trace, app_dict)
+            self._on_close(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -858,10 +859,10 @@ class GridChoiceTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
-    @metrics
+    @morpy_wrap
     def run(self, morpy_trace: dict, app_dict: dict):
         r"""
         Launches the GUI and waits for the user to make a selection.
@@ -870,7 +871,7 @@ class GridChoiceTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
             choice: The value associated with the selected tile.
 
@@ -885,11 +886,11 @@ class GridChoiceTk:
                     "return_value" : 1,
                 },
             ...}
-            gui = morPy.GridChoiceTk(morpy_trace, app_dict, tile_data,
+            gui = morPy.GridChoiceTk(trace, app_dict, tile_data,
                 title="Start Menu",
                 default_tile_size=(128, 128),
             )
-            result = gui.run(morpy_trace, app_dict)["choice"]
+            result = gui.run(trace, app_dict)["choice"]
         """
 
         module: str = 'ui_tk'
@@ -910,7 +911,7 @@ class GridChoiceTk:
 
         finally:
             return {
-                "morpy_trace" : morpy_trace,
+                "trace" : morpy_trace,
                 "check" : check,
                 "choice" : self.choice
             }
@@ -934,7 +935,7 @@ class ProgressTrackerTk:
 
         In order to get metrics for __init__(), call helper method _init()
         for the @metrics decorator to work. It relies on the returned
-        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+        {'trace' : trace}, which __init__() can not do (needs to be None).
 
         :param: See ._init() for details
 
@@ -955,7 +956,7 @@ class ProgressTrackerTk:
             from lib.exceptions import MorPyException
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-    @metrics
+    @morpy_wrap
     def _init(self, morpy_trace: dict, app_dict: dict, frame_title: str=None, frame_width: int=None,
               frame_height: int=None, headline_total: str=None, headline_font_size: int=10,
               detail_description_on: bool=False, description_font_size: int=8, font: str="Arial",
@@ -989,11 +990,11 @@ class ProgressTrackerTk:
         :param work: A callable (e.g. functools.partial()). Will run in a new thread.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            gui = morPy.ProgressTrackerTk(morpy_trace: dict, app_dict,
+            gui = morPy.ProgressTrackerTk(trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 detail_description="Generic Progress stage",
                 stages=outer_loop_count,
@@ -1006,9 +1007,10 @@ class ProgressTrackerTk:
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         check: bool = False
-        self.frame_height_sizing = False
-        self.height_factor_headlines = 0
-        self.height_factor_description = 0
+        self.frame_height_sizing: bool      = False
+        self.height_factor_headlines: int   = 0
+        self.height_factor_description: int = 0
+        self.destroy: bool                  = False
 
         try:
             # Try to make the process DPI-aware
@@ -1134,11 +1136,11 @@ class ProgressTrackerTk:
 
         finally:
             return {
-                "morpy_trace" : morpy_trace,
+                "trace" : morpy_trace,
                 "check" : check,
             }
 
-    @metrics
+    @morpy_wrap
     def _create_widgets(self, morpy_trace: dict, app_dict: dict):
         r"""
         Build and place all widgets in a grid layout.
@@ -1147,11 +1149,11 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._create_widgets(morpy_trace, app_dict)
+            self._create_widgets(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -1278,7 +1280,7 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
@@ -1296,7 +1298,7 @@ class ProgressTrackerTk:
             self.root.update_idletasks()
             self.root.update()
 
-    @metrics
+    @morpy_wrap
     def _redirect_console(self, morpy_trace: dict, app_dict: dict):
         r"""
         Redirect sys.stdout/sys.stderr to self.
@@ -1305,11 +1307,11 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._redirect_console(morpy_trace, app_dict)
+            self._redirect_console(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -1327,7 +1329,7 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace": morpy_trace,
+            "trace": morpy_trace,
             "check": check,
         }
 
@@ -1337,7 +1339,8 @@ class ProgressTrackerTk:
 
         :param message: Message to be printed to console
 
-        TODO fix writes to console. Somehow not arriving at GUI.
+        FIXME fix writes to console. Messages are not arriving at GUI due to
+            threading.
         """
 
         if self.console_queue is not None:
@@ -1349,7 +1352,7 @@ class ProgressTrackerTk:
         """
         pass
 
-    @metrics
+    @morpy_wrap
     def _stop_console_redirection(self, morpy_trace: dict, app_dict: dict):
         r"""
         Stop capturing print statements in the GUI console.
@@ -1358,11 +1361,11 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._stop_console_redirection(morpy_trace, app_dict)
+            self._stop_console_redirection(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -1380,11 +1383,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace": morpy_trace,
+            "trace": morpy_trace,
             "check": check,
         }
 
-    @metrics
+    @morpy_wrap
     def _main_loop(self, morpy_trace, app_dict):
         r"""
         Main repeating loop for GUI refreshes. Read console queue to update text widget (unless we are done &
@@ -1394,11 +1397,11 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._main_loop(morpy_trace, app_dict)
+            self._main_loop(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -1418,12 +1421,11 @@ class ProgressTrackerTk:
             while not self.ui_calls.empty():
                 call_type, kwargs = self.ui_calls.get_nowait()
 
-                if call_type == "update_text":
-                    self._real_update_text(morpy_trace, app_dict, **kwargs)
-                elif call_type == "update_progress":
-                    self._real_update_progress(morpy_trace, app_dict, **kwargs)
-                elif call_type == "begin_stage":
-                    self._real_begin_stage(morpy_trace, app_dict, **kwargs)
+                # Update displayed information and widgets in GUI
+                match call_type:
+                    case "update_text":     self._real_update_text(morpy_trace, app_dict, **kwargs)
+                    case "update_progress": self._real_update_progress(morpy_trace, app_dict, **kwargs)
+                    case "begin_stage":     self._real_begin_stage(morpy_trace, app_dict, **kwargs)
 
             # Only schedule the next loop if still alive
             if not self.done and self.root.winfo_exists():
@@ -1436,11 +1438,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace": morpy_trace,
+            "trace": morpy_trace,
             "check": check,
         }
 
-    @metrics
+    @morpy_wrap
     def _update_console(self, morpy_trace: dict, app_dict: dict):
         r"""
         One-time call to read from the queue and add text to the widget.
@@ -1449,11 +1451,11 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._update_console(morpy_trace, app_dict)
+            self._update_console(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -1463,7 +1465,6 @@ class ProgressTrackerTk:
         try:
             # Check, if running in main thread
             check_main_thread(app_dict)
-
             while not self.console_queue.empty():
                 msg = self.console_queue.get_nowait()
                 if self.console_output is not None:
@@ -1480,11 +1481,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
-    @metrics
+    @morpy_wrap
     def begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
                     detail_description: str=None, ticks: float=.01):
         r"""
@@ -1507,14 +1508,14 @@ class ProgressTrackerTk:
                       10.7% progress exceeded the exact progress will be logged. Defaults to 0.01.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
             # Set up the next stage
             headline = "Currently querying"
             description = "Starting stage..."
-            progress.begin_stage(morpy_trace, app_dict, stage_limit=10, headline_stage=headline,
+            progress.begin_stage(trace, app_dict, stage_limit=10, headline_stage=headline,
             detail_description=description)
         """
 
@@ -1533,6 +1534,7 @@ class ProgressTrackerTk:
                     "ticks" : ticks
                 }
                 self.ui_calls.put(("begin_stage", call_kwargs))
+                self._enforce_update()
 
             check: bool = True
 
@@ -1541,11 +1543,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
-    @metrics
+    @morpy_wrap
     def _real_begin_stage(self, morpy_trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
                     detail_description: str=None, ticks: float=.01):
         r"""
@@ -1568,14 +1570,14 @@ class ProgressTrackerTk:
                       10.7% progress exceeded the exact progress will be logged. Defaults to 0.01.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
             # Set up the next stage
             headline = "Currently querying"
             description = "Starting stage..."
-            progress.begin_stage(morpy_trace, app_dict, stage_limit=10, headline_stage=headline,
+            progress.begin_stage(trace, app_dict, stage_limit=10, headline_stage=headline,
             detail_description=description)
         """
 
@@ -1584,15 +1586,17 @@ class ProgressTrackerTk:
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
 
         try:
-            # Prevent updates after the GUI is closed.
+            # Prevent updates after the progress is complete.
             if not self.done:
                 # Try resetting progress
                 if hasattr(self, "stage_progress_tracker"):
                     self._real_update_progress(morpy_trace, app_dict, current=0)
 
                 # Stage headline
-                self.headline_stage_no_col = (f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_curr"]}'
-                                 if not headline_stage else f'{headline_stage}')
+                self.headline_stage_no_col = (
+                    f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_curr"]}'
+                    if not headline_stage else f'{headline_stage}'
+                )
                 # Finalize stage headline
                 self.headline_stage = f'{self.headline_stage_no_col}:'
 
@@ -1622,11 +1626,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
-    @metrics
+    @morpy_wrap
     def end_stage(self, morpy_trace: dict, app_dict: dict):
         r"""
         End the current stage by setting it to 100%.
@@ -1635,11 +1639,11 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self.end_stage(morpy_trace, app_dict)
+            self.end_stage(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -1656,11 +1660,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
-    @metrics
+    @morpy_wrap
     def update_progress(self, morpy_trace: dict, app_dict: dict, current: float = None) -> dict:
         r"""
         Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
@@ -1673,39 +1677,39 @@ class ProgressTrackerTk:
             to the progress count. Defaults to None.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            progress = morPy.ProgressTrackerTk(morpy_trace: dict, app_dict,
+            progress = morPy.ProgressTrackerTk(trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 detail_description="Starting stage 1",
                 stages=2,
                 stage_limit=10,
                 work=work)
 
-            progress.run(morpy_trace, app_dict)
+            progress.run(trace, app_dict)
 
             curr_cnt = 5.67
             msg = f'Currently at {curr_cnt}'
-            progress.update_progress(morpy_trace, app_dict, current=curr_cnt, detail_description=msg)
+            progress.update_progress(trace, app_dict, current=curr_cnt, detail_description=msg)
 
             # stage 1 is at 100%
             curr_cnt = 10
             msg = f'Currently at {curr_cnt}'
-            progress.update_progress(morpy_trace, app_dict, current=curr_cnt, detail_description=msg)
+            progress.update_progress(trace, app_dict, current=curr_cnt, detail_description=msg)
 
             # Setup stage 2
-            progress.update_text(morpy_trace, app_dict,
+            progress.update_text(trace, app_dict,
                 headline_stage="Starting stage 2",
                 detail_description="Now copying data...",
             )
-            progress.update_progress(morpy_trace, app_dict, current=0, stage_limit=15)
+            progress.update_progress(trace, app_dict, current=0, stage_limit=15)
 
             # stage 2 is at 100%
             curr_cnt = 15
             msg = f'Currently at {curr_cnt}'
-            progress.update_progress(morpy_trace, app_dict, current=curr_cnt, detail_description=msg)
+            progress.update_progress(trace, app_dict, current=curr_cnt, detail_description=msg)
         """
 
         module: str = 'ui_tk'
@@ -1728,7 +1732,7 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
@@ -1745,7 +1749,7 @@ class ProgressTrackerTk:
             to the progress count. Defaults to None.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
         """
 
@@ -1861,11 +1865,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
-    @metrics
+    @morpy_wrap
     def update_text(self, morpy_trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
                     detail_description: str = None):
         r"""
@@ -1879,11 +1883,11 @@ class ProgressTrackerTk:
         :param detail_description: If not None, sets the description text beneath the stage headline.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether text update completed without errors
 
         :example:
-            gui.update_text(morpy_trace, app_dict,
+            gui.update_text(trace, app_dict,
                 headline_total="Processing Outer Loop 3",
                 headline_stage="Processing File 5",
                 detail_description="Now copying data...")
@@ -1895,7 +1899,7 @@ class ProgressTrackerTk:
 
         try:
             # Prevent updates after the GUI is closed.
-            if not self.done:
+            if not self.destroy:
 
                 # Send text updates to the queue
                 call_kwargs = {
@@ -1904,6 +1908,7 @@ class ProgressTrackerTk:
                     "detail_description" : detail_description,
                 }
                 self.ui_calls.put(("update_text", call_kwargs))
+                self._enforce_update()
 
             check: bool = True
 
@@ -1912,11 +1917,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace": morpy_trace,
+            "trace": morpy_trace,
             "check": check,
         }
 
-    @metrics
+    @morpy_wrap
     def _real_update_text(self, morpy_trace: dict, app_dict: dict, headline_total: str = None,
                           headline_stage: str = None, detail_description: str = None):
         r"""
@@ -1930,11 +1935,11 @@ class ProgressTrackerTk:
         :param detail_description: If not None, sets the description text beneath the stage headline.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether text update completed without errors
 
         :example:
-            gui.update_text(morpy_trace, app_dict,
+            gui.update_text(trace, app_dict,
                 headline_total="Processing Outer Loop 3",
                 headline_stage="Processing File 5",
                 detail_description="Now copying data...")
@@ -2002,9 +2007,9 @@ class ProgressTrackerTk:
             from lib.exceptions import MorPyException
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-        return {"morpy_trace": morpy_trace, "check": check}
+        return {"trace": morpy_trace, "check": check}
 
-    @metrics
+    @morpy_wrap
     def run(self, morpy_trace: dict, app_dict: dict):
         r"""
         Start the GUI main loop and run the Tk mainloop on the main thread.
@@ -2013,18 +2018,18 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            progress = morPy.ProgressTrackerTk(morpy_trace: dict, app_dict,
+            progress = morPy.ProgressTrackerTk(trace: dict, app_dict,
                 frame_title="My Demo Progress GUI",
                 detail_description="Generic Progress stage",
                 stages=1,
                 stage_limit=10,
                 work=work)
 
-            progress.run(morpy_trace, app_dict)
+            progress.run(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -2043,11 +2048,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
-    @metrics
+    @morpy_wrap
     def _start_work_thread(self, morpy_trace: dict, app_dict: dict):
         r"""
         TODO implement morPy threading and use it here
@@ -2059,11 +2064,11 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._start_work_thread(morpy_trace, app_dict)
+            self._start_work_thread(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -2093,11 +2098,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
-    @metrics
+    @morpy_wrap
     def _on_close(self, morpy_trace: dict, app_dict: dict):
         r"""
         Close or abort the GUI.
@@ -2106,11 +2111,11 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self._on_close(morpy_trace, app_dict)
+            self._on_close(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -2146,6 +2151,9 @@ class ProgressTrackerTk:
                     except Empty:
                         break
 
+            # Finally stop any text updates
+            self.destroy = True
+
             # Restore original console if not already done
             self._stop_console_redirection(morpy_trace, app_dict)
             self.root.quit()
@@ -2158,11 +2166,11 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
         }
 
-    @metrics
+    @morpy_wrap
     def get_console_output(self, morpy_trace: dict, app_dict: dict):
         r"""
         Retrieve the current text from the console widget.
@@ -2171,11 +2179,11 @@ class ProgressTrackerTk:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether initialization completed without errors
 
         :example:
-            self.get_console_output(morpy_trace, app_dict)
+            self.get_console_output(trace, app_dict)
         """
 
         module: str = 'ui_tk'
@@ -2195,7 +2203,7 @@ class ProgressTrackerTk:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            "morpy_trace" : morpy_trace,
+            "trace" : morpy_trace,
             "check" : check,
             "console_output" : console_text,
         }
@@ -2220,7 +2228,7 @@ def check_main_thread(app_dict: dict):
             f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_check_main"]}: {threading.current_thread()}'
         )
 
-@metrics
+@morpy_wrap
 def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_types: tuple=None, title: str=None) -> dict:
 
     r"""
@@ -2234,7 +2242,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
     :param title: Title of the open file dialog
 
     :return: dict
-        morpy_trace: operation credentials and tracing
+        trace: operation credentials and tracing
         check: The function ended with no errors and a file was chosen
         file_path: Path of the selected file
         file_selected: True, if file was selected. False, if canceled.
@@ -2243,7 +2251,7 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
         init_dir = "C:\"
         file_types = (('PDF','*.pdf'),('Textfile','*.txt'),('All Files','*.*'))
         title = 'Select a file...'
-        file_path = morPy.dialog_sel_file(morpy_trace, app_dict, init_dir=init_dir,
+        file_path = morPy.dialog_sel_file(trace, app_dict, init_dir=init_dir,
                         file_types=file_types, title=title)["file_path"]
     """
 
@@ -2302,13 +2310,13 @@ def dialog_sel_file(morpy_trace: dict, app_dict: dict, init_dir: str=None, file_
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'file_path' : file_path,
         'file_selected' : file_selected,
         }
 
-@metrics
+@morpy_wrap
 def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
 
     r"""
@@ -2320,7 +2328,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
     :param title: Title of the open directory dialog
 
     :return: dict
-        morpy_trace: operation credentials and tracing
+        trace: operation credentials and tracing
         check: The function ended with no errors and a file was chosen
         dir_path: Path of the selected directory
         dir_selected: True, if directory was selected. False, if canceled.
@@ -2328,7 +2336,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
     :example:
         init_dir = "C:\"
         title = 'Select a directory...'
-        dir_path = morPy.dialog_sel_dir(morpy_trace, app_dict, init_dir=init_dir, title=title)["dir_path"]
+        dir_path = morPy.dialog_sel_dir(trace, app_dict, init_dir=init_dir, title=title)["dir_path"]
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -2382,7 +2390,7 @@ def dialog_sel_dir(morpy_trace: dict, app_dict: dict, init_dir: str=None, title:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'dir_path' : dir_path,
         'dir_selected' : dir_selected,

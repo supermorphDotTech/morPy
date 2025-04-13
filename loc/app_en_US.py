@@ -31,7 +31,7 @@ def loc_app() -> dict:
         "demo_starting" : "Starting",
         "demo_title" : "Progress Tracking Demo",
         "demo_finished" : "Finished",
-        "demo_begin_stage" : "Beginning stage",
+        "demo_begin_stage" : "Beginning Stage",
         "demo_step" : "Step",
         "demo_executed" : "Parallel task executed.",
 

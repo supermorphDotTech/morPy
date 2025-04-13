@@ -6,7 +6,7 @@ Author:     Bastian Neuwirth
 Descr.:     This module defines custom exceptions for the morPy framework.
 """
 
-from lib.decorators import log
+from morPy import log
 
 import sys
 
@@ -17,7 +17,7 @@ class MorPyException(Exception):
     order to reduce tracebacks and specifically point to the issue at hand.
     """
 
-    __slots__ = ['morpy_trace', 'app_dict', 'log_level', 'line', 'module', 'e']
+    __slots__ = ['trace', 'app_dict', 'log_level', 'line', 'module', 'e']
 
     def __init__(self, morpy_trace: dict, app_dict: dict, exception_obj: BaseException, line: int,
                  log_level: str, message: str=None) -> None:
@@ -36,7 +36,7 @@ class MorPyException(Exception):
                 pass # some code
             except Exception as e:
                 raise morPy.exception(
-                    morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "info",
+                    trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "info",
                     message="Specifics regarding the error"
                 )
         """
@@ -78,7 +78,7 @@ class MorPyException(Exception):
                 cause = "app_dict"
                 logging = False
             elif not morpy_trace:
-                cause = "morpy_trace"
+                cause = "trace"
                 logging = True
             elif not log_level:
                 cause = "log_level"

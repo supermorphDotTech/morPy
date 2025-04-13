@@ -15,7 +15,8 @@ must be separated by commas and not other punctuation such as semicolons.
 
 import lib.fct as morpy_fct
 import lib.common as common
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import morpy_wrap
 
 import sys
 from openpyxl import Workbook, load_workbook
@@ -45,7 +46,7 @@ class XlWorkbook:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
-        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+        {'trace' : trace}, which __init__() can not do (needs to be None).
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -62,7 +63,7 @@ class XlWorkbook:
 
         :example:
             wb_path = "C:\projects\my.xlsx"
-            wb = XlWorkbook(morpy_trace, app_dict, wb_path)
+            wb = XlWorkbook(trace, app_dict, wb_path)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -80,7 +81,7 @@ class XlWorkbook:
             from lib.exceptions import MorPyException
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-    @metrics
+    @morpy_wrap
     def _init(self, morpy_trace: dict, app_dict: dict, workbook: str, create: bool=False,
               data_only: bool=False, keep_vba: bool=True) -> dict:
         r"""
@@ -98,11 +99,11 @@ class XlWorkbook:
                     and reopening the workbook is required to change behaviour.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates whether the function ended without errors
 
         :example:
-            self._init(morpy_trace, app_dict)
+            self._init(trace, app_dict)
         """
 
         # morPy credentials (see init.init_cred() for all dict keys)
@@ -175,11 +176,11 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             }
 
-    @metrics
+    @morpy_wrap
     def _create_workbook(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Creates a new, empty Excel workbook at the specified path.
@@ -188,11 +189,11 @@ class XlWorkbook:
         :param app_dict: The morPy global dictionary containing app configurations.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing.
+            trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
 
         :example:
-            self._create_workbook(morpy_trace, app_dict)
+            self._create_workbook(trace, app_dict)
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -217,11 +218,11 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check
         }
 
-    @metrics
+    @morpy_wrap
     def _update_meta(self, morpy_trace: dict, app_dict: dict, minimal: bool=False) -> dict:
         r"""
         Update which metadata of the workbook. This could be which sheet is active
@@ -233,11 +234,11 @@ class XlWorkbook:
             without actually writing to the cell (i.e. active_sheet).
 
         :return: dict
-            morpy_trace: Operation credentials and tracing.
+            trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
 
         :example:
-            self._update_sheets(morpy_trace, app_dict)
+            self._update_sheets(trace, app_dict)
             print(f'{self.active_sheet_title}')
             print(f'{self.wb_sheets}')
         """
@@ -295,11 +296,11 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check
         }
 
-    @metrics
+    @morpy_wrap
     def _cell_ref_autoformat(self, morpy_trace: dict, app_dict: dict, cell_range: list) -> dict:
         r"""
         Converts a list of cells and cell ranges to a dictionary. Overlapping cell
@@ -312,14 +313,14 @@ class XlWorkbook:
             - Range of cells: ["A1:ZZ1000", "C3", ...] (not case-sensitive).
     
         :return: dict
-            morpy_trace: Operation credentials and tracing.
+            trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             cl_dict: Dictionary where cells are keys with empty arguments:
                      {'cell1': '', 'cell2': '', ...}
     
         :example:
             cl_range = ["A1", "B2:C3"]
-            cl_dict = self._cell_ref_autoformat(morpy_trace, app_dict, cell_range = cl_range)["cl_dict"]
+            cl_dict = self._cell_ref_autoformat(trace, app_dict, cell_range = cl_range)["cl_dict"]
         """
     
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -474,12 +475,12 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
     
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             'cl_dict' : cl_dict
             }
 
-    @metrics
+    @morpy_wrap
     def save_workbook(self, morpy_trace: dict, app_dict: dict, close_workbook: bool=False) -> dict:
         r"""
         Saves the changes to the MS Excel workbook.
@@ -489,17 +490,17 @@ class XlWorkbook:
         :param close_workbook: If True, closes the workbook.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing.
+            trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
                 reference to an instance.
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = XlWorkbook(morpy_trace, app_dict, wb_path)
+            wb = XlWorkbook(trace, app_dict, wb_path)
 
             # Save and close the workbook. Write "None" to the reference "wb".
-            wb = wb.save_workbook(morpy_trace, app_dict, close=True)["wb_obj"]
+            wb = wb.save_workbook(trace, app_dict, close=True)["wb_obj"]
             print(f'{wb}')
         """
 
@@ -526,12 +527,12 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             'wb_obj' : wb_obj_return,
         }
 
-    @metrics
+    @morpy_wrap
     def close_workbook(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Closes the MS Excel workbook.
@@ -540,17 +541,17 @@ class XlWorkbook:
         :param app_dict: The morPy global dictionary containing app configurations.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing.
+            trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
                 reference to an instance.
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = XlWorkbook(morpy_trace, app_dict, wb_path)
+            wb = XlWorkbook(trace, app_dict, wb_path)
 
             # Close the workbook. Write "None" to the reference "wb".
-            wb = wb.close_workbook(morpy_trace, app_dict)["wb_obj"]
+            wb = wb.close_workbook(trace, app_dict)["wb_obj"]
             print(f'{wb}')
         """
 
@@ -577,12 +578,12 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             'wb_obj' : None,
         }
 
-    @metrics
+    @morpy_wrap
     def activate_worksheet(self, morpy_trace: dict, app_dict: dict, worksheet: str) -> dict:
         r"""
         Activates a specified worksheet in the workbook. If the sheet is not found,
@@ -593,14 +594,14 @@ class XlWorkbook:
         :param worksheet: The name of the worksheet to activate.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing.
+            trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = XlWorkbook(morpy_trace, app_dict, wb_path)
+            wb = XlWorkbook(trace, app_dict, wb_path)
             w_sht = "Sheet1"
-            wb.activate_worksheet(morpy_trace, app_dict, w_sht)
+            wb.activate_worksheet(trace, app_dict, w_sht)
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -640,11 +641,11 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check
         }
 
-    @metrics
+    @morpy_wrap
     def read_cells(self, morpy_trace: dict, app_dict: dict, cell_range: list=None,
                    cell_styles: bool=False, worksheet: str=None, gui=None) -> dict:
         r"""
@@ -665,7 +666,7 @@ class XlWorkbook:
         :param gui: User Interface reference. Automatically referenced by morPy.ProgressTrackerTk()
 
         :return: dict
-            morpy_trace: Operation credentials and tracing.
+            trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             cl_dict: Dictionary of cell content dictionaries containing values and styles of cells. Following is
                     an example of a single complete cell write:
@@ -723,8 +724,8 @@ class XlWorkbook:
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = morPy.XlWorkbook(morpy_trace, app_dict, wb_path)
-            cl_dict = wb.read_cells(morpy_trace, app_dict, worksheet="Sheet1", cell_range=["A1", "B2:C3"])["cl_dict"]
+            wb = morPy.XlWorkbook(trace, app_dict, wb_path)
+            cl_dict = wb.read_cells(trace, app_dict, worksheet="Sheet1", cell_range=["A1", "B2:C3"])["cl_dict"]
             print(f'{cl_dict}')
         """
 
@@ -850,12 +851,12 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             'cl_dict' : cl_dict
             }
 
-    @metrics
+    @morpy_wrap
     def write_ranges(self, morpy_trace: dict, app_dict: dict, worksheet: str=None, cell_range: list=None,
                      cell_writes: list=None, fill_range: bool=False, style_default: bool=False,
                      save_workbook: bool=True, close_workbook: bool=False) -> dict:
@@ -936,7 +937,7 @@ class XlWorkbook:
 
         :return: dict
             check: Indicates whether the function executed successfully (True/False).
-            morpy_trace: Operation credentials and tracing.
+            trace: Operation credentials and tracing.
             wb_obj: Returns None, if the object was closed. Else returns self. Used to delete the
                 reference to an instance.
 
@@ -953,7 +954,7 @@ class XlWorkbook:
                     "color" : "D1760C",
                     },
             })
-            wb = wb.write_cells(morpy_trace, app_dict, worksheet=w_sh, cell_range=cl_rng, cell_writes=cell_writes
+            wb = wb.write_cells(trace, app_dict, worksheet=w_sh, cell_range=cl_rng, cell_writes=cell_writes
                                 save_workbook=True, close_workbook=True)["wb_obj"]
         """
 
@@ -1052,12 +1053,12 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return {
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             'wb_obj' : wb_obj_return,
         }
 
-    @metrics
+    @morpy_wrap
     def get_table_attributes(self, morpy_trace: dict, app_dict: dict, table: str) -> dict:
         r"""
         Retrieves all attributes of an MS Excel table. OpenPyXL documentation:
@@ -1068,14 +1069,14 @@ class XlWorkbook:
         :param table: Name of the table to be analyzed.
 
         :return: dict
-            morpy_trace: Operation credentials and tracing.
+            trace: Operation credentials and tracing.
             check: Indicates whether the function executed successfully (True/False).
             table_attr: List of the table's attributes.
 
         :example:
             wb_path = "C:\my.xlsx"
-            wb = morPy.XlWorkbook(morpy_trace, app_dict, wb_path)
-            table_attr = wb.get_table_attributes(morpy_trace, app_dict, "Table1")["table_attr"]
+            wb = morPy.XlWorkbook(trace, app_dict, wb_path)
+            table_attr = wb.get_table_attributes(trace, app_dict, "Table1")["table_attr"]
         """
 
         # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1109,12 +1110,12 @@ class XlWorkbook:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
         return{
-            'morpy_trace' : morpy_trace,
+            'trace' : morpy_trace,
             'check' : check,
             'table_attr' : table_attr,
             }
 
-@metrics
+@morpy_wrap
 def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: object, table: str) -> dict:
 
     r"""
@@ -1129,12 +1130,12 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
     :param table: Name of the table to be analyzed.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing.
+        trace: Operation credentials and tracing.
         check: Indicates whether the function executed successfully (True/False).
         table_attr: List containing all attributes of the OpenPyXL data book.
 
     :example:
-        openpyxl_table_data_dict(morpy_trace, app_dict, data_book_obj, "Table1")
+        openpyxl_table_data_dict(trace, app_dict, data_book_obj, "Table1")
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -1192,7 +1193,7 @@ def openpyxl_table_data_dict(morpy_trace: dict, app_dict: dict, table_data: obje
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'table_attr' : table_attr
         }

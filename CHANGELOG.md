@@ -9,7 +9,7 @@ Feel free to comment, share and support this project!
 ![License](https://img.shields.io/github/license/supermorphDotTech/morPy)
 ![GitHub commit activity (monthly)](https://img.shields.io/github/commit-activity/m/supermorphDotTech/morPy)
 
-# v1.0.0b Changelog - Table of Contents <a name="toc"></a>
+# v1.0.0a Changelog - Table of Contents <a name="toc"></a>
 
 [Backlog](#Backlog)  <br/>
 [v1.0.0a - Release Goals](#v1.0.0a)  <br/>
@@ -23,10 +23,6 @@ Feel free to comment, share and support this project!
   - [ ] Inside the morPy wrapper any exceptions could be handled gracefully if they were expected
 - [ ] Enhance formats of tasks tracked by `ProgressTrackerTk()` by list and tuple similar to `process_q()`
 - [ ] Find an elegant way to lock file access for multiprocessing
-  - [ ] Eliminate `lib.mp.is_udit()`
-  - [ ] Eliminate inside `lib.ui_tk.FileDirSelectTk._init()`
-  - [ ] Eliminate inside `lib.ui_tk.GridChoiceTk._init()`
-  - [ ] Eliminate inside `lib.ui_tk.ProgressTrackerTk._init()`
 - [ ] Define dependencies in a supported manifest file types (`package.json` or `Gemfile`)
 - [ ] Improve performance of locks on `app_dict` by checking the workflows in `lib.mp`
 - [ ] Encryption of `app_dict["morpy"]["heap_shelf"]` and `app_dict["morpy"]["proc_waiting"]` to prevent code insertion
@@ -49,11 +45,12 @@ Clean Release for public testing. Linux compatibility tested.
 ### Changes
 
 - [ ] New Wrapper for morPy
-    - [ ] Include metrics (also finish metrics functionality)
+    - [ ] Include metrics
     - [ ] Eliminate the standard returns
     - [ ] Eliminate the try-except-blocks
     - [ ] Eliminate the declarations for tracing and remove `tracing()` from frontend
     - [ ] Eliminate the helper `_init()` methods
+- [ ] Finish metrics functionality
 - [ ] Zero Lints
   - [x] Changed function name `find_replace_saveas()` to `find_replace_save_as()`
   - [x] Overhaul of the frontend `.\morPy.py`
@@ -62,6 +59,11 @@ Clean Release for public testing. Linux compatibility tested.
 - [ ] Acquire lock on log DB during init and release it on exit
 - [ ] Improve locks on `app_dict` to remove the ternary statements used now to determine type `dict | UltraDict`
   - [ ] Develop a `dict`-inherited class which simply ignores context managers
+  - [ ] Eliminate `lib.mp.is_udit()`
+  - [ ] Eliminate inside `lib.ui_tk.FileDirSelectTk._init()`
+  - [ ] Eliminate inside `lib.ui_tk.GridChoiceTk._init()`
+  - [ ] Eliminate inside `lib.ui_tk.ProgressTrackerTk._init()`
+  - [ ] Spread to other classes & functions for thread safety
 - [ ] Finish metrics functionality
 - [ ] Finish SQLite3 module
 - [ ] Clean up localization from unused strings
@@ -73,6 +75,9 @@ Clean Release for public testing. Linux compatibility tested.
   - [ ] Check, if generators are useful
   - [ ] Check, if assert has use cases somewhere
 - [ ] Provide GUI connection in `lib.xl.XlWorkbook.read_cells()` for `ProgressTrackerTk()`
+- [ ] Transform `trace` into a custom class
+  - [ ] Simplify `lib.decorators.evaluate_trace()` with `isinstance()`
+- [ ] Refactored `morpy_trace` to `trace`
 
 # v1.0.0b [⇧](#toc) <a name="v1.0.0b"></a>
 

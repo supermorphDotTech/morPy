@@ -10,14 +10,14 @@ Descr.:     This module delivers functions to debug, warn and log any operations
 
 import lib.fct as morpy_fct
 from lib.common import textfile_write
-from lib.decorators import metrics
+from lib.decorators import morpy_wrap
 from lib.mp import is_udict
 
 import sys
 import time
 from sqlite3 import Connection as sqlite3_Connection
 
-@metrics
+@morpy_wrap
 def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbose: bool) -> None:
     r"""
     This function writes an event to a specified file and/or prints it out
@@ -33,7 +33,7 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
         -
 
     :example:
-        log(morpy_trace, app_dict, level, message)
+        log(trace, app_dict, level, message)
 
     TODO Implement a mechanism to keep logfile size in check
         > Preferably auto delete logs based on "no errors occurred" per process, task, thread and __main__
@@ -63,7 +63,7 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
         log_event_dict = log_event_handler(level)
 
         # The log level will be evaluated as long as logging or prints to console are enabled. The
-        # morpy_trace may be manipulated.
+        # trace may be manipulated.
         if app_dict["morpy"]["conf"]["msg_print"] or app_dict["morpy"]["conf"]["log_enable"]:
             morpy_trace_eval = log_eval(morpy_trace, app_dict, log_event_dict["level"])
 
@@ -111,7 +111,7 @@ def log(morpy_trace: dict, app_dict: dict, level: str, message: callable, verbos
             # Generate print required for GUIs in the regarding child process.
             # FIXME child processes need their own io stream
             # if print_log:
-            #     msg_print(morpy_trace, app_dict, log_dict)
+            #     msg_print(trace, app_dict, log_dict)
 
         # Clean up
         del log_dict
@@ -133,8 +133,8 @@ def log_enqueue(app_dict: dict, priority: int=-100, task: list=None) -> None:
     :return: -
 
     :example:
-        task = [log_task, morpy_trace, app_dict]
-        log_enqueue(morpy_trace, app_dict, task=task)
+        task = [log_task, trace, app_dict]
+        log_enqueue(trace, app_dict, task=task)
     """
 
     # Substitute UltraDict references to mitigate RecursionError
@@ -188,7 +188,7 @@ def log_task(morpy_trace: dict, app_dict: dict, log_dict: dict, write_log_txt: b
         -
 
     :example:
-        log_task(morpy_trace, app_dict, log_dict, write_log_txt, write_log_db, print_log)
+        log_task(trace, app_dict, log_dict, write_log_txt, write_log_db, print_log)
     """
 
     if write_log_txt:
@@ -205,7 +205,7 @@ def log_task(morpy_trace: dict, app_dict: dict, log_dict: dict, write_log_txt: b
 
 def log_eval(morpy_trace: dict, app_dict: dict, level: str) -> dict:
     r"""
-    This function evaluates the log level and makes manipulation of morpy_trace
+    This function evaluates the log level and makes manipulation of trace
     possible for pass-down only. That means, for the purpose of logging, certain
     parameters (keys) may be altered in check with mpy_param.py or other parts
     of the code to hide, extend, enable or what else is needed for a log.
@@ -214,12 +214,12 @@ def log_eval(morpy_trace: dict, app_dict: dict, level: str) -> dict:
     :param app_dict: morPy global dictionary
     :param level: uppercase formatted level
 
-    :return morpy_trace_eval: Evaluated and/or manipulated morpy_trace
+    :return morpy_trace_eval: Evaluated and/or manipulated trace
     """
 
     import copy
 
-    # Deepcopy morpy_trace to manipulate it "pass-down only"
+    # Deepcopy trace to manipulate it "pass-down only"
     morpy_trace_eval = copy.deepcopy(morpy_trace)
 
     # Set defaults

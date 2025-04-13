@@ -47,16 +47,16 @@ def finalize_morpy(final_trace, final_dict):
 
 if __name__ == '__main__':
     try:
-        morpy_trace, app_dict, orchestrator, init_check = initialize_morpy()
-        main(morpy_trace, app_dict, orchestrator)
+        trace, app_dict, orchestrator, init_check = initialize_morpy()
+        main(trace, app_dict, orchestrator)
     except Exception as e:
         # noinspection PyUnboundLocalVariable
-        morpy_trace = morpy_trace if morpy_trace else None
+        trace = trace if trace else None
         # noinspection PyUnboundLocalVariable
         app_dict = app_dict if app_dict else None
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+        raise MorPyException(trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
     finally:
         try:
-            finalize_morpy(morpy_trace, app_dict)
+            finalize_morpy(trace, app_dict)
         except Exception as e:
-            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+            raise MorPyException(trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")

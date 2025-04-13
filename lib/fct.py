@@ -9,9 +9,6 @@ Descr.:     This module yields the most basic functions of the morPy fork. These
             since they are fully compatible with morPy.
 """
 
-import psutil
-import hashlib
-
 def datetime_now() -> dict:
     r"""
     This function reads the current date and time and returns formatted
@@ -89,6 +86,7 @@ def hashify(string: str) -> str:
 
     :return str: SHA-256 hash of the string as a hexadecimal string.
     """
+    import hashlib
     return hashlib.sha256(string.encode('utf-8')).hexdigest()
 
 def runtime(in_ref_time) -> dict:
@@ -126,7 +124,7 @@ def sysinfo() -> dict:
         hostname - Returns the host name.
     """
 
-    import platform, getpass, os.path, socket
+    import platform, getpass, os.path, socket, psutil
 
     system = platform.uname().system
     release = platform.uname().release
@@ -394,8 +392,8 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: 
             reset_w_prefix: str=None) -> dict:
     r"""
     This function formats the trace to any given operation. This function is
-    necessary to alter the morpy_trace as a pass down rather than pointing to the
-    same morpy_trace passed down by the calling operation. If morpy_trace is to be altered
+    necessary to alter the trace as a pass down rather than pointing to the
+    same trace passed down by the calling operation. If trace is to be altered
     in any way (i.e. 'log_enable') it needs to be done after calling this function.
     This is why this function is called at the top of any morPy-operation.
 
@@ -414,7 +412,7 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: 
     :return morpy_trace_pass_down: operation credentials and tracing
     """
 
-    # Deepcopy the morpy_trace dictionary. Any change in either dictionary is not reflected
+    # Deepcopy the trace dictionary. Any change in either dictionary is not reflected
     # in the other one. This is important to pass down a functions trace effectively.
     if clone:
         import copy

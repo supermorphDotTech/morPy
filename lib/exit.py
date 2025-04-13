@@ -7,11 +7,12 @@ Descr.:     This module delivers functions to handle exiting the app.
 """
 
 import lib.fct as morpy_fct
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import morpy_wrap
 
 import sys
 
-@metrics
+@morpy_wrap
 def end_runtime(morpy_trace: dict, app_dict: dict):
     r"""
     This is the mpy exit routine. It is not intended to be used as part of an app, but it may be executed however,
@@ -25,7 +26,7 @@ def end_runtime(morpy_trace: dict, app_dict: dict):
 
     :example:
         from lib.exit import end_runtime
-        end_runtime(morpy_trace, app_dict)
+        end_runtime(trace, app_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)

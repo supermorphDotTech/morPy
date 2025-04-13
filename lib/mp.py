@@ -7,7 +7,8 @@ Descr.:     Multiprocessing functionality for morPy.
 """
 
 import lib.fct as morpy_fct
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import morpy_wrap
 
 import sys
 import time
@@ -36,7 +37,7 @@ class MorPyOrchestrator:
         r"""
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
-        {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+        {'trace' : trace}, which __init__() can not do (needs to be None).
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -55,7 +56,7 @@ class MorPyOrchestrator:
             from lib.exceptions import MorPyException
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
-    @metrics
+    @morpy_wrap
     def _init(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Initialization helper method for parallel processing setup.
@@ -107,11 +108,11 @@ class MorPyOrchestrator:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check,
         }
 
-    @metrics
+    @morpy_wrap
     def _init_processes(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Prepare nested dictionaries and store data in app_dict.
@@ -151,11 +152,11 @@ class MorPyOrchestrator:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check,
         }
 
-    @metrics
+    @morpy_wrap
     def _init_run(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Setup attributes for orchestrator._run().
@@ -181,11 +182,11 @@ class MorPyOrchestrator:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
-            'morpy_trace': morpy_trace_init_run,
+            'trace': morpy_trace_init_run,
             'check': check,
         }
 
-    @metrics
+    @morpy_wrap
     def run(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Routine of the morPy orchestrator. Cyclic program.
@@ -219,11 +220,11 @@ class MorPyOrchestrator:
 
         finally:
             return {
-                'morpy_trace': morpy_trace,
+                'trace': morpy_trace,
                 'check': check,
             }
 
-    @metrics
+    @morpy_wrap
     def heap_pull(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Pushes tasks from the shared memory app_dict["morpy"]["heap_shelf"]
@@ -234,7 +235,7 @@ class MorPyOrchestrator:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates if the task was pulled successfully
             priority: Integer representing task priority (lower is higher priority)
             counter: Number of the task when enqueued
@@ -293,11 +294,11 @@ class MorPyOrchestrator:
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
         return {
-            'morpy_trace': morpy_trace_pull,
+            'trace': morpy_trace_pull,
             'check': check
         }
 
-    @metrics
+    @morpy_wrap
     def _mp_loop(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
         Main loop of the morPy orchestrator. This loop will stay alive
@@ -307,11 +308,11 @@ class MorPyOrchestrator:
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            morpy_trace: Operation credentials and tracing
+            trace: Operation credentials and tracing
             check: Indicates if the task was pulled successfully
 
         :example:
-            self._mp_loop(morpy_trace, app_dict)
+            self._mp_loop(trace, app_dict)
         """
 
         module: str = 'lib.mp'
@@ -408,11 +409,11 @@ class MorPyOrchestrator:
 
         finally:
             return {
-                'morpy_trace': morpy_trace,
+                'trace': morpy_trace,
                 'check': check,
             }
 
-@metrics
+@morpy_wrap
 def app_run(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
     Sequential app init, run and exit routine.
@@ -439,7 +440,7 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
         lambda: f'{app_dict["loc"]["morpy"]["app_run_init"]}')
 
         # Execute
-        app_init_return = app_init(morpy_trace, app_dict)["app_init_return"]
+        app_dict_n_shared = app_init(morpy_trace, app_dict)["app_dict_n_shared"]
 
         # Join all spawned processes before transitioning into the next phase.
         join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
@@ -463,7 +464,7 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
         log(morpy_trace, app_dict, "info",
         lambda: f'{app_dict["loc"]["morpy"]["app_run_start"]}')
 
-        app_run_return = app_run(morpy_trace, app_dict, app_init_return)["app_run_return"]
+        app_dict_n_shared = app_run(morpy_trace, app_dict, app_dict_n_shared)["app_dict_n_shared"]
 
         # Join all spawned processes before transitioning into the next phase.
         join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
@@ -480,7 +481,7 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
         lambda: f'{app_dict["loc"]["morpy"]["app_run_exit"]}')
 
         # Exit the app and signal morPy to exit
-        app_exit(morpy_trace, app_dict, app_run_return)
+        app_exit(morpy_trace, app_dict, app_dict_n_shared)
 
         # Join all spawned processes before transitioning into the next phase.
         join_or_task(morpy_trace, app_dict, reset_trace=True, reset_w_prefix=f'{module}.{operation}')
@@ -499,11 +500,11 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     return {
-        'morpy_trace': morpy_trace,
+        'trace': morpy_trace,
         'check': check,
     }
 
-@metrics
+@morpy_wrap
 def heap_shelve(morpy_trace: dict, app_dict: dict, priority: int=100, task: Callable | list | tuple=None,
                     autocorrect: bool=True, is_process: bool=True, force: bool = False, task_id: int=None) -> dict:
     r"""
@@ -524,14 +525,14 @@ def heap_shelve(morpy_trace: dict, app_dict: dict, priority: int=100, task: Call
     :param task_id: Value representing a task ID. Here it is only used to recover and re-shelve a task.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates if the task was enqueued successfully
 
     :example:
         from lib.mp import heap_shelve
         from functools import partial
-        task = partial(my_func, morpy_trace, app_dict)
-        heap_shelve(morpy_trace, app_dict, priority=25, task=task)
+        task = partial(my_func, trace, app_dict)
+        heap_shelve(trace, app_dict, priority=25, task=task)
     """
 
     module: str = 'lib.mp'
@@ -601,11 +602,11 @@ def heap_shelve(morpy_trace: dict, app_dict: dict, priority: int=100, task: Call
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
     return {
-        'morpy_trace': morpy_trace,
+        'trace': morpy_trace,
         'check': check
     }
 
-@metrics
+@morpy_wrap
 def substitute_ultradict_refs(morpy_trace: dict, app_dict: dict, task: list) -> dict:
     r"""
     Recursively traverse a task (which can be a list, tuple, or dict) and replace any
@@ -652,7 +653,7 @@ def substitute_ultradict_refs(morpy_trace: dict, app_dict: dict, task: list) -> 
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return {
-        "morpy_trace": morpy_trace,
+        "trace": morpy_trace,
         "check": check,
         "task_sanitized": task_sanitized
     }
@@ -697,11 +698,11 @@ def reattach_ultradict_refs(task: list | tuple | dict | UltraDict) -> list:
     task_recreated = reattach(task)
     return task_recreated
 
-@metrics
+@morpy_wrap
 def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority: int=None, task_id: int=None) -> dict:
     r"""
     Takes a task from the morPy heap, reserves a process ID, modifies the
-    morpy_trace of the task and ultimately starts the parallel process.
+    trace of the task and ultimately starts the parallel process.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -710,7 +711,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority: i
     :param task_id: Value representing the unique, continuing task ID
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates if the task was pulled successfully
 
     :example:
@@ -751,7 +752,7 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority: i
             lambda: f'{app_dict["loc"]["morpy"]["run_parallel_shelved"]}')
 
             return {
-                'morpy_trace': morpy_trace,
+                'trace': morpy_trace,
                 'check': True,
             }
 
@@ -824,11 +825,11 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority: i
 
     finally:
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check,
         }
 
-@metrics
+@morpy_wrap
 def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = False) -> dict:
     r"""
     Orchestrator routine to check on child processes and correct
@@ -846,11 +847,11 @@ def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = 
         joined. This may end processes, that could otherwise accept a shelved task.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates if the function ended without errors.
 
     :example:
-        check_child_processes(morpy_trace, app_dict)
+        check_child_processes(trace, app_dict)
     """
 
     module: str = 'lib.mp'
@@ -956,11 +957,11 @@ def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = 
 
     finally:
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check,
         }
 
-@metrics
+@morpy_wrap
 def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, reset_w_prefix: str=None) -> dict:
     r"""
     Join all processes orchestrated by morPy. This can not be used, to arbitrarily join processes.
@@ -976,11 +977,11 @@ def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, r
         a customized trace.
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates if the task was pulled successfully
 
     :example:
-        join_or_task(morpy_trace, app_dict)
+        join_or_task(trace, app_dict)
 
     TODO add idle_timeout to stop waiting for task shelving
     """
@@ -1013,7 +1014,7 @@ def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, r
                 with app_dict["morpy"].lock:
                     exit_flag = app_dict["morpy"]["exit"]
                 if exit_flag:
-                    # child_exit_routine(morpy_trace, app_dict)
+                    # child_exit_routine(trace, app_dict)
                     sys.exit()
 
                 # Wait time to avoid busy wait
@@ -1067,11 +1068,11 @@ def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, r
 
     finally:
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check,
         }
 
-@metrics
+@morpy_wrap
 def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
     This function sets a global interrupt flag. Processes and threads
@@ -1081,11 +1082,11 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
     :param app_dict: morPy global dictionary containing app configurations
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates if the task was pulled successfully
 
     :example:
-        interrupt(morpy_trace, app_dict)
+        interrupt(trace, app_dict)
     """
 
     module: str = 'lib.mp'
@@ -1111,11 +1112,11 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
 
     finally:
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check,
         }
 
-@metrics
+@morpy_wrap
 def stop_while_interrupt(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
     Wait until the global interrupt flag is set to False.
@@ -1124,11 +1125,11 @@ def stop_while_interrupt(morpy_trace: dict, app_dict: dict) -> dict:
     :param app_dict: morPy global dictionary containing app configurations
 
     :return: dict
-        morpy_trace: Operation credentials and tracing
+        trace: Operation credentials and tracing
         check: Indicates if the task was pulled successfully
 
     :example:
-        stop_while_interrupt(morpy_trace, app_dict)
+        stop_while_interrupt(trace, app_dict)
 
     TODO distribute this function throughout the framework
     """
@@ -1173,7 +1174,7 @@ def stop_while_interrupt(morpy_trace: dict, app_dict: dict) -> dict:
 
     finally:
         return {
-            'morpy_trace': morpy_trace,
+            'trace': morpy_trace,
             'check': check,
         }
 
