@@ -35,6 +35,7 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
         run_retval = app_run(morpy_trace, app_dict, init_retval)
     """
 
+<<<<<<< Updated upstream
     # morPy credentials (see init.init_cred() for all dict keys)
     module: str = 'app.run'
     operation: str = 'app_run(~)'
@@ -58,6 +59,23 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
 
             task = [arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5}]
             process_q(morpy_trace, app_dict, task=task, priority=34)
+=======
+    from morPy import process_q
+    from demo.ProgressTrackerTk import run as demo_progress_gui
+    from functools import partial
+
+    # App starting.
+    morPy.log(trace, app_dict, "info",
+        lambda: f'{app_dict["loc"]["morpy"]["app_run_start"]}')
+
+    # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
+    demo_progress_gui(trace, app_dict)
+
+    # Demo for multiprocessing and shelving.
+    for i in range(0, 40):
+        task = partial(arbitrary_task, trace, app_dict, stages=3, total_rep=10 ** 5)
+        process_q(trace, app_dict, task=task, priority=20)
+>>>>>>> Stashed changes
 
             task = (arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
             process_q(morpy_trace, app_dict, task=task, priority=56)
@@ -65,6 +83,7 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
             # task = [demo_ProgressTrackerTk, morpy_trace, app_dict]
             # process_q(morpy_trace, app_dict, task=task, priority=56)
 
+<<<<<<< Updated upstream
         check: bool = True
         time.sleep(2)
 
@@ -77,6 +96,11 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
             'check' : check,
             'app_run_return' : app_run_return
             }
+=======
+    return{
+        'app_dict_n_shared' : app_dict_n_shared
+        }
+>>>>>>> Stashed changes
 
 @metrics
 def arbitrary_task(morpy_trace: dict, app_dict: dict, stages: int = 5, total_rep: int = 10**6, gui=None):
