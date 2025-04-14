@@ -12,9 +12,9 @@ import sys
 
 class MorPyException(Exception):
     r"""
-    This wraps errors in the standard morPy fashion. If one of the arguments
-    required for logging is missing, this wrapper will raise other errors in
-    order to reduce tracebacks and specifically point to the issue at hand.
+    Custom exception class for the morPy framework. It wraps low‑level errors to provide
+    standardized logging and clearer tracebacks. When required arguments for logging are
+    missing, it raises a more focused error to help pinpoint the issue.
     """
 
     __slots__ = ['morpy_trace', 'app_dict', 'log_level', 'line', 'module', 'e']
@@ -22,7 +22,15 @@ class MorPyException(Exception):
     def __init__(self, morpy_trace: dict, app_dict: dict, exception_obj: BaseException, line: int,
                  log_level: str, message: str=None) -> None:
         r"""
+<<<<<<< Updated upstream
         :param morpy_trace: Operation credentials and tracing information.
+=======
+        Constructs a MorPyException using the provided tracing data, global configuration, the
+        original exception, its originating line number, and a log severity level. An optional
+        extra message is appended for additional context.
+
+        :param trace: Operation credentials and tracing information.
+>>>>>>> Stashed changes
         :param app_dict: The morPy global dictionary containing app configurations.
         :param log_level: Severity: debug/info/warning/error/critical/denied
         :param line: Line number of the original error that could not be logged.
@@ -105,9 +113,9 @@ class MorPyException(Exception):
 
 class MorPyCoreError(Exception):
     r"""
-    This error is raised whenever MorPyException fails to generate and log an error
-    as intended. This error will reduce the amount of tracebacks to the most
-    useful messages required for troubleshooting.
+    Raised when MorPyException is unable to properly log or wrap an error due to missing critical
+    arguments. This exception is designed to produce a concise, high‑priority error message indicating
+    the root cause, and it terminates execution after printing its message.
 
     :param exc: Exception object as passed by sys of the parent function/method.
     :param root_line: Line number of the original error that could not be logged.

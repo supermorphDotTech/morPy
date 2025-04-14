@@ -56,8 +56,14 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
             task = partial(arbitrary_task, morpy_trace, app_dict, stages=3, total_rep=10 ** 5)
             process_q(morpy_trace, app_dict, task=task, priority=20)
 
+<<<<<<< Updated upstream
             task = [arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5}]
             process_q(morpy_trace, app_dict, task=task, priority=34)
+=======
+    for i in range(0, 40):
+        task = partial(arbitrary_task, trace, app_dict, stages=3, total_rep=10 ** 5)
+        process_q(trace, app_dict, task=task, priority=20)
+>>>>>>> Stashed changes
 
             task = (arbitrary_task, morpy_trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
             process_q(morpy_trace, app_dict, task=task, priority=56)
@@ -65,8 +71,15 @@ def app_run(morpy_trace: dict, app_dict: dict | UltraDict, app_init_return: dict
             # task = [demo_ProgressTrackerTk, morpy_trace, app_dict]
             # process_q(morpy_trace, app_dict, task=task, priority=56)
 
+<<<<<<< Updated upstream
         check: bool = True
         time.sleep(2)
+=======
+        morPy.join_or_task(trace, app_dict)
+
+        # task = [demo_ProgressTrackerTk, trace, app_dict]
+        # process_q(trace, app_dict, task=task, priority=56)
+>>>>>>> Stashed changes
 
     except Exception as e:
         raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")

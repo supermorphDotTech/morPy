@@ -14,8 +14,9 @@ import hashlib
 
 def datetime_now() -> dict:
     r"""
-    This function reads the current date and time and returns formatted
-    stamps.
+    Returns a dictionary containing the current date and time in multiple formats: the raw datetime
+    object, a formatted date (DD.MM.YYYY), a datestamp (YYYY-MM-DD), time (hh:mm:ss), timestamp (hhmmss),
+    a combined date–timestamp string (YYYY-MM-DD_hhmmss), and a logging stamp (YYYYMMDD_hhmmss).
 
     :return: dict
         datetime_value - Date and time in the format YYYY-MM-DD hh:mm:ss.ms as value
@@ -83,7 +84,7 @@ def datetime_now() -> dict:
 
 def hashify(string: str) -> str:
     """
-    Hash the given string using SHA-256 and return the hexadecimal digest.
+    Returns the SHA‑256 hexadecimal hash of a given input string.
 
     :param string: The input string to hash.
 
@@ -93,7 +94,8 @@ def hashify(string: str) -> str:
 
 def runtime(in_ref_time) -> dict:
     r"""
-    This function calculates the time delta between now and a reference time.
+    Computes the elapsed time (as a timedelta) between the current time and a
+    reference time provided as input.
 
     :param in_ref_time: Value of the reference time to calculate the actual runtime
 
@@ -111,7 +113,10 @@ def runtime(in_ref_time) -> dict:
 
 def sysinfo() -> dict:
     r"""
-    This function returns information about the hardware and operating system.
+    Returns a dictionary of system information including: operating system name, release and
+    version, architecture and processor details, logical CPU count, total system memory in
+    bytes, username, home directory, hostname, and the primary monitor’s resolution (width
+    and height).
 
     :return: dict
         system - Operating system.
@@ -180,8 +185,9 @@ def sysinfo() -> dict:
 
 def pathtool(in_path) -> dict:
     r"""
-    This function takes a string and converts it to a path. Additionally,
-    it returns path components and checks.
+    Converts an input string into an absolute path using pathlib, and returns a dictionary
+    containing: the normalized path; booleans indicating whether it represents a file or directory;
+    existence checks; the file or directory name; any file extension; and the parent directory path.
 
     :param in_path: Path to be converted
 
@@ -237,7 +243,9 @@ def pathtool(in_path) -> dict:
 
 def path_join(path_parts, file_extension):
     r"""
-    This function joins components of a tuple to a path with auto-detection of a file extension.
+    Joins a tuple of path components into a single OS‑appropriate path string. If a file extension
+    is provided (and not already part of the tuple), it is appended. Returns a pathlib.Path object
+    representing the constructed path; if the input isn’t a tuple, returns None.
 
     :param path_parts: Tuple of parts to be joined. Exact order is critical. Examples:
                      ('C:', 'This', 'is', 'my', 'path', '.txt') - C:\This\is\my\path.txt
@@ -294,7 +302,10 @@ def path_join(path_parts, file_extension):
 
 def perfinfo() -> dict:
     r"""
-    This function returns hardware stats relevant for performance.
+    Gathers and returns a set of hardware and performance metrics including: boot time,
+    physical and logical CPU counts, maximum/minimum/current CPU frequencies, system-wide
+    CPU utilization (both overall and individual cores), total physical memory (MB),
+    available memory, used memory, and free memory.
 
     :return: dict
         boot_time - Timestamp of the latest recorded boot process.
@@ -356,7 +367,13 @@ def perfinfo() -> dict:
 
 def app_dict_to_string(app_dict, depth: int=0) -> str:
     r"""
+<<<<<<< Updated upstream
     This function creates a string for the entire app_dict. May exceed memory.
+=======
+    Generates a UTF‑8 string representation of the complete global app configuration
+    dictionary (app_dict) preserving its nested structure. Note that for very large
+    dictionaries this may be memory‑intensive.
+>>>>>>> Stashed changes
 
     :param app_dict: morPy global dictionary
     :param depth: Tracks the current indentation level for formatting the dictionary structure.
@@ -396,11 +413,17 @@ def app_dict_to_string(app_dict, depth: int=0) -> str:
 def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: bool=False,
             reset_w_prefix: str=None) -> dict:
     r"""
+<<<<<<< Updated upstream
     This function formats the trace to any given operation. This function is
     necessary to alter the morpy_trace as a pass down rather than pointing to the
     same morpy_trace passed down by the calling operation. If morpy_trace is to be altered
     in any way (i.e. 'log_enable') it needs to be done after calling this function.
     This is why this function is called at the top of any morPy-operation.
+=======
+    Creates (or clones) a trace dictionary by appending the current module and operation to the existing
+    tracing string. Optionally resets the trace if requested. Returns the updated trace to be passed down
+    to subsequent morPy functions.
+>>>>>>> Stashed changes
 
     :param module: Name of the module, the operation is defined in (i.e. 'lib.common')
     :param operation: Name of the operation executed (i.e. 'tracing(~)')

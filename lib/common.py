@@ -21,16 +21,22 @@ from heapq import heappush, heappop
 
 class PriorityQueue:
     r"""
-    PriorityQueue implements a task queue with priority handling.
-    When tasks are enqueued, the task with the lowest (highest priority) number
-    is pulled first.
+    Provides a priority‑based task queue where lower numeric values indicate
+    higher priority. Enqueued tasks are also timestamped with an incrementing
+    counter to preserve insertion order for tasks sharing the same priority.
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, name: str=None) -> None:
         r"""
+<<<<<<< Updated upstream
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
         {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+=======
+        Sets up the priority queue with tracing, the global configuration, and an
+        optional name. It initializes internal counters and data structures needed
+        for task storage and lookup.
+>>>>>>> Stashed changes
 
         :param: See ._init() for details
 
@@ -107,7 +113,11 @@ class PriorityQueue:
     @metrics
     def enqueue(self, morpy_trace: dict, app_dict: dict, priority: int=100, task: tuple=None) -> dict:
         r"""
-        Adds a task to the priority queue.
+        Adds a task to the priority queue under a specified integer priority (lower means
+        higher priority). The task must be supplied as a callable packaged with its arguments
+        (for example, as a tuple or partial). If the task is already present (as determined by
+        its system‐ID), a debug message indicates duplication; otherwise, it is inserted with
+        an associated counter.
 
         :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -182,7 +192,9 @@ class PriorityQueue:
     @metrics
     def pull(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
-        Removes and returns the highest priority task from the priority queue.
+        Removes the highest‑priority task from the queue and returns a dictionary
+        with the task’s priority, counter value, system‑assigned task ID, and the
+        task components as a list. If the queue is empty, a debug message is logged.
 
         :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -258,15 +270,23 @@ class PriorityQueue:
 
 class ProgressTracker:
     r"""
-    Progress counter to continuously keep track of operations.
+    Maintains a numerical counter to track progress during long‑running operations. It logs progress
+    updates at specified tick percentages and supports both floating‑point and integer counting for
+    efficiency.
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
                  float_progress: bool=False, verbose: bool=False) -> None:
         r"""
+<<<<<<< Updated upstream
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
         {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+=======
+        Initializes the progress tracker with a descriptive label, a total count needed for completion,
+        and a tick value (in percent) that determines when to log progress updates. An option is
+        available to use floating‑point progress and to enable verbose logging.
+>>>>>>> Stashed changes
 
         :param: See ._init() for details
 
@@ -432,7 +452,8 @@ class ProgressTracker:
     @metrics
     def update(self, morpy_trace: dict, app_dict: dict, current: float=None) -> dict:
         r"""
-        Method to update current progress and log progress if tick is passed.
+        Updates the current progress count (either incrementally or to a given value) and
+        logs progress if a tick threshold is reached.
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -526,9 +547,9 @@ class ProgressTracker:
 @metrics
 def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding: str='') -> dict:
     r"""
-    This function decodes different types of data and returns
-    a plain text to work with in python. The return result behaves
-    like using the open(file, 'r') method.
+    Decodes binary data into a plain text (string) buffer using a specified encoding, or
+    auto‑detects the encoding if none is provided. Returns a dictionary including the decoded
+    result (as a StringIO object), the encoding used, and the number of lines in the text.
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
@@ -623,8 +644,9 @@ def decode_to_plain_text(morpy_trace: dict, app_dict: dict, src_input, encoding:
 @metrics
 def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, overwrite: bool=False) -> dict:
     r"""
-    Copies a single file from the source to the destination. Includes a file
-    check to ensure the operation's validity.
+    Copies a file from a complete source path to a complete destination path. Before copying,
+    it verifies that the source exists and whether the destination should be overwritten based
+    on the ‘overwrite’ flag; logs the action accordingly.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -723,7 +745,8 @@ def fso_copy_file(morpy_trace: dict, app_dict: dict, source: str, dest: str, ove
 @metrics
 def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str) -> dict:
     r"""
-    Creates a directory and its parent directories recursively.
+    Creates a directory (and all necessary parent directories) at the specified path.
+    If the directory already exists, a debug message is logged and no action is taken.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -779,8 +802,8 @@ def fso_create_dir(morpy_trace: dict, app_dict: dict, mk_dir: str) -> dict:
 @metrics
 def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
     r"""
-    Deletes an entire directory, including its contents. A directory check
-    is performed before deletion.
+    Recursively deletes an entire directory and its contents after checking that the
+    specified directory exists. Logs the deletion outcome.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -837,7 +860,8 @@ def fso_delete_dir(morpy_trace: dict, app_dict: dict, del_dir: str) -> dict:
 @metrics
 def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str) -> dict:
     r"""
-    Deletes a file. Will check path before deletion.
+    Deletes a single file after verifying that the file exists at the specified path.
+    Logs the operation, or if the file does not exist, logs a warning.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -894,7 +918,9 @@ def fso_delete_file(morpy_trace: dict, app_dict: dict, del_file: str) -> dict:
 @metrics
 def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict:
     r"""
-    Returns the contents of a directory.
+    Recursively lists the contents of the specified directory up to a given depth. Returns a
+    dictionary mapping each discovered root (labeled sequentially) to its path, a list of
+    sub‑directories, and a list of files.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -971,7 +997,8 @@ def fso_walk(morpy_trace: dict, app_dict: dict, path: str, depth: int=1) -> dict
 @metrics
 def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str) -> dict:
     r"""
-    Searches for a regular expression in a given object and returns a list of found expressions.
+    Searches the input (converted to a string) for all occurrences of a given regular expression
+    pattern and returns a list of all matching substrings, or None if no matches are found.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1030,7 +1057,8 @@ def regex_findall(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
 @metrics
 def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern: str) -> dict:
     r"""
-    Searches for a regular expression in a given object and returns the first match.
+    Searches the input string for the first occurrence of a specified regular expression pattern
+    and returns that match, or None if there is no match.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1098,7 +1126,8 @@ def regex_find1st(morpy_trace: dict, app_dict: dict, search_obj: object, pattern
 @metrics
 def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter: str) -> dict:
     r"""
-    Splits an object into a list using a given delimiter.
+    Splits the input (converted to a string) into a list of substrings using the specified
+    delimiter. Delimiters that are special characters in regex should be escaped appropriately.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1167,7 +1196,8 @@ def regex_split(morpy_trace: dict, app_dict: dict, search_obj: object, delimiter
 @metrics
 def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_for: str, replace_by: str) -> dict:
     r"""
-    Substitutes characters or strings in an input object based on a regular expression.
+    Replaces every occurrence of a regular expression pattern in the input string with a
+    provided replacement string, returning the modified string.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1228,9 +1258,9 @@ def regex_replace(morpy_trace: dict, app_dict: dict, search_obj: object, search_
 @metrics
 def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spec_lst: list) -> dict:
     r"""
-    Removes or replaces special characters in a given string. The `spec_lst` parameter
-    specifies which characters to replace and their replacements. If no replacement is
-    specified, a standard list is used to remove special characters without substitution.
+    Processes the input string to remove or replace special characters according to a list of
+    (special, replacement) tuples. If a default list is requested (by specifying an empty tuple),
+    a standard set of common special characters is used.
 
     This function can also perform multiple `regex_replace` actions on the same string,
     as any valid regular expression can be used in the `spec_lst`.
@@ -1355,7 +1385,8 @@ def regex_remove_special(morpy_trace: dict, app_dict: dict, inp_string: str, spe
 @metrics
 def textfile_write(morpy_trace: dict, app_dict: dict, filepath: str, content: str) -> dict:
     r"""
-    Appends content to a text file, creating the file if it does not already exist.
+    Appends text content to a specified file. If the file does not exist, it is created.
+    The content is converted to a string as needed.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1458,8 +1489,10 @@ def testprint(morpy_trace: dict, app_dict: dict, message: str) -> dict:
 def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, password: str = None,
                           file_path: str = None, file_name: str = None, overwrite: bool = True) -> dict:
     r"""
-    Create a QR-code for a Wi-Fi network. Scanning the QR-Code will offer a quick-connect to
-    the regarding Wi-Fi network. Output file will be overwritten by default.
+    Generates a QR code that encodes Wi‑Fi network credentials (SSID and WPA2 password) to allow easy
+    network connection via scanning. The QR code is saved as a PNG file in a specified directory
+    (defaulting to ‘./data’), and by default will overwrite any existing file with the same name.
+    (It is recommended not to hardcode passwords in source code.)
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -1540,9 +1573,8 @@ def qrcode_generator_wifi(morpy_trace: dict, app_dict: dict, ssid: str = None, p
 @metrics
 def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
     r"""
-    Pauses program execution until a user provides input. The input is then
-    returned to the calling module. Take note, that the returned user input
-    will always be a string.
+    Pauses execution until the user provides input at a command‑line prompt. The supplied message
+    is displayed, and the user input (always returned as a string) is captured.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1594,9 +1626,9 @@ def wait_for_input(morpy_trace: dict, app_dict: dict, message: str) -> dict:
 @metrics
 def wait_for_select(morpy_trace: dict, app_dict: dict, message: str, collection: tuple=None) -> dict:
     r"""
-    Pauses program execution until a user provides input. The input needs to
-    be part of a tuple, otherwise it is repeated or aborted. Take note, that the
-    returned user input will always be a string.
+    Prompts the user for input that must match one of the elements in a provided tuple. If the
+    entered input is invalid, the prompt is repeated (or the process is aborted) until a valid
+    option is selected.
 
     :param morpy_trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.

@@ -17,8 +17,10 @@ import sys
 def find_replace_save_as(morpy_trace: dict, app_dict: dict, search_obj, replace_tpl: tuple, save_as: str,
                         overwrite: bool=False) -> dict:
     r"""
-    This function finds and replaces strings in a readable object
-    line by line. The result is saved into a file specified.
+    Iterates through each line of the given text (converted to a string) to find and replace
+    substrings according to provided tuples of (pattern, replacement). The resulting text is
+    written to the specified file. If the target file exists and overwriting is disallowed,
+    the operation is skipped.
 
     :param morpy_trace: operation credentials and tracing
     :param app_dict: morPy global dictionary

@@ -12,15 +12,9 @@ def loc_morpy() -> dict:
     This dictionary defines all messages for morPy core functions localized to a
     specific language.
 
-    :param:
-        -
-
     :return: dict
         loc_morpy_dict: Localization dictionary for morPy core functions. All keys
             will be copied to app_dict during morPy initialization.
-
-    :example:
-        app_dict["loc"]["mpy"][KEY]
     """
 
     loc_morpy_dict = {
@@ -32,12 +26,6 @@ def loc_morpy() -> dict:
         # ERRORS - Common vocabulary
         'err_line' : 'Line',
         'err_module' : 'in module',
-        'err_excp' : 'Exception',
-        'priority' : 'priority',
-        'trace' : 'trace',
-        'process' : 'process',
-        'thread' : 'thread',
-        'task' : 'task',
 
         # ERRORS - Built-in error types
         'AssertionError' : 'Assertion failed.',
@@ -89,16 +77,12 @@ def loc_morpy() -> dict:
         'PriorityQueue_init_done' : 'Priority queue initialized.',
 
         # common.py - PriorityQueue.enqueue(~)
-        'PriorityQueue_enqueue_task' : 'Task',
-        'PriorityQueue_enqueue_prio_corr' : 'Invalid argument given to process queue. Autocorrected.',
         'PriorityQueue_enqueue_start' : 'Pushing task to',
         'PriorityQueue_enqueue_priority' : 'Priority',
         'PriorityQueue_enqueue_none' : 'Task can not be None. Skipping enqueue.',
 
         # common.py - PriorityQueue.pull(~)
-        'PriorityQueue_pull_task' : 'Task',
         'PriorityQueue_pull_start' : 'Pulling task from',
-        'PriorityQueue_pull_name' : 'Task name',
         'PriorityQueue_pull_priority' : 'Priority',
         'PriorityQueue_pull_cnt' : 'Counter',
         'PriorityQueue_pull_void' : 'Can not pull from an empty priority queue. Skipped...',
@@ -501,31 +485,6 @@ def loc_morpy() -> dict:
         'sqlite3_row_update_where_mismatch': 'The number of columns does not match the number of values handed to the function.',
 
         # #################
-        # Area: lib.types_dict.py
-        # #################
-
-        # types_dict.py - AttributeGuard(~)
-        'AttributeGuard' : {
-            'AttributeGuard_no_mod' : 'can not modify an attribute of',
-            'AttributeGuard_no_del': 'Deletion prohibited!',
-        },
-
-        # types_dict.py - MorPyDict(~)
-        'MorPyDict' : {
-            'MorPyDict_denied' : 'Prohibited method',
-            'MorPyDict_new_key' : 'Keys can not be added.',
-            'MorPyDict_del_key' : 'Keys can not be deleted.',
-            'MorPyDict_clear' : 'Dictionary can not be cleared.',
-            'MorPyDict_lock' : 'Dictionary is locked.',
-            'MorPyDict_item' : 'Item',
-            'MorPyDict_key' : 'Key',
-            'MorPyDict_val' : 'Value',
-            "MorPyDict_key_str" : "Keys must be strings.",
-            "MorPyDict_empty" : "Dictionary is empty.",
-            "MorPyDict_err_unlink" : "Error unlinking UltraDict instance",
-        },
-
-        # #################
         # Area: lib.ui_tk.py
         # #################
 
@@ -644,16 +603,10 @@ def loc_morpy_dbg() -> dict:
     This dictionary defines all messages for morPy core functions debugging localized to a
     specific language.
 
-    :param:
-        -
-
     :return: dict
         loc_morpy_dbg_dict: Localization dictionary for morPy unit tests. All keys
             will be copied to app_dict during unit testing instead of morPy
             initialization.
-
-    :example:
-        app_dict["loc"]["dbg"][KEY]
     """
 
     loc_morpy_dbg_dict = {}

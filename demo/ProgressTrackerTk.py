@@ -45,9 +45,20 @@ def run(morpy_trace: dict, app_dict: dict) -> dict:
         stages = 5
         total_rep = 10 ** 2
 
+<<<<<<< Updated upstream
         # Starting
         log(morpy_trace, app_dict, "info",
             lambda: f'{app_dict["loc"]["app"]["demo_starting"]} {module}.{operation}')
+=======
+    progress = morPy.ProgressTrackerTk(trace, app_dict,
+                                     frame_title=f'{app_dict["loc"]["app"]["demo_title"]}',
+                                     stages=stages,
+                                     detail_description_on=True,
+                                     console=False,
+                                     auto_close=True,
+                                     work=task  # run task in a background thread
+                                     )
+>>>>>>> Stashed changes
 
         task = partial(arbitrary_task, morpy_trace, app_dict, stages=stages, total_rep=total_rep, gui=None)
 

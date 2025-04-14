@@ -9,7 +9,7 @@ Feel free to comment, share and support this project!
 ![License](https://img.shields.io/github/license/supermorphDotTech/morPy)
 ![GitHub commit activity (monthly)](https://img.shields.io/github/commit-activity/m/supermorphDotTech/morPy)
 
-# v1.0.0b - Table of contents [≛](#4.) [⇩](#7.) <a name="toc"></a>
+# v1.0.0a - Table of contents [≛](#4.) [⇩](#7.) <a name="toc"></a>
 
 `1.` [Requirements and Dependencies](#1.)  
 &nbsp;
@@ -96,7 +96,7 @@ Feel free to comment, share and support this project!
 2. Define the Python version
 
 ```PowerShell
-$env:python_version = 312
+$env:python_version = 310   # Python version indication
 $env:python_path = "$($env:userprofile)\AppData\Local\Programs\Python\Python$($env:python_version)"
 $env:python_exe = "$($env:python_path)\python.exe"
 ```

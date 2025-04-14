@@ -19,7 +19,8 @@ from typing import Any, Callable, List
 
 class MorPyOrchestrator:
     r"""
-    Class of morPy orchestrators.
+    Manages and coordinates tasks across multiple processes. It sets up internal queues, tracks
+    available versus busy processes, and synchronizes task execution in multiprocessing environments.
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict) -> None:
@@ -48,15 +49,22 @@ class MorPyOrchestrator:
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
-        Initialization helper method for parallel processing setup.
+        Initializes the orchestrator by reading the maximum process count from the configuration, determining
+        whether multiprocessing is enabled, and initializing internal data structures (heap, task tracking).
+        It then prepares process tracking structures for busy and available process IDs and calls _init_run
+        to record the invoking context.
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         """
 
+<<<<<<< Updated upstream
         module: str = 'lib.mp'
         operation: str = 'MorPyOrchestrator._init(~)'
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+=======
+        app_dict["morpy"]["orchestrator"]["terminate"] = False
+>>>>>>> Stashed changes
 
         try:
             # Set app termination flag
@@ -104,7 +112,9 @@ class MorPyOrchestrator:
     @metrics
     def _init_processes(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
-        Prepare nested dictionaries and store data in app_dict.
+        Prepares shared dictionaries for tracking process states. It iterates over possible
+        process IDs (except the master) and registers those not already marked as busy as
+        available for task assignment.
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -148,7 +158,12 @@ class MorPyOrchestrator:
     @metrics
     def _init_run(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
+<<<<<<< Updated upstream
         Setup attributes for orchestrator._run().
+=======
+        Captures the calling context (module name and operation) from the trace and stores it
+        within the orchestrator for later logging and diagnostics.
+>>>>>>> Stashed changes
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -178,18 +193,30 @@ class MorPyOrchestrator:
     @metrics
     def run(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
-        Routine of the morPy orchestrator. Cyclic program.
+        Starts the application by enqueuing the main task for multiprocessing if enabled;
+        otherwise, it runs the app sequentially. In multiprocessing mode it calls the
+        internal loop (_mp_loop) to continuously process tasks.
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
         """
 
+<<<<<<< Updated upstream
         module: str = 'lib.mp'
         operation: str = 'MorPyOrchestrator.run(~)'
         # TODO Find out, why morpy_trace["process_id"] is overwritten in app trace
         # The enforced deepcopy morpy_fct.tracing() is a workaround.
         morpy_trace_app: dict = morpy_fct.tracing(module, operation, morpy_trace)
         morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+=======
+        # Start the app - multiprocessing loop
+        if self._mp:
+            app_task = [app_run, trace, app_dict]
+            heap_shelve(trace, app_dict, priority=-90, task=app_task, autocorrect=False, force=self._mp)
+
+            # Enter the multiprocessing loop
+            self._mp_loop(trace, app_dict)
+>>>>>>> Stashed changes
 
         check: bool = False
 
@@ -220,9 +247,9 @@ class MorPyOrchestrator:
     @metrics
     def heap_pull(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
-        Pushes tasks from the shared memory app_dict["morpy"]["heap_shelf"]
-        to the internal heap. Removes and returns the highest priority task
-        from the heap.
+        Transfers any tasks that have been shelved in the shared heap_shelf into the orchestrator’s
+        own heap queue. Then it pops the highest‑priority task and stores its details in the
+        orchestrator’s current task record.
 
         :param morpy_trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -294,8 +321,9 @@ class MorPyOrchestrator:
     @metrics
     def _mp_loop(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
-        Main loop of the morPy orchestrator. This loop will stay alive
-        for the most part of runtime if multiprocessing is enabled.
+        Executes the orchestrator’s main processing loop. It continuously checks for new tasks
+        in the heap, either processing them by spawning new processes or by executing tasks
+        directly. It also monitors exit conditions and cleans up orphaned processes.
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -430,7 +458,9 @@ class MorPyOrchestrator:
 @metrics
 def app_run(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
-    Sequential app init, run and exit routine.
+    Coordinates the sequential execution of the three main phases: app initialization, main run,
+    and exit. In multiprocessing mode, the tasks are enqueued and managed by the orchestrator;
+    in single‑process mode, they are executed directly.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -524,7 +554,10 @@ def app_run(morpy_trace: dict, app_dict: dict) -> dict:
 def heap_shelve(morpy_trace: dict, app_dict: dict, priority: int=100, task: Callable | list | tuple=None,
                     autocorrect: bool=True, is_process: bool=True, force: bool = False, task_id: int=None) -> dict:
     r"""
-    Adds a task to the morPy process queue.
+    Queues a new task into the shared memory shelf for later execution. The task may be provided in
+    multiple formats; it is normalized into a list, sanitized by substituting UltraDict references,
+    and then stored along with its priority and an incremented task ID. If the caller is not the
+    master process (or if forced), the task is queued; otherwise, it is executed immediately.
 
     :param morpy_trace: Operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -625,8 +658,9 @@ def heap_shelve(morpy_trace: dict, app_dict: dict, priority: int=100, task: Call
 @metrics
 def substitute_ultradict_refs(morpy_trace: dict, app_dict: dict, task: list) -> dict:
     r"""
-    Recursively traverse a task (which can be a list, tuple, or dict) and replace any
-    UltraDict instance with a tuple placeholder. The tuple is structured as follows:
+    Recursively searches through a task (which may be a list, tuple, or dict) and replaces any
+    UltraDict instance with a placeholder tuple (containing its unique name and configuration
+    flags) to prevent serialization recursion errors.
 
         (
             "__morPy_shared_ref__::{UltraDict.name}",
@@ -676,8 +710,8 @@ def substitute_ultradict_refs(morpy_trace: dict, app_dict: dict, task: list) -> 
 
 def reattach_ultradict_refs(task) -> list:
     r"""
-    Recursively traverse a task (which can be a list, tuple, or dict) and replace any
-    placeholder tuple with the actual UltraDict instance. A placeholder tuple must have the form:
+    Recursively converts placeholder tuples back into UltraDict instances by re‑creating them
+    from their stored configuration, restoring the original task structure for execution.
 
         ("__morPy_shared_ref__::{name}",
         UltraDict.shared_lock,
@@ -717,8 +751,14 @@ def reattach_ultradict_refs(task) -> list:
 @metrics
 def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority: int=None, task_id: int=None) -> dict:
     r"""
+<<<<<<< Updated upstream
     Takes a task from the morPy heap, reserves a process ID, modifies the
     morpy_trace of the task and ultimately starts the parallel process.
+=======
+    Attempts to reserve an available process ID; if successful, updates the task’s trace with that
+    ID and spawns a new process (using SpawnWrapper) to run the task in parallel. If no process is
+    available, the task is re‑queued.
+>>>>>>> Stashed changes
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -848,8 +888,10 @@ def run_parallel(morpy_trace: dict, app_dict: dict, task: list=None, priority: i
 @metrics
 def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = False) -> dict:
     r"""
-    Orchestrator routine to check on child processes and correct
-    the process references in app_dict if necessary.
+    Compares the process IDs of child processes currently active (using multiprocessing.active_children)
+    with those stored in the busy process register. If discrepancies are found (i.e. a process is missing
+    or rogue processes exist), logs appropriate warnings, cleans up the internal registers, and attempts
+    to terminate any stray processes.
 
     This function compares the list of active child processes with the
     process references stored in app_dict["morpy"]["proc_busy"]. If a process
@@ -953,6 +995,7 @@ def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = 
 
                         proc_waiting.pop(proc_remnant_id)
 
+<<<<<<< Updated upstream
         if check_join:
             with app_dict["morpy"]["proc_waiting"].lock:
                 proc_waiting = app_dict["morpy"]["proc_waiting"]
@@ -963,6 +1006,27 @@ def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = 
 
                 # All child processes are joined.
                 log(morpy_trace, app_dict, "debug",
+=======
+    if check_join:
+        # No join, if there are tasks on the heap shelf
+        with app_dict["morpy"]["heap_shelf"].lock:
+            if len(app_dict["morpy"]["heap_shelf"]) > 1:
+                return
+
+        # No join, if waiting processes already got a new task assigned
+        with app_dict["morpy"]["proc_waiting"].lock:
+            proc_waiting = app_dict["morpy"]["proc_waiting"]
+        for _p, _t in proc_waiting.items():
+            if _t[0] is not None:
+                return
+
+        # Have in mind, that the orchestrator is never waiting (therefore +1).
+        if len(app_dict["morpy"]["proc_busy"].keys()) == (len(proc_waiting.keys()) + 1):
+            app_dict["morpy"]["proc_joined"] = True
+
+            # All child processes are joined.
+            log(trace, app_dict, "debug",
+>>>>>>> Stashed changes
                 lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_joined"]}')
 
         check: bool = True
@@ -980,9 +1044,9 @@ def check_child_processes(morpy_trace: dict, app_dict: dict, check_join: bool = 
 @metrics
 def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, reset_w_prefix: str=None) -> dict:
     r"""
-    Join all processes orchestrated by morPy. This can not be used, to arbitrarily join processes.
-    It is tailored to be used at the end of app.init, app.run and app.exit! The function is to
-    join all processes of one of the steps (init - run - exit) before transitioning into the next.
+    Waits in a loop until all spawned tasks have completed or a new task appears for the current process.
+    This function is used to synchronize transitions between app phases (e.g. after initialization,
+    before running, or before exiting).
 
     Cleanup of process references is performed by enqueued watcher() functions.
 
@@ -1082,8 +1146,7 @@ def join_or_task(morpy_trace: dict, app_dict: dict, reset_trace: bool = False, r
 @metrics
 def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
-    This function sets a global interrupt flag. Processes and threads
-    will halt once they pass (the most recurring) morPy functions.
+    Immediately sets the global interrupt flag so that tasks will pause once they reach a safe checkpoint.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -1126,7 +1189,8 @@ def interrupt(morpy_trace: dict, app_dict: dict) -> dict:
 @metrics
 def stop_while_interrupt(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
-    Wait until the global interrupt flag is set to False.
+    Causes the calling thread or process to sleep until the global interrupt flag is cleared
+    (or an exit is signaled).
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -1207,7 +1271,9 @@ def stop_while_interrupt(morpy_trace: dict, app_dict: dict) -> dict:
 def shared_dict(name: str = None, create: bool = False, shared_lock: bool = True, size: int = 100_000,
               auto_unlink: bool = False, recurse: bool = False) -> UltraDict:
     r"""
-    Create and return an UltraDict instance using shared memory.
+    Creates or attaches to a shared UltraDict instance with specified parameters (name, creation flag,
+    shared lock usage, buffer size, auto‑unlink behavior, recursion). Returns the UltraDict instance
+    for shared inter‑process access.
 
     :param name: The name to be used for the shared memory block.
     :param create: If True, create a new shared memory block; if False, attach to an existing one.
@@ -1235,9 +1301,46 @@ def shared_dict(name: str = None, create: bool = False, shared_lock: bool = True
 
     return connect_udict
 
+<<<<<<< Updated upstream
+=======
+
+@core_wrap
+def child_exit_routine(trace: dict, app_dict: dict | UltraDict) -> None:
+    r"""
+    Performs cleanup of a terminating child process by removing its references from busy and waiting
+    process registers. After cleanup, the function terminates the process with sys.exit().
+
+    :param trace: Operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+    """
+
+    try:
+        # Remove own process references
+        with app_dict["morpy"]["proc_available"].lock:
+            with app_dict["morpy"]["proc_busy"].lock:
+                # Remove from busy processes
+                app_dict["morpy"]["proc_busy"].pop(trace["process_id"])
+                # Add to processes available IDs (hygiene only, no other use at app exit)
+                app_dict["morpy"]["proc_available"][trace["process_id"]] = None
+
+        with app_dict["morpy"]["proc_waiting"].lock:
+            proc_waiting = app_dict["morpy"]["proc_waiting"]
+            if proc_waiting.get(trace['process_id'], None):
+                proc_waiting.pop(trace['process_id'])
+
+    # In case of a KeyError, the processes references were already cleaned up. This
+    # may happen when an exit is requested and the spawned process still cleans up
+    # regularly.
+    except KeyError:
+        pass
+
+    sys.exit()
+
+
+>>>>>>> Stashed changes
 def is_udict(obj) -> bool:
     r"""
-    Simple type check in the object provided. Returns True, if object is an UltraDict.
+    Checks whether a given object is an instance of UltraDict and returns True if so.
 
     :param obj: Any object.
 
@@ -1257,10 +1360,9 @@ def is_udict(obj) -> bool:
 
 def normalize_task(task):
     r"""
-    Converts a task defined as a partial into the list format:
-        [func, *args, {**keywords}]
-    If the task is already a list, it is returned unchanged.
-    If the task is a tuple, it is converted to list.
+    Converts a task given as a callable, list, tuple, or functools.partial into a standard
+    list format [func, arg1, …, {keyword arguments}]. If already in list form, it is
+    returned unchanged.
 
     :param task: Callable, list or tuple packing the task. Formats:
         callable: partial(func, *args, **kwargs)
@@ -1286,7 +1388,9 @@ def normalize_task(task):
 
 def task_to_partial(task: List[Any]) -> Callable:
     r"""
-    Convert a task list into a callable partial.
+    Takes a task represented as a standard list and converts it into a callable using functools.partial.
+    If the last element is a dictionary, it is treated as keyword arguments; otherwise, all subsequent
+    elements are positional arguments.
 
     The task list is expected to have the following structure:
       [function, arg1, arg2, ..., kwargs]

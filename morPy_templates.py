@@ -18,7 +18,9 @@ import sys
 @metrics
 def template(morpy_trace: dict, app_dict: dict) -> dict:
     r"""
-    This function is a template.
+    This is a template function intended for demonstration purposes. It serves as a
+    starting point for creating new morPy operations. Replace the inner placeholder
+    code with your actual implementation.
 
     :param morpy_trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -62,18 +64,22 @@ def template(morpy_trace: dict, app_dict: dict) -> dict:
 
 class TemplateClass:
     r"""
-    This class is a template.
-
-    !! LIMITATIONS IN MULTIPROCESSING !!
-    Storing classes in `app_dict` to share them across processes may fail, because it's attributes
-    are not propagated reliably to other processes. See README.md for more details.
+    This template class is provided as an example. Note that storing class definitions
+    in the global app configuration for sharing across processes may not propagate attributes
+    reliably (see README.md for details).
     """
 
     def __init__(self, morpy_trace: dict, app_dict: dict) -> None:
         r"""
+<<<<<<< Updated upstream
         In order to get metrics for __init__(), call helper method _init() for
         the @metrics decorator to work. It relies on the returned
         {'morpy_trace' : morpy_trace}, which __init__() can not do (needs to be None).
+=======
+        Initializes the TemplateClass instance using tracing and the morPy global
+        configuration. This constructor logs an informational message and includes
+        placeholder code for further initialization.
+>>>>>>> Stashed changes
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -103,7 +109,12 @@ class TemplateClass:
     @metrics
     def _init(self, morpy_trace: dict, app_dict: dict) -> dict:
         r"""
+<<<<<<< Updated upstream
         Helper method for initialization to ensure @metrics decorator usage.
+=======
+        Example method of the TemplateClass. It logs an informational message and is intended
+        as a placeholder for actual class functionality.
+>>>>>>> Stashed changes
 
         :param morpy_trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations

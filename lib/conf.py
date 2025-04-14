@@ -8,8 +8,10 @@ Descr.:     Initialization parameters for the morPy framework.
 
 def settings():
     r"""
-    Initialization parameters for the morPy framework. These settings are
-    not meant to be tempered with during runtime.
+    Returns the morPy initialization parameters as a dictionary. Settings include localization
+    (language and file paths), privilege requirements, logging and debug options, metrics activation,
+    memory and multiprocessing configurations, and essential filesystem paths for logs, data,
+    databases, and resources.
 
     :return: dict
         > See through the function for detailed descriptions of every morPy setting.
