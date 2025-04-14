@@ -78,14 +78,13 @@ Feel free to comment, share and support this project!
 
 ### 1.1.2 Setup Guidance [⇧](#toc) <a name="1.1.2"></a>
 
-`1.` [Download morPy](https://github.com/supermorphDotTech/morPy/archive/refs/heads/main.zip) and unpack the zipped file into your project directory.
-`2.` Install Python with the option "Add python.exe to PATH" enabled.  
-`3.` Install Microsoft Visual C++ BuildTools  
-`3.1.` Select "Desktopdevelopment with C++"  
-`4.` Install a virtual environment in your project path (see below)  
-`4.1.` [1.1.3.1 Basic Setup](#1.1.3.1)  
-`4.2.` [1.1.3.2 Install Dependencies](#1.1.3.2)  
-`4.3.` [1.1.3.3 Copy Packages to Virtual Environment](#1.1.3.3)
+`1.` Install Python with the option "Add python.exe to PATH" enabled.  
+`2.` Install Microsoft Visual C++ BuildTools  
+`2.1.` Select "Desktopdevelopment with C++"  
+`3.` Install a virtual environment in your project path (see below)  
+`3.1.` [Basic Setup](#1.1.3.1)  
+`3.2.` [Install Dependencies](#1.1.3.2)  
+`3.3.` [Copy Packages to Virtual Environment](#1.1.3.3)
 
 ### 1.1.3 Virtual Environment [⇧](#toc) <a name="1.1.3"></a>
 

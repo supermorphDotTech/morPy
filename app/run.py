@@ -36,18 +36,23 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
         run_retval = run(trace, app_dict, init_retval)
     """
 
-    from morPy import process_q
-    from demo.ProgressTrackerTk import run as demo_progress_gui
-    from functools import partial
-
     # App starting.
     morPy.log(trace, app_dict, "info",
         lambda: f'{app_dict["loc"]["morpy"]["app_run_start"]}')
 
     # Demonstrate how to use lib.ui_tk.ProgressTrackerTk()
+    from demo.ProgressTrackerTk import run as demo_progress_gui
     demo_progress_gui(trace, app_dict)
 
-    # Demo for multiprocessing and shelving.
+    # from morPy import process_q
+    # for i in range(1, 40):
+    #     task = (demo_ProgressTrackerTk, trace, app_dict)
+    #     process_q(trace, app_dict, task=task)
+
+
+    from morPy import process_q
+    from functools import partial
+
     for i in range(0, 40):
         task = partial(arbitrary_task, trace, app_dict, stages=3, total_rep=10 ** 5)
         process_q(trace, app_dict, task=task, priority=20)
@@ -58,6 +63,28 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
         task = (arbitrary_task, trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
         process_q(trace, app_dict, task=task, priority=56)
 
+        morPy.join_or_task(trace, app_dict)
+
+        # task = [demo_ProgressTrackerTk, trace, app_dict]
+        # process_q(trace, app_dict, task=task, priority=56)
+
+    # from morPy import FileDirSelectTk
+    # selection_config = {
+    #     "file_select" : {
+    #         "is_dir" : False,
+    #         "file_types" : (('Textfile','*.txt'), ('All Files','*.*')),
+    #         "default_path" : app_dict["morpy"]["conf"]["data_path"]
+    #     },
+    #     "dir_select" : {
+    #         "is_dir" : True,
+    #         "default_path" : app_dict["morpy"]["conf"]["data_path"]
+    #     }
+    # }
+    # gui = FileDirSelectTk(trace, app_dict, selection_config, title="Select...")
+    # results = gui.run(trace, app_dict)["selections"]
+    # file = results["file_select"]
+    # directory = results["dir_select"]
+    # print(f'{file=}\n{directory=}')
     return{
         'app_dict_n_shared' : app_dict_n_shared
         }
