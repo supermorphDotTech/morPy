@@ -7,50 +7,42 @@ Descr.:     This module delivers functions to handle exiting the app.
 """
 
 import lib.fct as morpy_fct
-from lib.decorators import metrics, log
+from morPy import log
+from lib.decorators import core_wrap
 
 import sys
 
-@metrics
-def exit(morpy_trace: dict, app_dict: dict):
-    r"""
-    This is the mpy exit routine. It is not intended to be used as part of an app, but it may be executed however,
-    at any time after initialization.
 
-    :param morpy_trace: operation credentials and tracing
+@core_wrap
+def end_runtime(trace: dict, app_dict: dict) -> None:
+    r"""
+    Finalizes the morPy runtime by retrieving the exit timestamp, calculating the total runtime,
+    logging event counters and exit details, and then calling sys.exit() to terminate the application.
+
+    :param trace: operation credentials and tracing
     :param app_dict: The mpy-specific global dictionary
 
-    :return:
-        -
-
     :example:
-        from lib.exit import _exit
-        _exit(morpy_trace, app_dict)
+        from lib.exit import end_runtime
+        end_runtime(trace, app_dict)
     """
 
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module: str = 'lib.exit'
-    operation: str = 'exit(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+    # Retrieve exit time and date
+    datetime_exit = morpy_fct.datetime_now()
 
-    try:
-        # Retrieve exit time and date
-        datetime_exit = morpy_fct.datetime_now()
+    # determine runtime duration
+    temp_duration = morpy_fct.runtime(app_dict["morpy"]["init_datetime_value"])
 
-        # determine runtime duration
-        temp_duration = morpy_fct.runtime(app_dict["morpy"]["init_datetime_value"])
+    # Correction of the exit occurrence counter for the very last message
+    app_dict["morpy"]["events_EXIT"] += 1
+    app_dict["morpy"]["events_total"] += 1
 
-        # Correction of the exit occurrance counter for the very last message
-        app_dict["morpy"]["events_EXIT"] += 1
-        app_dict["morpy"]["events_total"] += 1
+    # Determine leading spaces before app_dict["exit_msg_total"] so the colons
+    # of the exit message fall in one vertcal line.
+    spaces_total = 9 - len(app_dict["loc"]["morpy"]["exit_msg_total"])
 
-        # Determine leading spaces before app_dict["exit_msg_total"] so the colons
-        # of the exit message fall in one vertcal line.
-        spaces_total = 9 - len(app_dict["loc"]["morpy"]["exit_msg_total"])
-        leading_total = f'{spaces_total * " "}'
-
-        # Build the exit message
-        log(morpy_trace, app_dict, "exit",
+    # Build the exit message
+    log(trace, app_dict, "exit",
         lambda: f'{app_dict["loc"]["morpy"]["exit_msg_done"]}\n'
                 f'{app_dict["loc"]["morpy"]["exit_msg_started"]}: {app_dict["morpy"]["init_date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {app_dict["morpy"]["init_time"]}\n'
                 f'{app_dict["loc"]["morpy"]["exit_msg_exited"]}: {datetime_exit["date"]} {app_dict["loc"]["morpy"]["exit_msg_at"]} {datetime_exit["time"]}\n'
@@ -66,10 +58,6 @@ def exit(morpy_trace: dict, app_dict: dict):
                 f'     EXIT: {app_dict["morpy"]["events_EXIT"]}\n'
                 f'UNDEFINED: {app_dict["morpy"]["events_UNDEFINED"]}\n'
                 f'{18 * "-"}\n'
-                f'{leading_total}{app_dict["loc"]["morpy"]["exit_msg_total"]}: {app_dict["morpy"]["events_total"]}')
+                f'{spaces_total * " "}{app_dict["loc"]["morpy"]["exit_msg_total"]}: {app_dict["morpy"]["events_total"]}')
 
-        sys.exit(0)
-
-    except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+    sys.exit(0)

@@ -6,8 +6,9 @@ Author:     Bastian Neuwirth
 Descr.:     This module delivers functions to work with a SQLite database. The
             main database as defined in app_dict will be referenced.
 
-TODO troubleshooting and enhancement
-    > Make sqlite3 a class with it's methods
+FIXME I am a construction site
+TODO Complete overhaul
+    > Make this a class
 -----------------
 SQLite Tutorial
 
@@ -82,16 +83,14 @@ SQLite Functions
     SQLite SUM
 """
 
-# TODO make this a class
-# Update how this works (use sets and dicts)
-
+from morPy import log
 import lib.fct as morpy_fct
 import sys
 import sqlite3
 
-from lib.decorators import metrics, log
+from lib.decorators import morpy_wrap
 
-@metrics
+@morpy_wrap
 def sqlite3_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
     r"""
     Establishes a connection to a SQLite database. Creates the database file if it does not exist.
@@ -105,7 +104,7 @@ def sqlite3_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
         error - Error details if the connection fails
 
     :example:
-        sqlite3_db_connect(morpy_trace, app_dict, '/path/to/db.sqlite')
+        sqlite3_db_connect(trace, app_dict, '/path/to/db.sqlite')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -133,7 +132,7 @@ def sqlite3_db_connect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
         from lib.exceptions import MorPyException
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-@metrics
+@morpy_wrap
 def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> dict:
     r"""
     Disconnects a SQLite database.
@@ -147,7 +146,7 @@ def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> di
         message - Details about the disconnection process
 
     :example:
-        sqlite3_db_disconnect(morpy_trace, app_dict, '/path/to/db.sqlite')
+        sqlite3_db_disconnect(trace, app_dict, '/path/to/db.sqlite')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -183,7 +182,7 @@ def sqlite3_db_disconnect(morpy_trace: dict, app_dict: dict, db_path: str) -> di
             from lib.exceptions import MorPyException
             raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
-@metrics
+@morpy_wrap
 def sqlite3_db_statement(morpy_trace: dict, app_dict: dict, db_path: str, db_smnt: str) -> dict:
     r"""
     Executes any SQLite3 statement provided.
@@ -199,7 +198,7 @@ def sqlite3_db_statement(morpy_trace: dict, app_dict: dict, db_path: str, db_smn
         error - Error details if the statement fails.
 
     :example:
-        sqlite3_db_statement(morpy_trace, app_dict, '/path/to/db.sqlite', 'SELECT * FROM table_name')
+        sqlite3_db_statement(trace, app_dict, '/path/to/db.sqlite', 'SELECT * FROM table_name')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -250,11 +249,11 @@ def sqlite3_db_statement(morpy_trace: dict, app_dict: dict, db_path: str, db_smn
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check
         }
 
-@metrics
+@morpy_wrap
 def sqlite3_tbl_check(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> dict:
     r"""
     Checks for the existence of a table in a given SQLite database.
@@ -270,7 +269,7 @@ def sqlite3_tbl_check(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
         error - Error details if the check fails.
 
     :example:
-        sqlite3_tbl_check(morpy_trace, app_dict, '/path/to/db.sqlite', 'users_table')
+        sqlite3_tbl_check(trace, app_dict, '/path/to/db.sqlite', 'users_table')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -330,11 +329,11 @@ def sqlite3_tbl_check(morpy_trace: dict, app_dict: dict, db_path: str, table_nam
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check
         }
 
-@metrics
+@morpy_wrap
 def sqlite3_tbl_create(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str) -> dict:
     r"""
     Creates a table in a given SQLite database.
@@ -350,7 +349,7 @@ def sqlite3_tbl_create(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         error - Error details if the table creation fails.
 
     :example:
-        sqlite3_tbl_create(morpy_trace, app_dict, '/path/to/db.sqlite', 'new_table')
+        sqlite3_tbl_create(trace, app_dict, '/path/to/db.sqlite', 'new_table')
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -400,11 +399,11 @@ def sqlite3_tbl_create(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check
         }
 
-@metrics
+@morpy_wrap
 def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, col_types: list ) -> dict:
     r"""
     Adds one or more columns to a table in a given SQLite database.
@@ -421,7 +420,7 @@ def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, tabl
         message - Details about the column addition process.
 
     :example:
-        sqlite3_tbl_column_add(morpy_trace, app_dict, '/path/to/db.sqlite', 'table_name', ['new_column1', 'new_column2'], ['TEXT', 'INTEGER'])
+        sqlite3_tbl_column_add(trace, app_dict, '/path/to/db.sqlite', 'table_name', ['new_column1', 'new_column2'], ['TEXT', 'INTEGER'])
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -526,11 +525,11 @@ def sqlite3_tbl_column_add(morpy_trace: dict, app_dict: dict, db_path: str, tabl
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check
         }
 
-@metrics
+@morpy_wrap
 def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list) -> dict:
     r"""
     Inserts a row into a table in a given SQLite database.
@@ -548,7 +547,7 @@ def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         error - Error details if the row insertion fails.
 
     :example:
-        sqlite3_row_insert(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['value1', 123])
+        sqlite3_row_insert(trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['value1', 123])
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -665,12 +664,12 @@ def sqlite3_row_insert(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'row_id' : row_id
         }
 
-@metrics
+@morpy_wrap
 def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list, row_id: int) -> dict:
     r"""
     Updates a row in a table in a given SQLite database. Only the specified columns will be updated.
@@ -689,7 +688,7 @@ def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         error - Error details if the update operation fails.
 
     :example:
-        sqlite3_row_update(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], 42)
+        sqlite3_row_update(trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'], ['new_value1', 456], 42)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
@@ -813,12 +812,12 @@ def sqlite3_row_update(morpy_trace: dict, app_dict: dict, db_path: str, table_na
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'row_id' : row_id
         }
 
-@metrics
+@morpy_wrap
 def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, table_name: str, columns: list, cell_data: list, where: str) -> dict:
     r"""
     Updates one or more rows in a table in a given SQLite database based on a specified condition.
@@ -838,7 +837,7 @@ def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, ta
         error - Error details if the update operation fails.
 
     :example:
-        sqlite3_row_update_where(morpy_trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'],
+        sqlite3_row_update_where(trace, app_dict, '/path/to/db.sqlite', 'example_table', ['column1', 'column2'],
                                  ['new_value1', 456], "id = 42 AND status = 'active'")
     """
 
@@ -960,7 +959,7 @@ def sqlite3_row_update_where(morpy_trace: dict, app_dict: dict, db_path: str, ta
         raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
 
     return{
-        'morpy_trace' : morpy_trace,
+        'trace' : morpy_trace,
         'check' : check,
         'where' : where
         }

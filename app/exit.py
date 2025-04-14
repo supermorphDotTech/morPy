@@ -7,56 +7,32 @@ Descr.:     DESCRIPTION
 """
 
 import morPy
-from lib.mp import join_or_task
-from lib.decorators import metrics, log
+from lib.decorators import morpy_wrap
 
-import sys
 from UltraDict import UltraDict
 
-@metrics
-def app_exit(morpy_trace: dict, app_dict: dict | UltraDict, app_run_return: dict) -> dict:
+
+# Suppress linting for mandatory arguments.
+# noinspection PyUnusedLocal
+@morpy_wrap
+def finalize(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> None:
     r"""
     This function runs the exit workflow of the app.
 
-    :param morpy_trace: operation credentials and tracing information
+    :param trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
-    :param app_run_return: Return value (dict) of the app, returned by app_run.
-        This dictionary is not shared with other processes by default.
-
-    :return: dict
-        morpy_trace: Operation credentials and tracing
-        check: Indicates whether the function ended without errors
-
-    :example:
-        from app import init as app_init
-        from app import run as app_run
-        from app import exit as app_exit
-
-        # Assuming app_dict is initialized correctly
-        init_retval = app_init(morpy_trace, app_dict)
-        run_retval = app_run(morpy_trace, app_dict, init_retval)
-        app_exit(morpy_trace, app_dict, run_retval)
+    :param app_dict_n_shared: App dictionary, which is not shared with child processes
+        or the orchestrator. Efficient to share data in between app phases 'app.init',
+        'app.run' and 'app.exit'.
     """
 
-    # morPy credentials (see init.init_cred() for all dict keys)
-    module: str = 'app.exit'
-    operation: str = 'app_exit(~)'
-    morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
-
     # OPTION enable/disable logging
-    # ??? morpy_trace["log_enable"] = False
+    # ??? trace["log_enable"] = False
 
-    check: bool = False
+    # App exiting.
+    morPy.log(trace, app_dict, "info",
+        lambda: f'{app_dict["loc"]["morpy"]["app_run_exit"]}')
 
-    try:
-        # TODO: MY CODE
-        check: bool = True
-
-    except Exception as e:
-        raise morPy.MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "error")
-
-    finally:
-        return{
-            'morpy_trace' : morpy_trace,
-            'check' : check,
-            }
+    """
+    >>> CODE OF EXIT
+    """
