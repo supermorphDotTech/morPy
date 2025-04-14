@@ -51,7 +51,7 @@ class MorPyException(Exception):
 
             # Safely extract current line number; if not available, use provided line
             tb = sys.exc_info()[2]
-            current_line = tb.tb_lineno if tb else line
+            current_line = line if line else tb.tb_lineno
 
             # Mitigate recursion issues and duplicate errors
             if isinstance(exception_obj, MorPyException):

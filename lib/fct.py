@@ -362,7 +362,8 @@ def perf_info() -> dict:
 
 def app_dict_to_string(app_dict, depth: int=0) -> str | None:
     r"""
-    This function creates a string for the entire app_dict. May exceed memory.
+    This function creates a string for the entire app_dict. May exceed memory. May lead
+    to race conditions in multiprocessing.
 
     :param app_dict: morPy global dictionary
     :param depth: Tracks the current indentation level for formatting the dictionary structure.
@@ -375,22 +376,26 @@ def app_dict_to_string(app_dict, depth: int=0) -> str | None:
         app_dict_to_string(app_dict) # Do not specify depth!
     """
 
-    if isinstance(app_dict, dict):
+    from morPy import conditional_lock
+    from UltraDict import UltraDict
 
-        lines = []
-        indent = 4 * " " * depth  # 4 spaces per depth level
+    if isinstance(app_dict, dict | UltraDict):
 
-        for key, value in app_dict.items():
-            if isinstance(value, dict):
-                    lines.append(f"{indent}{key}:")
-                    lines.append(app_dict_to_string(value, depth + 1))  # Recursively handle nested dictionaries
-            else:
-                value_linebreak = ""
-                l = 0
-                for line in f"{value}".splitlines():
-                    l += 1
-                    value_linebreak += line if l==1 else f'\n{indent}{(len(key)+3)*" "}{line}'
-                lines.append(f"{indent}{key} : {value_linebreak}")
+        with conditional_lock(app_dict):
+            lines = []
+            indent = 4 * " " * depth  # 4 spaces per depth level
+
+            for key, value in app_dict.items():
+                if isinstance(value, dict):
+                        lines.append(f"{indent}{key}:")
+                        lines.append(app_dict_to_string(value, depth + 1))  # Recursively handle nested dictionaries
+                else:
+                    value_linebreak = ""
+                    l = 0
+                    for line in f"{value}".splitlines():
+                        l += 1
+                        value_linebreak += line if l==1 else f'\n{indent}{(len(key)+3)*" "}{line}'
+                    lines.append(f"{indent}{key} : {value_linebreak}")
 
         return '\n'.join(lines)
     else:

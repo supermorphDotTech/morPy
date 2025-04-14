@@ -7,7 +7,7 @@ Descr.:     Multiprocessing functionality for morPy.
 """
 
 import lib.fct as morpy_fct
-from morPy import log
+from morPy import log, conditional_lock
 from lib.decorators import core_wrap
 
 import sys
@@ -88,23 +88,27 @@ class MorPyOrchestrator:
         """
 
         # Get global process sets for membership testing
-        processes_available = app_dict["morpy"]["proc_available"]
-        processes_busy = app_dict["morpy"]["proc_busy"]
-        proc_master = app_dict["morpy"]["proc_master"]
+        with app_dict["morpy"]["proc_busy"].lock:
+            processes_busy = app_dict["morpy"]["proc_busy"]
 
-        p = 0
-        while p < self.processes_max:
-            # Check for process IDs reserved during early initialization of morPy.
-            if p in processes_busy:
-                pass
-            elif p in processes_available:
-                pass
-            else:
-                if p != proc_master:
-                    # Append to available processes without a reference to a running process.
-                    app_dict["morpy"]["proc_available"][p] = None
+        with app_dict["morpy"].lock:
+            proc_master = app_dict["morpy"]["proc_master"]
 
-            p += 1
+        with app_dict["morpy"]["proc_available"].lock:
+            processes_available = app_dict["morpy"]["proc_available"]
+
+            for p in range(0, self.processes_max + 1):
+                # Check for process IDs reserved during early initialization of morPy.
+                if p in processes_busy:
+                    pass
+                elif p in processes_available:
+                    pass
+                else:
+                    if p != proc_master:
+                        # Append to available processes without a reference to an already running process.
+                        processes_available[p] = None
+
+            app_dict["morpy"]["proc_available"] = processes_available
 
 
     # Suppress linting for mandatory arguments.
@@ -252,7 +256,7 @@ class MorPyOrchestrator:
             if exit_flag and not exit_in_progress:
                 # Exit request detected. Termination in Progress.
                 log(trace, app_dict, "exit",
-                lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request"]}')
+                    lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request"]}')
                 exit_in_progress = True
 
             # Finish writing logs first
@@ -271,7 +275,7 @@ class MorPyOrchestrator:
 
                         # App terminating after exit request. No logs left from child processes.
                         log(trace, app_dict, "debug",
-                        lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request_complete"]}')
+                            lambda: f'{app_dict["loc"]["morpy"]["MorPyOrchestrator_exit_request_complete"]}')
 
             # Calculate open tasks
             with app_dict["morpy"]["heap_shelf"].lock:
@@ -291,8 +295,6 @@ def app_run(trace: dict, app_dict: dict) -> None:
     from app.run import run
     from app.exit import finalize
 
-    udict = is_udict(app_dict)
-
     # --- APP INITIALIZATION --- #
 
     # Execute
@@ -310,9 +312,8 @@ def app_run(trace: dict, app_dict: dict) -> None:
         app_dict["morpy"]["init_complete"] = True
 
     # Un-join
-    if udict:
-        with app_dict["morpy"].lock:
-            app_dict["morpy"]["proc_joined"] = False
+    with conditional_lock(app_dict["morpy"]):
+        app_dict["morpy"]["proc_joined"] = False
 
     # --- APP RUN --- #
 
@@ -322,9 +323,8 @@ def app_run(trace: dict, app_dict: dict) -> None:
     join_or_task(trace, app_dict, reset_trace=True, reset_w_prefix=f'{trace["module"]}.{trace["operation"]}')
 
     # Un-join
-    if udict:
-        with app_dict["morpy"].lock:
-            app_dict["morpy"]["proc_joined"] = False
+    with conditional_lock(app_dict["morpy"]):
+        app_dict["morpy"]["proc_joined"] = False
 
     # --- APP EXIT --- #
 
@@ -709,7 +709,7 @@ def check_child_processes(trace: dict, app_dict: dict, check_join: bool = False)
                     if task_recovered:
                         heap_shelve(trace, app_dict, priority=priority, task=task_recovered,
                                     task_id=task_id)
-                        # A shelved task was recovered from a terminated task.
+                        # A shelved task was recovered from a terminated process.
                         log(trace, app_dict, "warning",
                             lambda: f'{app_dict["loc"]["morpy"]["check_child_processes_recovery"]}'
                                     f'{roque_proc_names}')
@@ -717,8 +717,17 @@ def check_child_processes(trace: dict, app_dict: dict, check_join: bool = False)
                     proc_waiting.pop(proc_remnant_id)
 
     if check_join:
+        with app_dict["morpy"]["heap_shelf"].lock:
+            if len(app_dict["morpy"]["heap_shelf"]) > 1:
+                return
+
         with app_dict["morpy"]["proc_waiting"].lock:
             proc_waiting = app_dict["morpy"]["proc_waiting"]
+
+            # Return if shelved tasks exist
+            for _p, _t in proc_waiting.items():
+                if _t[0] is not None:
+                    return
 
         # Have in mind, that the orchestrator is never waiting (therefore +1).
         if len(app_dict["morpy"]["proc_busy"].keys()) == (len(proc_waiting.keys()) + 1):
@@ -764,7 +773,7 @@ def join_or_task(trace: dict, app_dict: dict, reset_trace: bool = False, reset_w
     if my_pid != proc_master:
         # Waiting for processes to finish or task to run.
         log(trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["join_or_task_start"]}')
+            lambda: f'{app_dict["loc"]["morpy"]["join_or_task_start"]}')
 
         proc_joined = False
         while not proc_joined:

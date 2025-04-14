@@ -284,7 +284,7 @@ def csv_dict_to_excel(trace: dict, app_dict: dict, xl_path: str=None, overwrite:
 
     xl_exists: bool = False
     xl_write: bool = False
-    wb_obj = None
+    wb = None
     progress = None
 
     # Writing data to MS Excel file.
@@ -425,11 +425,7 @@ def csv_dict_to_excel(trace: dict, app_dict: dict, xl_path: str=None, overwrite:
             row_index += 1
 
         # Save and optionally close the workbook
-        wb_obj = wb.save_workbook(
-            trace,
-            app_dict,
-            close_workbook=close_workbook,
-        )["wb_obj"]
+        wb.save_workbook(trace, app_dict, close_workbook=close_workbook)
 
     if xl_exists and overwrite:
         # MS Excel file exists. Overwritten.
@@ -458,5 +454,5 @@ def csv_dict_to_excel(trace: dict, app_dict: dict, xl_path: str=None, overwrite:
                     f'{app_dict["loc"]["morpy"]["csv_dict_to_excel_data"]}: {csv_dict}')
 
     return{
-        'wb_obj' : wb_obj,
+        'wb_obj' : wb,
         }

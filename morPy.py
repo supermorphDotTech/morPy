@@ -828,6 +828,26 @@ def app_dict_to_string(app_dict):
     import lib.fct
     return lib.fct.app_dict_to_string(app_dict)
 
+def conditional_lock(obj):
+    r"""
+    Conditionally lock an UltraDict. In case the object is a 'dict', skip locking.
+
+    :param obj: morPy global dictionary
+
+    :example:
+        with conditional_lock(app_dict["morpy"]):
+            pass    # Add your code
+    """
+
+    # Fallback to no-lock when object is a 'dict'
+    class _NoOpLock:
+        def __enter__(self):
+            return self
+        def __exit__(self, exc_type, exc_val, traceback):
+            pass
+
+    return getattr(obj, "lock", _NoOpLock())
+
 def csv_read(trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
              print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None, gui=None) -> dict:
     r"""

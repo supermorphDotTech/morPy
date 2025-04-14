@@ -36,6 +36,7 @@ Feel free to comment, share and support this project!
   - [ ] multi-platform compatible
   - [ ] Needs to respect the multiprocessing idea of morPy (i.e. max parallel processes)
 - [ ] Finish `lib.xl.XlWorkbook.edit_worksheet()`, localization does already exist
+- [ ] Finish metrics functionality
 
 # v1.0.0a - Release Goals [⇧](#toc) <a name="v1.0.0a"></a>
 
@@ -46,25 +47,20 @@ Clean Release for public testing. Linux compatibility tested.
 ### Changes
 
 - [x] New Wrapper for morPy
-    - [ ] Include metrics
+    - [x] Include metrics
     - [x] Eliminate the standard returns
     - [x] Eliminate the try-except-blocks
     - [x] Eliminate the tracing updates and remove `tracing()` from the frontend
     - [x] Eliminate the helper `_init()` methods
-- [ ] Finish metrics functionality
 - [ ] Zero Lints
   - [x] Changed function name `find_replace_saveas()` to `find_replace_save_as()`
   - [x] Overhaul of the frontend `.\morPy.py`
 - [ ] Reduce `TODO` and `FIXME` left in the code. Only keep when, if it points to known bugs.
 - [ ] Provide a "process join" function
 - [x] Acquire lock on log DB during init and release it on exit
-- [ ] Improve locks on `app_dict` to remove the ternary statements used now to determine type `dict | UltraDict`
-  - [ ] Develop a `dict`-inherited class which can ignore context managers
-  - [ ] Eliminate `lib.mp.is_udit()`
-  - [ ] Eliminate inside `lib.ui_tk.FileDirSelectTk._init()`
-  - [ ] Eliminate inside `lib.ui_tk.GridChoiceTk._init()`
-  - [ ] Eliminate inside `lib.ui_tk.ProgressTrackerTk._init()`
-  - [ ] Spread to other classes & functions for thread safety
+- [x] New function `morPy.conditional_lock()` to dynamically use a context manager only of the object has a 'lock' attribute.
+  - [x] Eliminate inside `lib.mp.app_run()`
+  - [x] Spread to other classes & functions for thread safety
 - [ ] Clean up localization from unused strings
 - [ ] Improve docstrings
 - [ ] Use type hints wherever useful

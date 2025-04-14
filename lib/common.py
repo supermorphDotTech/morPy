@@ -7,7 +7,8 @@ Descr.:     Module of generally useful functions.
 """
 
 import lib.fct as morpy_fct
-import lib.mp as mp
+import morPy
+from lib.mp import interrupt, stop_while_interrupt
 from morPy import log
 from lib.decorators import morpy_wrap
 
@@ -124,8 +125,7 @@ class PriorityQueue:
         task = None
 
         # Global interrupt - wait for error handling
-        while app_dict["morpy"].get("interrupt", False):
-            pass
+        stop_while_interrupt(trace, app_dict)
 
         if len(self.heap) > 0:
             task_pulled = heappop(self.heap)
@@ -207,10 +207,11 @@ class ProgressTracker:
         self.done = False
 
         # Evaluate verbose mode
-        if not verbose or verbose and app_dict["morpy"]["conf"]["msg_verbose"]:
-            self.verbose_check = True
-        else:
-            self.verbose_check = False
+        with morPy.conditional_lock(app_dict["morpy"]["conf"]):
+            if verbose and app_dict["morpy"]["conf"]["msg_verbose"]:
+                self.verbose = True
+            else:
+                self.verbose = False
 
         # Determine absolute progress ticks
         self._init_ticks(trace, app_dict)
@@ -318,7 +319,7 @@ class ProgressTracker:
                 self.done = True if prog_rel >= 1 else False
 
                 # Check for verbose logging
-                if self.verbose_check or self.done:
+                if self.verbose or self.done:
                     # Processing DESCRIPTION
                     log(trace, app_dict, "info",
                         lambda: f'{app_dict["loc"]["morpy"]["ProgressTracker_proc"]}: {self.description}\n'
@@ -391,9 +392,9 @@ def decode_to_plain_text(trace: dict, app_dict: dict, src_input, encoding: str='
 
         # Decoded from ### to plain text.
         log(trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["decode_to_plain_text_from"]} {encoding}) '
-                f'{app_dict["loc"]["morpy"]["decode_to_plain_text_to"]}\n'
-                f'encoding: {encoding}')
+            lambda: f'{app_dict["loc"]["morpy"]["decode_to_plain_text_from"]} {encoding}) '
+                    f'{app_dict["loc"]["morpy"]["decode_to_plain_text_to"]}\n'
+                    f'encoding: {encoding}')
 
     # Handle unsupported or non-encoded input
     else:
@@ -544,8 +545,8 @@ def fso_delete_dir(trace: dict, app_dict: dict, del_dir: str) -> None:
 
         # The directory has been deleted.
         log(trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["fso_delete_dir_deleted"]}\n'
-                f'{app_dict["loc"]["morpy"]["fso_create_dir_directory"]}: {del_dir}')
+            lambda: f'{app_dict["loc"]["morpy"]["fso_delete_dir_deleted"]}\n'
+                    f'{app_dict["loc"]["morpy"]["fso_create_dir_directory"]}: {del_dir}')
 
     else:
         # The directory does not exist.
@@ -579,15 +580,15 @@ def fso_delete_file(trace: dict, app_dict: dict, del_file: str) -> None:
 
         # The file has been deleted.
         log(trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["fso_delete_file_deleted"]}\n'
-                f'{app_dict["loc"]["morpy"]["fso_delete_file_file"]}: {del_file}')
+            lambda: f'{app_dict["loc"]["morpy"]["fso_delete_file_deleted"]}\n'
+                    f'{app_dict["loc"]["morpy"]["fso_delete_file_file"]}: {del_file}')
 
     else:
         # The file does not exist.
         log(trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["fso_delete_file_not_exist"]}\n'
-                f'{app_dict["loc"]["morpy"]["fso_delete_file_file"]}: {del_file}\n'
-                f'{app_dict["loc"]["morpy"]["fso_delete_file_exist"]}: {file_exist}')
+            lambda: f'{app_dict["loc"]["morpy"]["fso_delete_file_not_exist"]}\n'
+                    f'{app_dict["loc"]["morpy"]["fso_delete_file_file"]}: {del_file}\n'
+                    f'{app_dict["loc"]["morpy"]["fso_delete_file_exist"]}: {file_exist}')
 
 
 @morpy_wrap
@@ -982,11 +983,9 @@ def qrcode_generator_wifi(trace: dict, app_dict: dict, ssid: str = None, passwor
     generate: bool = True
 
     # Check given filepath and eventually default to .\data
-    if file_path:
-        check_file_path: bool = morpy_fct.pathtool(file_path)["dir_exists"]
+    check_file_path: bool = morpy_fct.pathtool(file_path)["dir_exists"]
+    with morPy.conditional_lock(app_dict["morpy"]["conf"]):
         file_path = file_path if check_file_path else app_dict["morpy"]["conf"]["data_path"]
-    else:
-        file_path = app_dict["morpy"]["conf"]["data_path"]
 
     # Default file name if needed
     file_name = f'{file_name}.png' if file_name else "qrcode.png"
@@ -1034,7 +1033,7 @@ def wait_for_input(trace: dict, app_dict: dict, message: str) -> dict:
     """
 
     # Set global interrupt
-    mp.interrupt(trace, app_dict)
+    interrupt(trace, app_dict)
 
     # user input
     usr_input = input(f'{message}\n')
@@ -1073,7 +1072,7 @@ def wait_for_select(trace: dict, app_dict: dict, message: str, collection: tuple
     """
 
     # Set global interrupt
-    mp.interrupt(trace, app_dict)
+    interrupt(trace, app_dict)
 
     # user input
     usr_input = input(f'{message}\n')
@@ -1096,8 +1095,9 @@ def wait_for_select(trace: dict, app_dict: dict, message: str, collection: tuple
             if usr_response == "y":
                 usr_input = input(f'{message}\n')
             elif usr_response == "q":
-                app_dict["morpy"]["orchestrator"]["terminate"] = True
-                break
+                with morPy.conditional_lock(app_dict["morpy"]["orchestrator"]):
+                    app_dict["morpy"]["orchestrator"]["terminate"] = True
+                    break
             else:
                 pass
 

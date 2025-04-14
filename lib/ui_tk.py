@@ -8,7 +8,7 @@ Descr.:     This module provides UI-building functions using the Tkinter.
 
 import lib.fct as morpy_fct
 import lib.common as common
-from morPy import log
+from morPy import log, conditional_lock
 from lib.decorators import morpy_wrap
 
 import sys
@@ -330,12 +330,9 @@ class FileDirSelectTk:
 
         self.root.quit()
 
-        # Initiate program exit
-        # TODO conditional lock
-        app_dict["morpy"]["exit"] = True
-
         # Release the global interrupts
-        app_dict["morpy"]["interrupt"] = False
+        with conditional_lock(app_dict["morpy"]):
+            app_dict["morpy"]["interrupt"] = False
 
 
     # Suppress linting for mandatory arguments.
@@ -611,12 +608,9 @@ class GridChoiceTk:
 
         self.root.quit()
 
-        # Initiate program exit
-        # TODO conditional lock
-        app_dict["morpy"]["exit"] = True
-
         # Release the global interrupts
-        app_dict["morpy"]["interrupt"] = False
+        with conditional_lock(app_dict["morpy"]):
+            app_dict["morpy"]["interrupt"] = False
 
 
     # Suppress linting for mandatory arguments.
@@ -1354,7 +1348,7 @@ class ProgressTrackerTk:
 
                         # All done for ##
                         log(trace, app_dict, "info",
-                        lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_done"]} "{self.frame_title}".')
+                            lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_done"]} "{self.frame_title}".')
 
                     # Enforce an update on the GUI
                     self._enforce_update()
@@ -1383,8 +1377,8 @@ class ProgressTrackerTk:
         except TclError as tcl_e:
             # GUI ended ungracefully.
             log(trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_exit_dirty"]}\n'
-                    f'{type(tcl_e).__name__}: {tcl_e}')
+                lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_exit_dirty"]}\n'
+                        f'{type(tcl_e).__name__}: {tcl_e}')
 
 
     # Suppress linting for mandatory arguments.
@@ -1489,8 +1483,8 @@ class ProgressTrackerTk:
         except TclError as tcl_e:
             # GUI ended ungracefully.
             log(trace, app_dict, "debug",
-            lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_exit_dirty"]}\n'
-                    f'{type(tcl_e).__name__}: {tcl_e}')
+                lambda: f'{app_dict["loc"]["morpy"]["ProgressTrackerTk_exit_dirty"]}\n'
+                        f'{type(tcl_e).__name__}: {tcl_e}')
 
 
     @morpy_wrap
@@ -1562,12 +1556,9 @@ class ProgressTrackerTk:
             # Set done to omit pulling from GUI queue after close
             self.done = True
 
-            # Initiate global exit
-            app_dict["morpy"]["exit"] = True
-
-            # Release the global interrupts to proceed with exit
-            app_dict["morpy"]["interrupt"] = False
-
+            # Release the global interrupts
+            with conditional_lock(app_dict["morpy"]):
+                app_dict["morpy"]["interrupt"] = False
 
         # Clear any pending UI update calls.
         while not self.ui_calls.empty():
@@ -1685,16 +1676,16 @@ def dialog_sel_file(trace: dict, app_dict: dict, init_dir: str=None, file_types:
     if not file_path:
         # No file was chosen by the user.
         log(trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_no_sel"]}\n'
-                f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_cancel"]}')
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_no_sel"]}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_cancel"]}')
 
     else:
         file_selected = True
         # A file was chosen by the user.
         log(trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_sel"]}\n'
-                f'{app_dict["loc"]["morpy"]["dialog_sel_file_path"]}: {file_path}\n'
-                f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_open"]}')
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_file_sel"]}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_file_path"]}: {file_path}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_file_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_file_open"]}')
 
         # Create a path object
         morpy_fct.pathtool(file_path)
@@ -1749,15 +1740,15 @@ def dialog_sel_dir(trace: dict, app_dict: dict, init_dir: str=None, title: str=N
     if not dir_path:
         # No directory was chosen by the user.
         log(trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_no_sel"]}\n'
-            f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_cancel"]}')
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_no_sel"]}\n'
+                f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_cancel"]}')
     else:
         dir_selected = True
         # A directory was chosen by the user.
         log(trace, app_dict, "debug",
-        lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_sel"]}\n'
-                f'{app_dict["loc"]["morpy"]["dialog_sel_dir_path"]}: {dir_path}\n'
-                f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_open"]}')
+            lambda: f'{app_dict["loc"]["morpy"]["dialog_sel_dir_sel"]}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_dir_path"]}: {dir_path}\n'
+                    f'{app_dict["loc"]["morpy"]["dialog_sel_dir_choice"]}: {app_dict["loc"]["morpy"]["dialog_sel_dir_open"]}')
 
         # Create a path object
         morpy_fct.pathtool(dir_path)

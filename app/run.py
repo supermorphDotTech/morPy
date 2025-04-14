@@ -50,22 +50,21 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
     #     process_q(trace, app_dict, task=task)
 
 
-    # from morPy import process_q
-    # from functools import partial
-    # import time
-    #
-    # for i in range(1, 40):
-    #     task = partial(arbitrary_task, trace, app_dict, stages=3, total_rep=10 ** 5)
-    #     process_q(trace, app_dict, task=task, priority=20)
-    #
-    #     task = [arbitrary_task, trace, app_dict, {"stages": 3, "total_rep": 10 ** 5}]
-    #     process_q(trace, app_dict, task=task, priority=34)
-    #
-    #     task = (arbitrary_task, trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
-    #     process_q(trace, app_dict, task=task, priority=56)
-    #
-    #     # task = [demo_ProgressTrackerTk, trace, app_dict]
-    #     # process_q(trace, app_dict, task=task, priority=56)
+    from morPy import process_q
+    from functools import partial
+
+    for i in range(1, 40):
+        task = partial(arbitrary_task, trace, app_dict, stages=3, total_rep=10 ** 5)
+        process_q(trace, app_dict, task=task, priority=20)
+
+        task = [arbitrary_task, trace, app_dict, {"stages": 3, "total_rep": 10 ** 5}]
+        process_q(trace, app_dict, task=task, priority=34)
+
+        task = (arbitrary_task, trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
+        process_q(trace, app_dict, task=task, priority=56)
+
+        # task = [demo_ProgressTrackerTk, trace, app_dict]
+        # process_q(trace, app_dict, task=task, priority=56)
 
     # from morPy import FileDirSelectTk
     # selection_config = {
@@ -84,7 +83,6 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
     # file = results["file_select"]
     # directory = results["dir_select"]
     # print(f'{file=}\n{directory=}')
-
     return{
         'app_dict_n_shared' : app_dict_n_shared
         }

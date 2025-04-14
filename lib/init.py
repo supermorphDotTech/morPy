@@ -58,12 +58,6 @@ def init(trace) -> (dict | UltraDict, MorPyOrchestrator):
     :return app_dict: morPy global dictionary containing app configurations
     """
 
-    init_dict       = dict()
-
-    # ############################################
-    # START Single-threaded initialization
-    # ############################################
-
     # Build the app_dict
     init_dict, init_datetime = build_app_dict(trace, create=True)
 
@@ -160,18 +154,6 @@ def init(trace) -> (dict | UltraDict, MorPyOrchestrator):
 
     # Initialize the morPy orchestrator
     orchestrator = MorPyOrchestrator(trace, init_dict)
-
-    # ############################################
-    # END Single-threaded initialization
-    # START Multi-threaded initialization
-    # ############################################
-
-    # task = morPy.testprint(trace, "Message")
-    # mp.run_parallel(mpy_task, app_dict, task)
-
-    # ############################################
-    # END Multi-threaded initialization
-    # ############################################
 
     # Calculate the runtime of the initialization routine
     init_duration = morpy_fct.runtime(init_dict["morpy"]["init_datetime_value"])
