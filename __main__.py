@@ -11,7 +11,12 @@ from lib.exceptions import MorPyException
 import sys
 
 def initialize_morpy():
-    r""" Initialize the morPy framework """
+    r"""
+    Initializes the morPy framework by setting up tracing credentials, loading the global
+    configuration (app_dict), and starting the orchestrator. It returns the updated trace,
+    app_dict, orchestrator, and a Boolean flag indicating successful initialization.
+    Exceptions are wrapped using MorPyException.
+    """
 
     from lib.init import init, init_cred
 
@@ -20,7 +25,6 @@ def initialize_morpy():
     init_dict: dict | None = None
 
     try:
-
         trace_pattern = init_cred()
         init_trace, init_dict, init_orch = init(trace_pattern)
         init_trace["module"] = trace_pattern["module"]
@@ -37,12 +41,17 @@ def initialize_morpy():
         raise MorPyException(init_trace, init_dict, init_e, sys.exc_info()[-1].tb_lineno, "critical")
 
 def main(main_trace, main_dict, main_orch):
-    r""" Run morPy """
+    r"""
+    Invokes the run method on the morPy orchestrator to start the framework’s main operation.
+    """
 
     main_orch.run(main_trace, main_dict)
 
 def finalize_morpy(final_trace, final_dict):
-    r""" Finalize morPy runtime """
+    r"""
+    Finalizes the morPy runtime by calling the exit routine and then cleanly terminating the
+    process with sys.exit().
+    """
 
     from lib.exit import end_runtime
     end_runtime(final_trace, final_dict)

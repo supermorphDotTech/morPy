@@ -12,9 +12,9 @@ from lib.fct import tracing
 
 class SpawnWrapper:
     r"""
-    A generic wrapper that can be used to store any module-level callable
-    along with its arguments so that it can be dynamically imported and executed
-    in another process.
+    Encapsulates a callable task along with its arguments so that it can be dynamically imported
+    and executed in a spawned child process. This wrapper resets the trace for the new process
+    and provides a call method to invoke the task.
     """
 
     __slots__ = [
@@ -31,6 +31,11 @@ class SpawnWrapper:
 
 
     def __init__(self, task):
+        r"""
+        Extracts the function, arguments, and keyword arguments from the provided task (after
+        reattaching UltraDict references) and resets the trace for the spawned process. Also
+        stores the module and function name for later dynamic import.
+        """
 
         self.task       = reattach_ultradict_refs(task)
         self.func       = self.task[0]
@@ -63,6 +68,12 @@ class SpawnWrapper:
 
 
     def __call__(self):
+        r"""
+        Dynamically imports the module where the target function is defined, retrieves the function
+        by name, and then executes it with the stored arguments. After execution, it synchronizes
+        with the parent via join_or_task and finally invokes the child exit routine.
+        """
+
         # Dynamically import the module and retrieve the function.
         mod     = __import__(self.module_name, fromlist=[self.func_name])
         func    = getattr(mod, self.func_name)

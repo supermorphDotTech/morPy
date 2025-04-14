@@ -53,7 +53,7 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
     from morPy import process_q
     from functools import partial
 
-    for i in range(1, 40):
+    for i in range(0, 40):
         task = partial(arbitrary_task, trace, app_dict, stages=3, total_rep=10 ** 5)
         process_q(trace, app_dict, task=task, priority=20)
 
@@ -62,6 +62,8 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
 
         task = (arbitrary_task, trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
         process_q(trace, app_dict, task=task, priority=56)
+
+        morPy.join_or_task(trace, app_dict)
 
         # task = [demo_ProgressTrackerTk, trace, app_dict]
         # process_q(trace, app_dict, task=task, priority=56)

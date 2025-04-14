@@ -3,7 +3,9 @@ morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
-Descr.:     This module provides UI-building functions using the Tkinter.
+Descr.:     Provides a set of Tkinter‐based user interface components for constructing interactive
+            dialogs and GUIs, including file/directory selectors, grid choice menus, and progress
+            tracking panels.
 """
 
 import lib.fct as morpy_fct
@@ -24,8 +26,9 @@ from queue import Empty
 
 class FileDirSelectTk:
     r"""
-    A tkinter GUI for file and directory selection. Each row represents a file or directory selection.
-    Optionally displays a top row of icons (display only).
+    Provides a Tkinter graphical interface for file and directory selection. Each row represents an
+    individual selection choice, and an optional top row of icons may be displayed for branding or
+    additional context.
     """
 
 
@@ -33,11 +36,15 @@ class FileDirSelectTk:
     def __init__(self, trace: dict, app_dict: dict, rows_data: dict, title: str = None,
                  icon_data: dict = None) -> None:
         r"""
-        Class constructor.
+        Initializes the FileDirSelectTk window with parameters for tracing, the global app configuration,
+        and a dictionary defining selection rows. Each row’s data may specify whether the selection is for
+        a file or directory, allowed file types (for dialogs), an optional custom image (and its size),
+        and an optional default path. An optional icon configuration dictionary may be provided to display
+        a top row of icons.
 
         :param trace: Operation credentials and tracing information.
         :param app_dict: morPy global dictionary containing app configurations.
-        :param rows_data: Dictionary defining the selection rows.
+        :param rows_data: Dictionary mapping row names to configuration dictionaries (see expected structure).
             Expected structure:
                 {"selection_name" : {
                     "is_dir" : True | False,  # True for directory selection, False for file selection.
@@ -46,8 +53,8 @@ class FileDirSelectTk:
                     "image_size" : (width, height),  # Optional; defaults to (48, 48) if not provided.
                     "default_path" : "prefilled/default/path"  # Optional prefill for the input.},
                     ...}
-        :param title: Title of the tkinter window. Defaults to morPy localization if not provided.
-        :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
+        :param title: Optional window title; if omitted, a localized default is used.
+        :param icon_data: Optional dictionary of icon configurations for the top row.”
             Expected structure:
                 {"icon_name" : {
                     "position" : 1,         # placement, order (lowest first)
@@ -85,7 +92,7 @@ class FileDirSelectTk:
             directory = results["dir_selected"]
         """
 
-        # Try to make the process DPI-aware
+        # Attempt to enable DPI awareness to improve rendering on high-resolution displays.
         # TODO port into os-class instead of hardcoding and make sure that each spawn will run this.
         try:
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -131,13 +138,13 @@ class FileDirSelectTk:
         self.root = tk.Tk()
         self.root.iconbitmap(app_dict["morpy"]["conf"]["app_icon"])
         self.root.title(self.title)
-        # Allow the window to be resizable.
+        # Enable window resizing.
         self.root.resizable(True, True)
 
         # Build the UI.
         self._setup_ui(trace, app_dict)
 
-        # Calculate coordinates for the window to be centered.
+        # Compute window coordinates so that the GUI appears centered on the screen.
         x = (int(app_dict["morpy"]["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
         y = (int(app_dict["morpy"]["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
         self.root.geometry(f'{self.frame_width}x{self.frame_height}+{x}+{y}')
@@ -183,7 +190,7 @@ class FileDirSelectTk:
                 label = tk.Label(icon_frame, image=photo)  # type: ignore
                 label.pack(side=tk.RIGHT, padx=5)
 
-        # Create a frame to contain all selection rows.
+        # Create a container frame for all the input rows.
         rows_container = tk.Frame(self.root)
         rows_container.pack(fill='both', expand=True, padx=20, pady=20)
 
@@ -340,13 +347,15 @@ class FileDirSelectTk:
     @morpy_wrap
     def run(self, trace: dict, app_dict: dict) -> dict:
         r"""
-        Launches the GUI and waits for the user to complete the selection.
+        Starts the file/directory selection GUI and blocks until the user completes
+        their selections.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            selections: A dictionary of user inputs keyed by row name.
+            selections: A dictionary where keys are the row names and values are the
+                        paths selected by the user.
         """
 
         self.root.mainloop()
@@ -359,8 +368,8 @@ class FileDirSelectTk:
 
 class GridChoiceTk:
     r"""
-    A tkinter GUI displaying a dynamic grid of image tiles. Each tile shows an image
-    with a text label below it. Clicking a tile returns its associated value.
+    Implements a Tkinter grid menu that displays image tiles with labels underneath. When the
+    user clicks a tile, its associated return value is captured, enabling menu‐style selection.
     """
 
 
@@ -368,7 +377,11 @@ class GridChoiceTk:
     def __init__(self, trace: dict, app_dict: dict, tile_data: dict, title: str=None,
               default_tile_size: tuple=None, icon_data: dict=None) -> None:
         r"""
-        Class constructor.
+        Initializes the grid menu interface with tracing, global app configuration, and a
+        dictionary defining each tile. The tile_data dictionary should map tile names to
+        configurations that include grid coordinates, an image path, a descriptive text label,
+        a return value, and optionally a tile size. An optional title, default tile size, and
+        icon configuration may also be provided.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -422,7 +435,7 @@ class GridChoiceTk:
 
         default_tile_size_ok: bool = False
 
-        # Try to make the process DPI-aware
+        # Attempt to enable DPI awareness to improve rendering on high-resolution displays.
         try:
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
         except AttributeError | OSError:
@@ -476,7 +489,7 @@ class GridChoiceTk:
 
         self._setup_ui(trace, app_dict)
 
-        # Calculate coordinates for the window to be centered.
+        # Compute window coordinates so that the GUI appears centered on the screen.
         x = (int(app_dict["morpy"]["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
         y = (int(app_dict["morpy"]["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
         self.root.geometry(f'{self.frame_width}x{self.frame_height}+{x}+{y}')
@@ -618,7 +631,7 @@ class GridChoiceTk:
     @morpy_wrap
     def run(self, trace: dict, app_dict: dict):
         r"""
-        Launches the GUI and waits for the user to make a selection.
+        Launches the grid‐choice GUI and waits until the user clicks a tile.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -654,12 +667,10 @@ class GridChoiceTk:
 
 class ProgressTrackerTk:
     r"""
-    A progress tracking GUI using tkinter to visualize the progress of a task.
-    If progress consists of several stages, a separate progress bar for the
-    stages progress is displayed. The total count of progress steps is set by
-    initializing a stage with the 'begin_stage()' method, regardless of the total
-    amount of stages. Optionally allows to display console messages in a console
-    widget.
+    Creates a graphical progress tracker using Tkinter. The GUI displays one or two progress bars
+    (overall progress and, if there are multiple stages, stage progress), along with descriptive
+    headlines and an optional console for status output. The window may close automatically at
+    100% progress or await manual closure.
     """
 
 
@@ -669,7 +680,12 @@ class ProgressTrackerTk:
               detail_description_on: bool=False, description_font_size: int=8, font: str="Arial",
               stages: int=1, console: bool=False, auto_close: bool=False, work=None) -> None:
         r"""
-        Class constructor.
+        Initializes the ProgressTrackerTk window with parameters such as: frame title; optional
+        frame dimensions (otherwise defaults based on monitor size); overall headline text and
+        font size; flag and font size for displaying detailed status messages; a base GUI font;
+        the number of progress stages; a flag to enable redirection of console output; an
+        auto‑close option; and an optional work callable that runs in a background thread.
+        The method configures default widget dimensions based on system resolution.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -712,7 +728,7 @@ class ProgressTrackerTk:
         self.height_factor_description: int = 0
         self.destroy: bool                  = False
 
-        # Try to make the process DPI-aware
+        # Attempt to enable DPI awareness to improve rendering on high-resolution displays.
         try:
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
         except AttributeError | OSError:
@@ -807,7 +823,7 @@ class ProgressTrackerTk:
             if self.frame_height_sizing:
                 self.frame_height += app_dict["morpy"]["sys"]["resolution_height"] // 2
 
-        # Calculate coordinates for the window to be centered.
+        # Compute window coordinates so that the GUI appears centered on the screen.
         x = (int(app_dict["morpy"]["sys"]["resolution_width"]) // 2) - (self.frame_width // 2)
         y = (int(app_dict["morpy"]["sys"]["resolution_height"]) * 2 // 5) - (self.frame_height // 2)
 
@@ -833,7 +849,10 @@ class ProgressTrackerTk:
     @morpy_wrap
     def _create_widgets(self, trace: dict, app_dict: dict) -> None:
         r"""
-        Build and place all widgets in a grid layout.
+        Constructs and arranges all widgets for the progress-tracking interface.
+        This method sets up the overall and stage progress bars (with associated labels),
+        an optional detail description label, a text widget for console messages (if enabled),
+        and a Close/Abort button at the bottom.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -1087,8 +1106,10 @@ class ProgressTrackerTk:
     def begin_stage(self, trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
                     detail_description: str=None, ticks: float=.01) -> None:
         r"""
-        Start a new stage of progress. Will set the stage prior to 100%, if
-        not already the case.
+        Begins a new stage of progress by resetting the stage-specific progress counter to zero and setting
+        stage parameters such as the stage limit (the maximum progress value for this stage), a headline text,
+        and an optional detailed description. A tick value (default 0.01%) determines how finely progress
+        updates are logged.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -1214,9 +1235,10 @@ class ProgressTrackerTk:
     @morpy_wrap
     def update_progress(self, trace: dict, app_dict: dict, current: float = None) -> None:
         r"""
-        Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
-        switch button text to "Close" and stop console redirection. Enqueues a UI request for the
-        main thread to process. Safe to call from any thread.
+        Queues an update to the current stage’s progress and, if an overall progress bar is present,
+        recomputes the overall progress as a function of completed stages plus progress of the current
+        stage. If overall progress reaches 100% and auto‑close is enabled, the window is closed;
+        otherwise, a ‘Close’ button appears and console output is stopped.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -1387,8 +1409,9 @@ class ProgressTrackerTk:
     def update_text(self, trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
                     detail_description: str = None) -> None:
         r"""
-        Update the headline texts or description at runtime. Enqueues a UI request for the
-        main thread to process. Safe to call from any thread.
+        Queues a request to update the displayed headline texts and description in the progress GUI.
+        The overall progress headline and stage headline can be replaced, along with the detail text
+        below the stage bar.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -1490,7 +1513,9 @@ class ProgressTrackerTk:
     @morpy_wrap
     def run(self, trace: dict, app_dict: dict) -> None:
         r"""
-        Start the GUI main loop and run the Tk mainloop on the main thread.
+        Starts the progress tracking GUI by initiating its internal update loop and then entering
+        Tkinter’s main event loop. The GUI stays active until progress is complete and the window
+        is closed.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -1519,7 +1544,9 @@ class ProgressTrackerTk:
         TODO implement morPy threading and use it here
             > right now interrupt/abort does not work as desired: background threads shall be terminated immediately.
 
-        Launch the user-supplied function in a background thread.
+        Launches the provided work callable in a new background thread. This allows the task to run
+        concurrently with the progress-tracking updates in the GUI. Exceptions from the background
+        task are caught and logged.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -1544,7 +1571,8 @@ class ProgressTrackerTk:
     @morpy_wrap
     def _on_close(self, trace: dict, app_dict: dict) -> None:
         r"""
-        Close or abort the GUI.
+        Callback for closing or aborting the progress tracker GUI. This method quits the main loop,
+        destroys the window, and resets any global interrupt flags.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -1627,7 +1655,8 @@ def check_main_thread(trace: dict, app_dict: dict) -> None:
 @morpy_wrap
 def dialog_sel_file(trace: dict, app_dict: dict, init_dir: str=None, file_types: tuple=None, title: str=None) -> dict:
     r"""
-    This function opens a dialog for the user to select a file.
+    Opens a file selection dialog using Tkinter. The dialog starts in the given initial directory
+    and filters selectable file types according to the provided tuple.
 
     :param trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
@@ -1698,7 +1727,8 @@ def dialog_sel_file(trace: dict, app_dict: dict, init_dir: str=None, file_types:
 @morpy_wrap
 def dialog_sel_dir(trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
     r"""
-    This function opens a dialog for the user to select a directory.
+    Opens a directory selection dialog using Tkinter. The dialog starts in the specified
+    initial directory.
 
     :param trace: operation credentials and tracing
     :param app_dict: morPy global dictionary

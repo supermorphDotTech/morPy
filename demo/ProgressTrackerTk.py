@@ -42,7 +42,7 @@ def run(trace: dict, app_dict: dict) -> None:
                                      frame_title=f'{app_dict["loc"]["app"]["demo_title"]}',
                                      stages=stages,
                                      detail_description_on=True,
-                                     console=True,
+                                     console=False,
                                      auto_close=True,
                                      work=task  # run task in a background thread
                                      )

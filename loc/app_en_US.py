@@ -13,15 +13,9 @@ def loc_app() -> dict:
     This dictionary defines all messages for app functions localized to a
     specific language.
 
-    :param:
-        -
-
     :return: dict
         loc_app_dict: Localization dictionary for app functions. All keys
             will be copied to app_dict during morPy initialization.
-
-    :example:
-        app_dict["loc"]["app"][KEY]
     """
 
     loc_app_dict = {
@@ -46,15 +40,9 @@ def loc_app_dbg() -> dict:
     This dictionary defines all messages for debugging app functions localized to a
     specific language.
 
-    :param:
-        -
-
     :return: dict
         loc_app_dbg_dict: Localization dictionary for app functions. All keys
             will be copied to app_dict during morPy initialization.
-
-    :example:
-        app_dict["loc"]["app"][KEY]
     """
 
     loc_app_dbg_dict = {

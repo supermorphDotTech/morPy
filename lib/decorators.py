@@ -130,11 +130,9 @@ def core_wrap(func):
 
 def morpy_wrap(func):
     r"""
-    Decorator to fit an operation (function or method) into the morPy
-    framework. Enables features like 'metrics' and 'tracing' to effectively
-    lift logging to serve as an audit trail. If 'trace' is not detected
-    in the signature of 'func', an exception is raised. If 'app_dict' is
-    missing, only the trace will be updated.
+    Decorator that adapts a function or method to be morPy‑compatible. It verifies and updates the
+    trace and app_dict, optionally measures performance metrics, and catches exceptions to re‑raise
+    them as MorPyExceptions (with error severity by default).
 
     :param func: morPy compatible function. Needs to at least carry the morPy specific 'trace'
         in its signature.
@@ -244,37 +242,25 @@ def morpy_wrap(func):
     return wrapper
 
 
-def metrics_perf(trace, run_time):
+def metrics_perf(trace, run_time) -> None:
     r"""
-    This helper function makes use of the data collected by it calling
-    function metrics(~) and provides logging and formatting of the data.
-    It performs all action in performance mode, which limits the data
-    collected to function name, trace and runtime.
+    (Placeholder) Intended to process and log performance metrics in performance‑only mode;
+    implementation details to be added.
 
     :param trace: operation credentials and tracing
     :param run_time: Total run time of the wrapped function.
-
-    :return: dict
-        trace: Operation credentials and tracing
-        check: Indicates whether the function ended without errors
     """
 
     pass
 
 
-def metrics_full(trace, run_time):
+def metrics_full(trace, run_time) -> None:
     r"""
-    This helper function makes use of the data collected by it calling
-    function metrics(~) and provides logging and formatting of the data.
-    It performs all action in performance mode, which limits the data
-    collected to function name, trace and runtime.
+    (Placeholder) Intended to process and log detailed performance metrics; implementation
+    details to be added.
 
     :param trace: operation credentials and tracing
     :param run_time: Total run time of the wrapped function.
-
-    :return: dict
-        trace: Operation credentials and tracing
-        check: Indicates whether the function ended without errors
     """
 
     pass
@@ -282,8 +268,8 @@ def metrics_full(trace, run_time):
 
 def evaluate_trace(obj) -> bool:
     r"""
-    Helper function which compares any object with the morPy specific 'trace' dictionary
-    to identify 'trace' reliably.
+    Checks whether an object conforms to the morPy trace dictionary format (i.e. contains the
+    expected keys and types). Returns True if valid.
 
     :param obj: Any object
 
@@ -317,8 +303,9 @@ def evaluate_trace(obj) -> bool:
 
 def evaluate_app_dict(obj) -> bool:
     r"""
-    Helper function which compares any object with the morPy specific 'app_dict' dictionary
-    to identify 'app_dict' reliably.
+    Determines whether the provided object is a valid morPy app_dict by verifying it contains
+    the expected nested keys (whether it is a native dict or an UltraDict). Returns True if
+    the structure is valid.
 
     :param obj: Any object
 

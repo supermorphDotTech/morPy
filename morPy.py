@@ -3,27 +3,32 @@ morPy Framework by supermorph.tech
 https://github.com/supermorphDotTech
 
 Author:     Bastian Neuwirth
-Descr.:     Frontend of the morPy framework.
+Descr.:     This module serves as the primary frontend for the morPy framework. It integrates UI
+            components, logging, and task orchestration to support high‑level application functionality.
 """
 
 from collections.abc import Callable
 
+
 class FileDirSelectTk:
     r"""
-    A tkinter GUI for file and directory selection. Each row represents a file or directory selection.
-    Optionally displays a top row of icons (display only).
+    Provides a Tkinter graphical interface for file and directory selection. Each row represents an
+    individual selection choice, and an optional top row of icons may be displayed for branding or
+    additional context.
     """
 
     def __init__(self, trace: dict, app_dict: dict, rows_data: dict, title: str = None,
                  icon_data: dict = None) -> None:
         r"""
-        A tkinter GUI for file and directory selection. Each row represents a file or directory selection.
-        Optionally displays a top row of icons (display only).
-        selection rows.
+        Initializes the FileDirSelectTk window with parameters for tracing, the global app configuration,
+        and a dictionary defining selection rows. Each row’s data may specify whether the selection is for
+        a file or directory, allowed file types (for dialogs), an optional custom image (and its size),
+        and an optional default path. An optional icon configuration dictionary may be provided to display
+        a top row of icons.
 
         :param trace: Operation credentials and tracing information.
         :param app_dict: morPy global dictionary containing app configurations.
-        :param rows_data: Dictionary defining the selection rows.
+        :param rows_data: Dictionary mapping row names to configuration dictionaries (see expected structure).
             Expected structure:
                 {"selection_name" : {
                     "is_dir" : True | False,  # True for directory selection, False for file selection.
@@ -32,8 +37,8 @@ class FileDirSelectTk:
                     "image_size" : (width, height),  # Optional; defaults to (48, 48) if not provided.
                     "default_path" : "prefilled/default/path"  # Optional prefill for the input.},
                     ...}
-        :param title: Title of the tkinter window. Defaults to morPy localization if not provided.
-        :param icon_data: (Optional) Dictionary containing configuration for top row icons. Defaults to None.
+        :param title: Optional window title; if omitted, a localized default is used.
+        :param icon_data: Optional dictionary of icon configurations for the top row.”
             Expected structure:
                 {"icon_name" : {
                     "position" : 1,         # placement, order (lowest first)
@@ -77,27 +82,33 @@ class FileDirSelectTk:
 
     def run(self, trace: dict, app_dict: dict) -> dict:
         r"""
-        Launches the GUI and waits for the user to complete the selection.
+        Starts the file/directory selection GUI and blocks until the user completes
+        their selections.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
 
         :return: dict
-            selections: A dictionary of user inputs keyed by row name.
+            selections: A dictionary where keys are the row names and values are the
+                        paths selected by the user.
         """
         return self._impl.run(trace, app_dict)
 
+
 class GridChoiceTk:
     r"""
-    A tkinter GUI displaying a dynamic grid of image tiles. Each tile shows an image
-    with a text label below it. Clicking a tile returns its associated value.
+    Implements a Tkinter grid menu that displays image tiles with labels underneath. When the
+    user clicks a tile, its associated return value is captured, enabling menu‐style selection.
     """
 
     def __init__(self, trace: dict, app_dict: dict, tile_data: dict, title: str=None,
                  default_tile_size: tuple=None, icon_data: dict=None) -> None:
         r"""
-        A tkinter GUI displaying a dynamic grid of image tiles. Each tile shows an image
-        with a text label below it. Clicking a tile returns its associated value.
+        Initializes the grid menu interface with tracing, global app configuration, and a
+        dictionary defining each tile. The tile_data dictionary should map tile names to
+        configurations that include grid coordinates, an image path, a descriptive text label,
+        a return value, and optionally a tile size. An optional title, default tile size, and
+        icon configuration may also be provided.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -156,7 +167,7 @@ class GridChoiceTk:
 
     def run(self, trace: dict, app_dict: dict):
         r"""
-        Launches the GUI and waits for the user to make a selection.
+        Launches the grid‐choice GUI and waits until the user clicks a tile.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -182,6 +193,7 @@ class GridChoiceTk:
             result = gui.run(trace, app_dict)["choice"]
         """
         return self._impl.run(trace, app_dict)
+
 
 class MorPyException(Exception):
     r"""
@@ -216,16 +228,19 @@ class MorPyException(Exception):
             trace, app_dict, exception_obj, line, log_level, message=message
         )
 
+
 class PriorityQueue:
     r"""
-    PriorityQueue implements a task queue with priority handling.
-    When tasks are enqueued, the task with the lowest (highest priority) number
-    is pulled first.
+    Provides a priority‑based task queue where lower numeric values indicate
+    higher priority. Enqueued tasks are also timestamped with an incrementing
+    counter to preserve insertion order for tasks sharing the same priority.
     """
 
     def __init__(self, trace: dict, app_dict: dict, name: str = None) -> None:
         r"""
-        Class constructor.
+        Sets up the priority queue with tracing, the global configuration, and an
+        optional name. It initializes internal counters and data structures needed
+        for task storage and lookup.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -236,7 +251,11 @@ class PriorityQueue:
 
     def enqueue(self, trace: dict, app_dict: dict, priority: int=100, task: tuple=None) -> None:
         r"""
-        Adds a task to the priority queue.
+        Adds a task to the priority queue under a specified integer priority (lower means
+        higher priority). The task must be supplied as a callable packaged with its arguments
+        (for example, as a tuple or partial). If the task is already present (as determined by
+        its system‐ID), a debug message indicates duplication; otherwise, it is inserted with
+        an associated counter.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -253,7 +272,9 @@ class PriorityQueue:
 
     def pull(self, trace: dict, app_dict: dict) -> dict:
         r"""
-        Removes and returns the highest priority task from the priority queue.
+        Removes the highest‑priority task from the queue and returns a dictionary
+        with the task’s priority, counter value, system‑assigned task ID, and the
+        task components as a list. If the queue is empty, a debug message is logged.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -276,15 +297,20 @@ class PriorityQueue:
         """
         return self._impl.pull(trace, app_dict)
 
+
 class ProgressTracker:
     r"""
-    Progress counter to continuously keep track of operations.
+    Maintains a numerical counter to track progress during long‑running operations. It logs progress
+    updates at specified tick percentages and supports both floating‑point and integer counting for
+    efficiency.
     """
 
     def __init__(self, trace: dict, app_dict: dict, description: str=None, total: float=None, ticks: float=None,
                  float_progress: bool=False, verbose: bool=False) -> None:
         r"""
-        Class constructor.
+        Initializes the progress tracker with a descriptive label, a total count needed for completion,
+        and a tick value (in percent) that determines when to log progress updates. An option is
+        available to use floating‑point progress and to enable verbose logging.
 
         :param trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -308,7 +334,8 @@ class ProgressTracker:
 
     def update(self, trace: dict, app_dict: dict, current: float = None) -> dict:
         r"""
-        Method to update current progress and log progress if tick is passed.
+        Updates the current progress count (either incrementally or to a given value) and
+        logs progress if a tick threshold is reached.
 
         :param trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -332,14 +359,13 @@ class ProgressTracker:
         """
         return self._impl.update(trace, app_dict, current=current)
 
+
 class ProgressTrackerTk:
     r"""
-    A progress tracking GUI using tkinter to visualize the progress of a task.
-    If progress consists of several stages, a separate progress bar for the
-    stages progress is displayed. The total count of progress steps is set by
-    initializing a stage with the 'begin_stage()' method, regardless of the total
-    amount of stages. Optionally allows to display console messages in a console
-    widget.
+    Creates a graphical progress tracker using Tkinter. The GUI displays one or two progress bars
+    (overall progress and, if there are multiple stages, stage progress), along with descriptive
+    headlines and an optional console for status output. The window may close automatically at
+    100% progress or await manual closure.
     """
 
     def __init__(self, trace: dict, app_dict: dict, frame_title: str=None, frame_width: int=None,
@@ -348,7 +374,12 @@ class ProgressTrackerTk:
               stages: int=1, console: bool=False, auto_close: bool=False, work=None) -> None:
 
         r"""
-        Initializes the GUI with progress tracking.
+        Initializes the ProgressTrackerTk window with parameters such as: frame title; optional
+        frame dimensions (otherwise defaults based on monitor size); overall headline text and
+        font size; flag and font size for displaying detailed status messages; a base GUI font;
+        the number of progress stages; a flag to enable redirection of console output; an
+        auto‑close option; and an optional work callable that runs in a background thread.
+        The method configures default widget dimensions based on system resolution.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -395,7 +426,9 @@ class ProgressTrackerTk:
 
     def run(self, trace: dict, app_dict: dict) -> None:
         r"""
-        Start the GUI main loop and run the Tk mainloop on the main thread.
+        Starts the progress tracking GUI by initiating its internal update loop and then entering
+        Tkinter’s main event loop. The GUI stays active until progress is complete and the window
+        is closed.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -417,8 +450,10 @@ class ProgressTrackerTk:
     def begin_stage(self, trace: dict, app_dict: dict, stage_limit: (int, float) = 1, headline_stage: str = None,
                     detail_description: str=None, ticks: float=.01) -> None:
         r"""
-        Start a new stage of progress. Will set the stage prior to 100%, if
-        not already the case.
+        Begins a new stage of progress by resetting the stage-specific progress counter to zero and setting
+        stage parameters such as the stage limit (the maximum progress value for this stage), a headline text,
+        and an optional detailed description. A tick value (default 0.01%) determines how finely progress
+        updates are logged.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -453,9 +488,10 @@ class ProgressTrackerTk:
 
     def update_progress(self, trace: dict, app_dict: dict, current: float = None) -> None:
         r"""
-        Update stage progress & overall progress. If overall hits 100% and auto_close=True, close window. Else,
-        switch button text to "Close" and stop console redirection. Enqueues a UI request for the
-        main thread to process. Safe to call from any thread.
+        Queues an update to the current stage’s progress and, if an overall progress bar is present,
+        recomputes the overall progress as a function of completed stages plus progress of the current
+        stage. If overall progress reaches 100% and auto‑close is enabled, the window is closed;
+        otherwise, a ‘Close’ button appears and console output is stopped.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -500,8 +536,9 @@ class ProgressTrackerTk:
     def update_text(self, trace: dict, app_dict: dict, headline_total: str = None, headline_stage: str = None,
                     detail_description: str = None) -> None:
         r"""
-        Update the headline texts or description at runtime. Enqueues a UI request for the
-        main thread to process. Safe to call from any thread.
+        Queues a request to update the displayed headline texts and description in the progress GUI.
+        The overall progress headline and stage headline can be replaced, along with the detail text
+        below the stage bar.
 
         :param trace: Operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -520,6 +557,7 @@ class ProgressTrackerTk:
             detail_description=detail_description
         )
 
+
     def end_stage(self, trace: dict, app_dict: dict) -> None:
         r"""
         End the current stage by setting it to 100%.
@@ -531,6 +569,7 @@ class ProgressTrackerTk:
             progress_gui.end_stage(trace, app_dict)
         """
         return self._impl.end_stage(trace, app_dict)
+
 
 class XlWorkbook:
     r"""
@@ -814,9 +853,12 @@ class XlWorkbook:
             close_workbook=close_workbook
         )
 
+
 def app_dict_to_string(app_dict):
     r"""
-    This function creates a string for the entire app_dict. May exceed memory.
+    Generates a UTF‑8 string representation of the complete global app configuration
+    dictionary (app_dict) preserving its nested structure. Note that for very large
+    dictionaries this may be memory‑intensive.
 
     :param app_dict: morPy global dictionary
 
@@ -828,9 +870,11 @@ def app_dict_to_string(app_dict):
     import lib.fct
     return lib.fct.app_dict_to_string(app_dict)
 
+
 def conditional_lock(obj):
     r"""
-    Conditionally lock an UltraDict. In case the object is a 'dict', skip locking.
+    Returns a no‑op lock context manager if the provided object is a plain dictionary,
+    or the object’s own lock if it supports locking (for example, if it is an UltraDict).
 
     :param obj: morPy global dictionary
 
@@ -848,12 +892,14 @@ def conditional_lock(obj):
 
     return getattr(obj, "lock", _NoOpLock())
 
+
 def csv_read(trace: dict, app_dict: dict, src_file_path: str=None, delimiter: str=None,
              print_csv_dict: bool=False, log_progress: bool=False, progress_ticks: float=None, gui=None) -> dict:
     r"""
-    This function reads a csv file and returns a dictionary of
-    dictionaries. The header row, first row of data and delimiter
-    is determined automatically.
+    Reads a CSV file and converts its contents to a nested dictionary. The function auto‑detects the
+    header row and delimiter (unless one is specified), splits data rows accordingly, and logs
+    progress if requested. It returns a dictionary where each data “table” contains metadata
+    (delimiter, header, column count, row count) and row‑by‑row data keyed by line number.
 
     :param trace: Operation credentials and tracing
     :param app_dict: morPy global dictionary containing app configurations
@@ -899,13 +945,16 @@ def csv_read(trace: dict, app_dict: dict, src_file_path: str=None, delimiter: st
         print_csv_dict=print_csv_dict, log_progress=log_progress, progress_ticks=progress_ticks, gui=gui
     )
 
+
 def csv_dict_to_excel(trace: dict, app_dict: dict, xl_path: str=None, overwrite: bool=False,
                       worksheet: str=None, close_workbook: bool=False, csv_dict: dict=None,
                       log_progress: bool=False, progress_ticks: float=None) -> dict:
     r"""
-    This function takes da dictionary as provided by csv_read() and saves it as an MS Excel file.
-    The csv_dict however may be evaluated and processed prior to executing csv_dict_to_excel().
-    The file will be saved automatically, but closing the workbook is optional.
+    Takes a CSV dictionary (as generated by csv_read), optionally processes it, and writes its
+    data into an Excel workbook using OpenPyXL. Cell writes are performed sequentially over
+    specified ranges; if the list of cell definitions is shorter than the range and ‘fill_range’
+    is True, the definitions repeat until the range is completely written. The function can also
+    reset cell styles and save/close the workbook as configured.
 
     :param trace: Operation credentials and tracing
     :param app_dict: morPy global dictionary containing app configurations
@@ -963,10 +1012,12 @@ def csv_dict_to_excel(trace: dict, app_dict: dict, xl_path: str=None, overwrite:
         csv_dict=csv_dict, log_progress=log_progress, progress_ticks=progress_ticks
     )
 
+
 def datetime_now():
     r"""
-    This function reads the current date and time and returns formatted
-    stamps.
+    Returns a dictionary containing the current date and time in multiple formats: the raw datetime
+    object, a formatted date (DD.MM.YYYY), a datestamp (YYYY-MM-DD), time (hh:mm:ss), timestamp (hhmmss),
+    a combined date–timestamp string (YYYY-MM-DD_hhmmss), and a logging stamp (YYYYMMDD_hhmmss).
 
     :return: dict
         datetime_value - Date and time in the format YYYY-MM-DD hh:mm:ss.ms as value
@@ -981,11 +1032,12 @@ def datetime_now():
     import lib.fct
     return lib.fct.datetime_now()
 
+
 def decode_to_plain_text(trace: dict, app_dict: dict, src_input: str, encoding: str=''):
     r"""
-    This function decodes different types of data and returns
-    a plain text to work with in python. The return result behaves
-    like using the open(file, 'r') method.
+    Decodes binary data into a plain text (string) buffer using a specified encoding, or
+    auto‑detects the encoding if none is provided. Returns a dictionary including the decoded
+    result (as a StringIO object), the encoding used, and the number of lines in the text.
 
     :param trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
@@ -1006,9 +1058,11 @@ def decode_to_plain_text(trace: dict, app_dict: dict, src_input: str, encoding: 
     import lib.common
     return lib.common.decode_to_plain_text(trace, app_dict, src_input, encoding=encoding)
 
+
 def dialog_sel_file(trace: dict, app_dict: dict, init_dir: str=None, file_types: tuple=None, title: str=None):
     r"""
-    This function opens a dialog for the user to select a file.
+    Opens a file selection dialog using Tkinter. The dialog starts in the given initial directory
+    and filters selectable file types according to the provided tuple.
 
     :param trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
@@ -1031,9 +1085,11 @@ def dialog_sel_file(trace: dict, app_dict: dict, init_dir: str=None, file_types:
     import lib.ui_tk
     return lib.ui_tk.dialog_sel_file(trace, app_dict, init_dir, file_types, title)
 
+
 def dialog_sel_dir(trace: dict, app_dict: dict, init_dir: str=None, title: str=None) -> dict:
     r"""
-    This function opens a dialog for the user to select a directory.
+    Opens a directory selection dialog using Tkinter. The dialog starts in the specified
+    initial directory.
 
     :param trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
@@ -1052,11 +1108,14 @@ def dialog_sel_dir(trace: dict, app_dict: dict, init_dir: str=None, title: str=N
     import lib.ui_tk
     return lib.ui_tk.dialog_sel_dir(trace, app_dict, init_dir, title)
 
+
 def find_replace_save_as(trace: dict, app_dict: dict, search_obj, replace_tpl: tuple, save_as: str,
                         overwrite: bool=False) -> None:
     r"""
-    This function finds and replaces strings in a readable object
-    line by line. The result is saved into a file specified.
+    Iterates through each line of the given text (converted to a string) to find and replace
+    substrings according to provided tuples of (pattern, replacement). The resulting text is
+    written to the specified file. If the target file exists and overwriting is disallowed,
+    the operation is skipped.
 
     :param trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
@@ -1079,10 +1138,12 @@ def find_replace_save_as(trace: dict, app_dict: dict, search_obj, replace_tpl: t
         trace, app_dict, search_obj, replace_tpl, save_as, overwrite=overwrite
     )
 
+
 def fso_copy_file(trace: dict, app_dict: dict, source: str, dest: str, overwrite: bool=False) -> None:
     r"""
-    Copies a single file from the source to the destination. Includes a file
-    check to ensure the operation's validity.
+    Copies a file from a complete source path to a complete destination path. Before copying,
+    it verifies that the source exists and whether the destination should be overwritten based
+    on the ‘overwrite’ flag; logs the action accordingly.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1096,9 +1157,11 @@ def fso_copy_file(trace: dict, app_dict: dict, source: str, dest: str, overwrite
     import lib.common
     return lib.common.fso_copy_file(trace, app_dict, source, dest, overwrite=overwrite)
 
+
 def fso_create_dir(trace: dict, app_dict: dict, mk_dir: str) -> None:
     r"""
-    Creates a directory and its parent directories recursively.
+    Creates a directory (and all necessary parent directories) at the specified path.
+    If the directory already exists, a debug message is logged and no action is taken.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1110,10 +1173,11 @@ def fso_create_dir(trace: dict, app_dict: dict, mk_dir: str) -> None:
     import lib.common
     return lib.common.fso_create_dir(trace, app_dict, mk_dir)
 
+
 def fso_delete_dir(trace: dict, app_dict: dict, del_dir: str) -> None:
     r"""
-    Deletes an entire directory, including its contents. A directory check
-    is performed before deletion.
+    Recursively deletes an entire directory and its contents after checking that the
+    specified directory exists. Logs the deletion outcome.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1125,9 +1189,11 @@ def fso_delete_dir(trace: dict, app_dict: dict, del_dir: str) -> None:
     import lib.common
     return lib.common.fso_delete_dir(trace, app_dict, del_dir)
 
+
 def fso_delete_file(trace: dict, app_dict: dict, del_file: str) -> None:
     r"""
-    Deletes a file. Will check path before deletion.
+    Deletes a single file after verifying that the file exists at the specified path.
+    Logs the operation, or if the file does not exist, logs a warning.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1139,9 +1205,12 @@ def fso_delete_file(trace: dict, app_dict: dict, del_file: str) -> None:
     import lib.common
     return lib.common.fso_delete_file(trace, app_dict, del_file)
 
+
 def fso_walk(trace: dict, app_dict: dict, path: str, depth: int=1) -> dict:
     r"""
-    Returns the contents of a directory.
+    Recursively lists the contents of the specified directory up to a given depth. Returns a
+    dictionary mapping each discovered root (labeled sequentially) to its path, a list of
+    sub‑directories, and a list of files.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1172,10 +1241,11 @@ def fso_walk(trace: dict, app_dict: dict, path: str, depth: int=1) -> dict:
     import lib.common
     return lib.common.fso_walk(trace, app_dict, path, depth=depth)
 
+
 def interrupt(trace: dict, app_dict: dict):
     r"""
-    This function sets a global interrupt flag. Processes and threads
-    will halt once they pass (the most recurring) morPy functions.
+    Sets a global interrupt flag so that running processes or threads will halt at
+    designated safe points. Intended to signal an application‑wide abort.
 
     :param trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -1190,11 +1260,28 @@ def interrupt(trace: dict, app_dict: dict):
     import lib.mp
     return lib.mp.interrupt(trace, app_dict)
 
+
+def join_or_task(trace: dict, app_dict: dict) -> None:
+    r"""
+    Waits in a loop until all spawned tasks have completed or a new task appears for the current process.
+    This function is used to synchronize transitions between app phases.
+
+    :param trace: operation credentials and tracing information
+    :param app_dict: morPy global dictionary containing app configurations
+
+    :example:
+        morPy.join_or_task(trace, app_dict)
+    """
+    import lib.mp
+    return lib.mp.join_or_task(trace, app_dict)
+
+
 def log(trace: dict, app_dict: dict, log_level: str, message: callable, verbose: bool=False):
     r"""
-    Wrapper for conditional logging based on log level. To benefit from
-    this logic, it is necessary to construct "message" in the lambda shown
-    in the example, whereas <message> refers to a localized string like
+    Constructs and dispatches a log entry based on a specified severity level. The log message is
+    generated by a supplied callable so that its evaluation is deferred until needed. The function
+    updates event counters, sends the message to configured outputs (text file, database, console),
+    and may trigger an interrupt if the level requires it.
 
     :param trace: operation credentials and tracing
     :param app_dict: morPy global dictionary
@@ -1220,9 +1307,12 @@ def log(trace: dict, app_dict: dict, log_level: str, message: callable, verbose:
         if message and app_dict["morpy"]["logs_generate"].get(log_level, False):
             msg.log(trace, app_dict, log_level, message(), verbose)
 
+
 def path_join(path_parts, file_extension):
     r"""
-    This function joins components of a tuple to an OS path.
+    Joins a tuple of path components into a single OS‑appropriate path string. If a file extension
+    is provided (and not already part of the tuple), it is appended. Returns a pathlib.Path object
+    representing the constructed path; if the input isn’t a tuple, returns None.
 
     :param path_parts: Tuple of parts to be joined. Exact order is critical. Examples:
                      ('C:', 'This', 'is', 'my', 'path', '.txt') - C:\This\is\my\path.txt
@@ -1236,10 +1326,12 @@ def path_join(path_parts, file_extension):
     import lib.fct
     return lib.fct.path_join(path_parts, file_extension)
 
+
 def pathtool(in_path):
     r"""
-    This function takes a string and converts it to a path. Additionally,
-    it returns path components and checks.
+    Converts an input string into an absolute path using pathlib, and returns a dictionary
+    containing: the normalized path; booleans indicating whether it represents a file or directory;
+    existence checks; the file or directory name; any file extension; and the parent directory path.
 
     :param in_path: Path to be converted
 
@@ -1261,9 +1353,13 @@ def pathtool(in_path):
     import lib.fct
     return lib.fct.pathtool(in_path)
 
+
 def perf_info():
     r"""
-    This function returns performance metrics.
+    Gathers and returns a set of hardware and performance metrics including: boot time,
+    physical and logical CPU counts, maximum/minimum/current CPU frequencies, system-wide
+    CPU utilization (both overall and individual cores), total physical memory (MB),
+    available memory, used memory, and free memory.
 
     :return: dict
         boot_time - Timestamp of the latest recorded boot process.
@@ -1282,11 +1378,14 @@ def perf_info():
     import lib.fct
     return lib.fct.perf_info()
 
+
 def process_q(trace: dict, app_dict: dict, task: Callable | list | tuple=None, priority: int=100,
               autocorrect: bool=True):
     r"""
-    This function enqueues a task in the morPy multiprocessing queue. The task is a
-    tuple, that demands the positional arguments (func, trace, app_dict, *args, **kwargs).
+    Enqueues a task into the morPy multiprocessing queue at the specified priority (with lower numbers
+    indicating higher priority). The task may be provided as a callable, list, or tuple containing the
+    function, positional arguments, and an optional dictionary of keyword arguments. An autocorrect flag
+    ensures that the priority does not drop below zero unless explicitly allowed.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1315,11 +1414,14 @@ def process_q(trace: dict, app_dict: dict, task: Callable | list | tuple=None, p
     import lib.mp
     return lib.mp.heap_shelve(trace, app_dict, priority=priority, task=task, autocorrect=autocorrect)
 
+
 def qrcode_generator_wifi(trace: dict, app_dict: dict, ssid: str = None, password: str = None,
                           file_path: str = None, file_name: str = None, overwrite: bool = True) -> None:
     r"""
-    Create a QR-code for a Wi-Fi network. Scanning the QR-Code will offer a quick-connect to
-    the regarding Wi-Fi network. Output file will be overwritten by default.
+    Generates a QR code that encodes Wi‑Fi network credentials (SSID and WPA2 password) to allow easy
+    network connection via scanning. The QR code is saved as a PNG file in a specified directory
+    (defaulting to ‘./data’), and by default will overwrite any existing file with the same name.
+    (It is recommended not to hardcode passwords in source code.)
 
     :param trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -1343,9 +1445,11 @@ def qrcode_generator_wifi(trace: dict, app_dict: dict, ssid: str = None, passwor
         overwrite=overwrite
     )
 
+
 def regex_findall(trace: dict, app_dict: dict, search_obj: object, pattern: str) -> dict:
     r"""
-    Searches for a regular expression in a given object and returns a list of found expressions.
+    Searches the input (converted to a string) for all occurrences of a given regular expression
+    pattern and returns a list of all matching substrings, or None if no matches are found.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1363,9 +1467,11 @@ def regex_findall(trace: dict, app_dict: dict, search_obj: object, pattern: str)
     import lib.common
     return lib.common.regex_findall(trace, app_dict, search_obj, pattern)
 
+
 def regex_find1st(trace: dict, app_dict: dict, search_obj: object, pattern: str) -> dict:
     r"""
-    Searches for a regular expression in a given object and returns the first match.
+    Searches the input string for the first occurrence of a specified regular expression pattern
+    and returns that match, or None if there is no match.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1383,9 +1489,11 @@ def regex_find1st(trace: dict, app_dict: dict, search_obj: object, pattern: str)
     import lib.common
     return lib.common.regex_find1st(trace, app_dict, search_obj, pattern)
 
+
 def regex_split(trace: dict, app_dict: dict, search_obj: object, delimiter: str) -> dict:
     r"""
-    Splits an object into a list using a given delimiter.
+    Splits the input (converted to a string) into a list of substrings using the specified
+    delimiter. Delimiters that are special characters in regex should be escaped appropriately.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1405,9 +1513,11 @@ def regex_split(trace: dict, app_dict: dict, search_obj: object, delimiter: str)
     import lib.common
     return lib.common.regex_split(trace, app_dict, search_obj, delimiter)
 
+
 def regex_replace(trace: dict, app_dict: dict, search_obj: object, search_for: str, replace_by: str) -> dict:
     r"""
-    Substitutes characters or strings in an input object based on a regular expression.
+    Replaces every occurrence of a regular expression pattern in the input string with a
+    provided replacement string, returning the modified string.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1427,11 +1537,12 @@ def regex_replace(trace: dict, app_dict: dict, search_obj: object, search_for: s
     import lib.common
     return lib.common.regex_replace(trace, app_dict, search_obj, search_for, replace_by)
 
+
 def regex_remove_special(trace: dict, app_dict: dict, inp_string: str, spec_lst: list) -> dict:
     r"""
-    Removes or replaces special characters in a given string. The `spec_lst` parameter
-    specifies which characters to replace and their replacements. If no replacement is
-    specified, a standard list is used to remove special characters without substitution.
+    Processes the input string to remove or replace special characters according to a list of
+    (special, replacement) tuples. If a default list is requested (by specifying an empty tuple),
+    a standard set of common special characters is used.
 
     This function can also perform multiple `regex_replace` actions on the same string,
     as any valid regular expression can be used in the `spec_lst`.
@@ -1455,9 +1566,11 @@ def regex_remove_special(trace: dict, app_dict: dict, inp_string: str, spec_lst:
     import lib.common
     return lib.common.regex_remove_special(trace, app_dict, inp_string, spec_lst)
 
+
 def runtime(in_ref_time):
     r"""
-    This function calculates the time delta between now and a reference time.
+    Computes the elapsed time (as a timedelta) between the current time and a
+    reference time provided as input.
 
     :param in_ref_time: Value of the reference time to calculate the actual runtime
 
@@ -1467,9 +1580,13 @@ def runtime(in_ref_time):
     import lib.fct
     return lib.fct.runtime(in_ref_time)
 
+
 def sysinfo():
     r"""
-    This function returns information about the hardware and operating system.
+    Returns a dictionary of system information including: operating system name, release and
+    version, architecture and processor details, logical CPU count, total system memory in
+    bytes, username, home directory, hostname, and the primary monitor’s resolution (width
+    and height).
 
     :return: dict
         system - Operating system.
@@ -1486,9 +1603,11 @@ def sysinfo():
     import lib.fct
     return lib.fct.sysinfo()
 
+
 def textfile_write(trace: dict, app_dict: dict, filepath: str, content: str) -> None:
     r"""
-    Appends content to a text file, creating the file if it does not already exist.
+    Appends text content to a specified file. If the file does not exist, it is created.
+    The content is converted to a string as needed.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1501,11 +1620,11 @@ def textfile_write(trace: dict, app_dict: dict, filepath: str, content: str) -> 
     import lib.common
     return lib.common.textfile_write(trace, app_dict, filepath, content)
 
+
 def wait_for_input(trace: dict, app_dict: dict, message: str) -> dict:
     r"""
-    Pauses program execution until a user provides input. The input is then
-    returned to the calling module. Take note, that the returned user input
-    will always be a string.
+    Pauses execution until the user provides input at a command‑line prompt. The supplied message
+    is displayed, and the user input (always returned as a string) is captured.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.
@@ -1521,11 +1640,12 @@ def wait_for_input(trace: dict, app_dict: dict, message: str) -> dict:
     import lib.common
     return lib.common.wait_for_input(trace, app_dict, message)
 
+
 def wait_for_select(trace: dict, app_dict: dict, message: str, collection: tuple=None):
     r"""
-    Pauses program execution until a user provides input. The input needs to
-    be part of a tuple, otherwise it is repeated or aborted. Take note, that the
-    returned user input will always be a string.
+    Prompts the user for input that must match one of the elements in a provided tuple. If the
+    entered input is invalid, the prompt is repeated (or the process is aborted) until a valid
+    option is selected.
 
     :param trace: Operation credentials and tracing information.
     :param app_dict: The morPy global dictionary containing app configurations.

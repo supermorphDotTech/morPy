@@ -6,8 +6,9 @@ Author:     Bastian Neuwirth
 Descr.:     This module delivers functions to work with a SQLite database. The
             main database as defined in app_dict will be referenced.
 
-TODO troubleshooting and enhancement
-    > Make sqlite3 a class with it's methods
+FIXME I am a construction site
+TODO Complete overhaul
+    > Make this a class
 -----------------
 SQLite Tutorial
 
@@ -81,9 +82,6 @@ SQLite Functions
     SQLite MIN
     SQLite SUM
 """
-
-# TODO make this a class
-# Update how this works (use sets and dicts)
 
 from morPy import log
 import lib.fct as morpy_fct

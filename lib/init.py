@@ -22,10 +22,9 @@ from UltraDict import UltraDict
 
 def init_cred() -> dict:
     r"""
-    Initializes the operation credentials and tracing.
-
-    :param:
-        -
+    Creates and returns a trace dictionary with default keys such as module, operation,
+    process and thread IDs, and flags for logging and interruption. This dictionary is
+    used to initiate tracing for morPy operations.
 
     :return: dict
         trace - operation credentials and tracing
@@ -52,8 +51,10 @@ def init_cred() -> dict:
 @core_wrap
 def init(trace) -> (dict | UltraDict, MorPyOrchestrator):
     r"""
-    Initializes the app dictionary and yields app
-    specific information to be handed down through called functions.
+    Performs initialization of the global app configuration dictionary (app_dict) by building
+    nested shared dictionaries, setting up localization, logging options, and system properties.
+    It then initializes the morPy orchestrator and returns a tuple of the updated trace,
+    app_dict, and the orchestrator.
 
     :return app_dict: morPy global dictionary containing app configurations
     """
@@ -177,8 +178,9 @@ def init(trace) -> (dict | UltraDict, MorPyOrchestrator):
 @core_wrap
 def build_app_dict(trace: dict, create: bool=False) -> (dict | UltraDict, dict):
     r"""
-    This function builds the app_dict in accordance to multiprocessing and whether GIL
-    is included in the Python environment.
+    Constructs the morPy global configuration dictionary (app_dict) with support for
+    multiprocessing. It collects system information, applies configuration settings from
+    lib.conf, and returns the app_dict along with a datetime stamp dictionary.
 
     :param trace: operation credentials and tracing
     :param create: If True, a (nested) dictionary is created. Otherwise, purely
@@ -372,8 +374,9 @@ def build_app_dict(trace: dict, create: bool=False) -> (dict | UltraDict, dict):
 @core_wrap
 def morpy_log_header(trace: dict, init_dict: dict | UltraDict) -> None:
     r"""
-    This function writes the header for the logfile including app specific
-    information.
+    Writes a header to the logging text file that includes key application metadata such as
+    the author, application path, timestamp, user, system, OS version, architecture, and
+    thread count.
 
     :param trace: operation credentials and tracing
     :param init_dict: Dictionary holding all initialized data (init of app_dict)
@@ -412,8 +415,8 @@ def morpy_log_header(trace: dict, init_dict: dict | UltraDict) -> None:
 @core_wrap
 def morpy_ref(trace: dict, init_dict: dict | UltraDict, init_dict_str: str) -> None:
     r"""
-    This function documents the initialized dictionary (reference). It is stored
-    in the same path as __main__.py and serves development purposes.
+    Writes a string representation of the initialized app_dict to a reference file in the
+    main path. This document is intended for development purposes only.
 
     :param trace: operation credentials and tracing
     :param init_dict: Dictionary holding all initialized data (init of app_dict)
@@ -451,7 +454,9 @@ def morpy_ref(trace: dict, init_dict: dict | UltraDict, init_dict_str: str) -> N
 
 def init_max_processes(conf_dict: dict, system_logical_cpus: int) -> int:
     r"""
-    Determine the maximum amount of processes allowed for runtime.
+    Calculates the maximum number of processes allowed for runtime, based on configuration settings
+    (absolute or relative) and the number of logical CPUs. Returns the maximum process count as an
+    integer.
 
     :param conf_dict: Dictionary equal to lib.conf.settings()
     :param system_logical_cpus: Logical CPUs of the machine.
@@ -507,7 +512,10 @@ def init_max_processes(conf_dict: dict, system_logical_cpus: int) -> int:
 
 def init_memory_size(conf_dict: dict, max_processes: int) -> tuple:
     r"""
-    Calculate the total size of UltraDicts at initialization.
+    Computes the total memory (in bytes) to be allocated for shared dictionaries by converting
+    configuration values (in MB) to bytes. It checks that the minimum required memory does not
+    exceed system memory and returns a tuple containing the target initialization memory, the
+    minimal required bytes, and total system memory.
 
     :param conf_dict: Dictionary equal to lib.conf.settings()
     :param max_processes: Maximum processes evaluated for runtime.
@@ -556,9 +564,9 @@ def init_memory_size(conf_dict: dict, max_processes: int) -> tuple:
 
 def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
     r"""
-    Determine the size of nested dictionaries individually. Memory initialized
-    will scale with the amount of processes configured in lib.conf.settings()
-    for scalability.
+    Determines the memory sizes for each nested shared dictionary (e.g. for ‘morpy’, ‘conf’, ‘logs_generate’, etc.)
+    based on the maximum number of processes. Returns a dictionary mapping each UltraDict’s purpose to its allocated
+    memory size in bytes.
 
     !! ATTENTION !!
     The most heavily used dictionary in multiprocessing context is `app_dict["morpy"]`.
@@ -672,9 +680,8 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
 
 def obscure_shared_name() -> str:
     r"""
-    Generate a random name for the shared memory segments. This is to make it
-    harder for an attacker to identify the shared memory segments of runtime.
-    UltraDict provides random standard names, but with lesser variability.
+    Generates a random, unique string to serve as the name for a shared memory segment. This obfuscates
+    the shared memory names to enhance security and reduce the risk of external attachment.
 
     :return shared_name: String with random signs and length.
     """

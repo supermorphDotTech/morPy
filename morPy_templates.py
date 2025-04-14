@@ -19,7 +19,9 @@ from lib.decorators import morpy_wrap
 @morpy_wrap
 def template(trace: dict, app_dict: dict) -> None:
     r"""
-    This function is a template.
+    This is a template function intended for demonstration purposes. It serves as a
+    starting point for creating new morPy operations. Replace the inner placeholder
+    code with your actual implementation.
 
     :param trace: operation credentials and tracing information
     :param app_dict: morPy global dictionary containing app configurations
@@ -44,11 +46,9 @@ def template(trace: dict, app_dict: dict) -> None:
 
 class TemplateClass:
     r"""
-    This class is a template.
-
-    !! LIMITATIONS IN MULTIPROCESSING !!
-    Storing classes in `app_dict` to share them across processes may fail, because it's attributes
-    are not propagated reliably to other processes. See README.md for more details.
+    This template class is provided as an example. Note that storing class definitions
+    in the global app configuration for sharing across processes may not propagate attributes
+    reliably (see README.md for details).
     """
 
 
@@ -57,7 +57,9 @@ class TemplateClass:
     @morpy_wrap
     def __init__(self, trace: dict, app_dict: dict) -> None:
         r"""
-        Class constructor.
+        Initializes the TemplateClass instance using tracing and the morPy global
+        configuration. This constructor logs an informational message and includes
+        placeholder code for further initialization.
 
         :param trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations
@@ -83,7 +85,8 @@ class TemplateClass:
     @morpy_wrap
     def method(self, trace: dict, app_dict: dict) -> None:
         r"""
-        METHOD DESCRIPTION
+        Example method of the TemplateClass. It logs an informational message and is intended
+        as a placeholder for actual class functionality.
 
         :param trace: operation credentials and tracing information
         :param app_dict: morPy global dictionary containing app configurations

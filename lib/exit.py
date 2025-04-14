@@ -16,8 +16,8 @@ import sys
 @core_wrap
 def end_runtime(trace: dict, app_dict: dict) -> None:
     r"""
-    This is the mpy exit routine. It is not intended to be used as part of an app, but it may be executed however,
-    at any time after initialization.
+    Finalizes the morPy runtime by retrieving the exit timestamp, calculating the total runtime,
+    logging event counters and exit details, and then calling sys.exit() to terminate the application.
 
     :param trace: operation credentials and tracing
     :param app_dict: The mpy-specific global dictionary

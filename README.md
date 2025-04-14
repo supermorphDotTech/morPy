@@ -9,7 +9,7 @@ Feel free to comment, share and support this project!
 ![License](https://img.shields.io/github/license/supermorphDotTech/morPy)
 ![GitHub commit activity (monthly)](https://img.shields.io/github/commit-activity/m/supermorphDotTech/morPy)
 
-# v1.0.0b - Table of contents [≛](#4.) [⇩](#7.) <a name="toc"></a>
+# v1.0.0a - Table of contents [≛](#4.) [⇩](#7.) <a name="toc"></a>
 
 `1.` [Requirements and Dependencies](#1.)  
 &nbsp;
@@ -78,13 +78,14 @@ Feel free to comment, share and support this project!
 
 ### 1.1.2 Setup Guidance [⇧](#toc) <a name="1.1.2"></a>
 
-`1.` Install Python with the option "Add python.exe to PATH" enabled.  
-`2.` Install Microsoft Visual C++ BuildTools  
-`2.1.` Select "Desktopdevelopment with C++"  
-`3.` Install a virtual environment in your project path (see below)  
-`3.1.` [Basic Setup](#1.1.3.1)  
-`3.2.` [Install Dependencies](#1.1.3.2)  
-`3.3.` [Copy Packages to Virtual Environment](#1.1.3.3)
+`1.` [Download morPy](https://github.com/supermorphDotTech/morPy/archive/refs/heads/main.zip) and unpack the zipped file into your project directory.
+`2.` Install Python with the option "Add python.exe to PATH" enabled.  
+`3.` Install Microsoft Visual C++ BuildTools  
+`3.1.` Select "Desktopdevelopment with C++"  
+`4.` Install a virtual environment in your project path (see below)  
+`4.1.` [1.1.3.1 Basic Setup](#1.1.3.1)  
+`4.2.` [1.1.3.2 Install Dependencies](#1.1.3.2)  
+`4.3.` [1.1.3.3 Copy Packages to Virtual Environment](#1.1.3.3)
 
 ### 1.1.3 Virtual Environment [⇧](#toc) <a name="1.1.3"></a>
 
@@ -96,7 +97,7 @@ Feel free to comment, share and support this project!
 2. Define the Python version
 
 ```PowerShell
-$env:python_version = 312
+$env:python_version = 310   # Python version indication
 $env:python_path = "$($env:userprofile)\AppData\Local\Programs\Python\Python$($env:python_version)"
 $env:python_exe = "$($env:python_path)\python.exe"
 ```
