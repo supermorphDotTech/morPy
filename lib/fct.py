@@ -9,8 +9,6 @@ Descr.:     This module yields the most basic functions of the morPy fork. These
             since they are fully compatible with morPy.
 """
 
-import psutil
-import hashlib
 
 def datetime_now() -> dict:
     r"""
@@ -82,15 +80,18 @@ def datetime_now() -> dict:
         'loggingstamp' : loggingstamp
     }
 
+
 def hashify(string: str) -> str:
     """
     Returns the SHA‑256 hexadecimal hash of a given input string.
 
     :param string: The input string to hash.
 
-    :return str: A SHA-256 hash of the string as a hexadecimal string.
+    :return str: SHA-256 hash of the string as a hexadecimal string.
     """
+    import hashlib
     return hashlib.sha256(string.encode('utf-8')).hexdigest()
+
 
 def runtime(in_ref_time) -> dict:
     r"""
@@ -111,6 +112,7 @@ def runtime(in_ref_time) -> dict:
         'rnt_delta' : rnt_delta
     }
 
+
 def sysinfo() -> dict:
     r"""
     Returns a dictionary of system information including: operating system name, release and
@@ -127,22 +129,22 @@ def sysinfo() -> dict:
         logical_cpus - Amount of processes, that could run in parallel.
         sys_memory_bytes - Physical system memory in bytes
         username - Returns the username.
-        homedir - Returns the home directory.
+        home_dir - Returns the home directory.
         hostname - Returns the host name.
     """
 
-    import platform, getpass, os.path, socket
+    import platform, getpass, os.path, socket, psutil
 
     system = platform.uname().system
     release = platform.uname().release
     version = platform.uname().version
     arch = platform.uname().machine
     processor = platform.uname().processor
-    logical_cpus = perfinfo()["cpu_count_log"]
+    logical_cpus = perf_info()["cpu_count_log"]
     sys_memory_bytes = psutil.virtual_memory().total
 
     username = getpass.getuser()
-    homedir = os.path.expanduser("~")
+    home_dir = os.path.expanduser("~")
     hostname = socket.gethostname()
 
     # Try to get main monitor info
@@ -152,7 +154,7 @@ def sysinfo() -> dict:
         try:
             # For Windows 8.1 or later
             ctypes.windll.shcore.SetProcessDpiAwareness(1)  # or use 2 for per-monitor DPI awareness
-        except Exception:
+        except AttributeError | OSError:
             # Fallback for older systems or if the call fails.
             ctypes.windll.user32.SetProcessDPIAware()
         # Get primary monitor resolution using Windows API
@@ -160,7 +162,7 @@ def sysinfo() -> dict:
         res_width = user32.GetSystemMetrics(0)
         res_height = user32.GetSystemMetrics(1)
     # Fallback to tkinter, if ctypes is not supported. May not return info of main monitor.
-    except Exception:
+    except AttributeError | OSError | ImportError:
         # Fallback: use tkinter to get the resolution
         from tkinter import Tk
         root = Tk()
@@ -177,11 +179,12 @@ def sysinfo() -> dict:
         'logical_cpus' : logical_cpus,
         'sys_memory_bytes' : sys_memory_bytes,
         'username' : username,
-        'homedir' : homedir,
+        'home_dir' : home_dir,
         'hostname' : hostname,
         'resolution_height' : res_height,
         'resolution_width' : res_width,
     }
+
 
 def pathtool(in_path) -> dict:
     r"""
@@ -240,6 +243,7 @@ def pathtool(in_path) -> dict:
         'dir_name' : dir_name,
         'parent_dir' : parent_dir,
     }
+
 
 def path_join(path_parts, file_extension):
     r"""
@@ -300,7 +304,8 @@ def path_join(path_parts, file_extension):
 
     return path_obj
 
-def perfinfo() -> dict:
+
+def perf_info() -> dict:
     r"""
     Gathers and returns a set of hardware and performance metrics including: boot time,
     physical and logical CPU counts, maximum/minimum/current CPU frequencies, system-wide
@@ -315,11 +320,11 @@ def perfinfo() -> dict:
         cpu_freq_min - Return the minimum CPU frequency expressed in Mhz.
         cpu_freq_comb - Return the combined CPU frequency expressed in Mhz.
         cpu_perc_comb - Returns the current combined system-wide CPU utilization as a percentage.
-        cpu_perc_indv - Returns the current individual system-wide CPU utilization as a percentage.
-        mem_total_MB - Total physical memory in MB (exclusive swap).
-        mem_available_MB - Memory in MB that can be given instantly to processes without the system going into swap.
-        mem_used_MB - Memory used in MB.
-        mem_free_MB - Memory not being used at all (zeroed) that is readily available in MB.
+        cpu_percent_individual - Returns the current individual system-wide CPU utilization as a percentage.
+        mem_total_mb - Total physical memory in MB (exclusive swap).
+        mem_available_mb - Memory in MB that can be given instantly to processes without the system going into swap.
+        mem_used_mb - Memory used in MB.
+        mem_free_mb - Memory not being used at all (zeroed) that is readily available in MB.
     """
 
     import psutil
@@ -340,15 +345,15 @@ def perfinfo() -> dict:
 
     # CPU percentages:
     # Use a small interval so psutil measures CPU usage instead of returning a cached value.
-    cpu_percent_list = psutil.cpu_percent(interval=0.1, percpu=True)
-    cpu_perc_indv    = cpu_percent_list
-    cpu_perc_comb    = sum(cpu_percent_list) / len(cpu_percent_list) if cpu_percent_list else 0.0
+    cpu_percent_list        = psutil.cpu_percent(interval=0.1, percpu=True)
+    cpu_percent_individual  = cpu_percent_list
+    cpu_perc_comb           = sum(cpu_percent_list) / len(cpu_percent_list) if cpu_percent_list else 0.0
 
     # Memory info in MB
-    mem_total_MB    = psutil.virtual_memory().total / 1024**2
-    mem_available_MB= psutil.virtual_memory().available / 1024**2
-    mem_used_MB     = psutil.virtual_memory().used / 1024**2
-    mem_free_MB     = psutil.virtual_memory().free / 1024**2
+    mem_total_mb    = psutil.virtual_memory().total / 1024**2
+    mem_available_mb= psutil.virtual_memory().available / 1024**2
+    mem_used_mb     = psutil.virtual_memory().used / 1024**2
+    mem_free_mb     = psutil.virtual_memory().free / 1024**2
 
     return{
         'boot_time' : boot_time,
@@ -358,22 +363,19 @@ def perfinfo() -> dict:
         'cpu_freq_min' : cpu_freq_min,
         'cpu_freq_comb' : cpu_freq_comb,
         'cpu_perc_comb' : cpu_perc_comb,
-        'cpu_perc_indv' : cpu_perc_indv,
-        'mem_total_MB' : mem_total_MB,
-        'mem_available_MB' : mem_available_MB,
-        'mem_used_MB' : mem_used_MB,
-        'mem_free_MB' : mem_free_MB,
+        'cpu_percent_individual' : cpu_percent_individual,
+        'mem_total_mb' : mem_total_mb,
+        'mem_available_mb' : mem_available_mb,
+        'mem_used_mb' : mem_used_mb,
+        'mem_free_mb' : mem_free_mb,
     }
 
-def app_dict_to_string(app_dict, depth: int=0) -> str:
+
+def app_dict_to_string(app_dict, depth: int=0) -> str | None:
     r"""
-<<<<<<< Updated upstream
-    This function creates a string for the entire app_dict. May exceed memory.
-=======
     Generates a UTF‑8 string representation of the complete global app configuration
     dictionary (app_dict) preserving its nested structure. Note that for very large
     dictionaries this may be memory‑intensive.
->>>>>>> Stashed changes
 
     :param app_dict: morPy global dictionary
     :param depth: Tracks the current indentation level for formatting the dictionary structure.
@@ -386,48 +388,42 @@ def app_dict_to_string(app_dict, depth: int=0) -> str:
         app_dict_to_string(app_dict) # Do not specify depth!
     """
 
-    if isinstance(app_dict, dict):
+    from morPy import conditional_lock
+    from UltraDict import UltraDict
 
-        # Define the priority order for level-1 nested dictionaries
-        app_dict_order = ["conf", "sys", "run", "morpy", "loc"]
+    if isinstance(app_dict, dict | UltraDict):
 
-        lines = []
-        indent = 4 * " " * depth  # 4 spaces per depth level
+        with conditional_lock(app_dict):
+            lines = []
+            indent = 4 * " " * depth  # 4 spaces per depth level
 
-        for key, value in app_dict.items():
-            if isinstance(value, dict):
-                    lines.append(f"{indent}{key}:")
-                    lines.append(app_dict_to_string(value, depth + 1))  # Recursively handle nested dictionaries
-            else:
-                value_linebreak = ""
-                l = 0
-                for line in f"{value}".splitlines():
-                    l += 1
-                    value_linebreak += line if l==1 else f'\n{indent}{(len(key)+3)*" "}{line}'
-                lines.append(f"{indent}{key} : {value_linebreak}")
+            for key, value in app_dict.items():
+                if isinstance(value, dict):
+                        lines.append(f"{indent}{key}:")
+                        lines.append(app_dict_to_string(value, depth + 1))  # Recursively handle nested dictionaries
+                else:
+                    value_linebreak = ""
+                    l = 0
+                    for line in f"{value}".splitlines():
+                        l += 1
+                        value_linebreak += line if l==1 else f'\n{indent}{(len(key)+3)*" "}{line}'
+                    lines.append(f"{indent}{key} : {value_linebreak}")
 
         return '\n'.join(lines)
     else:
         return None
 
-def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: bool=False,
+
+def tracing(module, operation, trace, clone=True, process_id=None, reset: bool=False,
             reset_w_prefix: str=None) -> dict:
     r"""
-<<<<<<< Updated upstream
-    This function formats the trace to any given operation. This function is
-    necessary to alter the morpy_trace as a pass down rather than pointing to the
-    same morpy_trace passed down by the calling operation. If morpy_trace is to be altered
-    in any way (i.e. 'log_enable') it needs to be done after calling this function.
-    This is why this function is called at the top of any morPy-operation.
-=======
     Creates (or clones) a trace dictionary by appending the current module and operation to the existing
     tracing string. Optionally resets the trace if requested. Returns the updated trace to be passed down
     to subsequent morPy functions.
->>>>>>> Stashed changes
 
     :param module: Name of the module, the operation is defined in (i.e. 'lib.common')
     :param operation: Name of the operation executed (i.e. 'tracing(~)')
-    :param morpy_trace: operation credentials and tracing
+    :param trace: operation credentials and tracing
     :param clone: If true (default), a clone of the trace will be created ensuring the tracing
         within morPy. If false, the parent trace will be altered directly (intended for
         initialization only).
@@ -437,28 +433,28 @@ def tracing(module, operation, morpy_trace, clone=True, process_id=None, reset: 
     :param reset_w_prefix: If reset is True, a custom preset can be set in order to retain
         a customized trace.
 
-    :return morpy_trace_passdown: operation credentials and tracing
+    :return trace_pass_down: operation credentials and tracing
     """
 
-    # Deepcopy the morpy_trace dictionary. Any change in either dictionary is not reflected
+    # Deepcopy the trace dictionary. Any change in either dictionary is not reflected
     # in the other one. This is important to pass down a functions trace effectively.
     if clone:
         import copy
-        morpy_trace_passdown = copy.deepcopy(morpy_trace)
+        trace_pass_down = copy.deepcopy(trace)
     else:
-        morpy_trace_passdown = morpy_trace
+        trace_pass_down = trace
 
     if process_id:
-        morpy_trace_passdown["process_id"] = process_id
+        trace_pass_down["process_id"] = process_id
 
     # Define operation credentials (see init.init_cred() for all dict keys)
-    morpy_trace_passdown["module"] = f'{module}'
-    morpy_trace_passdown["operation"] = f'{operation}'
+    trace_pass_down["module"] = f'{module}'
+    trace_pass_down["operation"] = f'{operation}'
 
     if reset:
-        morpy_trace_passdown["tracing"] = \
+        trace_pass_down["tracing"] = \
             f'{reset_w_prefix} > {module}.{operation}' if reset_w_prefix else f'{module}.{operation}'
     else:
-        morpy_trace_passdown["tracing"] = f'{morpy_trace["tracing"]} > {module}.{operation}'
+        trace_pass_down["tracing"] = f'{trace["tracing"]} > {module}.{operation}'
 
-    return morpy_trace_passdown
+    return trace_pass_down

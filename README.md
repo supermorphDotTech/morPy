@@ -78,13 +78,14 @@ Feel free to comment, share and support this project!
 
 ### 1.1.2 Setup Guidance [⇧](#toc) <a name="1.1.2"></a>
 
-`1.` Install Python with the option "Add python.exe to PATH" enabled.  
-`2.` Install Microsoft Visual C++ BuildTools  
-`2.1.` Select "Desktopdevelopment with C++"  
-`3.` Install a virtual environment in your project path (see below)  
-`3.1.` [Basic Setup](#1.1.3.1)  
-`3.2.` [Install Dependencies](#1.1.3.2)  
-`3.3.` [Copy Packages to Virtual Environment](#1.1.3.3)
+`1.` [Download morPy](https://github.com/supermorphDotTech/morPy/archive/refs/heads/main.zip) and unpack the zipped file into your project directory.
+`2.` Install Python with the option "Add python.exe to PATH" enabled.  
+`3.` Install Microsoft Visual C++ BuildTools  
+`3.1.` Select "Desktopdevelopment with C++"  
+`4.` Install a virtual environment in your project path (see below)  
+`4.1.` [1.1.3.1 Basic Setup](#1.1.3.1)  
+`4.2.` [1.1.3.2 Install Dependencies](#1.1.3.2)  
+`4.3.` [1.1.3.3 Copy Packages to Virtual Environment](#1.1.3.3)
 
 ### 1.1.3 Virtual Environment [⇧](#toc) <a name="1.1.3"></a>
 
@@ -297,14 +298,15 @@ proxy functions transforming the data instead of more complex types.
 
 ### 4.2.1 Categorization & Sub-Dictionaries [⇧](#toc) <a name="4.2.1"></a>
 
-***Relevant dictionaries for developers to beleveraged will be marked `dev` in the descriptions.***
+***Relevant dictionaries for developers to be leveraged will be marked `dev` in the descriptions.***
+***Dictionaries marked with `safe_read` do not need a lock to safely read from them, because they are not meant to modified during runtime at all.***
 
 ```Python
 # Root dictionary. Data may be stored in here to be shared across processes.
 app_dict
 ```
 
-» `dev`
+» `dev`\
 
 ```Python
 # Nested dictionary for morPy core functionality. Keep it and it's nested dictionaries untouched.
@@ -316,7 +318,8 @@ app_dict["morpy"]
 app_dict["morpy"]["conf"]
 ```
 
-» `dev`
+» `dev`\
+» `safe_read`
 
 ```Python
 # Nested dictionary serving as a shelf for child processes to put tasks in. These shelved tasks will be transferred into the heap by the orchestrator and removed from the dictionary in doing so.
@@ -348,16 +351,21 @@ app_dict["morpy"]["proc_waiting"]
 app_dict["morpy"]["sys"]
 ```
 
+» `safe_read`
+
 ```Python
 # Nested dictionary holding the nested dictionaries for localized messages.
 app_dict["loc"]
 ```
+
+» `safe_read`\
 
 ```Python
 # Nested dictionary holding the localized messages for the morPy framework.
 app_dict["loc"]["morpy"]
 ```
 
+» `safe_read`\
 » Data initialized from `loc.morPy_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ```Python
@@ -365,6 +373,7 @@ app_dict["loc"]["morpy"]
 app_dict["loc"]["morpy_dbg"]
 ```
 
+» `safe_read`\
 » Data initialized from `loc.morPy_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ```Python
@@ -373,6 +382,7 @@ app_dict["loc"]["app"]
 ```
 
 » `dev`\
+» `safe_read`\
 » Data initialized from `loc.app_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ```Python
@@ -381,6 +391,7 @@ app_dict["loc"]["app_dbg"]
 ```
 
 » `dev`\
+» `safe_read`\
 » Data initialized from `loc.app_[LANG].py`, where `LANG` is the localization (i.e. 'en_US').
 
 ### 4.2.2 App Dictionary Map [⇧](#toc) <a name="4.2.2"></a>
@@ -406,7 +417,7 @@ app_dict = [dict | UltraDict]{
        *"proc_joined":      [bool]              # Flag signaling that all processes are joined and may be released.
         "proc_master":      [int]               # Process ID of the master process.
         "interrupt":        [bool]              # Flag to signal all processes to wait. On release terminate or continue.
-        "exit":             [bool]              # Flag to signal app exit. All processes will terminate as soon as possible.
+        "exit":             [bool]              # Initiate app exit. All processes will terminate as soon as possible.
         "init_complete"     [bool]              # Is True, once app transitioned from app.init() into app.run().
     }
     "loc":      [dict | UltraDict]{             # See ..\loc\

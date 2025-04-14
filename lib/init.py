@@ -8,8 +8,9 @@ Descr.:     Initialization of the morPy framework.
 
 import lib.fct as morpy_fct
 import lib.conf as conf
+from morPy import log
+from lib.decorators import core_wrap
 from lib.common import textfile_write
-from lib.decorators import log
 from lib.mp import MorPyOrchestrator
 
 import importlib
@@ -18,6 +19,7 @@ import os
 import os.path
 from UltraDict import UltraDict
 
+
 def init_cred() -> dict:
     r"""
     Creates and returns a trace dictionary with default keys such as module, operation,
@@ -25,197 +27,175 @@ def init_cred() -> dict:
     used to initiate tracing for morPy operations.
 
     :return: dict
-        morpy_trace - operation credentials and tracing
+        trace - operation credentials and tracing
     """
 
     # Initialize operation credentials and tracing.
     # Each operation/function/object will fill the dictionary with data
-    # by executing morpy_trace: dict = morPy.tracing(module, operation, morpy_trace)
+    # by executing trace: dict = morPy.tracing(module, operation, trace)
     # as a first step before execution.
-    morpy_trace: dict = {
-        'module' : '__main__',
-        'operation' : '',
-        'tracing' : '__main__',
-        'process_id' : int(0),
-        'thread_id' : int(0),
-        'task_id' : int(0),
-        'log_enable' : False,
-        'interrupt_enable' : False,
+    trace: dict = {
+        "module" : "__main__",
+        "operation" : "",
+        "tracing" : "__main__",
+        "process_id" : int(0),
+        "thread_id" : int(0),
+        "task_id" : int(0),
+        "log_enable" : False,
+        "interrupt_enable" : False,
     }
 
-    return morpy_trace
+    return trace
 
-def init(morpy_trace) -> (dict | UltraDict, MorPyOrchestrator):
+
+@core_wrap
+def init(trace) -> (dict | UltraDict, MorPyOrchestrator):
     r"""
     Performs initialization of the global app configuration dictionary (app_dict) by building
     nested shared dictionaries, setting up localization, logging options, and system properties.
     It then initializes the morPy orchestrator and returns a tuple of the updated trace,
     app_dict, and the orchestrator.
 
-    :param morpy_trace: operation credentials and tracing
-
     :return app_dict: morPy global dictionary containing app configurations
     """
 
-    # Define operation credentials (see init.init_cred() for all dict keys)
-    module: str = 'lib.init'
-    operation: str = 'init(~)'
-    morpy_trace_init = morpy_fct.tracing(module, operation, morpy_trace)
+    # Build the app_dict
+    init_dict, init_datetime = build_app_dict(trace, create=True)
 
-    init_dict = None
+    init_dict["morpy"].update({"tasks_created" : trace["task_id"]})
+    init_dict["morpy"]["proc_joined"] = True
+    init_dict["morpy"].update({"proc_master" : trace['process_id']})
 
-    try:
-        # ############################################
-        # START Single-threaded initialization
-        # ############################################
+    # Initialize the global interrupt flag and exit flag
+    init_dict["morpy"]["interrupt"] = False
+    init_dict["morpy"]["exit"] = False
 
-        # Build the app_dict
-        init_dict, init_datetime = build_app_dict(morpy_trace_init, create=True)
+    # Set an initialization complete flag
+    init_dict["morpy"]["init_complete"] = False
 
-        init_dict["morpy"].update({"tasks_created" : morpy_trace_init["task_id"]})
-        init_dict["morpy"]["proc_joined"] = True
-        init_dict["morpy"].update({"proc_master" : morpy_trace['process_id']})
+    # Store the start time and timestamps in the dictionary
+    for time_key in init_datetime:
+        init_dict["morpy"][f'init_{time_key}'] = init_datetime[f'{time_key}']
 
-        # Initialize the global interrupt flag and exit flag
-        init_dict["morpy"]["interrupt"] = False
-        init_dict["morpy"]["exit"] = False
+    # Evaluate log_enable
+    if not init_dict["morpy"]["conf"]["log_db_enable"] and not init_dict["morpy"]["conf"]["log_txt_enable"]:
+        init_dict["morpy"]["conf"]["log_enable"] = False
+    log_enable = init_dict["morpy"]["conf"]["log_enable"]
 
-        # Set an initialization complete flag
-        init_dict["morpy"]["init_complete"] = False
+    # Pass down the log enabling parameter
+    trace["log_enable"] = log_enable
 
-        # Store the start time and timestamps in the dictionary
-        for time_key in init_datetime:
-            init_dict["morpy"][f'init_{time_key}'] = init_datetime[f'{time_key}']
+    # Import the morPy core functions localization into init_dict.
+    morpy_loc = importlib.import_module(init_dict["morpy"]["conf"]["localization"])
+    init_dict["loc"]["morpy"].update(getattr(morpy_loc, 'loc_morpy')())
 
-        # Evaluate log_enable
-        if not init_dict["morpy"]["conf"]["log_db_enable"] and not init_dict["morpy"]["conf"]["log_txt_enable"]:
-            init_dict["morpy"]["conf"]["log_enable"] = False
+    # Build nested dictionary for log generation
+    log_levels = ("init", "debug", "info", "warning", "denied", "error", "critical", "exit")
+    for log_level in log_levels:
+        if ((log_enable and not (log_level in init_dict["morpy"]["conf"]["log_lvl_nolog"]))
+            or (init_dict["morpy"]["conf"]["msg_print"]
+            and not (log_level in init_dict["morpy"]["conf"]["log_lvl_noprint"]))):
 
-        # Pass down the log enabling parameter
-        morpy_trace["log_enable"] = init_dict["morpy"]["conf"]["log_enable"]
-        morpy_trace_init["log_enable"] = init_dict["morpy"]["conf"]["log_enable"]
+            init_dict["morpy"]["logs_generate"][log_level] = True
+        else:
+            init_dict["morpy"]["logs_generate"][log_level] = False
 
-        # Import the morPy core functions localization into init_dict.
-        morpy_loc = importlib.import_module(init_dict["morpy"]["conf"]["localization"])
-        init_dict["loc"]["morpy"].update(getattr(morpy_loc, 'loc_morpy')())
+    # Prepare log levels
+    init_dict["morpy"]["events_total"] = 0
+    init_dict["morpy"]["events_DEBUG"] = 0
+    init_dict["morpy"]["events_INFO"] = 0
+    init_dict["morpy"]["events_WARNING"] = 0
+    init_dict["morpy"]["events_DENIED"] = 0
+    init_dict["morpy"]["events_ERROR"] = 0
+    init_dict["morpy"]["events_CRITICAL"] = 0
+    init_dict["morpy"]["events_UNDEFINED"] = 0
+    init_dict["morpy"]["events_INIT"] = 0
+    init_dict["morpy"]["events_EXIT"] = 0
 
-        # Build nested dictionary for log generation
-        log_levels = ("init", "debug", "info", "warning", "denied", "error", "critical", "exit")
-        for log_level in log_levels:
-            if (
-                (init_dict["morpy"]["conf"]["log_enable"] and
-                 not (log_level in init_dict["morpy"]["conf"]["log_lvl_nolog"])
-                 ) or (
-                init_dict["morpy"]["conf"]["msg_print"] and
-                 not (log_level in init_dict["morpy"]["conf"]["log_lvl_noprint"]))
-            ):
-                init_dict["morpy"]["logs_generate"][log_level] = True
-            else:
-                init_dict["morpy"]["logs_generate"][log_level] = False
+    # Create first log in txt-file including the app header
+    if (init_dict["morpy"]["conf"]["log_txt_header_enable"]
+        and trace["log_enable"]
+        and init_dict["morpy"]["conf"]["log_txt_enable"]):
 
-        # Prepare log levels
-        init_dict["morpy"]["events_total"] = 0
-        init_dict["morpy"]["events_DEBUG"] = 0
-        init_dict["morpy"]["events_INFO"] = 0
-        init_dict["morpy"]["events_WARNING"] = 0
-        init_dict["morpy"]["events_DENIED"] = 0
-        init_dict["morpy"]["events_ERROR"] = 0
-        init_dict["morpy"]["events_CRITICAL"] = 0
-        init_dict["morpy"]["events_UNDEFINED"] = 0
-        init_dict["morpy"]["events_INIT"] = 0
-        init_dict["morpy"]["events_EXIT"] = 0
+        morpy_log_header(trace, init_dict)
 
-        # Create first log in txt-file including the app header
-        if (init_dict["morpy"]["conf"]["log_txt_header_enable"] and
-            morpy_trace_init["log_enable"] and
-            init_dict["morpy"]["conf"]["log_txt_enable"]
-        ):
-            morpy_log_header(morpy_trace_init, init_dict)
+    # Initialize log DB
+    if (init_dict["morpy"]["conf"]["log_enable"]
+        and init_dict["morpy"]["conf"]["log_db_enable"]):
 
-        # Initialize the morPy debug-specific localization
-        init_dict["loc"]["morpy_dgb"].update(getattr(morpy_loc, 'loc_morpy_dbg')())
-        log(morpy_trace_init, init_dict, "init",
+        from lib.msg import log_db_init
+        log_db_init(trace, init_dict)
+
+    # Initialize the morPy debug-specific localization
+    init_dict["loc"]["morpy_dgb"].update(getattr(morpy_loc, 'loc_morpy_dbg')())
+    log(trace, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_dbg_loaded"]}')
 
-        # Initialize the app-specific localization
-        app_loc = importlib.import_module(f'loc.app_{init_dict["morpy"]["conf"]["language"]}')
-        init_dict["loc"]["app"].update(getattr(app_loc, 'loc_app')())
-        init_dict["loc"]["app_dbg"].update(getattr(app_loc, 'loc_app_dbg')())
-        log(morpy_trace_init, init_dict, "init",
+    # Initialize the app-specific localization
+    app_loc = importlib.import_module(f'loc.app_{init_dict["morpy"]["conf"]["language"]}')
+    init_dict["loc"]["app"].update(getattr(app_loc, 'loc_app')())
+    init_dict["loc"]["app_dbg"].update(getattr(app_loc, 'loc_app_dbg')())
+    log(trace, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_app_loaded"]}')
 
-        # Localization initialized.
-        log(morpy_trace_init, init_dict, "init",
+    # Localization initialized.
+    log(trace, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_loc_finished"]}\n'
                 f'{init_dict["loc"]["morpy"]["init_loc_lang"]}: {init_dict["morpy"]["conf"]["language"]}')
 
-        # Load init_dict as a string
-        if init_dict["morpy"]["conf"]["print_init_vars"] or init_dict["morpy"]["conf"]["ref_create"]:
-            init_dict_str = morpy_fct.app_dict_to_string(init_dict)
-        else:
-            init_dict_str = ""
+    # Load init_dict as a string
+    if init_dict["morpy"]["conf"]["print_init_vars"] or init_dict["morpy"]["conf"]["ref_create"]:
+        init_dict_str = morpy_fct.app_dict_to_string(init_dict)
+    else:
+        init_dict_str = ""
 
-        # Print init_dict to console
-        if init_dict["morpy"]["conf"]["print_init_vars"]:
-            print(init_dict_str)
+    # Print init_dict to console
+    if init_dict["morpy"]["conf"]["print_init_vars"]:
+        print(init_dict_str)
 
-        # Initialize the morPy orchestrator
-        orchestrator = MorPyOrchestrator(morpy_trace_init, init_dict)
+    # Initialize the morPy orchestrator
+    orchestrator = MorPyOrchestrator(trace, init_dict)
 
-        # ############################################
-        # END Single-threaded initialization
-        # START Multi-threaded initialization
-        # ############################################
+    # Calculate the runtime of the initialization routine
+    init_duration = morpy_fct.runtime(init_dict["morpy"]["init_datetime_value"])
 
-        # task = morPy.testprint(morpy_trace_init, "Message")
-        # mp.run_parallel(mpy_task, app_dict, task)
+    # Record the duration of the initialization
+    init_dict["morpy"]["init_rnt_delta"] = init_duration["rnt_delta"]
 
-        # ############################################
-        # END Multi-threaded initialization
-        # ############################################
-
-        # Calculate the runtime of the initialization routine
-        init_duration = morpy_fct.runtime(init_dict["morpy"]["init_datetime_value"])
-
-        # Record the duration of the initialization
-        init_dict["morpy"]["init_rnt_delta"] = init_duration["rnt_delta"]
-
-        log(morpy_trace_init, init_dict, "init",
+    log(trace, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["init_finished"]}\n'
-            f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["morpy"]["init_rnt_delta"]}')
+                f'{init_dict["loc"]["morpy"]["init_duration"]}: {init_dict["morpy"]["init_rnt_delta"]}')
 
-        # Write app_dict to file: initialized_app_dict.txt
-        if init_dict["morpy"]["conf"]["ref_create"]:
-            morpy_ref(morpy_trace_init, init_dict, init_dict_str)
+    # Write app_dict to file: initialized_app_dict.txt
+    if init_dict["morpy"]["conf"]["ref_create"]:
+        morpy_ref(trace, init_dict, init_dict_str)
 
-        # Exit initialization
-        retval = init_dict, orchestrator
-        return retval
+    # Exit initialization
+    retval = trace, init_dict, orchestrator
+    return retval
 
-    except Exception as e:
-        from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
-def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, dict):
+@core_wrap
+def build_app_dict(trace: dict, create: bool=False) -> (dict | UltraDict, dict):
     r"""
     Constructs the morPy global configuration dictionary (app_dict) with support for
     multiprocessing. It collects system information, applies configuration settings from
     lib.conf, and returns the app_dict along with a datetime stamp dictionary.
 
-    :param morpy_trace: operation credentials and tracing
+    :param trace: operation credentials and tracing
     :param create: If True, a (nested) dictionary is created. Otherwise, purely
         references to the UltraDict.
 
     :return init_dict: morPy global dictionary containing app configurations
 
     :example:
-        init_dict = build_app_dict(morpy_trace, create=True)
+        init_dict = build_app_dict(trace, create=True)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.init'
     operation: str = 'build_app_dict(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+    trace: dict = morpy_fct.tracing(module, operation, trace)
 
     init_dict = None
 
@@ -300,7 +280,7 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
                 recurse=False
             )
             # Insert master process ID
-            init_dict["morpy"]["proc_busy"][morpy_trace["process_id"]] = "MASTER"
+            init_dict["morpy"]["proc_busy"][trace["process_id"]] = "MASTER"
 
             # app_dict["morpy"]["proc_waiting"]
             init_dict["morpy"]["proc_waiting"] = shared_dict(
@@ -388,28 +368,27 @@ def build_app_dict(morpy_trace: dict, create: bool=False) -> (dict | UltraDict, 
     # Error detection
     except Exception as e:
         from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+        raise MorPyException(trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
 
-def morpy_log_header(morpy_trace: dict, init_dict: dict | UltraDict) -> None:
+
+@core_wrap
+def morpy_log_header(trace: dict, init_dict: dict | UltraDict) -> None:
     r"""
     Writes a header to the logging text file that includes key application metadata such as
     the author, application path, timestamp, user, system, OS version, architecture, and
     thread count.
 
-    :param morpy_trace: operation credentials and tracing
+    :param trace: operation credentials and tracing
     :param init_dict: Dictionary holding all initialized data (init of app_dict)
 
-    :return:
-        -
-
     :example:
-        morpy_log_header(morpy_trace, init_dict)
+        morpy_log_header(trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.init'
     operation: str = 'log_header(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+    trace: dict = morpy_fct.tracing(module, operation, trace)
 
     # Create the app header
     content = (
@@ -427,31 +406,30 @@ def morpy_log_header(morpy_trace: dict, init_dict: dict | UltraDict) -> None:
 
     # Write to the logfile
     filepath = init_dict["morpy"]["conf"]["log_txt_path"]
-    textfile_write(morpy_trace, init_dict, filepath, content)
+    textfile_write(trace, init_dict, filepath, content)
 
     # Clean up
-    del morpy_trace
+    del trace
 
-def morpy_ref(morpy_trace: dict, init_dict: dict | UltraDict, init_dict_str: str) -> None:
+
+@core_wrap
+def morpy_ref(trace: dict, init_dict: dict | UltraDict, init_dict_str: str) -> None:
     r"""
     Writes a string representation of the initialized app_dict to a reference file in the
     main path. This document is intended for development purposes only.
 
-    :param morpy_trace: operation credentials and tracing
+    :param trace: operation credentials and tracing
     :param init_dict: Dictionary holding all initialized data (init of app_dict)
     :param init_dict_str: String of the init_dict
 
-    :return:
-        -
-
     :example:
-        morpy_ref(morpy_trace, init_dict)
+        morpy_ref(trace, init_dict)
     """
 
     # Define operation credentials (see init.init_cred() for all dict keys)
     module: str = 'lib.init'
     operation: str = 'ref(~)'
-    morpy_trace: dict = morpy_fct.tracing(module, operation, morpy_trace)
+    trace: dict = morpy_fct.tracing(module, operation, trace)
 
     try:
         morpy_ref_path = os.path.join(f'{init_dict["morpy"]["conf"]["main_path"]}', 'initialized_app_dict.txt')
@@ -465,13 +443,14 @@ def morpy_ref(morpy_trace: dict, init_dict: dict | UltraDict, init_dict_str: str
         init_dict_txt.close()
 
         # The init_dict was written to textfile.
-        log(morpy_trace, init_dict, "init",
+        log(trace, init_dict, "init",
         lambda: f'{init_dict["loc"]["morpy"]["ref_created"]}\n'
                 f'{init_dict["loc"]["morpy"]["ref_path"]}: {morpy_ref_path}')
 
     except Exception as e:
         from lib.exceptions import MorPyException
-        raise MorPyException(morpy_trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+        raise MorPyException(trace, init_dict, e, sys.exc_info()[-1].tb_lineno, "error")
+
 
 def init_max_processes(conf_dict: dict, system_logical_cpus: int) -> int:
     r"""
@@ -530,6 +509,7 @@ def init_max_processes(conf_dict: dict, system_logical_cpus: int) -> int:
 
     return processes_max
 
+
 def init_memory_size(conf_dict: dict, max_processes: int) -> tuple:
     r"""
     Computes the total memory (in bytes) to be allocated for shared dictionaries by converting
@@ -580,6 +560,7 @@ def init_memory_size(conf_dict: dict, max_processes: int) -> tuple:
 
     retval = int(init_memory), int(memory_min_bytes), int(sys_memory_bytes)
     return retval
+
 
 def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
     r"""
@@ -695,6 +676,7 @@ def nested_memory_sizes(conf_dict: dict, max_processes: int) -> dict:
         "app_dict_loc_app_mem" : app_dict_loc_app_mem,
         "app_dict_loc_app_dbg_mem" : app_dict_loc_app_dbg_mem
     }
+
 
 def obscure_shared_name() -> str:
     r"""

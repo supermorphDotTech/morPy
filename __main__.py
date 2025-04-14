@@ -18,22 +18,18 @@ def initialize_morpy():
     Exceptions are wrapped using MorPyException.
     """
 
+    from lib.init import init, init_cred
+
     check: bool = False
     init_trace: dict | None = None
     init_dict: dict | None = None
 
     try:
-<<<<<<< Updated upstream
-        from lib import init
-        init_trace: dict = init.init_cred()
-        init_dict, init_orch = init.init(init_trace)
-=======
         trace_pattern = init_cred()
         init_trace, init_dict, init_orch = init(trace_pattern)
         init_trace["module"] = trace_pattern["module"]
         init_trace["operation"] = trace_pattern["operation"]
         init_trace["tracing"] = trace_pattern["tracing"]
->>>>>>> Stashed changes
 
         if init_dict and init_orch:
             check: bool = True
@@ -57,24 +53,24 @@ def finalize_morpy(final_trace, final_dict):
     process with sys.exit().
     """
 
-    from lib.exit import exit
-    exit(final_trace, final_dict)
+    from lib.exit import end_runtime
+    end_runtime(final_trace, final_dict)
 
     # Quit the program
     sys.exit()
 
 if __name__ == '__main__':
     try:
-        morpy_trace, app_dict, orchestrator, init_check = initialize_morpy()
-        main(morpy_trace, app_dict, orchestrator)
+        trace, app_dict, orchestrator, init_check = initialize_morpy()
+        main(trace, app_dict, orchestrator)
     except Exception as e:
         # noinspection PyUnboundLocalVariable
-        morpy_trace = morpy_trace if morpy_trace else None
+        trace = trace if trace else None
         # noinspection PyUnboundLocalVariable
         app_dict = app_dict if app_dict else None
-        raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+        raise MorPyException(trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
     finally:
         try:
-            finalize_morpy(morpy_trace, app_dict)
+            finalize_morpy(trace, app_dict)
         except Exception as e:
-            raise MorPyException(morpy_trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
+            raise MorPyException(trace, app_dict, e, sys.exc_info()[-1].tb_lineno, "critical")
