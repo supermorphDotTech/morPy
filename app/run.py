@@ -44,12 +44,6 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
     from demo.ProgressTrackerTk import run as demo_progress_gui
     demo_progress_gui(trace, app_dict)
 
-    # from morPy import process_q
-    # for i in range(1, 40):
-    #     task = (demo_ProgressTrackerTk, trace, app_dict)
-    #     process_q(trace, app_dict, task=task)
-
-
     from morPy import process_q
     from functools import partial
 
@@ -65,26 +59,6 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
 
         morPy.join_or_task(trace, app_dict)
 
-        # task = [demo_ProgressTrackerTk, trace, app_dict]
-        # process_q(trace, app_dict, task=task, priority=56)
-
-    # from morPy import FileDirSelectTk
-    # selection_config = {
-    #     "file_select" : {
-    #         "is_dir" : False,
-    #         "file_types" : (('Textfile','*.txt'), ('All Files','*.*')),
-    #         "default_path" : app_dict["morpy"]["conf"]["data_path"]
-    #     },
-    #     "dir_select" : {
-    #         "is_dir" : True,
-    #         "default_path" : app_dict["morpy"]["conf"]["data_path"]
-    #     }
-    # }
-    # gui = FileDirSelectTk(trace, app_dict, selection_config, title="Select...")
-    # results = gui.run(trace, app_dict)["selections"]
-    # file = results["file_select"]
-    # directory = results["dir_select"]
-    # print(f'{file=}\n{directory=}')
     return{
         'app_dict_n_shared' : app_dict_n_shared
         }
