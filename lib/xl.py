@@ -792,11 +792,7 @@ class XlWorkbook:
                 cell_data = self.read_cells(trace, app_dict, cell_range=[cell_key],
                                                 worksheet=self.active_sheet_title)
 
-                if not cell_data["check"]:
-                    continue
-
                 # Merge current styles with the ones provided in write_data
-
                 current_styles = cell_data["cl_dict"]  # e.g. {"A2": {"value":..., "font":...}}
                 cell_styles = current_styles.get(cell_key, {})  # e.g. {"value":..., "font":...}
 

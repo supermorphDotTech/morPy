@@ -27,13 +27,6 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
         app_dict_n_shared: App dictionary, which is not shared with child processes
             or the orchestrator. Efficient to share data in between app phases 'app.init',
             'app.run' and 'app.exit'.
-
-    :example:
-        from app import init as init
-        from app import run as run
-
-        init_retval = init(trace, app_dict)
-        run_retval = run(trace, app_dict, init_retval)
     """
 
     # App starting.
@@ -48,16 +41,17 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
     from functools import partial
 
     for i in range(0, 40):
+        # You can push partials to the morPy process queue!
         task = partial(arbitrary_task, trace, app_dict, stages=3, total_rep=10 ** 5)
         process_q(trace, app_dict, task=task, priority=20)
 
+        # Lists are native to the morPy process queue!
         task = [arbitrary_task, trace, app_dict, {"stages": 3, "total_rep": 10 ** 5}]
         process_q(trace, app_dict, task=task, priority=34)
 
+        # You can push tuples to the morPy process queue!
         task = (arbitrary_task, trace, app_dict, {"stages": 3, "total_rep": 10 ** 5})
         process_q(trace, app_dict, task=task, priority=56)
-
-        morPy.join_or_task(trace, app_dict)
 
     return{
         'app_dict_n_shared' : app_dict_n_shared

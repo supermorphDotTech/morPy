@@ -152,12 +152,12 @@ def settings():
     # Select the way, how the available CPUs are determined. If absolute, an integer
     # value will reflect the maximum number of logical cores to utilize in parallel.
     # Default: False or None
-    processes_count_absolute: bool | None = False
+    processes_count_absolute: bool | None = True
 
     # Absolute amount of processes to run parallel. This value will by default not exceed
     # the logical cores available on the system. If None, all CPUs can be utilized.
     # Default: None
-    processes_absolute: int | None = 1
+    processes_absolute: int | None = 10
 
     # Set the relative maximum amount of processes to be utilized, where 1 resembles 100%
     # utilization and 0 resembles 0% utilization. If None, all CPUs can be utilized.
