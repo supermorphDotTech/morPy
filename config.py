@@ -180,7 +180,7 @@ def settings():
     """
 
     # Path to the app folder
-    main_path = pathlib.Path(__file__).parent.parent.resolve()
+    main_path = pathlib.Path(__file__).parent.resolve()
 
     # Path to the logfile folder
     log_path = pathlib.Path(os.path.join(f'{main_path}', 'log'))

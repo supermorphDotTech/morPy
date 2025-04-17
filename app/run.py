@@ -33,6 +33,20 @@ def run(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -> dic
     morPy.log(trace, app_dict, "info",
         lambda: f'{app_dict["loc"]["morpy"]["app_run_start"]}')
 
+    # --- DEMO ---
+    # Multi-stage progressbar with GUI
+    from demo import ProgressTrackerTk
+    ProgressTrackerTk.run(trace, app_dict)
+
+    # --- DEMO ---
+    # Multiprocessing with task shelving. Lots of tiny tasks.
+    # Configure processes in config.py
+    from demo import tiny_benchmark as bench
+    task: list = [bench.run, trace, app_dict]
+
+    for _ in range(0, 250):
+        morPy.process_q(trace, app_dict, task)
+
     return{
         'app_dict_n_shared' : app_dict_n_shared
         }

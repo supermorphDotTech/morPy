@@ -250,13 +250,19 @@ class MorPyOrchestrator:
                     del task
 
             else:
-                # Sleep if heap is empty / wait for shelved process acceptance
-                time.sleep(0.2)  # 0.2 seconds = 200 milliseconds
+                # Repeated check on shelved tasks. Mitigates race condition with joining processes.
+                for _ in range(0, 5):
+                    time.sleep(0.05)  # 0.05 seconds = 50 milliseconds
+                    with app_dict["morpy"]["heap_shelf"].lock:
+                        heap_len = len(self.heap) + len(app_dict["morpy"]["heap_shelf"].keys())
+                    if heap_len > 0:
+                        break
 
                 # Check on child processes: signal join or pass tasks
-                with app_dict["morpy"].lock:
-                    if not app_dict["morpy"]["proc_joined"] and heap_len == 0:
-                        check_child_processes(trace, app_dict, check_join=True)
+                if heap_len == 0:
+                    with app_dict["morpy"].lock:
+                        if not app_dict["morpy"]["proc_joined"] and heap_len == 0:
+                            check_child_processes(trace, app_dict, check_join=True)
 
             # Check exit request issued by any process
             with app_dict["morpy"].lock:

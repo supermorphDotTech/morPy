@@ -51,6 +51,8 @@ First stable version of morPy. Tested on Win32 and Linux Systems.
 - [ ] Connect `lib.xl.XlWorkbook()` with GUI
   - [ ] Provide GUI connection in `lib.xl.XlWorkbook.write_ranges()` for `ProgressTrackerTk()`
   - [ ] Provide GUI connection in `lib.xl.XlWorkbook.read_cells()` for `ProgressTrackerTk()`
+- [x] Moved `lib.conf.py` and renamed it as `config.py` for increased accessibility
+- [x] Mitigation of race condition when joining processes in `lib.mp.MorPyOrchestrator._mp_loop()`
 
 
 # v1.0.0a [⇧](#toc) <a name="v1.0.0a"></a>

@@ -7,7 +7,7 @@ Descr.:     Initialization of the morPy framework.
 """
 
 import lib.fct as morpy_fct
-import lib.conf as conf
+import config
 from morPy import log
 from lib.decorators import core_wrap
 from lib.common import textfile_write
@@ -204,7 +204,7 @@ def build_app_dict(trace: dict, create: bool=False) -> (dict | UltraDict, dict):
         init_datetime = morpy_fct.datetime_now()
 
         # Get project settings
-        conf_dict = conf.settings()
+        conf_dict = config.settings()
 
         # Collect system information
         sysinfo = morpy_fct.sysinfo()
