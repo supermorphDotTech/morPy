@@ -48,7 +48,10 @@ class MorPyOrchestrator:
         :param app_dict: morPy global dictionary containing app configurations
         """
 
-        app_dict["morpy"]["orchestrator"]["terminate"] = False
+        app_dict["morpy"]["orchestrator"]["terminate"]      = False
+
+        # If processes were queued, omit a race condition with joining.
+        app_dict["morpy"]["orchestrator"]["delayed_join"]   = False
 
         # Determine if multiprocessing is enabled
         self.processes_max: int = app_dict["morpy"]["processes_max"]
@@ -251,12 +254,15 @@ class MorPyOrchestrator:
 
             else:
                 # Repeated check on shelved tasks. Mitigates race condition with joining processes.
-                for _ in range(0, 5):
-                    time.sleep(0.05)  # 0.05 seconds = 50 milliseconds
-                    with app_dict["morpy"]["heap_shelf"].lock:
-                        heap_len = len(self.heap) + len(app_dict["morpy"]["heap_shelf"].keys())
-                    if heap_len > 0:
-                        break
+                with app_dict["morpy"]["orchestrator"].lock:
+                    delayed_join = app_dict["morpy"]["orchestrator"]["delayed_join"]
+                if delayed_join:
+                    for _ in range(0, 3):   # 3x for a maximum total delay of 1.5s
+                        time.sleep(0.5)     # 0.5s = 500 ms
+                        with app_dict["morpy"]["heap_shelf"].lock:
+                            heap_len = len(self.heap) + len(app_dict["morpy"]["heap_shelf"].keys())
+                        if heap_len > 0:
+                            break
 
                 # Check on child processes: signal join or pass tasks
                 if heap_len == 0:
@@ -316,6 +322,14 @@ def app_run(trace: dict, app_dict: dict) -> None:
 
     # --- APP INITIALIZATION --- #
 
+    # Reset "delayed join" condition pre initialization.
+    with app_dict["morpy"]["orchestrator"].lock:
+        app_dict["morpy"]["orchestrator"]["delayed_join"] = False
+
+    # App initializing.
+    log(trace, app_dict, "info",
+        lambda: f'{app_dict["loc"]["morpy"]["app_run_init"]}')
+
     # Execute
     app_dict_n_shared = init(trace, app_dict)["app_dict_n_shared"]
 
@@ -336,6 +350,10 @@ def app_run(trace: dict, app_dict: dict) -> None:
 
     # --- APP RUN --- #
 
+    # App starting.
+    log(trace, app_dict, "info",
+        lambda: f'{app_dict["loc"]["morpy"]["app_run_start"]}')
+
     app_dict_n_shared = run(trace, app_dict, app_dict_n_shared)["app_dict_n_shared"]
 
     # Join all spawned processes before transitioning into the next phase.
@@ -346,6 +364,10 @@ def app_run(trace: dict, app_dict: dict) -> None:
         app_dict["morpy"]["proc_joined"] = False
 
     # --- APP EXIT --- #
+
+    # App exiting.
+    log(trace, app_dict, "info",
+        lambda: f'{app_dict["loc"]["morpy"]["app_run_exit"]}')
 
     # Exit the app and signal morPy to terminate
     finalize(trace, app_dict, app_dict_n_shared)
@@ -400,6 +422,9 @@ def heap_shelve(trace: dict, app_dict: dict, priority: int=100, task: Callable |
 
         # Skip queuing, if in single core mode
         if not (trace["process_id"] == proc_master) or force:
+            # Signal delayed join, to omit race condition.
+            with app_dict["morpy"]["orchestrator"].lock:
+                app_dict["morpy"]["orchestrator"]["delayed_join"] = True
             with app_dict["morpy"].lock:
                 with app_dict["morpy"]["heap_shelf"].lock:
                     morpy_dict = app_dict["morpy"]
@@ -758,6 +783,10 @@ def check_child_processes(trace: dict, app_dict: dict, check_join: bool = False)
         # Have in mind, that the orchestrator is never waiting (therefore +1).
         if len(app_dict["morpy"]["proc_busy"].keys()) == (len(proc_waiting.keys()) + 1):
             app_dict["morpy"]["proc_joined"] = True
+
+            # Reset delayed join, once joining is complete.
+            with app_dict["morpy"]["orchestrator"].lock:
+                app_dict["morpy"]["orchestrator"]["delayed_join"] = False
 
             # All child processes are joined.
             log(trace, app_dict, "debug",

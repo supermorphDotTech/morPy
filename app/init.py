@@ -31,12 +31,8 @@ def init(trace: dict, app_dict: dict | UltraDict) -> dict:
 
     app_dict_n_shared = dict()
 
-    # App initializing.
-    morPy.log(trace, app_dict, "info",
-        lambda: f'{app_dict["loc"]["morpy"]["app_run_init"]}')
-
     """
-    >>> CODE OF INITIALIZATION
+    >>> APP INITIALIZATION
     """
 
     return{

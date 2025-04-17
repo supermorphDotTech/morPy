@@ -29,10 +29,6 @@ def finalize(trace: dict, app_dict: dict | UltraDict, app_dict_n_shared: dict) -
     # OPTION enable/disable logging
     # ??? trace["log_enable"] = False
 
-    # App exiting.
-    morPy.log(trace, app_dict, "info",
-        lambda: f'{app_dict["loc"]["morpy"]["app_run_exit"]}')
-
     """
-    >>> CODE OF EXIT
+    >>> APP EXIT
     """
