@@ -527,7 +527,7 @@ pydeps --cluster --rankdir "LR" --include-missing ".\"
 
 ### 6.1.1 Code Insertion [⇧](#toc) <a name="6.1.1"></a>
 
-I f an attacker gains access to the machine on which morPy is running, it is possible for the
+If an attacker gains access to the machine on which morPy is running, it is possible for the
 attacker to query through shared memory segments and identify those holding the UltraDict
 instances `app_dict["morpy"]["heap_shelf"]` or `app_dict["morpy"]["proc_waiting"]` of currently
 running apps. In that case, functions can be written into either of those which will then be picked
