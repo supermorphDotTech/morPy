@@ -1,6 +1,6 @@
-# THIS REPOSITORY IS MOVING
+# THIS REPOSITORY IS DEPRECATED
 
-\> If you want to stay up to date, check out the [new home of morPy on codeberg.org](https://codeberg.org/supermorph/morPy)!
+### \> If you want to stay up to date, check out the [new home of morPy on codeberg.org](https://codeberg.org/supermorph/morPy)!
 <br/><br/><br/>
 <img src="https://github.com/user-attachments/assets/38a7a1e8-2a55-4f42-95a8-691a1cd77586" alt="supermorph_morPy_alpha_badge_v001" style="max-width:66%; height:auto;">
 
